@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://sive.antv.antgroup.com">
-    <img width="128" src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*NsYCQrQ6iBsAAAAAQCAAAAgAemJ7AQ/original">
+    <img width="128" src="./sive.svg">
   </a>
 </p>
 
