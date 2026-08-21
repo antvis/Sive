@@ -76,12 +76,12 @@ AntV [Sive](https://sive.antv.antgroup.com/) 提供了 `API Key` 来支持在 AI
 
 <p align="center">
   <a href="https://antv.vision">
-    <img width="100" src="https://gw.alipayobjects.com/mdn/rms_0d75e8/afts/img/A*T3edT7ChQTQAAAAAAAAAAAAAARQnAQ">
+    <img width="72" src="https://gw.alipayobjects.com/mdn/rms_0d75e8/afts/img/A*T3edT7ChQTQAAAAAAAAAAAAAARQnAQ">
   </a>
 </p>
 
-<p align="center">「蚂蚁企业级 AI 数据可视化解决方案，让人们在数据世界里获得视觉化思考能力」</p>
+<p align="center"><sub>「蚂蚁企业级 AI 数据可视化解决方案，让人们在数据世界里获得视觉化思考能力」</sub></p>
 
 <p align="center">
-  Made with ❤️ by <a href="https://sive.antv.antgroup.com/">AntV Sive</a>
+  <sub>Made with ❤️ by <a href="https://sive.antv.antgroup.com/">AntV Sive</a></sub>
 </p>
