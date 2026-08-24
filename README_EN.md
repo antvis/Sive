@@ -6,7 +6,7 @@
   </a>
 </p>
 
-<h1 align="center">🪼 Sive: See it Live, Share it Real.</h1>
+<h1 align="center">🪼 Sive, See it Live, Share it Real.</h1>
 
 An AI-powered data visualization creation platform by the AntV team. Build data visualization charts, reports, and perform data analysis through natural language conversations — making every insight instantly visible, accurate, and easy to share.
 
