@@ -6,9 +6,9 @@
   </a>
 </p>
 
-<h1 align="center">🪼 Sive: See it Live, Share it Real.</h1>
+<h1 align="center">🪼 Sive, See it Live, Share it Real.</h1>
 
-蚂蚁集团 AntV 团队出品的 AI 驱动的数据可视化创作平台，用自然语言对话快速构建数据可视化图表、报告，以及数据分析，让每一份洞察即刻可见、准确、轻松分享。
+蚂蚁集团 AntV 团队出品的 AI 驱动的数据可视化创作平台，用自然语言对话快速构建数据可视化图表、报告，以及数据分析，**让数据跃然眼前，让每一份洞察即刻可见、轻松分享**。
 
 <div align="center">
 
