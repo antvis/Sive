@@ -10,6 +10,10 @@
 
 An AI-powered data visualization creation platform by the AntV team. Build data visualization charts, reports, and perform data analysis through natural language conversations — making every insight instantly visible, accurate, and easy to share.
 
+<p align="center">
+  <img width="768" src="./intro.png">
+</p>
+
 <div align="center">
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -18,38 +22,51 @@ An AI-powered data visualization creation platform by the AntV team. Build data 
 
 </div>
 
+<h2 align="center">🎨 Grally Examples</h2>
+
+Show some Sive created data works, scan the QR code to see the specific content, and you can also create the same one in Sive!
+
 <table>
   <tr>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
     </td>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*BuWIT5BQ120AAAAAQZAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
     </td>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*ioflQZjDAFIAAAAAQbAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
     </td>
-  </tr>
-  <tr>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
-    </td>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
-    </td>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*EyHhTKkNSjAAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
     </td>
   </tr>
   <tr>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*Z04oTrUO3Z8AAAAAQdAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
     </td>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
     </td>
-    <td align="center" width="33%">
-      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot 1" width="100%"/>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original alt="AntV Sive Screenshot" width="100%"/>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
     </td>
   </tr>
 </table>
