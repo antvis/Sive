@@ -22,7 +22,30 @@ An AI-powered data visualization creation platform by the AntV team. Build data 
 
 </div>
 
-<h2 align="center">🎨 Grally Examples</h2>
+## 👩🏻‍💻 About AntV
+
+AntV is an open-source data visualization creation platform by the AntV team. Build data visualization charts, reports, and perform data analysis through natural language conversations — making every insight instantly visible, accurate, and easy to share.
+
+With the evolution of AI, AntV not only opens a series of technical solutions for AI visualization, but also launches Sive - a visualization creation platform for AI-powered data analysis.
+
+## 🪼 What Sive can do?
+
+- Data Access
+
+Sive supports multiple data access methods, covering local files, major SaaS platforms, MySQL relational databases, and remote files. Through semantic modeling, AI data retrieval, and business data portrait, the model can better understand your data.
+
+- Data Analysis
+
+Based on real business practices, we have 18+ data analysis methods and 100+ Golden Queries. Simply use natural language to ask business questions, and Sive can automatically decompose analysis tasks, query and compare data from multiple dimensions, identify trends, exceptions, differences, and key factors.
+
+- Data Creation
+
+From a chart, a report, to a data PPT, relying on 10+ visualization libraries and 50+ professional design skills, combined with dialog, element picking, and screenshot, you can create data works in 2–5 minutes.
+
+- Open Ability
+Free to apply for API Key, just need one prompt, and you can integrate Sive into your local Agent workflow. The Agent no longer stops at text answers, and can truly perform data analysis, chart generation, and report creation.
+
+## 🎨 Grally Examples
 
 Show some Sive created data works, scan the QR code to see the specific content, and you can also create the same one in Sive!
 
