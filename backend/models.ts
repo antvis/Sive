@@ -247,17 +247,12 @@ export class Models {
     };
     await Promise.all(Array.from({ length: Math.min(3, pending.length) }, worker));
     if (failure) throw failure;
-    if (
-      old &&
-      (!this.store.view.models.some((m) => m.id === old.id) ||
-        this.store.view.models.find((m) => m.id === old.id)?.revision !== old.revision)
-    )
+    const { models, activeModelId } = this.store.view;
+    const current = old && models.find((model) => model.id === old.id);
+    if (old && (!current || current.revision !== old.revision))
       throw new WorkbenchError('CONFLICT', '模型已被修改或移除，请重新打开设置');
     p.testedAt = pending.length ? new Date().toISOString() : old!.testedAt;
-    this.store.saveModels(
-      this.store.view.models.filter((m) => m.id !== p.id).concat(p),
-      this.store.view.activeModelId || p.id,
-    );
+    this.store.saveModels(models.filter((m) => m.id !== p.id).concat(p), activeModelId || p.id);
   }
   activate(id: string, model?: string) {
     const profiles = this.store.view.models;
@@ -273,10 +268,8 @@ export class Models {
     );
   }
   delete(id: string) {
-    const models = this.store.view.models.filter((model) => model.id !== id);
-    this.store.saveModels(
-      models,
-      this.store.view.activeModelId === id ? models[0]?.id || '' : this.store.view.activeModelId,
-    );
+    const { models, activeModelId } = this.store.view;
+    const remaining = models.filter((model) => model.id !== id);
+    this.store.saveModels(remaining, activeModelId === id ? remaining[0]?.id || '' : activeModelId);
   }
 }

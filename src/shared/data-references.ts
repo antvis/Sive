@@ -4,9 +4,11 @@ type Source = Pick<Dataset, 'id' | 'name'>;
 
 export function dataReferences<T extends Source>(datasets: T[]) {
   const names = datasets.map((d) => d.name.replace(/[「」\r\n]/g, ' '));
+  const counts = new Map<string, number>();
+  for (const name of names) counts.set(name, (counts.get(name) || 0) + 1);
   return datasets.map((dataset, index) => ({
     dataset,
-    value: `「${names[index]}${names.filter((name) => name === names[index]).length > 1 ? ` · ${dataset.id}` : ''}」`,
+    value: `「${names[index]}${counts.get(names[index])! > 1 ? ` · ${dataset.id}` : ''}」`,
   }));
 }
 

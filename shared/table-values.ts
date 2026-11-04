@@ -26,10 +26,14 @@ export function isNumericColumn(field: TableField, rows: Record<string, unknown>
       ) && !/[\[\]<>]/.test(field.type)
     );
   }
-  const values = rows
-    .map((row) => row[field.name])
-    .filter((value) => value !== null && value !== undefined && value !== '');
-  return values.length > 0 && values.every((value) => numeric(value) !== null);
+  let hasValue = false;
+  for (const row of rows) {
+    const value = row[field.name];
+    if (value === null || value === undefined || value === '') continue;
+    if (numeric(value) === null) return false;
+    hasValue = true;
+  }
+  return hasValue;
 }
 
 export function compareNumeric(a: unknown, b: unknown, order?: 'ascend' | 'descend' | null) {

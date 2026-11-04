@@ -29,12 +29,14 @@ export async function mysqlSchema(ava: AVA, database: string): Promise<Schema> {
     `SELECT TABLE_NAME AS table_name, CONSTRAINT_NAME AS constraint_name, COLUMN_NAME AS column_name, REFERENCED_TABLE_NAME AS target_table, REFERENCED_COLUMN_NAME AS target_column FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = ${db} AND REFERENCED_TABLE_SCHEMA = ${db} AND REFERENCED_TABLE_NAME IS NOT NULL ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION`,
   );
   const schema: Schema = { models: [], relationships: [] };
+  const models = new Map<string, Schema['models'][number]>();
   for (const row of columns) {
     const name = String(row.table_name);
-    let model = schema.models.find((m) => m.name === name);
+    let model = models.get(name);
     if (!model) {
       model = { name, tableReference: { table: name }, columns: [] };
       schema.models.push(model);
+      models.set(name, model);
     }
     model.columns.push({
       name: String(row.column_name),
@@ -42,16 +44,25 @@ export async function mysqlSchema(ava: AVA, database: string): Promise<Schema> {
       notNull: row.nullable === 'NO',
     });
   }
+  const tableIndexes = new Map<string, typeof indexes>();
+  for (const row of indexes) {
+    const name = String(row.table_name);
+    const rows = tableIndexes.get(name) || [];
+    rows.push(row);
+    tableIndexes.set(name, rows);
+  }
   for (const model of schema.models) {
     const keys = new Map<string, string[]>();
     const expressions = new Set<string>();
-    for (const row of indexes.filter((r) => r.table_name === model.name)) {
+    for (const row of tableIndexes.get(model.name) || []) {
       const name = String(row.index_name);
       if (!row.column_name) {
         expressions.add(name);
         continue;
       }
-      keys.set(name, [...(keys.get(name) || []), String(row.column_name)]);
+      const columns = keys.get(name) || [];
+      columns.push(String(row.column_name));
+      keys.set(name, columns);
     }
     for (const name of expressions) keys.delete(name);
     const primary = keys.get('PRIMARY');
@@ -61,17 +72,20 @@ export async function mysqlSchema(ava: AVA, database: string): Promise<Schema> {
   const groups = new Map<string, typeof foreign>();
   for (const row of foreign) {
     const id = JSON.stringify([row.table_name, row.constraint_name]);
-    groups.set(id, [...(groups.get(id) || []), row]);
+    const rows = groups.get(id) || [];
+    rows.push(row);
+    groups.set(id, rows);
   }
   for (const [name, rows] of groups) {
     const from = String(rows[0].table_name),
       to = String(rows[0].target_table);
-    if (!schema.models.some((m) => m.name === from) || !schema.models.some((m) => m.name === to)) continue;
-    const model = schema.models.find((m) => m.name === from)!;
+    const model = models.get(from);
+    if (!model || !models.has(to)) continue;
     const keys = [model.primaryKey, ...(model.uniqueKeys || [])]
       .filter(Boolean)
       .map((k) => (typeof k === 'string' ? [k] : k!));
-    const one = keys.some((key) => key.every((column) => rows.some((r) => r.column_name === column)));
+    const columns = new Set(rows.map((row) => row.column_name));
+    const one = keys.some((key) => key.every((column) => columns.has(column)));
     schema.relationships!.push({
       name,
       models: [from, to],

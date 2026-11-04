@@ -126,7 +126,10 @@ export default function Grid({
     if (root.current) observer.observe(root.current);
     return () => observer.disconnect();
   }, []);
-  const defaults = useMemo(() => contentColumnWidths(fields, rows, available), [fields, rows, available]);
+  const defaults = useMemo(
+    () => contentColumnWidths(fields, rows, available, numeric),
+    [fields, rows, available, numeric],
+  );
   const resolved = fields.map((field, index) => widths.get(field.name) ?? defaults[index]);
   const total = Math.max(
     resolved.reduce((sum, width) => sum + width, 0),
@@ -219,11 +222,14 @@ export default function Grid({
           <tbody>
             {visible.map((row, index) => (
               <tr key={index}>
-                {fields.map(({ name }) => (
-                  <td key={name} title={cell(row[name])}>
-                    {cell(row[name])}
-                  </td>
-                ))}
+                {fields.map(({ name }) => {
+                  const text = cell(row[name]);
+                  return (
+                    <td key={name} title={text}>
+                      {text}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
             {!visible.length && (

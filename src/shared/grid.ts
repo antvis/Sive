@@ -1,4 +1,4 @@
-import { isNumericColumn, type TableField } from '../../shared/table-values';
+import type { TableField } from '../../shared/table-values';
 
 export const MIN_COLUMN_WIDTH = 80;
 export const MAX_COLUMN_WIDTH = 1000;
@@ -17,20 +17,25 @@ export function contentColumnWidths(
   fields: TableField[],
   rows: Record<string, unknown>[],
   available: number,
+  numericColumns: ReadonlySet<string>,
 ) {
+  const sample = rows.slice(0, 100);
   const widths = fields.map((field) => {
-    const numeric = isNumericColumn(field, rows);
-    const sample = rows.slice(0, 100).map((row) => textWidth(row[field.name]));
+    const numeric = numericColumns.has(field.name);
     const minimum = numeric ? 100 : /DATE|TIME/i.test(field.type || '') ? 176 : 140;
     return Math.min(
       360,
-      Math.max(minimum, textWidth(field.name) + (numeric ? 52 : 32), ...sample.map((width) => width + 32)),
+      Math.max(
+        minimum,
+        textWidth(field.name) + (numeric ? 52 : 32),
+        ...sample.map((row) => textWidth(row[field.name]) + 32),
+      ),
     );
   });
   // Give spare space to the main text column, keeping IDs, metrics and dates compact.
   const flexible = fields
     .map((field, index) => ({ field, index }))
-    .filter(({ field }) => !isNumericColumn(field, rows) && !/DATE|TIME|BOOL/i.test(field.type || ''))
+    .filter(({ field }) => !numericColumns.has(field.name) && !/DATE|TIME|BOOL/i.test(field.type || ''))
     .sort((a, b) => widths[b.index] - widths[a.index])[0];
   const spare = available - widths.reduce((sum, width) => sum + width, 0);
   if (flexible && spare > 0)

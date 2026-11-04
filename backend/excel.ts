@@ -67,7 +67,11 @@ export function inspectExcel(file: string): ExcelSheet[] {
         if (t.name === 'c' && current) {
           if (current.value.trim()) {
             lastRow = Math.max(lastRow, row);
-            if (row <= 30) rows.set(row, [...(rows.get(row) || []), current]);
+            if (row <= 30) {
+              const cells = rows.get(row) || [];
+              cells.push(current);
+              rows.set(row, cells);
+            }
           }
           current = undefined;
         }
@@ -100,7 +104,7 @@ export function inspectExcel(file: string): ExcelSheet[] {
         );
       return { sheet: name, header: true };
     }
-    if (entries.filter(([n]) => n < candidate[0]).some(([, cells]) => cells.length > 1))
+    if (entries.some(([n, cells]) => n < candidate[0] && cells.length > 1))
       throw new WorkbenchError('INVALID_INPUT', `「${name}」包含多行表头，请整理为单行字段名后导入。`);
     const [headerRow, cells] = candidate;
     // Notes sheets often contain key/value rows, rather than field headers.

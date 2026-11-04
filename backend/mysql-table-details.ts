@@ -24,17 +24,17 @@ export async function mysqlTableDetails(
       values: [options.database, table],
       timeout: 10000,
     });
-    const indexes: TableDetails['indexes'] = [];
+    const byName = new Map<string, TableDetails['indexes'][number]>();
     for (const row of rows) {
       const name = String(row.index_name);
-      let index = indexes.find((item) => item.name === name);
+      let index = byName.get(name);
       if (!index) {
         index = { name, columns: [], unique: Number(row.non_unique) === 0, type: String(row.index_type) };
-        indexes.push(index);
+        byName.set(name, index);
       }
       index.columns.push(row.column_name == null ? '表达式索引' : String(row.column_name));
     }
-    indexes.sort((a, b) =>
+    const indexes = [...byName.values()].sort((a, b) =>
       a.name === 'PRIMARY' ? -1 : b.name === 'PRIMARY' ? 1 : a.name.localeCompare(b.name),
     );
     try {

@@ -1,5 +1,4 @@
-import { exportMarkdown, exportTableStyles } from './export-tables';
-import { isNumericColumn } from '../shared/table-values';
+import { dataTable, escape, exportMarkdown, exportTableStyles } from './export-tables';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -8,11 +7,6 @@ import type { Run } from '../shared/contracts';
 import { defaultTheme, themeConfig, themePalette, type ThemeSettings } from '../shared/theme';
 const require = createRequire(__filename);
 let runtime: string;
-export const escape = (s: unknown) =>
-  String(s ?? '').replace(
-    /[&<>"']/g,
-    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
-  );
 export function chartRuntime() {
   if (!runtime) {
     const entry = require.resolve('@antv/gpt-vis');
@@ -85,9 +79,6 @@ export async function chartHTML(
 }
 export async function analysisHTML(run: Run, settings: ThemeSettings = defaultTheme) {
   const p = themePalette(settings);
-  const numeric = new Set(
-    run.result.schema.filter((field) => isNumericColumn(field, run.result.data)).map((field) => field.name),
-  );
   const chart = run.chart ? await chartHTML(run.chart, settings) : '';
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-src about:; img-src data: blob:">
@@ -103,8 +94,7 @@ export async function analysisHTML(run: Run, settings: ThemeSettings = defaultTh
   ${chart ? `<iframe sandbox="allow-scripts" title="分析图表" srcdoc="${escape(chart)}"></iframe>` : ''}
   <h2>计算依据</h2><p>业务口径：${escape(run.semantic || '未提供')}</p><pre>${escape(run.result.sql)}</pre>
   ${run.result.truncated ? '<p>以下数据为截断后的结果快照，并非完整数据。</p>' : ''}
-  <div class="table-scroll"><table><thead><tr>${run.result.schema.map((c) => `<th${numeric.has(c.name) ? ' class="numeric"' : ''}>${escape(c.name)}</th>`).join('')}</tr></thead><tbody>
-  ${run.result.data.map((row) => `<tr>${run.result.schema.map((c) => `<td${numeric.has(c.name) ? ' class="numeric"' : ''}>${escape(typeof row[c.name] === 'object' ? JSON.stringify(row[c.name]) : row[c.name])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+  ${dataTable(run.result)}
   <h2>执行过程</h2>${run.events.map((e) => `<p><small>${escape(e.at)}</small> ${escape(e.label)}${e.durationMs === undefined ? '' : ` · ${(e.durationMs / 1000).toFixed(1)} 秒`}${e.detail ? ` · ${escape(e.detail)}` : ''}</p>`).join('')}
   <footer><small>导出内容为分析时的快照。AI 结论请结合计算依据核对。</small></footer></main></body></html>`;
 }
