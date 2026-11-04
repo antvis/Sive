@@ -5,11 +5,12 @@ import tailwindcss from '@tailwindcss/vite';
 // Electron must launch as a desktop app even when the parent runs in Node mode.
 delete process.env.ELECTRON_RUN_AS_NODE;
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   main: {
     build: {
       outDir: 'dist-electron',
-      emptyOutDir: true,
+      // Watch rebuilds must preserve the preload bundle in this shared directory.
+      emptyOutDir: command === 'build',
       target: 'node22',
       sourcemap: true,
       lib: { entry: 'electron/main.ts', formats: ['cjs'], fileName: () => 'main.cjs' },
@@ -38,4 +39,4 @@ export default defineConfig({
       rolldownOptions: { input: 'index.html' },
     },
   },
-});
+}));

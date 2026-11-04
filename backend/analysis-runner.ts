@@ -52,7 +52,7 @@ export class AnalysisRunner {
     const conversation = chatId
       ? this.store.view.conversations.find((item) => item.id === chatId)
       : this.store.createConversation(id);
-    if (!conversation || conversation.datasetId !== id)
+    if (!conversation || conversation.deletedAt || conversation.datasetId !== id)
       throw new WorkbenchError('CONFLICT', '会话不存在或不属于当前数据源');
     if (parent?.conversationId && parent.conversationId !== conversation.id)
       throw new WorkbenchError('CONFLICT', '不能跨会话关联分析上下文');
@@ -196,11 +196,5 @@ export class AnalysisRunner {
     });
     this.abort?.abort();
     this.progress.flush(this.task);
-  }
-  clearHistory() {
-    if (this.busy) throw new WorkbenchError('CONFLICT', '请等待当前分析结束后再清空历史');
-    this.store.clearHistory();
-    this.task = null;
-    this.change();
   }
 }

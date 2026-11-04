@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { DatabaseIcon, PlusIcon, XIcon } from '@phosphor-icons/react';
+import { DatabaseIcon, PlusIcon, XIcon, SidebarSimpleIcon } from '@phosphor-icons/react';
 import type { Dataset } from '../../shared/contracts';
 import { Button, Dropdown } from './ui';
 
 export default function DatasetTabs({
+  sidebarOpen,
+  onToggleSidebar,
   datasets,
   tabs,
   selectedId,
@@ -11,8 +13,10 @@ export default function DatasetTabs({
   onClose,
   onOpenData,
 }: {
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
   datasets: Dataset[];
-  tabs: { id: string; datasetId: string; name: string }[];
+  tabs: { id: string; name: string }[];
   selectedId: string;
   onSelect: (id: string) => void;
   onOpenData: (dataset: Dataset) => void;
@@ -32,6 +36,16 @@ export default function DatasetTabs({
   }, [selectedId, tabs]);
   return (
     <div className="dataset-tabs-bar">
+      <Button
+        variant="ghost"
+        size="small"
+        icon={<SidebarSimpleIcon />}
+        aria-label={sidebarOpen ? '收起侧栏' : '展开侧栏'}
+        title={sidebarOpen ? '收起侧栏' : '展开侧栏'}
+        aria-expanded={sidebarOpen}
+        aria-controls="workspace-sidebar"
+        onClick={onToggleSidebar}
+      />
       <div className="dataset-tabs" role="tablist" aria-label="工作标签" ref={list}>
         {tabs.map((dataset, index) => (
           <div key={dataset.id} className="dataset-tab" data-selected={selectedId === dataset.id}>
@@ -83,7 +97,7 @@ export default function DatasetTabs({
         disabled={!datasets.length}
         menu={{
           items: datasets.map((dataset) => ({ key: dataset.id, label: dataset.name })),
-          selectedKeys: tabs.filter((tab) => tab.id === selectedId).map((tab) => tab.datasetId),
+          selectedKeys: tabs.filter((tab) => tab.id === selectedId).map((tab) => tab.id),
           onClick: ({ key }) => {
             const dataset = datasets.find((entry) => entry.id === key);
             if (dataset) onOpenData(dataset);

@@ -28,6 +28,8 @@ export class SavedAnalysisService {
     if (this.isAnalyzing() || this.refreshingId)
       throw new WorkbenchError('CONFLICT', '请等待当前分析或刷新完成');
     const run = this.store.run(id);
+    if (this.store.view.conversations.some((c) => c.id === run.conversationId && c.deletedAt))
+      throw new WorkbenchError('CONFLICT', '请先恢复此分析所属的会话');
     if (!run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从已保存列表移除');
     const source = this.store.dataset(run.datasetId);
     if (source.fingerprint !== run.fingerprint)

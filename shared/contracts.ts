@@ -140,6 +140,7 @@ export type Task = TaskFields &
     | { status: 'running' | 'cancelling' | 'error' | 'cancelled' | 'interrupted' }
   );
 export type Conversation = {
+  deletedAt?: string;
   id: string;
   datasetId: string;
   title: string;
@@ -149,6 +150,7 @@ export type Conversation = {
 export type State = {
   refreshingSavedId?: string;
   conversations: Conversation[];
+  deletedConversations: Conversation[];
   datasets: Dataset[];
   runs: RunSummary[];
   models: ModelProfile[];
@@ -163,6 +165,8 @@ export interface API {
   run(id: string): Promise<Run>;
   createConversation(datasetId: string): Promise<Conversation>;
   deleteConversation(id: string): Promise<void>;
+  restoreConversation(id: string): Promise<void>;
+  purgeConversations(ids: string[]): Promise<void>;
   saveTheme(theme: ThemeSettings): Promise<void>;
   testMySQL(input: MySQLInput): Promise<{ tables: number; rows: number }>;
   saveMySQL(input: MySQLInput): Promise<Dataset>;
@@ -189,7 +193,6 @@ export interface API {
     conversationId?: string,
   ): Promise<string>;
   cancel(): Promise<void>;
-  clearHistory(): Promise<void>;
   removeSavedAnalysis(id: string): Promise<void>;
   renameSavedAnalysis(id: string, title: string): Promise<void>;
   refreshSavedAnalysis(id: string): Promise<void>;

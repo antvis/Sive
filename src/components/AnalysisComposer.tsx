@@ -1,24 +1,12 @@
-import { useRef } from 'react';
-import { Button, Dropdown, Mentions, Tooltip } from './ui';
-import type { MentionsRef } from './ui';
-import {
-  ArrowUpIcon,
-  XIcon,
-  DatabaseIcon,
-  CaretDownIcon,
-  InfoIcon,
-  StopCircleIcon,
-} from '@phosphor-icons/react';
+import { Button, Dropdown, TextArea, Tooltip } from './ui';
+import { ArrowUpIcon, XIcon, CaretDownIcon, InfoIcon, StopCircleIcon } from '@phosphor-icons/react';
 import type { Dataset, ModelProfile } from '../../shared/contracts';
 import { analysisModes, type AnalysisMode } from '../../shared/analysis-options';
-import { dataReferences, questionText, referencedDatasets } from '../shared/data-references';
 
 export default function AnalysisComposer({
   question,
   onChange,
-  datasets,
   dataset,
-  onReference,
   models,
   modelId,
   onModel,
@@ -37,9 +25,7 @@ export default function AnalysisComposer({
 }: {
   question: string;
   onChange: (text: string) => void;
-  datasets: Dataset[];
   dataset?: Dataset;
-  onReference: (dataset: Dataset, text?: string) => void;
   models: ModelProfile[];
   modelId: string;
   onModel: (id: string, model: string) => void;
@@ -56,28 +42,18 @@ export default function AnalysisComposer({
   onCancel: () => void;
   onSettings: () => void;
 }) {
-  const input = useRef<MentionsRef>(null);
   const locked = (busy && !busyElsewhere) || submitting;
   const model = models.find((item) => item.id === modelId && item.modelIds.includes(item.model));
-  const multipleSources = referencedDatasets(question, datasets).length > 1;
-  const canSend =
-    !!dataset && !!model && !!questionText(question, datasets) && !multipleSources && !locked && !busy;
+  const canSend = !!dataset && !!model && !!question.trim() && !locked && !busy;
   const sendHint = busyElsewhere
     ? busyElsewhereLabel
     : !dataset
-      ? '先通过 @ 选择数据'
+      ? '请先打开数据源'
       : !model
         ? '先配置并选择模型'
-        : multipleSources
-          ? '每次仅支持一个数据源'
-          : !questionText(question, datasets)
-            ? '输入想分析的问题'
-            : '发送 · Enter';
-  const selectData = (source: Dataset, text?: string) => {
-    onReference(source, text ?? input.current?.textWithoutQuery() ?? question);
-    input.current?.focus();
-  };
-  const references = dataReferences(datasets);
+        : !question.trim()
+          ? '输入想分析的问题'
+          : '发送 · Enter';
   return (
     <div className="composer">
       {hasContext && (
@@ -108,67 +84,16 @@ export default function AnalysisComposer({
           }
         }}
       >
-        <Mentions
-          ref={input}
+        <TextArea
           aria-label="分析问题"
           value={question}
-          onChange={onChange}
-          placeholder="描述想分析的问题，@ 引用数据…"
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="描述想分析的问题…"
           autoSize={{ minRows: 3, maxRows: 7 }}
-
           disabled={locked}
           variant="borderless"
-          options={references.map(({ dataset: source, value }) => ({
-            key: source.id,
-            value,
-            label: (
-              <span className="mention-option">
-                <DatabaseIcon />
-                <span>{source.name}</span>
-                <small>{source.format === 'mysql' ? 'MySQL' : source.format.toUpperCase()}</small>
-              </span>
-            ),
-          }))}
-          onSelect={(option, text) => {
-            const source = references.find((item) => item.value === option.value)?.dataset;
-            if (source) selectData(source, text);
-          }}
-          onKeyDownCapture={(event) => {
-            // Let native newline/IME handling bypass Mentions' Enter-to-select handler.
-            if (event.key === 'Enter' && (event.shiftKey || event.nativeEvent.isComposing)) {
-              event.stopPropagation();
-            }
-          }}
         />
         <div className="composer-actions">
-          <Dropdown
-            placement="topLeft"
-            style={{ width: 240, maxHeight: 300, overflowY: 'auto' }}
-            disabled={locked || !datasets.length}
-            menu={{
-              selectedKeys: dataset ? [dataset.id] : [],
-              items: datasets.map((source) => ({
-                key: source.id,
-                label: source.name,
-                icon: <DatabaseIcon />,
-              })),
-              onClick: ({ key }) => {
-                const source = datasets.find((item) => item.id === key);
-                if (source) selectData(source);
-              },
-            }}
-          >
-            <Button
-              variant="ghost"
-              size="small"
-              className="reference-trigger"
-              aria-label="引用数据"
-              title="引用数据 · 每次分析使用一个数据源"
-              disabled={locked || !datasets.length}
-            >
-              @
-            </Button>
-          </Dropdown>
           <Dropdown
             placement="topLeft"
             style={{ width: 260, maxHeight: 300, overflowY: 'auto' }}
@@ -256,14 +181,12 @@ export default function AnalysisComposer({
         </div>
       </div>
       <div className="composer-footer">
-        {multipleSources ? (
-          <span role="alert">每次分析仅支持一个数据源，请删除多余引用。</span>
-        ) : !model ? (
+        {!model ? (
           <Button variant="link" size="small" onClick={onSettings}>
             添加模型后开始分析
           </Button>
         ) : !dataset ? (
-          <span>先通过 @ 选择一个数据源</span>
+          <span>请先打开数据源</span>
         ) : (
           <span>
             {busyElsewhere
@@ -275,7 +198,7 @@ export default function AnalysisComposer({
                 : 'Enter 发送 · Shift + Enter 换行'}
           </span>
         )}
-        <Tooltip title="将向所选模型发送问题、表结构、业务口径及必要的查询结果。">
+        <Tooltip title="将向所选模型发送问题、表结构、数据语义及必要的查询结果。">
           <Button variant="ghost" size="small" icon={<InfoIcon />} aria-label="数据发送说明" />
         </Tooltip>
       </div>

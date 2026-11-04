@@ -150,7 +150,7 @@ export default function DataManager({
                     className="data-card"
                     key={d.id}
                     label={d.name}
-                    action="预览数据"
+                    action="打开分析"
                     onOpen={() => open(d)}
                   >
                     <div className="data-card-header">
@@ -223,7 +223,7 @@ export default function DataManager({
                         className="data-card-preview"
                         onClick={() => open(d)}
                       >
-                        预览数据 <ArrowUpRightIcon />
+                        打开分析 <ArrowUpRightIcon />
                       </Button>
                       {d.connection && (
                         <>
@@ -252,8 +252,8 @@ export default function DataManager({
                         </>
                       )}
                       <ConfirmAction
-                        title={d.connection ? '移除此连接？' : '删除导入副本？'}
-                        description="已保存的分析快照仍会保留。"
+                        title="删除数据源及关联内容？"
+                        description="将永久删除此数据源的全部会话（包括已删除会话）、草稿和分析收藏，无法恢复。原始文件或数据库不会被删除。"
                         onConfirm={() => perform('delete', () => api.deleteData(d.id))}
                       >
                         <Button

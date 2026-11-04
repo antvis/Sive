@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, useUI, Button, Drawer, Empty, TextArea, Select, Spin, Tabs, Tag } from './ui';
+import { Alert, useUI, Button, Empty, TextArea, Select, Spin, Tabs, Tag } from './ui';
 import {
   CaretLeftIcon,
   CaretRightIcon,
   SidebarSimpleIcon,
   SidebarIcon,
   TableIcon,
+  XIcon,
 } from '@phosphor-icons/react';
 import type { Dataset } from '../../shared/contracts';
 import { quickQuestions } from '../shared/quick-questions';
@@ -34,6 +35,11 @@ export default function DataBrowser({
   const [treeOpen, setTreeOpen] = useState(true);
   const [compact, setCompact] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const treeToggle = useRef<HTMLButtonElement>(null);
+  const closeTree = () => {
+    setTreeOpen(false);
+    requestAnimationFrame(() => treeToggle.current?.focus());
+  };
   const mysql = dataset.format === 'mysql';
   const showTableToolbar = mysql || dataset.schema.models.length > 1;
   const model = dataset.schema.models.find((m) => m.name === table) || dataset.schema.models[0];
@@ -52,6 +58,9 @@ export default function DataBrowser({
   useEffect(() => {
     if (compact) setTreeOpen(false);
   }, [compact]);
+  useEffect(() => {
+    if (compact && treeOpen) root.current?.querySelector<HTMLInputElement>('.schema-sidebar input')?.focus();
+  }, [compact, treeOpen]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [semantic, setSemantic] = useState(dataset.semantic);
@@ -111,7 +120,7 @@ export default function DataBrowser({
         setTable(name);
         setPagination((value) => ({ ...value, key: '', page: 1 }));
         setTab('rows');
-        if (compact) setTreeOpen(false);
+        if (compact) closeTree();
       }}
       refreshing={refreshing}
       onRefresh={() => refresh()}
@@ -119,18 +128,40 @@ export default function DataBrowser({
   );
   return (
     <div ref={root} className={'data-browser' + (mysql && treeOpen && !compact ? ' with-tree' : '')}>
-      {mysql && treeOpen && !compact && <aside className="schema-sidebar">{navigation}</aside>}
-      {mysql && compact && (
-        <Drawer title="表结构" width={280} open={treeOpen} onClose={() => setTreeOpen(false)}>
-          {treeOpen && navigation}
-        </Drawer>
+      {mysql && treeOpen && (
+        <aside
+          className="schema-sidebar"
+          aria-label="表结构"
+          onKeyDown={(event) => {
+            if (compact && event.key === 'Escape') {
+              event.preventDefault();
+              closeTree();
+            }
+          }}
+        >
+          {compact && (
+            <div className="schema-panel-heading">
+              <strong>表结构</strong>
+              <Button
+                variant="ghost"
+                size="small"
+                icon={<XIcon />}
+                aria-label="关闭表结构"
+                onClick={closeTree}
+              />
+            </div>
+          )}
+          {navigation}
+        </aside>
       )}
-      <div className="data-content">
+      <div className="data-content" hidden={mysql && compact && treeOpen}>
         {showTableToolbar && (
           <div className="toolbar data-toolbar">
             {mysql ? (
               <>
                 <Button
+                  ref={treeToggle}
+                  aria-expanded={treeOpen}
                   aria-label={treeOpen ? '收起表结构' : '打开表结构'}
                   size="small"
                   icon={treeOpen ? <SidebarSimpleIcon /> : <SidebarIcon />}
@@ -140,7 +171,7 @@ export default function DataBrowser({
                 </Button>
                 <strong className="current-table" title={activeTable}>
                   <TableIcon />
-                  {activeTable || '未选择数据表'}
+                  <span>{activeTable || '未选择数据表'}</span>
                 </strong>
               </>
             ) : (

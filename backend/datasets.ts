@@ -25,6 +25,7 @@ export class DatasetService {
     private currentTask: () => Task | null,
     private afterDelete: (id: string) => void,
     private connections?: Connections,
+    private isRefreshing: () => boolean = () => false,
   ) {}
   private get busy() {
     const task = this.currentTask();
@@ -160,8 +161,8 @@ export class DatasetService {
     }
   }
   deleteData(id: string) {
-    if (this.busy && this.currentTask()?.datasetId === id)
-      throw new WorkbenchError('INVALID_INPUT', '此数据正在分析，请等待分析结束后再删除');
+    if (this.busy || this.isRefreshing())
+      throw new WorkbenchError('CONFLICT', '请先停止分析或等待收藏刷新完成后再删除数据源');
     this.store.deleteDataset(id);
     this.afterDelete(id);
     this.change();

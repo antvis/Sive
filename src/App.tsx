@@ -1,26 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, useUI, Button, Dropdown, Spin } from './components/ui';
+import { Alert, useUI, Button, Spin } from './components/ui';
 import {
   DatabaseIcon,
-  TableIcon,
-  ClockCounterClockwiseIcon,
+  CaretLeftIcon,
   GearSixIcon,
-  ChatCircleDotsIcon,
-  ArrowsOutIcon,
-  ArrowsInIcon,
   CaretRightIcon,
-  PlusIcon,
-  DownloadSimpleIcon,
   FolderSimpleIcon,
-  TrashIcon,
 } from '@phosphor-icons/react';
 import type { Conversation, Dataset, RunSummary, State, Task } from '../shared/contracts';
 import type { AnalysisMode } from '../shared/analysis-options';
-import { questionText, referencedDatasets, withDataReference } from './shared/data-references';
 import { dataTab, conversationIdsWithContent, type WorkspaceTab } from './shared/workspace-tabs';
 import DataManager from './components/DataManager';
 import DatasetTabs from './components/DatasetTabs';
-import DatasetPicker from './components/DatasetPicker';
+import DatasetLayout from './components/DatasetLayout';
 import Settings from './components/Settings';
 import AnalysisProgress from './components/AnalysisProgress';
 import DataBrowser from './components/DataBrowser';
@@ -28,11 +20,12 @@ import AnalysisComposer from './components/AnalysisComposer';
 import Result from './components/AnalysisResult';
 import Grid from './components/DataGrid';
 import SavedAnalyses from './components/SavedAnalyses';
-import AnalysisHistory from './components/AnalysisHistory';
 import logo from '../assets/sive-logo.svg';
 import { errorMessage } from './shared/feedback';
 import ConversationTimeline from './components/ConversationTimeline';
 import ConversationHistory from './components/ConversationHistory';
+import NewConversation from './components/NewConversation';
+import ConversationSearch from './components/ConversationSearch';
 import { conversationView } from './shared/conversation-view';
 import { draftKey } from './shared/conversation-state';
 import { useWorkspaceNavigation } from './shared/use-workspace-navigation';
@@ -41,33 +34,25 @@ import { AssistantMessage, UserMessage } from './components/ConversationMessage'
 import { taskReplyMarkdown } from '../shared/conversation-markdown';
 
 const api = window.workbench;
-type Page = 'data' | 'explorer' | 'saved' | 'history' | 'settings';
+type Page = 'data' | 'detail' | 'saved' | 'settings';
 const labels: Record<Page, string> = {
   data: '数据源',
-  explorer: '数据探索',
+  detail: '数据源详情',
   saved: '分析收藏',
-  history: '会话记录',
   settings: '设置',
 };
 export default function App() {
   const { message, confirm } = useUI();
   const [state, setState] = useState<State | null>(null);
   const navigation = useWorkspaceNavigation(message.error);
-  const {
-    workspaceTabs,
-    activeTabId,
-    conversationState,
-    dispatchConversation,
-    chat,
-    full,
-    setChat,
-    setFull,
-  } = navigation;
+  const { workspaceTabs, activeTabId, conversationState, dispatchConversation, dataOpen, setDataOpen } =
+    navigation;
   const [loadError, setLoadError] = useState('');
   const [page, setPage] = useState<Page>('data');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsTab, setSettingsTab] = useState('general');
   const [returnToChat, setReturnToChat] = useState(false);
-  const { datasetId, conversationId, runId, historyTask, question } = conversationState;
+  const { datasetId, conversationId, runId, question } = conversationState;
   const [mode, setMode] = useState<AnalysisMode>('direct');
   const [submitting, setSubmitting] = useState(false);
   const [exportingChat, setExportingChat] = useState(false);
@@ -84,23 +69,13 @@ export default function App() {
     );
   }, []);
   useEffect(() => {
-    if (!full) return;
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setFull(false);
-    };
-    window.addEventListener('keydown', escape);
-    return () => window.removeEventListener('keydown', escape);
-  }, [full]);
+    if (state && page === 'detail' && !state.datasets.some((item) => item.id === datasetId)) setPage('data');
+  }, [state, page, datasetId]);
   if (!state)
     return <div className="loading">{loadError ? <Alert type="error" title={loadError} /> : <Spin />}</div>;
   const busy = state.task?.status === 'running' || state.task?.status === 'cancelling';
   const dataset = state.datasets.find((d) => d.id === datasetId);
-  const pageTitle = page === 'explorer' && dataset ? dataset.name : labels[page];
-  const selectedHistory = historyTask
-    ? state.task?.id === historyTask.id
-      ? state.task
-      : state.tasks.find((task) => task.id === historyTask.id) || historyTask
-    : null;
+  const pageTitle = page === 'detail' && dataset ? dataset.name : labels[page];
   const contentIds = conversationIdsWithContent(state);
   const conversations = state.conversations
     .filter((item) => item.datasetId === datasetId && contentIds.has(item.id))
@@ -111,27 +86,18 @@ export default function App() {
     state.task,
     conversationId,
     runId,
-    selectedHistory,
   );
-  const selectConversation = (conversation: Conversation, selectedRunId = '', keepQuestion?: string) => {
-    const source = state.datasets.find((item) => item.id === conversation.datasetId);
+  const selectConversation = (conversation: Conversation, selectedRunId = '') => {
     dispatchConversation({
       type: 'navigate',
       datasetId: conversation.datasetId,
       conversationId: conversation.id,
       runId: selectedRunId,
-      initialQuestion: source ? withDataReference('', source, state.datasets) : '',
-      question: keepQuestion,
     });
-    setChat(true);
   };
   const newConversation = (keepDraft = false) => {
     if (!dataset || submitting) return;
-    navigation.newConversation(
-      dataset.id,
-      keepDraft ? question : withDataReference('', dataset, state.datasets),
-      state,
-    );
+    navigation.newConversation(dataset.id, keepDraft ? question : undefined);
   };
   const openModelSettings = () => {
     setSettingsTab('models');
@@ -148,14 +114,13 @@ export default function App() {
   const activateTab = (tab: WorkspaceTab) => {
     const source = state.datasets.find((d) => d.id === tab.datasetId);
     if (!source) return;
-    navigation.activate(tab, withDataReference('', source, state.datasets));
-    setPage('explorer');
+    navigation.activate(tab);
+    setPage('detail');
   };
   const open = (d: Dataset) => {
-    const existing =
-      workspaceTabs.find((tab) => tab.datasetId === d.id && !tab.conversationId) ||
-      workspaceTabs.find((tab) => tab.datasetId === d.id);
-    const next = existing || dataTab(d.id);
+    const next = dataTab(d.id);
+    next.conversationId =
+      state.conversations.find((c) => c.datasetId === d.id && contentIds.has(c.id))?.id || '';
     activateTab(next);
     perform(() => api.touchData(d.id));
   };
@@ -166,28 +131,17 @@ export default function App() {
       return;
     }
     selectConversation(conversation, run.id);
-    setPage('explorer');
+    setPage('detail');
   };
   const ask = (q: string) => {
     dispatchConversation({
       type: 'edit',
-      question: dataset ? withDataReference(q, dataset, state.datasets) : q,
-      clearHistory: true,
+      question: q,
     });
-    setChat(true);
   };
   const start = async () => {
-    const text = questionText(question, state.datasets);
-    if (
-      !dataset ||
-      busy ||
-      !!state.refreshingSavedId ||
-      submitting ||
-      !text ||
-      !state.activeModelId ||
-      referencedDatasets(question, state.datasets).length > 1
-    )
-      return;
+    const text = question.trim();
+    if (!dataset || busy || !!state.refreshingSavedId || submitting || !text || !state.activeModelId) return;
     setSubmitting(true);
     try {
       const selectedId = conversationId || (await api.createConversation(dataset.id)).id;
@@ -199,7 +153,6 @@ export default function App() {
         conversationId: selectedId,
         taskId: id,
         sentQuestion: question,
-        emptyQuestion: withDataReference('', dataset, state.datasets),
       });
     } catch (e) {
       message.error(errorMessage(e));
@@ -236,9 +189,8 @@ export default function App() {
         datasetId: target.datasetId,
         conversationId: target.conversationId,
         observedTask: id,
-        initialQuestion: '',
       });
-      setChat(true);
+
       return true;
     } catch (error) {
       message.error(errorMessage(error));
@@ -248,20 +200,14 @@ export default function App() {
       setSubmitting(false);
     }
   };
-  const reference = (source: Dataset, text = question) =>
-    dispatchConversation({
-      type: 'edit',
-      datasetId: source.id,
-      question: withDataReference(text, source, state.datasets),
-      clearHistory: true,
-    });
-  const exportChat = async (format: 'html' | 'md') => {
+  const exportChat = async (id: string, format: 'html' | 'md') => {
     if (exportingChat) return;
     setExportingChat(true);
     try {
+      const view = conversationView(state.runs, state.tasks, state.task, id);
       const saved = await api.exportConversation(
-        session.map((run) => run.id),
-        currentTask?.id || null,
+        view.session.map((run) => run.id),
+        view.currentTask?.id || null,
         format,
       );
       if (saved) message.success('会话已导出');
@@ -273,20 +219,37 @@ export default function App() {
   };
   const icons = {
     data: <DatabaseIcon />,
-    explorer: <TableIcon />,
     saved: <FolderSimpleIcon />,
-    history: <ClockCounterClockwiseIcon />,
     settings: <GearSixIcon />,
   };
   return (
-    <div className="shell">
-      <aside className="sidebar">
+    <div className={'shell' + (sidebarOpen ? '' : ' sidebar-collapsed')}>
+      <aside className="sidebar" id="workspace-sidebar" inert={!sidebarOpen} aria-hidden={!sidebarOpen}>
         <div className="brand">
           <img src={logo} alt="Sive 标志" />
           <strong>Sive</strong>
+          <ConversationSearch
+            conversations={state.conversations.filter((item) => contentIds.has(item.id))}
+            datasets={state.datasets}
+            disabled={submitting}
+            onSelect={(conversation) => {
+              selectConversation(conversation);
+              setPage('detail');
+            }}
+          />
         </div>
         <nav>
-          {(['data', 'explorer', 'saved', 'history'] as Page[]).map((key) => (
+          <NewConversation
+            datasets={state.datasets}
+            current={page === 'detail' ? dataset : undefined}
+            disabled={submitting}
+            onNew={(source) => {
+              navigation.newConversation(source.id);
+              setPage('detail');
+            }}
+            onAddData={() => setPage('data')}
+          />
+          {(['data', 'saved'] as const).map((key) => (
             <button
               key={key}
               aria-label={labels[key]}
@@ -299,6 +262,35 @@ export default function App() {
             </button>
           ))}
         </nav>
+        {page === 'detail' && dataset && (
+          <ConversationHistory
+            key={dataset.id}
+            sourceName={dataset.name}
+            conversations={conversations}
+            currentId={conversationId}
+            disabled={submitting}
+            onSelect={selectConversation}
+            onNew={() => newConversation()}
+            exporting={exportingChat}
+            deleteDisabled={(conversation) =>
+              submitting ||
+              (busy && state.task?.conversationId === conversation.id) ||
+              state.runs.some(
+                (run) => run.id === state.refreshingSavedId && run.conversationId === conversation.id,
+              )
+            }
+            onExport={(conversation, format) => exportChat(conversation.id, format)}
+            onDelete={(conversation) =>
+              confirm({
+                title: '移除这个会话？',
+                content: `“${conversation.title}”将移至设置中的“已删除会话”，分析记录和收藏会保留，可随时恢复。`,
+                okText: '删除会话',
+                cancelText: '取消',
+                onOk: () => api.deleteConversation(conversation.id),
+              })
+            }
+          />
+        )}
         <button
           className={'settings-link ' + (page === 'settings' ? 'active' : '')}
           aria-label="设置"
@@ -313,15 +305,14 @@ export default function App() {
       </aside>
       <main className="workspace">
         <DatasetTabs
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           datasets={state.datasets}
           tabs={workspaceTabs.map((tab) => ({
             id: tab.id,
-            datasetId: tab.datasetId,
-            name: tab.conversationId
-              ? `${state.conversations.find((entry) => entry.id === tab.conversationId)?.title || '新建会话'} · 会话`
-              : state.datasets.find((d) => d.id === tab.datasetId)?.name || '数据探索',
+            name: state.datasets.find((d) => d.id === tab.datasetId)?.name || '数据源',
           }))}
-          selectedId={page === 'explorer' ? activeTabId : ''}
+          selectedId={page === 'detail' ? activeTabId : ''}
           onSelect={(id) => {
             const tab = workspaceTabs.find((entry) => entry.id === id);
             if (tab) activateTab(tab);
@@ -330,7 +321,7 @@ export default function App() {
           onClose={(id) => {
             const remaining = workspaceTabs.filter((tab) => tab.id !== id);
             navigation.close(id);
-            if (id === activeTabId && page === 'explorer' && !remaining.length) setPage('data');
+            if (id === activeTabId && page === 'detail' && !remaining.length) setPage('data');
           }}
         />
         <header className="topbar">
@@ -341,30 +332,17 @@ export default function App() {
               variant="ghost"
               size="small"
               onClick={() => {
-                const source = state.datasets.find((d) => d.id === state.task!.datasetId);
                 dispatchConversation({
                   type: 'navigate',
                   datasetId: state.task!.datasetId,
                   conversationId: state.task!.conversationId,
                   observedTask: state.task!.id,
-                  initialQuestion: source ? withDataReference('', source, state.datasets) : '',
                 });
-                setPage('explorer');
-                setChat(true);
+                setPage('detail');
               }}
             >
               <Spin size="small" />
               分析进行中
-            </Button>
-          )}
-          {page === 'explorer' && !chat && (
-            <Button
-              aria-label="开始分析"
-              icon={<ChatCircleDotsIcon />}
-              disabled={!dataset}
-              onClick={() => setChat(true)}
-            >
-              开始分析
             </Button>
           )}
         </header>
@@ -372,18 +350,14 @@ export default function App() {
         <div
           className="page"
           id="workspace-panel"
-          role={page === 'explorer' ? 'tabpanel' : undefined}
-          aria-label={page === 'explorer' ? dataset?.name || '数据探索' : undefined}
+          role={page === 'detail' ? 'tabpanel' : undefined}
+          aria-label={page === 'detail' ? dataset?.name || '数据源详情' : undefined}
         >
           {page === 'data' && (
             <DataManager
               datasets={state.datasets}
-              open={(d) => {
-                open(d);
-                setChat(false);
-                setFull(false);
-              }}
-              busy={busy}
+              open={open}
+              busy={busy || !!state.refreshingSavedId}
               modelName={state.models.find((model) => model.id === state.activeModelId)?.model}
               onModelSettings={() => {
                 setSettingsTab('models');
@@ -400,193 +374,123 @@ export default function App() {
               onBack={
                 returnToChat
                   ? () => {
-                      setPage('explorer');
-                      setChat(true);
+                      setPage('detail');
                     }
                   : undefined
               }
             />
           )}
-          {page === 'explorer' && (
-            <div className={'explorer ' + (chat ? 'with-chat' : '') + (full && chat ? ' full-chat' : '')}>
-              <section className="browser-pane">
-                {dataset ? (
-                  <DataBrowser key={dataset.id} dataset={dataset} datasets={state.datasets} onAsk={ask} />
-                ) : (
-                  <DatasetPicker datasets={state.datasets} onSelect={open} onAdd={() => setPage('data')} />
-                )}
-              </section>
-              {chat && (
-                <section className="conversation" aria-label="分析会话">
-                  <div className="conversation-toolbar">
-                    <div className="conversation-heading">
-                      <strong>
-                        <ChatCircleDotsIcon /> 分析会话
-                      </strong>
-                    </div>
-                    <span className="min-w-[4px] flex-1" />
-                    <Button
-                      size="small"
-                      title="新建会话"
-                      aria-label="新建会话"
-                      disabled={!dataset || submitting}
-                      icon={<PlusIcon />}
-                      onClick={() => newConversation()}
-                    />
-                    <ConversationHistory
-                      conversations={conversations}
-                      currentId={conversationId}
-                      disabled={submitting}
-                      onSelect={selectConversation}
-                    />
-                    <Button
-                      size="small"
-                      aria-label="删除当前会话"
-                      title="删除当前会话"
-                      icon={<TrashIcon />}
-                      disabled={!conversationId || busy || submitting || !!state.refreshingSavedId}
-                      onClick={() =>
-                        confirm({
-                          title: '删除此会话及其分析？',
-                          content:
-                            '将删除全部对话结果、执行记录和属于此会话的收藏。数据源保留；如需保留结果，请先导出。',
-                          okText: '删除会话',
-                          cancelText: '取消',
-                          onOk: () => api.deleteConversation(conversationId),
-                        })
-                      }
-                    />
-                    <Dropdown
-                      menu={{
-                        items: [
-                          { key: 'html', label: '导出会话 HTML' },
-                          { key: 'md', label: '导出 Markdown（含图表配置）' },
-                        ],
-                        onClick: (e) => exportChat(e.key as 'html' | 'md'),
-                      }}
-                    >
-                      <Button
-                        size="small"
-                        title="导出会话"
-                        aria-label="导出会话"
-                        loading={exportingChat}
-                        disabled={exportingChat || (!session.length && !currentTask)}
-                        icon={<DownloadSimpleIcon />}
-                      />
-                    </Dropdown>
-                    <Button
-                      size="small"
-                      aria-label={full ? '退出全屏' : '全屏会话'}
-                      icon={full ? <ArrowsInIcon /> : <ArrowsOutIcon />}
-                      onClick={() => setFull(!full)}
-                    />
-                    <Button
-                      size="small"
-                      aria-label="收起会话"
-                      title="收起会话"
-                      icon={<CaretRightIcon />}
-                      onClick={() => setChat(false)}
-                    />
-                  </div>
-                  <ConversationTimeline sessionKey={conversationId + (selectedHistory?.id || runId)}>
-                    {!session.length && !currentTask && (
-                      <div className="chat-empty">
-                        <img src={logo} alt="" />
-                        <h3>从一个问题开始</h3>
-                        <p className="text-muted">
-                          用自然语言探索数据。
-                          <br />
-                          查询、计算与结果会逐步呈现在这里。
-                        </p>
-                        <div className="chat-suggestions">
-                          {['概览数据，找出值得关注的指标', '检查缺失值、重复记录和异常数据'].map((text) => (
-                            <button key={text} disabled={!dataset || busy} onClick={() => ask(text)}>
-                              {text}
-                              <PlusIcon />
-                            </button>
-                          ))}
-                        </div>
+          {page === 'detail' && dataset && (
+            <DatasetLayout dataOpen={dataOpen}>
+              <section className="conversation" aria-label="分析会话">
+                <ConversationTimeline sessionKey={datasetId + conversationId + runId}>
+                  {!session.length && !currentTask && (
+                    <div className="chat-empty">
+                      <img src={logo} alt="" />
+                      <h3>从一个问题开始</h3>
+                      <p className="text-muted">描述你的问题，或从下面的方向开始。</p>
+                      <div className="chat-suggestions">
+                        {[
+                          { title: '了解这份数据', description: '概览数据，找出值得关注的指标' },
+                          { title: '检查数据质量', description: '检查缺失值、重复记录和异常数据' },
+                        ].map(({ title, description }) => (
+                          <button
+                            key={title}
+                            title="填入问题"
+                            disabled={!dataset || busy}
+                            onClick={() => ask(description)}
+                          >
+                            <span>
+                              <strong>{title}</strong>
+                              <span>{description}</span>
+                            </span>
+                            <CaretRightIcon aria-hidden="true" />
+                          </button>
+                        ))}
                       </div>
-                    )}
-                    {session.map((run) => (
-                      <Result
-                        key={run.id}
-                        run={run}
-                        disabledReason={resubmitReason(run)}
-                        onResubmit={(text) => resubmit(run, text)}
+                    </div>
+                  )}
+                  {session.map((run) => (
+                    <Result
+                      key={run.id}
+                      run={run}
+                      disabledReason={resubmitReason(run)}
+                      onResubmit={(text) => resubmit(run, text)}
+                    />
+                  ))}
+                  {currentTask && !session.some((r) => r.id === currentTask.runId) && (
+                    <>
+                      <UserMessage
+                        key={currentTask.id}
+                        question={currentTask.question}
+                        time={currentTask.startedAt || currentTask.events[0]?.at}
+                        disabledReason={resubmitReason(currentTask)}
+                        onResubmit={(text) => resubmit(currentTask, text)}
                       />
-                    ))}
-                    {currentTask && !session.some((r) => r.id === currentTask.runId) && (
-                      <>
-                        <UserMessage
-                          key={currentTask.id}
-                          question={currentTask.question}
-                          time={currentTask.startedAt || currentTask.events[0]?.at}
-                          disabledReason={resubmitReason(currentTask)}
-                          onResubmit={(text) => resubmit(currentTask, text)}
-                        />
-                        <AssistantMessage
-                          time={
-                            currentTask.finishedAt || currentTask.events.at(-1)?.at || currentTask.startedAt
-                          }
-                          markdown={() => taskReplyMarkdown(currentTask)}
-                        >
-                          <AnalysisProgress task={currentTask} />
-                          {currentTask.preview && (
-                            <details open>
-                              <summary>
-                                {['running', 'cancelling'].includes(currentTask.status)
-                                  ? '已得到计算结果，正在完成分析'
-                                  : '本次分析中断前的计算结果'}
-                              </summary>
-                              <Grid rows={currentTask.preview.data} />
-                            </details>
-                          )}
-                          {!['running', 'cancelling', 'done'].includes(currentTask.status) && (
-                            <div className="toolbar">
-                              <Button onClick={openModelSettings}>检查模型设置</Button>
-                            </div>
-                          )}
-                        </AssistantMessage>
-                      </>
-                    )}
-                  </ConversationTimeline>
-                  <AnalysisComposer
-                    question={question}
-                    onChange={(text) => {
-                      const sources = referencedDatasets(text, state.datasets);
-                      dispatchConversation({
-                        type: 'edit',
-                        question: text,
-                        datasetId: sources.length === 1 ? sources[0].id : undefined,
-                      });
-                    }}
-                    datasets={state.datasets}
-                    dataset={dataset}
-                    onReference={reference}
-                    models={state.models}
-                    modelId={state.activeModelId}
-                    onModel={(id, model) => perform(() => api.activateModel(id, model))}
-                    mode={mode}
-                    onMode={setMode}
-                    busy={busy || !!state.refreshingSavedId}
-                    busyElsewhere={
-                      !!state.refreshingSavedId || (busy && state.task?.conversationId !== conversationId)
-                    }
-                    busyElsewhereLabel={
-                      state.refreshingSavedId ? '收藏的分析正在刷新，完成后可发送' : undefined
-                    }
-                    cancelling={state.task?.status === 'cancelling'}
-                    submitting={submitting}
-                    hasContext={!!activeRunId}
-                    onClearContext={() => newConversation(true)}
-                    onSubmit={() => start()}
-                    onCancel={() => perform(() => api.cancel())}
-                    onSettings={openModelSettings}
-                  />
-                </section>
-              )}
-            </div>
+                      <AssistantMessage
+                        time={
+                          currentTask.finishedAt || currentTask.events.at(-1)?.at || currentTask.startedAt
+                        }
+                        markdown={() => taskReplyMarkdown(currentTask)}
+                      >
+                        <AnalysisProgress task={currentTask} />
+                        {currentTask.preview && (
+                          <details open>
+                            <summary>
+                              {['running', 'cancelling'].includes(currentTask.status)
+                                ? '已得到计算结果，正在完成分析'
+                                : '本次分析中断前的计算结果'}
+                            </summary>
+                            <Grid rows={currentTask.preview.data} />
+                          </details>
+                        )}
+                        {!['running', 'cancelling', 'done'].includes(currentTask.status) && (
+                          <div className="toolbar">
+                            <Button onClick={openModelSettings}>检查模型设置</Button>
+                          </div>
+                        )}
+                      </AssistantMessage>
+                    </>
+                  )}
+                </ConversationTimeline>
+                <AnalysisComposer
+                  question={question}
+                  onChange={(text) => dispatchConversation({ type: 'edit', question: text })}
+                  dataset={dataset}
+                  models={state.models}
+                  modelId={state.activeModelId}
+                  onModel={(id, model) => perform(() => api.activateModel(id, model))}
+                  mode={mode}
+                  onMode={setMode}
+                  busy={busy || !!state.refreshingSavedId}
+                  busyElsewhere={
+                    !!state.refreshingSavedId || (busy && state.task?.conversationId !== conversationId)
+                  }
+                  busyElsewhereLabel={
+                    state.refreshingSavedId ? '收藏的分析正在刷新，完成后可发送' : undefined
+                  }
+                  cancelling={state.task?.status === 'cancelling'}
+                  submitting={submitting}
+                  hasContext={!!activeRunId}
+                  onClearContext={() => newConversation(true)}
+                  onSubmit={() => start()}
+                  onCancel={() => perform(() => api.cancel())}
+                  onSettings={openModelSettings}
+                />
+              </section>
+              <Button
+                className="data-panel-toggle"
+                size="small"
+                title={dataOpen ? '收起数据面板' : '展开数据面板'}
+                aria-label={dataOpen ? '收起数据面板' : '展开数据面板'}
+                aria-expanded={dataOpen}
+                icon={dataOpen ? <CaretRightIcon /> : <CaretLeftIcon />}
+                onClick={() => setDataOpen(!dataOpen)}
+              />
+              <section className="data-panel" aria-label="数据面板" inert={!dataOpen} aria-hidden={!dataOpen}>
+                <DataBrowser key={dataset.id} dataset={dataset} datasets={state.datasets} onAsk={ask} />
+              </section>
+            </DatasetLayout>
           )}
           {page === 'saved' && (
             <SavedAnalyses
@@ -595,29 +499,6 @@ export default function App() {
               refreshingId={state.refreshingSavedId}
               busy={busy}
               onRemove={(id) => api.removeSavedAnalysis(id)}
-            />
-          )}
-          {page === 'history' && (
-            <AnalysisHistory
-              tasks={state.tasks}
-              busy={busy}
-              onClear={async () => {
-                await api.clearHistory();
-                dispatchConversation({ type: 'clear-history' });
-              }}
-              onOpen={(t) => {
-                const source = state.datasets.find((d) => d.id === t.datasetId);
-                dispatchConversation({
-                  type: 'navigate',
-                  datasetId: t.datasetId,
-                  conversationId: t.conversationId,
-                  runId: t.runId,
-                  historyTask: t,
-                  initialQuestion: source ? withDataReference('', source, state.datasets) : '',
-                });
-                setPage('explorer');
-                setChat(true);
-              }}
             />
           )}
         </div>

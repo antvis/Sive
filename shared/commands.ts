@@ -31,9 +31,11 @@ const guards = {
   run: oneId,
   importData: none,
   cancel: none,
-  clearHistory: none,
   createConversation: oneId,
   deleteConversation: oneId,
+  restoreConversation: oneId,
+  purgeConversations: (a) =>
+    a.length === 1 && Array.isArray(a[0]) && a[0].length > 0 && a[0].every((id) => text(id)),
   deleteData: oneId,
   reparseData: oneId,
   touchData: oneId,

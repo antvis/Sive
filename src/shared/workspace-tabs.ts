@@ -1,74 +1,21 @@
-import type { State, Task } from '../../shared/contracts';
+import type { State } from '../../shared/contracts';
+import { initialConversationState, type ConversationState } from './conversation-state';
 
-export const workspaceTabsStorageKey = 'sive.workspace-tabs.v1';
-
-export type WorkspaceTab = {
-  id: string;
-  datasetId: string;
-  conversationId: string;
-  runId: string;
-  historyTask: Task | null;
-  chat: boolean;
-  full: boolean;
-};
-
+export const workspaceTabsStorageKey = 'sive.dataset-workspace';
+export type WorkspaceTab = ConversationState & { id: string; open: boolean; dataOpen: boolean };
 export function dataTab(datasetId: string): WorkspaceTab {
-  return {
-    id: crypto.randomUUID(),
-    datasetId,
-    conversationId: '',
-    runId: '',
-    historyTask: null,
-    chat: false,
-    full: false,
-  };
+  return { ...initialConversationState, id: datasetId, datasetId, open: true, dataOpen: true };
 }
-
-export function hasConversationContent(
-  state: Pick<State, 'runs' | 'tasks' | 'task'>,
-  conversationId: string,
-  question: string,
-  historyTask: Task | null,
-): boolean {
-  return (
-    !!question.trim() ||
-    !!historyTask ||
-    (!!conversationId &&
-      (state.runs.some((run) => run.conversationId === conversationId) ||
-        state.tasks.some((task) => task.conversationId === conversationId) ||
-        state.task?.conversationId === conversationId))
-  );
-}
-
 export function conversationIdsWithContent(state: Pick<State, 'runs' | 'tasks' | 'task'>) {
   return new Set(
-    [
-      ...state.runs.map((run) => run.conversationId),
-      ...state.tasks.map((task) => task.conversationId),
-      state.task?.conversationId,
-    ].filter(Boolean),
+    [...state.runs, ...state.tasks, ...(state.task ? [state.task] : [])].map((item) => item.conversationId),
   );
 }
-
-// Persist navigation references only, not query results or task snapshots.
-export function serializeWorkspaceTabs(tabs: WorkspaceTab[]): string {
-  return JSON.stringify(
-    tabs.map(({ id, datasetId, conversationId, runId, chat, full, historyTask }) => ({
-      id,
-      datasetId,
-      conversationId,
-      runId,
-      chat,
-      full,
-      historyTaskId: historyTask?.id,
-    })),
-  );
+// Persist drafts and navigation only; task snapshots and query data remain in the workspace.
+export function serializeWorkspaceTabs(tabs: WorkspaceTab[]) {
+  return JSON.stringify(tabs.map(({ dataOpen, ...tab }) => tab));
 }
-
-export function restoreWorkspaceTabs(
-  serialized: string | null,
-  state: Pick<State, 'datasets' | 'conversations' | 'runs' | 'tasks' | 'task'>,
-): WorkspaceTab[] {
+export function restoreWorkspaceTabs(serialized: string | null, state: State): WorkspaceTab[] {
   let entries: unknown;
   try {
     entries = JSON.parse(serialized || '[]');
@@ -76,52 +23,34 @@ export function restoreWorkspaceTabs(
     return [];
   }
   if (!Array.isArray(entries)) return [];
-  const tabs: WorkspaceTab[] = [];
-  const seen = new Set<string>();
-  const contentIds = conversationIdsWithContent(state);
-  let restoredEmptyChat = false;
+  const tabs = new Map<string, WorkspaceTab>();
   for (const entry of entries) {
-    if (
-      !entry ||
-      typeof entry !== 'object' ||
-      typeof entry.id !== 'string' ||
-      !entry.id ||
-      seen.has(entry.id)
-    )
-      continue;
-    if (!state.datasets.some((dataset) => dataset.id === entry.datasetId)) continue;
-    seen.add(entry.id);
+    if (!entry || !state.datasets.some((d) => d.id === entry.datasetId)) continue;
+    const base = dataTab(entry.datasetId);
     const conversationId =
-      state.conversations.find(
-        (conversation) =>
-          conversation.id === entry.conversationId && conversation.datasetId === entry.datasetId,
-      )?.id || '';
-    const runId =
-      state.runs.find(
-        (run) =>
-          run.id === entry.runId &&
-          run.datasetId === entry.datasetId &&
-          (!conversationId || run.conversationId === conversationId),
-      )?.id || '';
-    const historyTask =
-      [state.task, ...state.tasks].find(
-        (task) => task?.id === entry.historyTaskId && task?.datasetId === entry.datasetId,
-      ) || null;
-    const chat = entry.chat === true;
-    const hasContent = (!!conversationId && contentIds.has(conversationId)) || !!runId || !!historyTask;
-    if (chat && !hasContent) {
-      if (restoredEmptyChat) continue;
-      restoredEmptyChat = true;
-    }
-    tabs.push({
-      id: entry.id,
-      datasetId: entry.datasetId,
-      conversationId: hasContent ? conversationId : '',
-      runId,
-      historyTask,
-      chat,
-      full: chat && entry.full === true,
+      state.conversations.find((c) => c.id === entry.conversationId && c.datasetId === entry.datasetId)?.id ||
+      '';
+    const drafts = Object.fromEntries(
+      Object.entries(entry.drafts || {}).filter(
+        ([key, value]) =>
+          typeof value === 'string' &&
+          (key === `new:${entry.datasetId}` ||
+            state.conversations.some((c) => c.id === key && c.datasetId === entry.datasetId)),
+      ),
+    );
+    tabs.set(base.id, {
+      ...base,
+      conversationId,
+      drafts: drafts as Record<string, string>,
+      question:
+        typeof entry.question === 'string' && conversationId === entry.conversationId ? entry.question : '',
+      runId:
+        state.runs.find(
+          (r) => r.id === entry.runId && r.conversationId === conversationId && r.datasetId === base.id,
+        )?.id || '',
+      observedTask: state.tasks.find((t) => t.id === entry.observedTask && t.datasetId === base.id)?.id || '',
+      open: entry.open === true,
     });
   }
-  return tabs;
+  return [...tabs.values()];
 }

@@ -296,39 +296,6 @@ export function Modal({
     </Dialog.Root>
   );
 }
-export function Drawer({
-  title,
-  open,
-  onClose,
-  children,
-  width = 280,
-}: {
-  title: ReactNode;
-  open: boolean;
-  onClose: () => void;
-  children: ReactNode;
-  width?: number;
-}) {
-  return (
-    <Dialog.Root
-      open={open}
-      onOpenChange={(v) => {
-        if (!v) onClose();
-      }}
-    >
-      <Dialog.Portal>
-        <Dialog.Overlay className="ui-overlay" />
-        <Dialog.Content className="ui-drawer" style={{ width }} aria-describedby={undefined}>
-          <div className="ui-dialog-header">
-            <Dialog.Title>{title}</Dialog.Title>
-            <Button variant="ghost" icon={<XIcon />} aria-label="关闭表结构" onClick={onClose} />
-          </div>
-          {children}
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
-  );
-}
 type ConfirmOptions = {
   title: ReactNode;
   content?: ReactNode;

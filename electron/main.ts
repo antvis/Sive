@@ -166,6 +166,17 @@ app.whenReady().then(async () => {
       if (controller.analysis.task?.conversationId === id) controller.analysis.task = null;
       controller.change();
     },
+    restoreConversation: (id) => {
+      store.restoreConversation(id);
+      controller.change();
+    },
+    purgeConversations: (ids) => {
+      const refreshing = controller.saved.refreshingId;
+      if (refreshing && ids.includes(store.run(refreshing).conversationId || ''))
+        throw new WorkbenchError('CONFLICT', '请等待此会话的收藏刷新完成');
+      store.purgeConversations(ids);
+      controller.change();
+    },
     reparseData: (id) => controller.datasets.reparseData(id),
     touchData: (id) => {
       store.touchDataset(id);
@@ -176,7 +187,6 @@ app.whenReady().then(async () => {
     semantic: (id, text, metrics) => controller.datasets.semantic(id, text, metrics),
     analyze: (...args: Parameters<API['analyze']>) => controller.analysis.analyze(...args),
     cancel: () => controller.analysis.cancel(),
-    clearHistory: () => controller.analysis.clearHistory(),
     removeSavedAnalysis: (id) => controller.saved.remove(id),
     renameSavedAnalysis: (id, title) => controller.saved.rename(id, title),
     refreshSavedAnalysis: (id) => controller.saved.refresh(id),

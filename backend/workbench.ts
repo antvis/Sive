@@ -34,6 +34,7 @@ export class Workbench {
         if (this.analysis.task?.datasetId === id) this.analysis.task = null;
       },
       connections,
+      () => !!this.saved.refreshingId,
     );
   }
 }

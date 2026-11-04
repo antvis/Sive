@@ -3,83 +3,8 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  border-left: 1px solid var(--border);
   background: var(--surface);
   overflow: hidden;
-}
-.conversation-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.conversation-heading {
-  min-width: 0;
-}
-.conversation-heading strong {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.conversation-heading small {
-  display: block;
-  max-width: 170px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--muted);
-  margin-top: 2px;
-  font-size: 11px;
-}
-.conversation-history-popup {
-  width: min(320px, calc(100vw - 32px));
-  padding: 8px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
-}
-.conversation-history-popup .conversation-history-menu {
-  max-height: 320px;
-  overflow: auto;
-  box-shadow: none;
-  margin-top: 6px;
-}
-.conversation-history-item {
-  min-width: 0;
-  padding: 3px 0;
-}
-.conversation-history-item > div {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.conversation-history-item strong {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-weight: 500;
-}
-.conversation-history-item span,
-.conversation-history-item time {
-  font-size: 11px;
-  color: var(--muted);
-}
-.conversation-toolbar .ui-button {
-  width: 28px;
-  height: 28px;
-  border-color: transparent;
-  box-shadow: none;
-  color: var(--muted);
-  background: transparent;
-}
-.conversation-toolbar .ui-button:hover {
-  background: var(--background);
-  color: var(--text);
 }
 .conversation-body {
   overflow-anchor: none;
@@ -104,23 +29,23 @@
   z-index: 2;
 }
 .chat-empty {
-  max-width: 320px;
+  width: 100%;
+  max-width: 340px;
   margin: clamp(20px, 8vh, 80px) auto 24px;
   text-align: center;
 }
 .chat-empty > img {
   margin-inline: auto;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   opacity: 0.8;
 }
 [data-theme='dark'] .chat-empty > img {
-  margin-inline: auto;
   filter: invert(1);
 }
 .chat-empty h3 {
   font-weight: 600;
-  font-size: 20px;
+  font-size: 21px;
   letter-spacing: -0.4px;
   margin: 18px 0 8px;
 }
@@ -131,35 +56,54 @@
 }
 .chat-suggestions {
   display: grid;
-  gap: 8px;
-  margin-top: 24px;
+  margin-top: 28px;
 }
 .chat-suggestions button {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
+  position: relative;
+  justify-content: center;
+  padding: 16px 0;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  text-align: center;
+  line-height: 1.6;
+}
+.chat-suggestions button > span {
+  display: grid;
+  gap: 4px;
+}
+.chat-suggestions strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.chat-suggestions button > span > span {
   color: var(--muted);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  text-align: left;
   font-size: 12px;
 }
-.chat-suggestions button:hover:not(:disabled) {
-  color: var(--text);
-  border-color: var(--accent);
+.chat-suggestions button > svg {
+  position: absolute;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  opacity: 0;
+}
+.chat-suggestions button:hover:not(:disabled) strong {
+  color: var(--accent-text);
+}
+.chat-suggestions button:hover:not(:disabled) > svg,
+.chat-suggestions button:focus-visible > svg {
+  opacity: 1;
+}
+.chat-suggestions button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 .chat-suggestions button:disabled {
   opacity: 0.5;
-}
-.full-chat .conversation {
-  border-left: 0;
-}
-.full-chat .conversation-body,
-.full-chat .composer {
-  padding-inline: max(16px, calc((100% - 940px) / 2));
 }
 .composer {
   padding: 8px 12px 6px;
@@ -176,12 +120,6 @@
 }
 .composer-box:focus-within {
   border-color: var(--accent);
-}
-.composer-box .ui-mentions {
-  border: 0;
-  box-shadow: none;
-  border-radius: 0;
-  background: transparent;
 }
 .composer-box .ui-textarea {
   padding: 12px 12px 4px;
@@ -201,12 +139,6 @@
 .composer-actions .ui-button {
   height: 28px;
   font-size: 12px;
-}
-.composer-actions .reference-trigger {
-  width: 28px;
-  flex-shrink: 0;
-  color: var(--muted);
-  font-size: 17px;
 }
 .composer-actions .composer-model {
   min-width: 0;
@@ -254,20 +186,6 @@
 }
 .composer-footer .ui-button-link {
   color: var(--accent);
-}
-.mention-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 320px;
-}
-.mention-option > span:not(.ui-icon) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.mention-option small {
-  color: var(--muted);
-  margin-left: auto;
 }
 .analysis-mode-option {
   max-width: 250px;

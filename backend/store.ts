@@ -91,41 +91,47 @@ export class Store {
     }
   }
   publicState(task: Task | null): State {
+    const deleted = new Set(this.data.conversations.filter((c) => c.deletedAt).map((c) => c.id));
     return structuredClone({
-      conversations: this.data.conversations,
-      runs: this.data.runs.map(
-        ({
-          id,
-          conversationId,
-          datasetId,
-          sourceName,
-          question,
-          strategy,
-          analysisOptions,
-          parentId,
-          createdAt,
-          savedAt,
-          savedTitle,
-          modelName,
-          savedView,
-        }) => ({
-          id,
-          conversationId,
-          datasetId,
-          sourceName,
-          question,
-          strategy,
-          analysisOptions,
-          parentId,
-          createdAt,
-          savedAt,
-          savedTitle,
-          modelName,
-          viewUpdatedAt: savedView?.updatedAt,
-        }),
-      ),
+      conversations: this.data.conversations.filter((c) => !c.deletedAt),
+      deletedConversations: this.data.conversations.filter((c) => c.deletedAt),
+      runs: this.data.runs
+        .filter((run) => !deleted.has(run.conversationId || ''))
+        .map(
+          ({
+            id,
+            conversationId,
+            datasetId,
+            sourceName,
+            question,
+            strategy,
+            analysisOptions,
+            parentId,
+            createdAt,
+            savedAt,
+            savedTitle,
+            modelName,
+            savedView,
+          }) => ({
+            id,
+            conversationId,
+            datasetId,
+            sourceName,
+            question,
+            strategy,
+            analysisOptions,
+            parentId,
+            createdAt,
+            savedAt,
+            savedTitle,
+            modelName,
+            viewUpdatedAt: savedView?.updatedAt,
+          }),
+        ),
       activeModelId: this.data.activeModelId,
-      tasks: this.data.tasks.map((entry) => (entry.id === task?.id ? task : entry)),
+      tasks: this.data.tasks
+        .filter((entry) => !deleted.has(entry.conversationId || ''))
+        .map((entry) => (entry.id === task?.id ? task : entry)),
       theme: this.data.theme,
       datasets: this.data.datasets.map(({ file, encryptedPassword, revision, ...d }) => d),
       models: this.data.models.map(({ id, name, model, modelIds, baseURL, testedAt, encryptedKey }) => ({
@@ -137,7 +143,7 @@ export class Store {
         testedAt,
         hasKey: !!encryptedKey,
       })),
-      task,
+      task: task && !deleted.has(task.conversationId || '') ? task : null,
     });
   }
   dataset(id: string) {
@@ -228,7 +234,8 @@ export class Store {
       ...this.data.runs.map((run) => run.conversationId),
     ]);
     const empty = this.data.conversations.find(
-      (conversation) => conversation.datasetId === datasetId && !used.has(conversation.id),
+      (conversation) =>
+        conversation.datasetId === datasetId && !conversation.deletedAt && !used.has(conversation.id),
     );
     if (empty) return structuredClone(empty);
     const now = new Date().toISOString();
@@ -252,9 +259,31 @@ export class Store {
     )
       throw new WorkbenchError('CONFLICT', '请先停止此会话的分析');
     this.commit({
-      conversations: this.data.conversations.filter((conversation) => conversation.id !== id),
-      runs: this.data.runs.filter((run) => run.conversationId !== id),
-      tasks: this.data.tasks.filter((task) => task.conversationId !== id),
+      conversations: this.data.conversations.map((conversation) =>
+        conversation.id === id ? { ...conversation, deletedAt: new Date().toISOString() } : conversation,
+      ),
+    });
+  }
+  restoreConversation(id: string) {
+    const conversation = this.data.conversations.find((c) => c.id === id && c.deletedAt);
+    if (!conversation) throw new WorkbenchError('CONFLICT', '已删除会话不存在');
+    this.dataset(conversation.datasetId);
+    this.commit({
+      conversations: this.data.conversations.map((c) => {
+        if (c.id !== id) return c;
+        const { deletedAt, ...restored } = c;
+        return restored;
+      }),
+    });
+  }
+  purgeConversations(ids: string[]) {
+    const selected = new Set(ids);
+    if (ids.some((id) => !this.data.conversations.some((c) => c.id === id && c.deletedAt)))
+      throw new WorkbenchError('CONFLICT', '只能永久删除已移除的会话');
+    this.commit({
+      conversations: this.data.conversations.filter((c) => !selected.has(c.id)),
+      runs: this.data.runs.filter((run) => !selected.has(run.conversationId || '')),
+      tasks: this.data.tasks.filter((task) => !selected.has(task.conversationId || '')),
     });
     this.storage.collectUnusedResults();
   }
@@ -266,21 +295,28 @@ export class Store {
       path.dirname(path.resolve(dataset.file)) !== path.resolve(this.root, 'sources')
     )
       throw new WorkbenchError('CONFLICT', '数据副本路径无效，无法删除');
-    const previous = this.data.datasets;
-    this.data.datasets = previous.filter((d) => d.id !== id);
+    const previous = this.data;
+    this.data = {
+      ...previous,
+      datasets: previous.datasets.filter((d) => d.id !== id),
+      conversations: previous.conversations.filter((c) => c.datasetId !== id),
+      runs: previous.runs.filter((r) => r.datasetId !== id),
+      tasks: previous.tasks.filter((t) => t.datasetId !== id),
+    };
     try {
       this.save();
     } catch (error) {
-      this.data.datasets = previous;
+      this.data = previous;
       throw error;
     }
     try {
       if (dataset.format !== 'mysql') fs.rmSync(dataset.file, { force: true });
     } catch (error) {
-      this.data.datasets = previous;
+      this.data = previous;
       this.save();
       throw error;
     }
+    this.storage.collectUnusedResults();
   }
   run(id: string) {
     return structuredClone(this.storedRun(id));
@@ -289,11 +325,6 @@ export class Store {
     const r = this.data.runs.find((r) => r.id === id);
     if (!r) throw new WorkbenchError('CONFLICT', '分析结果不存在');
     return r;
-  }
-  clearHistory() {
-    if (this.data.tasks.some((task) => task.status === 'running' || task.status === 'cancelling'))
-      throw new WorkbenchError('CONFLICT', '请等待当前分析结束后再清空历史');
-    this.commit({ tasks: [] });
   }
   saveAnalysis(id: string) {
     const run = this.storedRun(id);

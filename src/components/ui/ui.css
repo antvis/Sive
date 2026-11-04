@@ -339,19 +339,6 @@
   flex-shrink: 0;
   border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 }
-.ui-drawer {
-  position: fixed;
-  z-index: 100;
-  inset: 12px auto 12px 12px;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  color: var(--text);
-  border-radius: calc(var(--radius) + 8px);
-  box-shadow: 0 10px 50px #0003;
-  overflow: hidden;
-  max-width: calc(100vw - 24px);
-}
 .ui-form {
   display: grid;
   gap: 16px;
@@ -618,22 +605,6 @@
 }
 .schema-table {
   min-width: 660px;
-}
-.ui-mentions {
-  position: relative;
-}
-.ui-mention-menu {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(100% + 8px);
-  max-height: 240px;
-  overflow: auto;
-}
-.ui-empty-option {
-  padding: 14px;
-  color: var(--muted);
-  font-size: 12px;
 }
 .is-disabled,
 .ui-select:disabled,

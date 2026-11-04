@@ -11,7 +11,7 @@ It is designed for business data exploration, everyday metric analysis, and work
 ## Core capabilities
 
 - **Manage your data**: Import CSV, Excel (XLSX), JSON and Parquet, or connect to MySQL. Test, edit and revalidate connections, and browse multiple database tables.
-- **Understand data before analyzing**: Inspect fields, primary keys, indexes and previews. Add business definitions and metrics to guide analysis.
+- **Analyze within each data source**: Each source has one tab with its conversation history in the sidebar. “New conversation” uses the current source or asks you to choose one. The data panel opens by default to show previews, fields and data semantics. Drag the divider to resize it; use the same button at the panel’s top-right corner to collapse or expand it.
 - **Follow the analysis process**: See data preparation, query generation, SQL execution, corrections, summaries and chart rendering. Inspect durations, SQL and result data, or stop a task.
 - **Save and reuse results**: Save useful analyses as cards with interactive charts, data and SQL. Refresh the data or return to the original conversation.
 
@@ -23,6 +23,7 @@ Installer downloads: **coming soon**. Once available, choose the installer for y
 
 **Video TODO**
 
+Conversation drafts are saved locally and remain available after closing a tab. Closing a tab does not stop an analysis. Deleted conversations can be searched, restored or permanently removed in Settings → Deleted conversations. Restoring a conversation also restores its results and saved analyses. Deleting a data source permanently deletes all its conversations (including deleted conversations), drafts and saved analyses; export any results you want to keep first.
 
 ## Development guide
 

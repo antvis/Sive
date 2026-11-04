@@ -18,6 +18,7 @@ import type { ModelInput, ModelProfile, ModelTestProgress, State } from '../../s
 import { useTheme } from '../theme';
 import { errorMessage } from '../shared/feedback';
 import ModelPicker from './ModelPicker';
+import DeletedConversations from './DeletedConversations';
 const api = window.workbench;
 export default function Settings({
   state,
@@ -125,6 +126,7 @@ export default function Settings({
               </>
             ),
           },
+          { key: 'deleted', label: '已删除会话', children: <DeletedConversations state={state} /> },
           {
             key: 'models',
             label: '模型服务',

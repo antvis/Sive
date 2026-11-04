@@ -94,7 +94,11 @@ function validateWorkspace(value: unknown): asserts value is Workspace {
         (t.preview === undefined || response(t.preview)),
     ) ||
     !entities(value.conversations) ||
-    !value.conversations.every((c) => strings(c, ['datasetId', 'title', 'createdAt', 'updatedAt']))
+    !value.conversations.every(
+      (c) =>
+        strings(c, ['datasetId', 'title', 'createdAt', 'updatedAt']) &&
+        (c.deletedAt === undefined || typeof c.deletedAt === 'string'),
+    )
   )
     throw new Error('工作区数据结构无效');
 }
