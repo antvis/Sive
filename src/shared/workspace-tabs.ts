@@ -40,6 +40,16 @@ export function hasConversationContent(
   );
 }
 
+export function conversationIdsWithContent(state: Pick<State, 'runs' | 'tasks' | 'task'>) {
+  return new Set(
+    [
+      ...state.runs.map((run) => run.conversationId),
+      ...state.tasks.map((task) => task.conversationId),
+      state.task?.conversationId,
+    ].filter(Boolean),
+  );
+}
+
 // Persist navigation references only, not query results or task snapshots.
 export function serializeWorkspaceTabs(tabs: WorkspaceTab[]): string {
   return JSON.stringify(
@@ -68,6 +78,8 @@ export function restoreWorkspaceTabs(
   if (!Array.isArray(entries)) return [];
   const tabs: WorkspaceTab[] = [];
   const seen = new Set<string>();
+  const contentIds = conversationIdsWithContent(state);
+  let restoredEmptyChat = false;
   for (const entry of entries) {
     if (
       !entry ||
@@ -96,10 +108,15 @@ export function restoreWorkspaceTabs(
         (task) => task?.id === entry.historyTaskId && task?.datasetId === entry.datasetId,
       ) || null;
     const chat = entry.chat === true;
+    const hasContent = (!!conversationId && contentIds.has(conversationId)) || !!runId || !!historyTask;
+    if (chat && !hasContent) {
+      if (restoredEmptyChat) continue;
+      restoredEmptyChat = true;
+    }
     tabs.push({
       id: entry.id,
       datasetId: entry.datasetId,
-      conversationId,
+      conversationId: hasContent ? conversationId : '',
       runId,
       historyTask,
       chat,

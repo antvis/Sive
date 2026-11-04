@@ -120,7 +120,7 @@ export default function MetricEditor({
           <Field
             name="expression"
             label="聚合公式"
-            extra="例如 SUM(amount - refund) 或 COUNT(DISTINCT customer_id)。按实际字段填写，过滤规则仍写在业务口径中。"
+            extra="例如 SUM(amount - refund) 或 COUNT(DISTINCT customer_id)。按实际字段填写，过滤规则可补充在上方的数据语义说明中。"
             required="请填写聚合公式"
           >
             <TextArea autoSize={{ minRows: 2, maxRows: 4 }} />

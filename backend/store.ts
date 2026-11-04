@@ -223,11 +223,19 @@ export class Store {
   }
   createConversation(datasetId: string) {
     this.dataset(datasetId);
+    const used = new Set([
+      ...this.data.tasks.map((task) => task.conversationId),
+      ...this.data.runs.map((run) => run.conversationId),
+    ]);
+    const empty = this.data.conversations.find(
+      (conversation) => conversation.datasetId === datasetId && !used.has(conversation.id),
+    );
+    if (empty) return structuredClone(empty);
     const now = new Date().toISOString();
     const conversation: Conversation = {
       id: randomUUID(),
       datasetId,
-      title: `新会话 ${this.data.conversations.filter((item) => item.datasetId === datasetId).length + 1}`,
+      title: '新会话',
       createdAt: now,
       updatedAt: now,
     };

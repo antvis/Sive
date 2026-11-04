@@ -277,16 +277,18 @@ export default function DataBrowser({
             },
             {
               key: 'semantic',
-              label: '业务口径',
+              label: '数据语义',
               children: (
                 <>
                   <p className="text-muted">
-                    说明指标、单位和过滤规则，分析时会与数据结构一起发送给所选模型服务。
+                    补充字段含义、业务规则和指标定义，帮助 AI 准确理解数据。
+                    分析时会与数据结构一起发送给所选模型服务。
                   </p>
                   <TextArea
+                    aria-label="数据语义说明"
+                    placeholder="例如：amount 为订单实付金额，单位为元；仅统计支付成功的订单。"
                     value={semantic}
                     onChange={(e) => setSemantic(e.target.value)}
-
                     autoSize={{ minRows: 3, maxRows: 8 }}
                   />
                   <MetricEditor
@@ -303,7 +305,7 @@ export default function DataBrowser({
                       setSaving(true);
                       try {
                         await api.semantic(dataset.id, semantic, metrics);
-                        message.success('业务口径已保存');
+                        message.success('数据语义已保存');
                       } catch (e) {
                         message.error(String(e));
                       } finally {
@@ -311,7 +313,7 @@ export default function DataBrowser({
                       }
                     }}
                   >
-                    保存业务口径
+                    保存数据语义
                   </Button>
                   {dataset.format === 'xlsx' && (
                     <Button

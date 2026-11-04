@@ -10,9 +10,11 @@ import {
   restoreWorkspaceTabs,
   serializeWorkspaceTabs,
   workspaceTabsStorageKey,
+  dataTab,
+  hasConversationContent,
   type WorkspaceTab,
 } from './workspace-tabs';
-import { withDataReference } from './data-references';
+import { questionText, withDataReference } from './data-references';
 
 type Tab = WorkspaceTab & ConversationState;
 type Navigation = { tabs: Tab[]; activeId: string; ready: boolean };
@@ -20,11 +22,41 @@ type Action =
   | { type: 'snapshot'; snapshot: State; serialized: string | null }
   | { type: 'activate'; tab: WorkspaceTab; question: string; activate: boolean }
   | { type: 'close'; id: string }
+  | { type: 'draft'; datasetId: string; question: string; snapshot: State }
   | { type: 'conversation'; action: ConversationAction; id: string }
   | { type: 'display'; chat?: boolean; full?: boolean };
 const initial: Navigation = { tabs: [], activeId: '', ready: false };
 function reducer(state: Navigation, action: Action): Navigation {
   switch (action.type) {
+    case 'draft': {
+      const empty = (tab: Tab) =>
+        !tab.observedTask &&
+        !tab.runId &&
+        !hasConversationContent(
+          action.snapshot,
+          tab.conversationId,
+          questionText(tab.question, action.snapshot.datasets),
+          tab.historyTask,
+        );
+      const existing =
+        state.tabs.find((tab) => tab.id === state.activeId && empty(tab)) ||
+        state.tabs.find((tab) => tab.chat && empty(tab));
+      const tab = {
+        ...initialConversationState,
+        ...dataTab(action.datasetId),
+        ...(existing ? { id: existing.id } : {}),
+        question: action.question,
+        chat: true,
+      };
+      return {
+        ...state,
+        tabs: [
+          ...state.tabs.filter((entry) => entry.id !== existing?.id && !(entry.chat && empty(entry))),
+          tab,
+        ],
+        activeId: tab.id,
+      };
+    }
     case 'snapshot': {
       const tabs = state.ready
         ? state.tabs
@@ -147,6 +179,8 @@ export function useWorkspaceNavigation(report: (message: string) => void) {
     activate: (tab: WorkspaceTab, question: string, activate = true) =>
       dispatch({ type: 'activate', tab, question, activate }),
     close: (id: string) => dispatch({ type: 'close', id }),
+    newConversation: (datasetId: string, question: string, snapshot: State) =>
+      dispatch({ type: 'draft', datasetId, question, snapshot }),
     dispatchConversation: (action: ConversationAction) =>
       dispatch({ type: 'conversation', action, id: navigation.activeId || crypto.randomUUID() }),
     setChat: (chat: boolean) => dispatch({ type: 'display', chat }),

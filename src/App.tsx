@@ -8,7 +8,7 @@ import {
   ChatCircleDotsIcon,
   ArrowsOutIcon,
   ArrowsInIcon,
-  XIcon,
+  CaretRightIcon,
   PlusIcon,
   DownloadSimpleIcon,
   FolderSimpleIcon,
@@ -17,7 +17,7 @@ import {
 import type { Conversation, Dataset, RunSummary, State, Task } from '../shared/contracts';
 import type { AnalysisMode } from '../shared/analysis-options';
 import { questionText, referencedDatasets, withDataReference } from './shared/data-references';
-import { dataTab, hasConversationContent, type WorkspaceTab } from './shared/workspace-tabs';
+import { dataTab, conversationIdsWithContent, type WorkspaceTab } from './shared/workspace-tabs';
 import DataManager from './components/DataManager';
 import DatasetTabs from './components/DatasetTabs';
 import DatasetPicker from './components/DatasetPicker';
@@ -63,16 +63,12 @@ export default function App() {
     setChat,
     setFull,
   } = navigation;
-  const activeTabRef = useRef(activeTabId);
-  activeTabRef.current = activeTabId;
   const [loadError, setLoadError] = useState('');
   const [page, setPage] = useState<Page>('data');
   const [settingsTab, setSettingsTab] = useState('general');
   const [returnToChat, setReturnToChat] = useState(false);
   const { datasetId, conversationId, runId, historyTask, question } = conversationState;
   const [mode, setMode] = useState<AnalysisMode>('direct');
-  const [creatingChat, setCreatingChat] = useState(false);
-  const creatingChatRef = useRef(false);
   const [submitting, setSubmitting] = useState(false);
   const [exportingChat, setExportingChat] = useState(false);
   const resubmitting = useRef(false);
@@ -105,8 +101,9 @@ export default function App() {
       ? state.task
       : state.tasks.find((task) => task.id === historyTask.id) || historyTask
     : null;
+  const contentIds = conversationIdsWithContent(state);
   const conversations = state.conversations
-    .filter((item) => item.datasetId === datasetId)
+    .filter((item) => item.datasetId === datasetId && contentIds.has(item.id))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   const { currentTask, activeRunId, session } = conversationView(
     state.runs,
@@ -128,40 +125,13 @@ export default function App() {
     });
     setChat(true);
   };
-  const newConversation = async (keepDraft = false) => {
-    if (!dataset || submitting || creatingChatRef.current) return;
-    const hasContent = hasConversationContent(
+  const newConversation = (keepDraft = false) => {
+    if (!dataset || submitting) return;
+    navigation.newConversation(
+      dataset.id,
+      keepDraft ? question : withDataReference('', dataset, state.datasets),
       state,
-      conversationId,
-      questionText(question, state.datasets),
-      selectedHistory,
     );
-    if (!hasContent && conversationId) {
-      setChat(true);
-      return;
-    }
-    const originTabId = activeTabId;
-    creatingChatRef.current = true;
-    setCreatingChat(true);
-    try {
-      const conversation = await api.createConversation(dataset.id);
-      const next: WorkspaceTab = {
-        ...dataTab(dataset.id),
-        conversationId: conversation.id,
-        chat: true,
-      };
-      navigation.activate(
-        next,
-        keepDraft ? question : withDataReference('', dataset, state.datasets),
-        activeTabRef.current === originTabId,
-      );
-      if (!hasContent) navigation.close(originTabId);
-    } catch (error) {
-      message.error(errorMessage(error));
-    } finally {
-      creatingChatRef.current = false;
-      setCreatingChat(false);
-    }
   };
   const openModelSettings = () => {
     setSettingsTab('models');
@@ -213,7 +183,6 @@ export default function App() {
       busy ||
       !!state.refreshingSavedId ||
       submitting ||
-      creatingChat ||
       !text ||
       !state.activeModelId ||
       referencedDatasets(question, state.datasets).length > 1
@@ -240,7 +209,7 @@ export default function App() {
   };
   const resubmitReason = (target: RunSummary | Task) => {
     if (state.refreshingSavedId) return '请等待收藏的分析刷新完成';
-    if (busy || submitting || creatingChat) return '请等待当前操作结束，或先停止分析';
+    if (busy || submitting) return '请等待当前操作结束，或先停止分析';
     if (!state.datasets.some((source) => source.id === target.datasetId))
       return '原数据源已移除，请重新导入数据后发起分析';
     if (!state.activeModelId) return '请先在设置中配置模型';
@@ -390,22 +359,12 @@ export default function App() {
           )}
           {page === 'explorer' && !chat && (
             <Button
-              aria-label="新建会话"
-              icon={<PlusIcon />}
-              disabled={!dataset || submitting || creatingChat}
-              loading={creatingChat}
-              onClick={() => newConversation()}
-            >
-              新建会话
-            </Button>
-          )}
-          {page === 'explorer' && (
-            <Button
-              aria-label={chat ? '收起会话' : '打开分析会话'}
+              aria-label="开始分析"
               icon={<ChatCircleDotsIcon />}
-              onClick={() => setChat(!chat)}
+              disabled={!dataset}
+              onClick={() => setChat(true)}
             >
-              {chat ? '收起会话' : '打开分析会话'}
+              开始分析
             </Button>
           )}
         </header>
@@ -470,15 +429,14 @@ export default function App() {
                       size="small"
                       title="新建会话"
                       aria-label="新建会话"
-                      disabled={!dataset || submitting || creatingChat}
-                      loading={creatingChat}
+                      disabled={!dataset || submitting}
                       icon={<PlusIcon />}
                       onClick={() => newConversation()}
                     />
                     <ConversationHistory
                       conversations={conversations}
                       currentId={conversationId}
-                      disabled={submitting || creatingChat}
+                      disabled={submitting}
                       onSelect={selectConversation}
                     />
                     <Button
@@ -486,9 +444,7 @@ export default function App() {
                       aria-label="删除当前会话"
                       title="删除当前会话"
                       icon={<TrashIcon />}
-                      disabled={
-                        !conversationId || busy || submitting || creatingChat || !!state.refreshingSavedId
-                      }
+                      disabled={!conversationId || busy || submitting || !!state.refreshingSavedId}
                       onClick={() =>
                         confirm({
                           title: '删除此会话及其分析？',
@@ -527,11 +483,9 @@ export default function App() {
                     <Button
                       size="small"
                       aria-label="收起会话"
-                      icon={<XIcon />}
-                      onClick={() => {
-                        setChat(false);
-                        setFull(false);
-                      }}
+                      title="收起会话"
+                      icon={<CaretRightIcon />}
+                      onClick={() => setChat(false)}
                     />
                   </div>
                   <ConversationTimeline sessionKey={conversationId + (selectedHistory?.id || runId)}>
@@ -623,7 +577,7 @@ export default function App() {
                       state.refreshingSavedId ? '收藏的分析正在刷新，完成后可发送' : undefined
                     }
                     cancelling={state.task?.status === 'cancelling'}
-                    submitting={submitting || creatingChat}
+                    submitting={submitting}
                     hasContext={!!activeRunId}
                     onClearContext={() => newConversation(true)}
                     onSubmit={() => start()}
