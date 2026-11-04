@@ -66,7 +66,7 @@ function MessageActions({
           icon={feedback === 'success' ? <CheckIcon /> : <CopyIcon />}
           aria-label={markdown ? '复制回复' : '复制问题'}
           disabled={!text || copying}
-          onClick={() => void copy()}
+          onClick={() => copy()}
         />
       </Tooltip>
       {children}
@@ -89,7 +89,7 @@ export function UserMessage({
   const [draft, setDraft] = useState(question);
   const [sending, setSending] = useState(false);
   const submit = async (text: string) => {
-    if (sending || disabledReason || !text.trim() || text.length > 6000) return;
+    if (sending || disabledReason || !text.trim()) return;
     setSending(true);
     try {
       if (await onResubmit(text.trim())) setEditing(false);
@@ -106,7 +106,7 @@ export function UserMessage({
               aria-label="编辑已发送的问题"
               autoFocus
               autoSize={{ minRows: 3, maxRows: 8 }}
-              maxLength={6000}
+
               variant="borderless"
               value={draft}
               disabled={sending}
@@ -114,7 +114,7 @@ export function UserMessage({
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
                   event.preventDefault();
-                  if (!event.repeat) void submit(draft);
+                  if (!event.repeat) submit(draft);
                 }
               }}
             />
@@ -128,7 +128,7 @@ export function UserMessage({
                 loading={sending}
                 disabled={sending || !!disabledReason || !draft.trim()}
                 title={disabledReason || '使用当前模型重新分析，原结果仍保留在历史中'}
-                onClick={() => void submit(draft)}
+                onClick={() => submit(draft)}
               >
                 发送
               </Button>

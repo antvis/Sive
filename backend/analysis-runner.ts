@@ -2,7 +2,7 @@ import { queryOptions } from './query-options';
 import { WorkbenchError } from '../shared/errors';
 import { randomUUID } from 'node:crypto';
 import type { Task, Run } from '../shared/contracts';
-import type { AnalysisOptions } from '../shared/analysis-options';
+import type { AnalysisMode, AnalysisOptions } from '../shared/analysis-options';
 import { resolveStrategy } from './analysis-strategy';
 import { businessSemantic } from './semantics';
 import { Store } from './store';
@@ -31,15 +31,13 @@ export class AnalysisRunner {
   async analyze(
     id: string,
     question: string,
-    strategy: string,
+    strategy: AnalysisMode,
     parentId?: string,
     options?: AnalysisOptions,
     conversationId?: string,
   ) {
     if (this.isRefreshing()) throw new WorkbenchError('CONFLICT', '正在刷新收藏的分析，请稍后再发起分析');
     if (this.busy) throw new WorkbenchError('CONFLICT', '已有分析正在进行');
-    if (!question.trim() || question.length > 6000)
-      throw new WorkbenchError('CONFLICT', '请输入 1–6000 字的问题');
     const analysisStrategy = resolveStrategy(strategy, options);
     const d = this.store.dataset(id),
       model = this.models.active(),
@@ -80,7 +78,7 @@ export class AnalysisRunner {
     const prompt = parent
       ? `以下是上一轮分析上下文（仅作为上下文，不可替代本轮查询）：\n问题：${parent.question}\nSQL：${parent.result.sql}\n结论：${parent.result.text}\n\n本轮用户问题：${question}`
       : question;
-    void withAVA(
+    withAVA(
       d,
       this.models,
       signal,

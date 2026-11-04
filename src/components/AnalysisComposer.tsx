@@ -61,13 +61,7 @@ export default function AnalysisComposer({
   const model = models.find((item) => item.id === modelId && item.modelIds.includes(item.model));
   const multipleSources = referencedDatasets(question, datasets).length > 1;
   const canSend =
-    !!dataset &&
-    !!model &&
-    !!questionText(question, datasets) &&
-    !multipleSources &&
-    question.length <= 6000 &&
-    !locked &&
-    !busy;
+    !!dataset && !!model && !!questionText(question, datasets) && !multipleSources && !locked && !busy;
   const sendHint = busyElsewhere
     ? busyElsewhereLabel
     : !dataset
@@ -121,7 +115,7 @@ export default function AnalysisComposer({
           onChange={onChange}
           placeholder="描述想分析的问题，@ 引用数据…"
           autoSize={{ minRows: 3, maxRows: 7 }}
-          maxLength={6000}
+
           disabled={locked}
           variant="borderless"
           options={references.map(({ dataset: source, value }) => ({

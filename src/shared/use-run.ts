@@ -9,7 +9,7 @@ export function useRun(summary: RunSummary) {
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let live = true;
-    void window.workbench.run(summary.id).then(
+    window.workbench.run(summary.id).then(
       (run) => {
         if (live) setLoaded({ key, run });
       },

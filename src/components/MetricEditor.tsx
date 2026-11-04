@@ -39,7 +39,7 @@ export default function MetricEditor({
         把常用指标保存为名称、计算公式和单位，后续推荐与分析会统一参考。公式会校验，但模型执行仍需核对。
       </p>
       <div className="metric-toolbar">
-        <Button size="small" disabled={disabled || metrics.length >= 50} onClick={() => edit(metrics.length)}>
+        <Button size="small" disabled={disabled} onClick={() => edit(metrics.length)}>
           添加指标
         </Button>
         {sources.length > 0 && (
@@ -51,7 +51,6 @@ export default function MetricEditor({
             options={sources.map((item) => ({
               value: item.id,
               label: item.name,
-              disabled: metrics.length + item.metrics!.length > 50,
             }))}
             onChange={(id) => {
               const source = sources.find((item) => item.id === id)!;
@@ -111,7 +110,7 @@ export default function MetricEditor({
       >
         <Form form={form}>
           <Field name="name" label="指标名称" required="请填写指标名称">
-            <Input maxLength={100} placeholder="例如：净收入" />
+            <Input placeholder="例如：净收入" />
           </Field>
           <Field name="table" label="数据表" required="请选择数据表">
             <Select
@@ -124,14 +123,13 @@ export default function MetricEditor({
             extra="例如 SUM(amount - refund) 或 COUNT(DISTINCT customer_id)。按实际字段填写，过滤规则仍写在业务口径中。"
             required="请填写聚合公式"
           >
-            <TextArea maxLength={2000} autoSize={{ minRows: 2, maxRows: 4 }} />
+            <TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
           </Field>
           <Field name="unit" label="单位">
-            <Input maxLength={100} placeholder="例如：元、单、%" />
+            <Input placeholder="例如：元、单、%" />
           </Field>
           <Field name="description" label="指标说明">
             <TextArea
-              maxLength={2000}
               autoSize={{ minRows: 1, maxRows: 3 }}
               placeholder="例如：仅统计有效订单，金额扣除退款"
             />

@@ -24,7 +24,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     let live = true;
     const refresh = () => {
       const request = ++revision.current;
-      void window.workbench
+      window.workbench
         .state()
         .then((state) => {
           if (live && request === revision.current && !pending.current)

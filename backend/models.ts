@@ -16,17 +16,6 @@ export class Models {
     private encrypt: (s: string) => string,
     private decrypt: (s: string) => string,
   ) {}
-  validate(input: ModelInput) {
-    if (
-      !input.name?.trim() ||
-      !Array.isArray(input.modelIds) ||
-      !input.modelIds.length ||
-      input.modelIds.length > 50 ||
-      input.modelIds.some((id) => typeof id !== 'string' || !id.trim() || id.length > 255)
-    )
-      throw new WorkbenchError('MODEL', '请填写服务名称，并选择 1–50 个模型');
-    this.validateURL(input.baseURL);
-  }
   private validateURL(baseURL: string) {
     let url: URL;
     try {
@@ -101,7 +90,7 @@ export class Models {
         ...new Set<string>(
           body.data.flatMap((item: unknown) => {
             const id = item && typeof item === 'object' && 'id' in item ? item.id : undefined;
-            return typeof id === 'string' && id.trim() && id.length <= 255 ? [id.trim()] : [];
+            return typeof id === 'string' && id.trim() ? [id.trim()] : [];
           }),
         ),
       ].sort((a, b) => a.localeCompare(b));
@@ -188,7 +177,7 @@ export class Models {
     return p;
   }
   async save(input: ModelInput, onProgress?: (progress: ModelTestProgress) => void) {
-    this.validate(input);
+    this.validateURL(input.baseURL);
     const old = this.store.view.models.find((m) => m.id === input.id);
     if (input.id && !old) throw new WorkbenchError('CONFLICT', '模型已移除，请重新打开设置');
     const modelIds = [...new Set(input.modelIds.map((id) => id.trim()))];

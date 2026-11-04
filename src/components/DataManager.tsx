@@ -71,7 +71,7 @@ export default function DataManager({
     setEditing(d || 'new');
   };
   const importData = () =>
-    void perform('import', async () => {
+    perform('import', async () => {
       const d = await api.importData();
       if (d) open(d);
     });
@@ -241,7 +241,7 @@ export default function DataManager({
                             disabled={analyzing || !!busy}
                             loading={busy === d.id}
                             onClick={() =>
-                              void perform(d.id, async () => {
+                              perform(d.id, async () => {
                                 await api.refreshMySQL(d.id);
                                 message.success('连接和结构已更新');
                               })
@@ -295,14 +295,14 @@ export default function DataManager({
             <Button disabled={!!busy} onClick={() => setEditing(null)}>
               取消
             </Button>
-            <Button loading={busy === 'test'} disabled={!!busy} onClick={() => void submit(false)}>
+            <Button loading={busy === 'test'} disabled={!!busy} onClick={() => submit(false)}>
               测试连接
             </Button>
             <Button
               variant="primary"
               loading={busy === 'save'}
               disabled={!!busy}
-              onClick={() => void submit(true)}
+              onClick={() => submit(true)}
             >
               验证并保存
             </Button>

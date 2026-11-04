@@ -25,7 +25,7 @@ export default function ModelPicker({
   );
   const add = () => {
     const name = manual.trim();
-    if (!name || name.length > 255 || value.length >= 50 || disabled) return;
+    if (!name || disabled) return;
     onChange?.([...new Set([...value, name])]);
     setManual('');
   };
@@ -41,7 +41,7 @@ export default function ModelPicker({
           onChange={(event) => setSearch(event.target.value)}
         />
         <span className="text-muted" role="status">
-          已选 {value.length} / 50
+          已选 {value.length} 个
         </span>
       </div>
       {!!ids.length && (
@@ -54,7 +54,7 @@ export default function ModelPicker({
               <input
                 type="checkbox"
                 checked={value.includes(name)}
-                disabled={disabled || (!value.includes(name) && value.length >= 50)}
+                disabled={disabled}
                 onChange={(event) =>
                   onChange?.(
                     event.target.checked ? [...value, name] : value.filter((entry) => entry !== name),
@@ -75,7 +75,7 @@ export default function ModelPicker({
           aria-label="手动添加模型 ID"
           placeholder="输入模型 ID"
           value={manual}
-          maxLength={255}
+
           disabled={disabled}
           onChange={(event) => setManual(event.target.value)}
           onKeyDown={(event) => {
@@ -85,7 +85,7 @@ export default function ModelPicker({
             }
           }}
         />
-        <Button disabled={disabled || !manual.trim() || value.length >= 50} onClick={add}>
+        <Button disabled={disabled || !manual.trim()} onClick={add}>
           添加
         </Button>
       </div>

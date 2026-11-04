@@ -171,14 +171,7 @@ export class DatasetService {
     const model = d.schema.models.find((m) => m.name === table);
     if (!model) throw new WorkbenchError('INVALID_INPUT', '数据表不存在');
     const { offset, limit } = options;
-    if (
-      !Number.isSafeInteger(offset) ||
-      offset < 0 ||
-      !Number.isSafeInteger(offset + limit) ||
-      !Number.isInteger(limit) ||
-      limit < 1 ||
-      limit > 201
-    )
+    if (offset < 0 || !Number.isSafeInteger(offset + limit) || limit < 1 || limit > 201)
       throw new WorkbenchError('INVALID_INPUT', '无效的预览分页参数');
     const keys = typeof model.primaryKey === 'string' ? [model.primaryKey] : model.primaryKey || [];
     const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
@@ -212,34 +205,12 @@ export class DatasetService {
     }
   }
   async semantic(id: string, text: string, inputMetrics?: BusinessMetric[]) {
-    if (typeof text !== 'string' || text.length > 20000)
-      throw new WorkbenchError('INVALID_INPUT', '业务口径最多 20000 字');
     const d = this.store.dataset(id);
     const metrics = inputMetrics ?? d.metrics ?? [];
-    if (!Array.isArray(metrics) || metrics.length > 50)
-      throw new WorkbenchError('INVALID_INPUT', '最多定义 50 个指标');
     const names = new Set<string>();
     for (const metric of metrics) {
-      if (
-        !metric ||
-        typeof metric !== 'object' ||
-        ['name', 'table', 'expression', 'unit', 'description'].some(
-          (key) => typeof metric[key as keyof BusinessMetric] !== 'string',
-        )
-      )
-        throw new WorkbenchError('INVALID_INPUT', '指标定义格式无效');
-      if (
-        !metric.name.trim() ||
-        metric.name.length > 100 ||
-        !metric.expression.trim() ||
-        metric.expression.length > 2000 ||
-        metric.unit.length > 100 ||
-        metric.description.length > 2000
-      )
-        throw new WorkbenchError(
-          'INVALID_INPUT',
-          '请填写指标名称与计算公式，并保持名称/单位不超过 100 字、公式/说明不超过 2000 字',
-        );
+      if (!metric.name.trim() || !metric.expression.trim())
+        throw new WorkbenchError('INVALID_INPUT', '请填写指标名称与计算公式');
       if (!d.schema.models.some((model) => model.name === metric.table))
         throw new WorkbenchError('INVALID_INPUT', `指标「${metric.name}」需选择当前数据中的表`);
       const key = JSON.stringify([metric.table, metric.name.trim()]);

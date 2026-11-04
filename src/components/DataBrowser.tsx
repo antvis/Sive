@@ -114,7 +114,7 @@ export default function DataBrowser({
         if (compact) setTreeOpen(false);
       }}
       refreshing={refreshing}
-      onRefresh={() => void refresh()}
+      onRefresh={() => refresh()}
     />
   );
   return (
@@ -286,7 +286,7 @@ export default function DataBrowser({
                   <TextArea
                     value={semantic}
                     onChange={(e) => setSemantic(e.target.value)}
-                    maxLength={20000}
+
                     autoSize={{ minRows: 3, maxRows: 8 }}
                   />
                   <MetricEditor

@@ -24,7 +24,7 @@ export function observeWorkspace(
   let progress: TaskUpdate | undefined;
   const refresh = () => {
     const request = ++sequence;
-    void api
+    api
       .state()
       .then((snapshot) => {
         if (!live || request !== sequence || snapshot.revision < snapshotRevision) return;

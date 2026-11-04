@@ -112,7 +112,7 @@ function SavedCard({
               },
             ],
             onClick: ({ key }) => {
-              if (key === 'refresh') void refresh();
+              if (key === 'refresh') refresh();
               else if (key === 'rename') {
                 setTitleDraft(title);
               } else if (key === 'remove')
@@ -200,14 +200,14 @@ function SavedCard({
         <Input
           aria-label="收藏标题"
           value={titleDraft ?? ''}
-          maxLength={6000}
+
           disabled={renaming}
           placeholder="输入收藏标题"
           onChange={(event) => setTitleDraft(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === 'Enter' && !event.nativeEvent.isComposing && !event.repeat) {
               event.preventDefault();
-              void rename();
+              rename();
             }
           }}
         />

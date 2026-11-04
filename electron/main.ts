@@ -299,8 +299,8 @@ app.whenReady().then(async () => {
         return failure(error);
       }
     });
-  if (dev) void win.loadURL(dev);
-  else void win.loadFile(path.join(__dirname, '../dist/index.html'));
+  if (dev) win.loadURL(dev);
+  else win.loadFile(path.join(__dirname, '../dist/index.html'));
   app.on('before-quit', () => controller.analysis.cancel());
 });
 app.on('window-all-closed', () => app.quit());

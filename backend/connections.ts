@@ -5,17 +5,15 @@ import type { MySQLInput } from '../shared/contracts';
 import type { Store, StoredDataset } from './store';
 
 function validateMySQL(input: MySQLInput) {
-  if (!input || typeof input.name !== 'string' || !input.name.trim() || input.name.length > 100)
-    throw new WorkbenchError('INVALID_INPUT', '请填写 1–100 字的连接名称');
   if (!Number.isInteger(input.port) || input.port < 1 || input.port > 65535)
     throw new WorkbenchError('INVALID_INPUT', '端口应为 1–65535');
   for (const key of ['host', 'database', 'user'] as const)
-    if (typeof input[key] !== 'string' || !input[key] || input[key].length > 255)
+    if (typeof input[key] !== 'string' || !input[key])
       throw new WorkbenchError('INVALID_INPUT', '请填写主机、数据库和用户名');
   // AVA beta joins DuckDB MySQL connection fields without quoting. Reject
   // ambiguous values instead of letting them become connection-string options.
   for (const value of [input.host, input.database, input.user, input.password ?? ''])
-    if (typeof value !== 'string' || value.length > 1024 || /[\s'"\\\x00-\x1f\x7f]/u.test(value))
+    if (typeof value !== 'string' || /[\s'"\\\x00-\x1f\x7f]/u.test(value))
       throw new WorkbenchError(
         'INVALID_INPUT',
         '当前 MySQL 驱动暂不支持连接字段含空白、引号、反斜杠或控制字符',

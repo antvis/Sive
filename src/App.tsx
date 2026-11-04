@@ -187,7 +187,7 @@ export default function App() {
       workspaceTabs.find((tab) => tab.datasetId === d.id);
     const next = existing || dataTab(d.id);
     activateTab(next);
-    void perform(() => api.touchData(d.id));
+    perform(() => api.touchData(d.id));
   };
   const openSavedAnalysis = (run: RunSummary) => {
     const conversation = state.conversations.find((item) => item.id === run.conversationId);
@@ -216,8 +216,7 @@ export default function App() {
       creatingChat ||
       !text ||
       !state.activeModelId ||
-      referencedDatasets(question, state.datasets).length > 1 ||
-      question.length > 6000
+      referencedDatasets(question, state.datasets).length > 1
     )
       return;
     setSubmitting(true);
@@ -250,7 +249,7 @@ export default function App() {
     return undefined;
   };
   const resubmit = async (target: RunSummary | Task, text: string) => {
-    if (resubmitting.current || resubmitReason(target) || !text.trim() || text.length > 6000) return false;
+    if (resubmitting.current || resubmitReason(target) || !text.trim()) return false;
     resubmitting.current = true;
     setSubmitting(true);
     try {
@@ -395,7 +394,7 @@ export default function App() {
               icon={<PlusIcon />}
               disabled={!dataset || submitting || creatingChat}
               loading={creatingChat}
-              onClick={() => void newConversation()}
+              onClick={() => newConversation()}
             >
               新建会话
             </Button>
@@ -474,7 +473,7 @@ export default function App() {
                       disabled={!dataset || submitting || creatingChat}
                       loading={creatingChat}
                       icon={<PlusIcon />}
-                      onClick={() => void newConversation()}
+                      onClick={() => newConversation()}
                     />
                     <ConversationHistory
                       conversations={conversations}
@@ -507,7 +506,7 @@ export default function App() {
                           { key: 'html', label: '导出会话 HTML' },
                           { key: 'md', label: '导出 Markdown（含图表配置）' },
                         ],
-                        onClick: (e) => void exportChat(e.key as 'html' | 'md'),
+                        onClick: (e) => exportChat(e.key as 'html' | 'md'),
                       }}
                     >
                       <Button
@@ -613,7 +612,7 @@ export default function App() {
                     onReference={reference}
                     models={state.models}
                     modelId={state.activeModelId}
-                    onModel={(id, model) => void perform(() => api.activateModel(id, model))}
+                    onModel={(id, model) => perform(() => api.activateModel(id, model))}
                     mode={mode}
                     onMode={setMode}
                     busy={busy || !!state.refreshingSavedId}
@@ -626,9 +625,9 @@ export default function App() {
                     cancelling={state.task?.status === 'cancelling'}
                     submitting={submitting || creatingChat}
                     hasContext={!!activeRunId}
-                    onClearContext={() => void newConversation(true)}
-                    onSubmit={() => void start()}
-                    onCancel={() => void perform(() => api.cancel())}
+                    onClearContext={() => newConversation(true)}
+                    onSubmit={() => start()}
+                    onCancel={() => perform(() => api.cancel())}
                     onSettings={openModelSettings}
                   />
                 </section>

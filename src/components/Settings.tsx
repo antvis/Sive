@@ -116,9 +116,7 @@ export default function Settings({
                     checked={settings.mode === 'dark'}
                     disabled={changing}
                     onCheckedChange={(checked) =>
-                      void setMode(checked ? 'dark' : 'light').catch((error) =>
-                        message.error(errorMessage(error)),
-                      )
+                      setMode(checked ? 'dark' : 'light').catch((error) => message.error(errorMessage(error)))
                     }
                   >
                     <Switch.Thumb className="theme-switch-thumb" />
@@ -158,10 +156,7 @@ export default function Settings({
                     </div>
                     <div className="model-row-actions">
                       {state.activeModelId !== model.id && (
-                        <Button
-                          disabled={busy}
-                          onClick={() => void perform(() => api.activateModel(model.id))}
-                        >
+                        <Button disabled={busy} onClick={() => perform(() => api.activateModel(model.id))}>
                           设为默认
                         </Button>
                       )}
@@ -198,7 +193,7 @@ export default function Settings({
         onOk={async () => {
           if (!(await form.trigger(undefined, { shouldFocus: true }))) return;
           const input = form.getValues();
-          void perform(async () => {
+          perform(async () => {
             setTestProgress({ completed: 0, total: input.modelIds.length, active: [] });
             const unsubscribe = api.onModelTest(setTestProgress);
             try {
@@ -228,7 +223,7 @@ export default function Settings({
             <PasswordInput autoComplete="new-password" />
           </Field>
           <div className="model-discovery-toolbar">
-            <Button disabled={busy} loading={discovering} onClick={() => void discover()}>
+            <Button disabled={busy} loading={discovering} onClick={() => discover()}>
               {currentCatalog ? '刷新模型列表' : '获取可用模型'}
             </Button>
             <span className="text-[12px] text-muted" role="status">

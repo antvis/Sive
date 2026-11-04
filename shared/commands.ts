@@ -7,8 +7,8 @@ export type CommandHandlers = {
     ...args: Parameters<Commands[K]>
   ) => ReturnType<Commands[K]> | Awaited<ReturnType<Commands[K]>>;
 };
-const text = (value: unknown, max = 200, empty = false): value is string =>
-  typeof value === 'string' && (empty || value.trim().length > 0) && value.length <= max;
+const text = (value: unknown, empty = false): value is string =>
+  typeof value === 'string' && (empty || value.trim().length > 0);
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 const optional = (value: unknown, check: (value: unknown) => boolean) => value === undefined || check(value);
@@ -19,14 +19,14 @@ const mysql = (args: unknown[]) => {
   return (
     args.length === 1 &&
     record(input) &&
-    ['name', 'host', 'database', 'user'].every((key) => text(input[key], 255)) &&
+    ['name', 'host', 'database', 'user'].every((key) => text(input[key])) &&
     Number.isInteger(input.port) &&
     optional(input.id, text) &&
-    optional(input.password, (value) => text(value, 1024, true))
+    optional(input.password, (value) => text(value, true))
   );
 };
 const guards = {
-  writeClipboard: (a) => a.length === 1 && text(a[0], 2_000_000, true),
+  writeClipboard: (a) => a.length === 1 && text(a[0], true),
   state: none,
   run: oneId,
   importData: none,
@@ -40,19 +40,19 @@ const guards = {
   refreshMySQL: oneId,
   saveAnalysis: oneId,
   removeSavedAnalysis: oneId,
-  renameSavedAnalysis: (a) => a.length === 2 && text(a[0]) && text(a[1], 6000),
+  renameSavedAnalysis: (a) => a.length === 2 && text(a[0]) && text(a[1]),
   refreshSavedAnalysis: oneId,
-  activateModel: (a) => a.length >= 1 && a.length <= 2 && text(a[0]) && optional(a[1], (v) => text(v, 255)),
+  activateModel: (a) => a.length >= 1 && a.length <= 2 && text(a[0]) && optional(a[1], text),
   deleteModel: oneId,
   testMySQL: mysql,
   saveMySQL: mysql,
   saveTheme: (a) => a.length === 1 && record(a[0]),
-  tableDetails: (a) => a.length === 2 && text(a[0]) && text(a[1], 1024),
+  tableDetails: (a) => a.length === 2 && text(a[0]) && text(a[1]),
   preview: (a) =>
     a.length >= 2 &&
     a.length <= 3 &&
     text(a[0]) &&
-    text(a[1], 1024) &&
+    text(a[1]) &&
     optional(
       a[2],
       (value) => record(value) && Number.isSafeInteger(value.offset) && Number.isSafeInteger(value.limit),
@@ -61,25 +61,22 @@ const guards = {
     a.length >= 2 &&
     a.length <= 3 &&
     text(a[0]) &&
-    text(a[1], 20000, true) &&
+    text(a[1], true) &&
     optional(
       a[2],
       (value) =>
         Array.isArray(value) &&
-        value.length <= 50 &&
         value.every(
           (metric) =>
             record(metric) &&
-            ['name', 'table', 'expression', 'unit', 'description'].every((key) =>
-              text(metric[key], 2000, true),
-            ),
+            ['name', 'table', 'expression', 'unit', 'description'].every((key) => text(metric[key], true)),
         ),
     ),
   analyze: (a) =>
     a.length >= 3 &&
     a.length <= 6 &&
     text(a[0]) &&
-    text(a[1], 6000) &&
+    text(a[1]) &&
     ['direct', 'loop'].includes(String(a[2])) &&
     optional(a[3], text) &&
     optional(
@@ -99,28 +96,26 @@ const guards = {
   exportConversation: (a) =>
     a.length === 3 &&
     Array.isArray(a[0]) &&
-    a[0].length <= 10000 &&
     a[0].every((id) => text(id)) &&
     (a[1] === null || text(a[1])) &&
     ['html', 'md'].includes(String(a[2])),
   saveModel: (a) =>
     a.length === 1 &&
     record(a[0]) &&
-    text(a[0].name, 255) &&
+    text(a[0].name) &&
     Array.isArray(a[0].modelIds) &&
     a[0].modelIds.length > 0 &&
-    a[0].modelIds.length <= 50 &&
-    a[0].modelIds.every((id) => text(id, 255)) &&
-    text(a[0].baseURL, 2048) &&
+    a[0].modelIds.every((id) => text(id)) &&
+    text(a[0].baseURL) &&
     optional(a[0].id, text) &&
     optional(a[0].credentialSourceId, text) &&
-    optional(a[0].apiKey, (value) => text(value, 16384, true)),
+    optional(a[0].apiKey, (value) => text(value, true)),
   listModels: (a) =>
     a.length === 1 &&
     record(a[0]) &&
-    text(a[0].baseURL, 2048) &&
+    text(a[0].baseURL) &&
     optional(a[0].credentialSourceId, text) &&
-    optional(a[0].apiKey, (value) => text(value, 16384, true)),
+    optional(a[0].apiKey, (value) => text(value, true)),
 } satisfies Record<Command, (args: unknown[]) => boolean>;
 export const commandNames = Object.keys(guards) as Command[];
 function commandArgs<K extends Command>(name: K, args: unknown[]): Parameters<Commands[K]> {

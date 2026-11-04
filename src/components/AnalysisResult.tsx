@@ -127,7 +127,7 @@ function ResultContent({
               loading={saving}
               icon={saved ? <CheckIcon /> : <BookmarkSimpleIcon />}
               disabled={saving || saved}
-              onClick={() => void save()}
+              onClick={() => save()}
             >
               <span key={saveLabel} className="result-save-label" aria-live="polite">
                 {saveLabel}
@@ -150,7 +150,7 @@ function ResultContent({
                   })),
                   onClick: (e) => {
                     setExportMenuOpen(false);
-                    void performExport(e.key);
+                    performExport(e.key);
                   },
                 }}
               >
