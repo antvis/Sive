@@ -1,0 +1,111 @@
+.settings {
+  max-width: 760px;
+  margin-inline: auto;
+  padding-block: 12px 32px;
+}
+.general-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  background: color-mix(in srgb, var(--background) 40%, var(--surface));
+}
+.general-setting-row h3 {
+  margin: 0 0 6px;
+}
+.general-setting-row p {
+  margin: 0;
+}
+.theme-switch {
+  width: 40px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--muted);
+  transition: background 150ms;
+}
+.theme-switch[data-state='checked'] {
+  background: var(--accent);
+}
+.theme-switch:disabled {
+  opacity: 0.5;
+}
+.theme-switch-thumb {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 150ms;
+}
+.theme-switch-thumb[data-state='checked'] {
+  transform: translateX(16px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch,
+  .theme-switch-thumb {
+    transition: none;
+  }
+}
+.model-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.model-row > div:first-child {
+  flex: 1;
+  min-width: min(240px, 100%);
+  overflow-wrap: anywhere;
+}
+.model-row p {
+  margin: 6px 0;
+}
+.model-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 24px 0 8px;
+}
+.model-section-header h2 {
+  margin: 0;
+}
+.model-section-header p {
+  margin: 8px 0 0;
+}
+.model-row-actions,
+.model-discovery-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.model-discovery-toolbar {
+  margin: 4px 0 16px;
+}
+.model-picker-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.model-picker-list label:hover,
+.model-picker-list label:has(input:checked) {
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+.model-picker-list input {
+  accent-color: var(--accent);
+}
+.settings-return {
+  margin-bottom: 12px;
+}
+.model-row > div > .ui-badge {
+  margin-left: 10px;
+}

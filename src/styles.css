@@ -1,0 +1,12 @@
+/* UI primitives load first in main.tsx; workspace breakpoint overrides load last. */
+@import './styles/base.css';
+@import './styles/data-grid.css';
+@import './styles/data-browser.css';
+@import './styles/conversation.css';
+@import './styles/data-management.css';
+@import './styles/data-welcome.css';
+@import './styles/saved-analyses.css';
+@import './styles/analysis.css';
+@import './styles/settings.css';
+@import './styles/analysis-history.css';
+@import './styles/workspace.css';

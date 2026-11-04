@@ -1,0 +1,277 @@
+.shell {
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  overflow: hidden;
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
+  background: var(--background);
+  border-right: 1px solid var(--border);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  margin-bottom: 16px;
+  padding: 0 10px 8px;
+}
+.brand img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.brand strong {
+  font-size: 20px;
+  letter-spacing: -0.5px;
+}
+.brand small {
+  color: var(--muted);
+  margin-left: auto;
+}
+[data-theme='dark'] .brand img {
+  filter: invert(1);
+}
+.sidebar button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  border-radius: calc(var(--radius) + 2px);
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar nav {
+  display: grid;
+  gap: 4px;
+}
+.sidebar button > svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.sidebar button:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  color: var(--text);
+}
+.sidebar button.active {
+  color: var(--accent-text);
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  font-weight: 600;
+}
+.dataset-tabs-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 4px 10px 0;
+  min-width: 0;
+  flex-shrink: 0;
+  box-shadow: inset 0 -1px var(--border);
+  background: var(--background);
+}
+.dataset-tabs {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 2px;
+}
+.dataset-tabs::-webkit-scrollbar {
+  display: none;
+}
+[data-platform='darwin'] .sidebar {
+  position: relative;
+  padding-top: 48px;
+}
+[data-platform='darwin'] .sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 36px;
+  -webkit-app-region: drag;
+}
+[data-platform='darwin'] .dataset-tabs-bar {
+  min-height: 36px;
+  -webkit-app-region: drag;
+}
+[data-platform='darwin'] .dataset-tabs-bar::after {
+  content: '';
+  flex: 1 0 40px;
+  align-self: stretch;
+}
+[data-platform='darwin'] .dataset-tabs,
+[data-platform='darwin'] .dataset-tabs-bar button {
+  -webkit-app-region: no-drag;
+}
+.dataset-tabs-bar > .ui-button {
+  flex-shrink: 0;
+  align-self: center;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  margin-bottom: 2px;
+  padding: 5px;
+}
+.dataset-tab {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  max-width: 240px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-bottom-color: var(--border);
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--muted);
+}
+.dataset-tab > [role='tab'] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 100%;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+}
+.dataset-tab > button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dataset-tab > button svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+.dataset-tab:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+.dataset-tab[data-selected='true'] {
+  color: var(--text);
+  border-color: var(--border);
+  border-bottom-color: var(--surface);
+  background: var(--surface);
+}
+.dataset-tab > button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+.dataset-tab-close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  padding: 3px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+}
+.dataset-tab-close:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+.dataset-tab > .dataset-tab-close svg {
+  width: 12px;
+  height: 12px;
+}
+.sidebar .settings-link {
+  margin-top: auto;
+}
+.workspace {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.topbar {
+  height: 50px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+}
+.topbar > strong {
+  font-size: 14px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: calc(var(--space) + 4px) 24px;
+}
+.explorer {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.explorer.with-chat {
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 42%);
+  gap: 0;
+}
+.page:has(> .explorer.with-chat) {
+  padding: 0;
+}
+.with-chat > .browser-pane {
+  padding: calc(var(--space) + 4px) 24px;
+}
+.browser-pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.full-chat .browser-pane {
+  display: none;
+}
+.explorer.full-chat {
+  grid-template-columns: 1fr;
+}
+[data-density='comfortable'] .sidebar button {
+  padding-block: 12px;
+}
+@media (max-width: 1150px) {
+  .shell {
+    grid-template-columns: 176px minmax(0, 1fr);
+  }
+  .page {
+    padding-inline: 12px;
+  }
+  .with-chat > .browser-pane {
+    padding-inline: 12px;
+  }
+  .explorer.with-chat {
+    grid-template-columns: minmax(0, 1fr) 380px;
+  }
+  .topbar {
+    padding-inline: 12px;
+    gap: 10px;
+  }
+  .explorer.full-chat {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
