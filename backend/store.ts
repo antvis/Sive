@@ -26,8 +26,10 @@ export class Store {
       models: structuredClone(this.data.models),
       conversations: this.data.conversations.map((conversation) => ({ ...conversation })),
       activeModelId: this.data.activeModelId,
-      lastImportDirectory: this.data.lastImportDirectory,
     };
+  }
+  get lastImportDirectory() {
+    return this.data.lastImportDirectory;
   }
   theme() {
     return structuredClone(this.data.theme);
@@ -266,7 +268,7 @@ export class Store {
   }
   restoreConversation(id: string) {
     const conversation = this.data.conversations.find((c) => c.id === id && c.deletedAt);
-    if (!conversation) throw new WorkbenchError('CONFLICT', '已删除会话不存在');
+    if (!conversation) throw new WorkbenchError('CONFLICT', '已归档会话不存在');
     this.dataset(conversation.datasetId);
     this.commit({
       conversations: this.data.conversations.map((c) => {

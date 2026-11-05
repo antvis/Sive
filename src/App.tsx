@@ -22,7 +22,6 @@ import NewConversation from './components/NewConversation';
 import ConversationSearch from './components/ConversationSearch';
 import logo from '../assets/sive-logo.svg';
 import { errorMessage } from './shared/feedback';
-import { conversationView } from './shared/conversation-view';
 import { useWorkspaceNavigation } from './shared/use-workspace-navigation';
 import { observeWorkspace } from './shared/workspace-subscription';
 import { datasetPath, datasetRedirect, paths } from './shared/routes';
@@ -32,7 +31,7 @@ import { usePreferences } from './preferences';
 
 const api = window.workbench;
 export default function App() {
-  const { message, confirm } = useUI();
+  const { message } = useUI();
   const [state, setState] = useState<State | null>(null);
   const [loadError, setLoadError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -42,7 +41,7 @@ export default function App() {
   const setAnalysisMode = (mode: AnalysisMode) => {
     updatePreferences({ analysisMode: mode });
   };
-  const [exportingChat, setExportingChat] = useState(false);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { datasetId = '' } = useParams();
@@ -112,21 +111,16 @@ export default function App() {
     navigate(datasetPath(source.id, existing?.conversationId ?? conversation?.id, existing?.runId));
     api.touchData(source.id).catch((error) => message.error(errorMessage(error)));
   };
-  const exportChat = async (id: string, format: 'html' | 'md') => {
-    if (exportingChat) return;
-    setExportingChat(true);
+  const archiveConversation = async (id: string) => {
+    if (archivingId) return;
+    setArchivingId(id);
     try {
-      const view = conversationView(state.runs, state.tasks, state.task, id);
-      const saved = await api.exportConversation(
-        view.session.map((run) => run.id),
-        view.currentTask?.id || null,
-        format,
-      );
-      if (saved) message.success('会话已导出');
+      await api.deleteConversation(id);
+      message.success('会话已归档，可在设置中恢复');
     } catch (error) {
       message.error(errorMessage(error));
     } finally {
-      setExportingChat(false);
+      setArchivingId(null);
     }
   };
   const context: WorkspaceContext = {
@@ -190,30 +184,19 @@ export default function App() {
         {dataset && (
           <ConversationHistory
             key={dataset.id}
-            sourceName={dataset.name}
             conversations={conversations}
             currentId={conversationId}
             disabled={submitting}
             onSelect={selectConversation}
-            onNew={() => newConversation()}
-            exporting={exportingChat}
-            deleteDisabled={(conversation) =>
+            archiveDisabled={(conversation) =>
+              !!archivingId ||
               submitting ||
               (busy && state.task?.conversationId === conversation.id) ||
               state.runs.some(
                 (run) => run.id === state.refreshingSavedId && run.conversationId === conversation.id,
               )
             }
-            onExport={(conversation, format) => exportChat(conversation.id, format)}
-            onDelete={(conversation) =>
-              confirm({
-                title: '移除这个会话？',
-                content: `“${conversation.title}”将移至设置中的“已删除会话”，分析记录和收藏会保留，可随时恢复。`,
-                okText: '删除会话',
-                cancelText: '取消',
-                onOk: () => api.deleteConversation(conversation.id),
-              })
-            }
+            onArchive={(conversation) => archiveConversation(conversation.id)}
           />
         )}
         <NavLink to="/settings" className={cx(navigationItem, 'mt-auto shrink-0 [&>svg]:size-4.5')}>
@@ -236,6 +219,7 @@ export default function App() {
             if (tab) activateTab(tab);
           }}
           onOpenData={open}
+          onAddData={() => navigate(paths.newData)}
           onClose={(id) => {
             const remaining = workspaceTabs.filter((tab) => tab.id !== id);
             navigation.close(id);

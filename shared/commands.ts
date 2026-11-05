@@ -59,7 +59,6 @@ export const commandSchemas = {
   ]),
   chartHTML: z.tuple([idSchema, themeSchema.optional(), z.boolean().optional()]),
   exportAnalysis: z.tuple([idSchema, z.enum(['html', 'pdf', 'png']), z.boolean().optional()]),
-  exportConversation: z.tuple([z.array(idSchema), idSchema.nullable(), z.enum(['html', 'md'])]),
   saveModel: z.tuple([modelInputSchema]),
   listModels: z.tuple([modelConnectionSchema]),
 } satisfies { [K in Command]: z.ZodType<Parameters<Commands[K]>> };
