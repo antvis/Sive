@@ -17,7 +17,7 @@ import AnalysisProgress from './AnalysisProgress';
 import AnalysisComposer from './AnalysisComposer';
 import DataBrowser from './DataBrowser';
 import Grid from './DataGrid';
-import logo from '../../assets/sive-logo.svg';
+import logo from '../../assets/sive.svg';
 
 const api = window.workbench;
 export default function AnalysisPage() {

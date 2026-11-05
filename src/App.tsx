@@ -20,7 +20,7 @@ import DatasetTabs from './components/DatasetTabs';
 import ConversationHistory from './components/ConversationHistory';
 import NewConversation from './components/NewConversation';
 import ConversationSearch from './components/ConversationSearch';
-import logo from '../assets/sive-logo.svg';
+import logo from '../assets/sive.svg';
 import { errorMessage } from './shared/feedback';
 import { conversationView } from './shared/conversation-view';
 import { useWorkspaceNavigation } from './shared/use-workspace-navigation';
