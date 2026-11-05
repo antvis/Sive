@@ -142,7 +142,7 @@ export default function AnalysisPage() {
       onDataOpenChange={setDataOpen}
       data={
         <section
-          className="data-panel overflow-hidden [transition:opacity_160ms_ease,_padding-inline_220ms_cubic-bezier(0.2,_0,_0,_1)] flex flex-col min-w-0 min-h-0 py-3 px-4 [&_>_.data-browser]:flex-1 max-[1151px]:px-3 motion-reduce:transition-none"
+          className="data-panel overflow-hidden [transition:opacity_160ms_ease,_padding-inline_220ms_cubic-bezier(0.2,_0,_0,_1)] flex flex-col min-w-0 min-h-0 py-3 pr-4 pl-2 [&_>_.data-browser]:flex-1 max-[1151px]:pr-3 motion-reduce:transition-none"
           aria-label="数据面板"
           inert={!dataOpen}
           aria-hidden={!dataOpen}
