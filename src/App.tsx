@@ -12,7 +12,7 @@ import {
   useSearchParams,
 } from 'react-router';
 import { Alert, useUI, Button, Spin } from './components/ui';
-import { DatabaseIcon, GearSixIcon, FolderSimpleIcon } from '@phosphor-icons/react';
+import { DatabaseIcon, GearSixIcon, ChartBarIcon } from '@phosphor-icons/react';
 import type { Conversation, Dataset, State } from '../shared/contracts';
 import type { AnalysisMode } from '../shared/analysis-options';
 import { conversationIdsWithContent, type WorkspaceTab } from './shared/workspace-tabs';
@@ -157,15 +157,18 @@ export default function App() {
         inert={!sidebarOpen}
         aria-hidden={!sidebarOpen}
       >
-        <div className="shrink-0 flex items-center gap-2 h-11 mb-4 pt-0 pr-2.5 pb-2 pl-2.5">
-          <img className="w-6 h-6 object-contain dark:[filter:invert(1)]" src={logo} alt="Sive 标志" />
-          <strong className="text-headline tracking-[-0.5px]">Sive</strong>
-          <ConversationSearch
-            conversations={state.conversations.filter((item) => contentIds.has(item.id))}
-            datasets={state.datasets}
-            disabled={submitting}
-            onSelect={selectConversation}
-          />
+        <div className="shrink-0 mb-4">
+          <div className="flex items-center gap-2 h-11 pt-0 pr-2.5 pb-2 pl-2.5">
+            <img className="w-6 h-6 object-contain dark:[filter:invert(1)]" src={logo} alt="Sive 标志" />
+            <strong className="text-headline tracking-[-0.5px]">Sive</strong>
+            <ConversationSearch
+              conversations={state.conversations.filter((item) => contentIds.has(item.id))}
+              datasets={state.datasets}
+              disabled={submitting}
+              onSelect={selectConversation}
+            />
+          </div>
+          <p className="px-2.5 text-helper text-muted whitespace-nowrap">See it Live, Share it Real.</p>
         </div>
         <nav className="grid gap-1 shrink-0">
           <NewConversation
@@ -183,8 +186,8 @@ export default function App() {
             数据源
           </NavLink>
           <NavLink to={paths.saved} className={navigationItem}>
-            <FolderSimpleIcon />
-            分析收藏
+            <ChartBarIcon />
+            洞察 Snippet
           </NavLink>
         </nav>
         {dataset && (
