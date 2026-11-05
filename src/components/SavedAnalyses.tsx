@@ -325,7 +325,7 @@ export default function SavedAnalyses({
             setSearch(event.target.value);
           }}
         />
-        <span className="text-muted">{filtered.length} 个分析</span>
+        <span className="text-muted">{filtered.length} 个洞察 Snippet</span>
       </div>
       {filtered.length ? (
         <div className="grid grid-cols-[repeat(auto-fill,_minmax(min(360px,_100%),_1fr))] gap-4 items-stretch mt-5">

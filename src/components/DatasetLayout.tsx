@@ -43,7 +43,7 @@ export default function DatasetLayout({
         {children}
       </Panel>
       <Separator
-        className="dataset-divider group/divider relative w-1.5 cursor-col-resize touch-none outline-none"
+        className="dataset-divider group/divider relative w-2.5 cursor-col-resize touch-none outline-none"
         disabled={!dataOpen}
         aria-label="调整分析会话与数据面板宽度"
         title="拖动调整宽度，双击恢复默认"
@@ -52,7 +52,7 @@ export default function DatasetLayout({
       >
         <span
           aria-hidden="true"
-          className="absolute top-1/2 left-1 flex h-6 w-3 -translate-y-1/2 items-center justify-center rounded-sm text-muted opacity-0 transition-[color,opacity] group-hover/divider:text-accent group-hover/divider:opacity-100 group-focus-visible/divider:text-accent group-focus-visible/divider:opacity-100 group-focus-visible/divider:ring-2 group-focus-visible/divider:ring-accent/30 group-data-[separator=active]/divider:text-accent group-data-[separator=active]/divider:opacity-100 motion-reduce:transition-none"
+          className="absolute top-1/2 left-1/2 flex h-6 w-3 pointer-events-none -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-sm text-muted opacity-0 transition-[color,opacity] group-hover/divider:text-accent group-hover/divider:opacity-100 group-focus-visible/divider:text-accent group-focus-visible/divider:opacity-100 group-focus-visible/divider:ring-2 group-focus-visible/divider:ring-accent/30 group-data-[separator=active]/divider:text-accent group-data-[separator=active]/divider:opacity-100 motion-reduce:transition-none"
         >
           <DotsSixVerticalIcon size={14} weight="bold" />
         </span>
