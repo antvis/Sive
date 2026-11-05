@@ -1,0 +1,30 @@
+src/components/SavedAnalyses.tsx
+  s_b14fda781a527c::t_1f3312213c5f32 328
+src/components/DatasetLayout.tsx
+  s_7779b6a8a18f34::t_5904eb5fd55bcd 55
+  s_7779b6a8a18f34::t_ead9841d49ea2f 46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "18d264145a7a62ea176162bdd07250c532c415df",
+  "prompts": {},
+  "sessions": {
+    "s_7779b6a8a18f34": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "e0e4bd92-4d43-4731-a158-1223fc4c54a7",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_b14fda781a527c": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "55e77f19-6372-440b-a3ad-765b36cd4aa5",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
