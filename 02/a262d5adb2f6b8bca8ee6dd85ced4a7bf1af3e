@@ -1,0 +1,21 @@
+src/components/ConversationHistory.tsx
+  s_d0d2bfbea315b9::t_d12437dd6ef8a5 56
+  s_d0d2bfbea315b9::t_8f2fef5c31ae38 23
+  s_d0d2bfbea315b9::t_0d329be67848eb 24-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "02a262d5adb2f6b8bca8ee6dd85ced4a7bf1af3e",
+  "prompts": {},
+  "sessions": {
+    "s_d0d2bfbea315b9": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "48394b3c-1ce7-4c51-a73a-35deb7cb26ba",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
