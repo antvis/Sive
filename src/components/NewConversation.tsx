@@ -39,7 +39,7 @@ export default function NewConversation({
         }}
       >
         <ComposeIcon />
-        新建会话
+        新建分析
       </button>
       <Modal
         title="选择会话数据"

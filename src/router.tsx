@@ -48,7 +48,7 @@ function SavedRoute() {
       onOpen={(run) => {
         const conversation = state.conversations.find((c) => c.id === run.conversationId);
         if (!conversation) {
-          message.warning('所属会话不存在，请从数据页面新建会话。');
+          message.warning('所属会话不存在，请从数据页面新建分析。');
           return;
         }
         navigate(datasetPath(conversation.datasetId, conversation.id, run.id));
@@ -70,7 +70,7 @@ export const router = createHashRouter([
       { path: 'data', element: <DataRoute />, handle: { title: '数据源' } },
       { path: 'data/new', element: <NewDataSourcePage />, handle: { title: '新增数据源' } },
       { path: 'datasets/:datasetId', element: <AnalysisPage />, handle: { title: '数据源详情' } },
-      { path: 'saved', element: <SavedRoute />, handle: { title: '分析收藏' } },
+      { path: 'saved', element: <SavedRoute />, handle: { title: '洞察 Snippet' } },
       { path: 'settings', element: <Navigate to={paths.settings} replace /> },
       { path: 'settings/:tab', element: <SettingsRoute />, handle: { title: '设置' } },
       { path: '*', element: <HomeRoute /> },

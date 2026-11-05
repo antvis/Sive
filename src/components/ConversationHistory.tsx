@@ -46,8 +46,8 @@ export default function ConversationHistory({
           icon={<ComposeIcon />}
           disabled={disabled}
           onClick={onNew}
-          aria-label="新建会话"
-          title="新建会话"
+          aria-label="新建分析"
+          title="新建分析"
         />
       </div>
       <div className="overflow-y-auto min-h-0">
