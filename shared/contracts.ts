@@ -173,7 +173,7 @@ export interface API {
   refreshMySQL(id: string): Promise<void>;
   exportAnalysis(id: string, format: 'html' | 'pdf' | 'png'): Promise<boolean>;
   exportConversation(runIds: string[], taskId: string | null, format: 'html' | 'md'): Promise<boolean>;
-  importData(): Promise<Dataset | null>;
+  importData(format?: LocalDataset['format']): Promise<Dataset | null>;
   touchData(id: string): Promise<void>;
   deleteData(id: string): Promise<void>;
   reparseData(id: string): Promise<void>;

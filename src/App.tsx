@@ -11,6 +11,7 @@ import type { Conversation, Dataset, RunSummary, State, Task } from '../shared/c
 import type { AnalysisMode } from '../shared/analysis-options';
 import { dataTab, conversationIdsWithContent, type WorkspaceTab } from './shared/workspace-tabs';
 import DataManager from './components/DataManager';
+import WelcomePage from './components/WelcomePage';
 import DatasetTabs from './components/DatasetTabs';
 import DatasetLayout from './components/DatasetLayout';
 import Settings from './components/Settings';
@@ -34,8 +35,9 @@ import { AssistantMessage, UserMessage } from './components/ConversationMessage'
 import { taskReplyMarkdown } from '../shared/conversation-markdown';
 
 const api = window.workbench;
-type Page = 'data' | 'detail' | 'saved' | 'settings';
+type Page = 'welcome' | 'data' | 'detail' | 'saved' | 'settings';
 const labels: Record<Page, string> = {
+  welcome: '欢迎',
   data: '数据源',
   detail: '数据源详情',
   saved: '分析收藏',
@@ -48,7 +50,8 @@ export default function App() {
   const { workspaceTabs, activeTabId, conversationState, dispatchConversation, dataOpen, setDataOpen } =
     navigation;
   const [loadError, setLoadError] = useState('');
-  const [page, setPage] = useState<Page>('data');
+  const [page, setPage] = useState<Page>('welcome');
+  const initialPageSelected = useRef(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsTab, setSettingsTab] = useState('general');
   const [returnToChat, setReturnToChat] = useState(false);
@@ -61,6 +64,10 @@ export default function App() {
     return observeWorkspace(
       api,
       (s) => {
+        if (!initialPageSelected.current) {
+          initialPageSelected.current = true;
+          setPage(s.datasets.length ? 'data' : 'welcome');
+        }
         setState(s);
         navigation.receive(s);
         setLoadError('');
@@ -353,18 +360,9 @@ export default function App() {
           role={page === 'detail' ? 'tabpanel' : undefined}
           aria-label={page === 'detail' ? dataset?.name || '数据源详情' : undefined}
         >
+          {page === 'welcome' && <WelcomePage open={open} busy={busy || !!state.refreshingSavedId} />}
           {page === 'data' && (
-            <DataManager
-              datasets={state.datasets}
-              open={open}
-              busy={busy || !!state.refreshingSavedId}
-              modelName={state.models.find((model) => model.id === state.activeModelId)?.model}
-              onModelSettings={() => {
-                setSettingsTab('models');
-                setReturnToChat(false);
-                setPage('settings');
-              }}
-            />
+            <DataManager datasets={state.datasets} open={open} busy={busy || !!state.refreshingSavedId} />
           )}
           {page === 'settings' && (
             <Settings

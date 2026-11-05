@@ -135,7 +135,7 @@ app.whenReady().then(async () => {
     testMySQL: (input) => controller.datasets.testMySQL(input),
     saveMySQL: (input) => controller.datasets.saveMySQL(input),
     refreshMySQL: (id) => controller.datasets.refreshMySQL(id),
-    importData: async () => {
+    importData: async (format) => {
       let defaultPath: string | undefined;
       try {
         const directory = store.view.lastImportDirectory;
@@ -146,7 +146,12 @@ app.whenReady().then(async () => {
       const r = await dialog.showOpenDialog(win, {
         defaultPath,
         properties: ['openFile'],
-        filters: [{ name: '数据文件', extensions: ['csv', 'xlsx', 'json', 'parquet'] }],
+        filters: [
+          {
+            name: format ? `${format.toUpperCase()} 文件` : '数据文件',
+            extensions: format ? [format] : ['csv', 'xlsx', 'json', 'parquet'],
+          },
+        ],
       });
       if (r.canceled || !r.filePaths[0]) return null;
       store.rememberImportDirectory(path.dirname(r.filePaths[0]));

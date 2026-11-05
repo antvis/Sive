@@ -142,11 +142,6 @@
   color: var(--text);
   letter-spacing: -0.02em;
 }
-.data-source-help {
-  margin: 12px 0 16px;
-  font-size: 12px;
-  line-height: 1.8;
-}
 .data-card-remove:hover {
   color: var(--danger);
   background: color-mix(in srgb, var(--danger) 8%, transparent);

@@ -29,7 +29,12 @@ const guards = {
   writeClipboard: (a) => a.length === 1 && text(a[0], true),
   state: none,
   run: oneId,
-  importData: none,
+  importData: (a) =>
+    a.length <= 1 &&
+    optional(
+      a[0],
+      (value) => typeof value === 'string' && ['csv', 'json', 'xlsx', 'parquet'].includes(value),
+    ),
   cancel: none,
   createConversation: oneId,
   deleteConversation: oneId,
