@@ -1,0 +1,23 @@
+src/App.tsx
+  s_50e9a7631f4bc7::t_4c50c962ff4aa9 58
+src/shared/use-workspace-navigation.ts
+  s_50e9a7631f4bc7::t_3224fd68f4f45b 143,147
+src/components/AnalysisComposer.tsx
+  s_50e9a7631f4bc7::t_7fe26122d5e5d4 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e2c3089383d356b323f8ed818659b31de04dc662",
+  "prompts": {},
+  "sessions": {
+    "s_50e9a7631f4bc7": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "01310f42-4db3-4cd2-bda7-46af9f771510",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
