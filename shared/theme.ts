@@ -8,7 +8,6 @@ export const defaultTheme: ThemeSettings = { mode: 'light' };
 // Edit this configuration to change the app and exported chart colors.
 export const themeConfig = {
   accent: '#177c72',
-  density: 'compact' as 'compact' | 'comfortable',
   radius: 6,
   chartPalette: ['#177c72', '#5b8ff9', '#65789b', '#f6bd16', '#7262fd', '#78d3f8'],
   light: { background: '#f5f6f8', surface: '#ffffff', text: '#243039', muted: '#687682', border: '#dde3e8' },

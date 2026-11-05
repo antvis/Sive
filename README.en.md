@@ -27,6 +27,8 @@ Conversation drafts are saved locally and remain available after closing a tab. 
 
 ## Development guide
 
+Settings groups general preferences, model services, and deleted conversations. Choose light or dark appearance, the send shortcut, and default preview page size. The last selected analysis mode is remembered. Usage preferences are saved automatically on the current device.
+
 Install Node.js >=22.13.0 and [pnpm](https://pnpm.io/installation) 10.30.3, then run from the project directory:
 
 ```sh

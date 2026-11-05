@@ -239,7 +239,7 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: calc(var(--space) + 4px) 24px;
+  padding: 16px 24px;
 }
 
 .dataset-detail {
@@ -511,9 +511,11 @@
 .conversation-source-list button:focus-visible {
   background: var(--background);
 }
-.conversation-source-list svg {
+.conversation-source-list .data-source-icon {
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
-  color: var(--muted);
+  color: var(--source-color);
 }
 .conversation-source-list span {
   flex: 1;

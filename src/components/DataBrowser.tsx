@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { previewQuery } from '../shared/queries';
+import { usePreferences } from '../preferences';
 import { Alert, useUI, Button, Empty, TextArea, Select, Spin, Tabs, Tag } from './ui';
 import {
   CaretLeftIcon,
@@ -27,8 +28,13 @@ export default function DataBrowser({
   onAsk: (q: string) => void;
 }) {
   const { message } = useUI();
+  const { preferences } = usePreferences();
   const [table, setTable] = useState(dataset.schema.models[0]?.name);
-  const [pagination, setPagination] = useState({ key: '', page: 1, size: 100 });
+  const [pagination, setPagination] = useState({
+    key: '',
+    page: 1,
+    size: preferences.previewPageSize as number,
+  });
   const [refreshing, setRefreshing] = useState(false);
   const [treeOpen, setTreeOpen] = useState(true);
   const [compact, setCompact] = useState(false);

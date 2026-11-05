@@ -76,34 +76,34 @@
     background 160ms ease,
     box-shadow 160ms ease;
 }
-.data-source-option[data-source='csv'] {
+:is(.data-source-option, .data-source-icon)[data-source='csv'] {
   --source-color: #25804d;
 }
-.data-source-option[data-source='json'] {
+:is(.data-source-option, .data-source-icon)[data-source='json'] {
   --source-color: #8054b6;
 }
-.data-source-option[data-source='xlsx'] {
+:is(.data-source-option, .data-source-icon)[data-source='xlsx'] {
   --source-color: #18734b;
 }
-.data-source-option[data-source='parquet'] {
+:is(.data-source-option, .data-source-icon)[data-source='parquet'] {
   --source-color: #a66a1c;
 }
-.data-source-option[data-source='mysql'] {
+:is(.data-source-option, .data-source-icon)[data-source='mysql'] {
   --source-color: #28769a;
 }
-[data-theme='dark'] .data-source-option[data-source='csv'] {
+[data-theme='dark'] :is(.data-source-option, .data-source-icon)[data-source='csv'] {
   --source-color: #70cc92;
 }
-[data-theme='dark'] .data-source-option[data-source='json'] {
+[data-theme='dark'] :is(.data-source-option, .data-source-icon)[data-source='json'] {
   --source-color: #bb96ed;
 }
-[data-theme='dark'] .data-source-option[data-source='xlsx'] {
+[data-theme='dark'] :is(.data-source-option, .data-source-icon)[data-source='xlsx'] {
   --source-color: #57c393;
 }
-[data-theme='dark'] .data-source-option[data-source='parquet'] {
+[data-theme='dark'] :is(.data-source-option, .data-source-icon)[data-source='parquet'] {
   --source-color: #e3b36a;
 }
-[data-theme='dark'] .data-source-option[data-source='mysql'] {
+[data-theme='dark'] :is(.data-source-option, .data-source-icon)[data-source='mysql'] {
   --source-color: #78bddd;
 }
 .data-source-option:hover:not(:disabled),

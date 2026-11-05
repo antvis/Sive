@@ -26,6 +26,7 @@ import { observeWorkspace } from './shared/workspace-subscription';
 import { datasetPath, datasetRedirect, paths } from './shared/routes';
 import type { WorkspaceContext } from './shared/workspace-context';
 import { pruneWorkspaceQueries } from './shared/queries';
+import { usePreferences } from './preferences';
 
 const api = window.workbench;
 export default function App() {
@@ -34,7 +35,11 @@ export default function App() {
   const [loadError, setLoadError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('direct');
+  const { preferences, updatePreferences } = usePreferences();
+  const analysisMode = preferences.analysisMode;
+  const setAnalysisMode = (mode: AnalysisMode) => {
+    updatePreferences({ analysisMode: mode });
+  };
   const [exportingChat, setExportingChat] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();

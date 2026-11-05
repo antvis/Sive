@@ -620,10 +620,6 @@
     opacity: 1;
   }
 }
-[data-density='comfortable'] .ui-table th,
-[data-density='comfortable'] .ui-table td {
-  padding-block: 12px;
-}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

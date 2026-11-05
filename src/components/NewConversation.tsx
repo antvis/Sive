@@ -1,7 +1,8 @@
 import ComposeIcon from './ComposeIcon';
 import { useState } from 'react';
-import { DatabaseIcon, PlusIcon } from '@phosphor-icons/react';
+import { PlusIcon } from '@phosphor-icons/react';
 import type { Dataset } from '../../shared/contracts';
+import { DATA_SOURCE_ICONS } from '../constants';
 import { Button, Modal, SearchInput } from './ui';
 
 export default function NewConversation({
@@ -67,21 +68,30 @@ export default function NewConversation({
               onChange={(event) => setSearch(event.target.value)}
             />
             <div className="conversation-source-list">
-              {filtered.map((dataset) => (
-                <button
-                  type="button"
-                  key={dataset.id}
-                  disabled={disabled}
-                  onClick={() => {
-                    onNew(dataset);
-                    setOpen(false);
-                  }}
-                >
-                  <DatabaseIcon />
-                  <span title={dataset.name}>{dataset.name}</span>
-                  <small>{dataset.format === 'mysql' ? 'MySQL' : dataset.format.toUpperCase()}</small>
-                </button>
-              ))}
+              {filtered.map((dataset) => {
+                const SourceIcon = DATA_SOURCE_ICONS[dataset.format];
+                return (
+                  <button
+                    type="button"
+                    key={dataset.id}
+                    disabled={disabled}
+                    onClick={() => {
+                      onNew(dataset);
+                      setOpen(false);
+                    }}
+                  >
+                    <SourceIcon
+                      className="ui-icon data-source-icon"
+                      data-source={dataset.format}
+                      size={20}
+                      weight="duotone"
+                      aria-hidden="true"
+                    />
+                    <span title={dataset.name}>{dataset.name}</span>
+                    <small>{dataset.format === 'mysql' ? 'MySQL' : dataset.format.toUpperCase()}</small>
+                  </button>
+                );
+              })}
               {!filtered.length && <p className="text-muted">没有匹配的数据源</p>}
             </div>
           </>

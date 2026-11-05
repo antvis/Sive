@@ -46,10 +46,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.style.setProperty('--' + name, value);
     root.style.setProperty('--accent', themeConfig.accent);
     root.style.setProperty('--radius', themeConfig.radius + 'px');
-    root.style.setProperty('--control-height', themeConfig.density === 'compact' ? '34px' : '40px');
-    root.style.setProperty('--space', themeConfig.density === 'compact' ? '12px' : '20px');
     root.dataset.theme = settings.mode;
-    root.dataset.density = themeConfig.density;
     root.style.colorScheme = settings.mode;
   }, [settings]);
   const setMode = async (mode: ThemeMode) => {
