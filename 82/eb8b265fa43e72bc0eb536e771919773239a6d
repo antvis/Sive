@@ -1,0 +1,36 @@
+backend/store.ts
+  h_63dffd5e80151f 31-33,271
+electron/main.ts
+  h_63dffd5e80151f 140
+src/App.tsx
+  h_63dffd5e80151f 34,44,114-116,118-119,123,194-195,202,225
+src/components/ConversationHistory.tsx
+  h_63dffd5e80151f 3-4,12-13,15-16,43-55
+src/components/DataManager.tsx
+  h_63dffd5e80151f 1-2,5,34-35,37,39,43,79,185,207-210
+src/components/DatasetPickerDialog.tsx
+  h_63dffd5e80151f 1-94
+src/components/DatasetTabs.tsx
+  h_63dffd5e80151f 1,4-5,16,25,28,110-125
+src/components/DeletedConversations.tsx
+  h_63dffd5e80151f 50-51,68,110,154-155
+src/components/NewConversation.tsx
+  h_63dffd5e80151f 5,37-45
+src/components/SavedAnalyses.tsx
+  h_63dffd5e80151f 1,4,314,332,346-349
+src/components/Settings.tsx
+  h_63dffd5e80151f 27
+src/shared/use-scroll-load.ts
+  h_63dffd5e80151f 1-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "82eb8b265fa43e72bc0eb536e771919773239a6d",
+  "prompts": {},
+  "humans": {
+    "h_63dffd5e80151f": {
+      "author": "hustcc <i@hust.cc>"
+    }
+  }
+}
