@@ -1,0 +1,41 @@
+@import 'tailwindcss' source(none);
+@import './styles/base.css' layer(base);
+@import './styles/content.css' layer(components);
+@source './';
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Pixel-based spacing preserves the desktop scale independently of the 13px root font. */
+@custom-variant mac (&:where([data-platform='darwin'], [data-platform='darwin'] *));
+
+@theme {
+  --spacing: 4px;
+  --text-tiny: 10px;
+  --text-caption: 11px;
+  --text-helper: 12px;
+  --text-body: 13px;
+  --text-label: 14px;
+  --text-subtitle: 15px;
+  --text-title: 16px;
+  --text-section: 18px;
+  --text-headline: 20px;
+  --text-heading: 23px;
+}
+@theme inline {
+  --color-surface: var(--surface);
+  --color-page: var(--background);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-text);
+  --color-line: var(--border);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --radius-control: var(--radius);
+  --radius-item: calc(var(--radius) + 1px);
+  --radius-button: calc(var(--radius) + 2px);
+  --radius-card: calc(var(--radius) + 4px);
+  --radius-panel: calc(var(--radius) + 6px);
+  --radius-source: calc(var(--radius) + 8px);
+  --radius-dialog: calc(var(--radius) + 12px);
+}

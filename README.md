@@ -1,152 +1,57 @@
-<img src="https://gw.alipayobjects.com/zos/antfincdn/R8sN%24GNdh6/language.svg" width="18"> [English](https://github.com/antvis/Sive/blob/main/README_EN.md) | 中文
+# Sive
 
-<p align="center">
-  <a href="https://sive.antv.antgroup.com">
-    <img width="128" src="./sive.svg">
-  </a>
-</p>
+**用自然语言探索数据，把分析过程和结果留在一个工作台里。**
 
-<h1 align="center">🪼 Sive, See it Live, Share it Real.</h1>
+Sive 是基于 [AntV AVA](https://ava.antv.vision/) 的开源桌面数据分析工具。描述你想了解的问题，即可查看查询过程、计算数据和可交互图表，并将有价值的分析保存、刷新或导出。
 
-蚂蚁集团 AntV 团队出品的 AI 驱动的数据可视化创作平台，用自然语言对话快速构建数据可视化图表、报告，以及数据分析，**让数据跃然眼前，让每一份洞察即刻可见、轻松分享**。
+适合业务数据探索、日常指标分析，以及需要核对 SQL 和计算依据的分析场景。
 
-<p align="center">
-  <img width="768" src="./intro.png">
-</p>
+[English](README.en.md)
 
-<div align="center">
+## 核心能力
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![stars](https://img.shields.io/github/stars/antvis)
-[![GitHub Issues](https://img.shields.io/github/issues/antvis/sive.svg)](https://github.com/antvis/sive/issues)
+- **统一管理数据**：导入 CSV、Excel（XLSX）、JSON、Parquet，或连接 MySQL。支持连接测试、编辑、重新验证，以及数据库多表浏览。
+- **围绕数据源分析**：每个数据源一个标签，左侧切换会话历史；全局“新建会话”沿用当前数据源，未选中时先选择数据；数据面板默认展开，可查看预览、字段结构和数据语义，补充业务规则与指标定义；拖动中间分隔条调整宽度，展开与收起使用面板右上角的同一按钮。
+- **看得见的分析过程**：展示真实的数据准备、查询生成、SQL 执行、纠错、总结和绘图进度。可以查看耗时、执行 SQL、结果数据，或停止当前任务。
+- **保存与复用分析**：手动保存有价值的结果，以卡片展示可交互图表、数据和 SQL。支持刷新数据，将当前收藏导出为 PDF、PNG 或 HTML，并通过“查看分析”返回原始对话。导出使用收藏标题及最近成功刷新后的数据和图表，原始对话结果保持独立。
+- **按习惯设置工作台**：切换浅深色主题、选择发送快捷键和预览行数，并记住最近使用的分析方式。使用偏好自动保存在当前设备；设置中统一管理模型服务与已删除会话。
 
-</div>
+## 使用指南
 
-## 👩🏻‍💻 关于我们
+### 下载与安装
 
-AntV 是由蚂蚁集团发起，并自 2017 年起开源，将图形语法理论融入 JavaScript 语言，重新定义了数据可视化，包括 统计分析、图分析、地理分析 以及 非结构化数据可视化。
+安装包下载入口：**待补充**。后续发布后，可在此选择适合操作系统的安装包，下载安装后打开 Sive，无需配置 Node.js 或 pnpm。发布前可按下方开发指南从源码启动。
 
-随着 AI 的演进，AntV 除了开源了一系列的面向 AI 的可视化技术方案之外，还推出了 Sive —— 面向 AI 时代的可视化研发、分析、创作平台，将 AntV 多年沉淀的数据可视化与分析能力交给 AI，让每个人、每个 AI Agent 都能更简单地理解数据、发现洞察并完成创作。
+**后续补充视频**
 
-## 🪼 Sive 能做什么
+会话草稿会在本机保存，关闭标签后可重新打开继续编辑；关闭标签不会停止后台分析。删除会话后可在「设置 → 已删除会话」中搜索、恢复或永久删除，分析结果和收藏会随会话一起恢复。删除数据源会永久删除其会话（包括已删除会话）、草稿和分析收藏，请先导出需要保留的结果。
 
-- 数据接入
+## 开发指南
 
-Sive 支持多种数据接入方式，覆盖本地文件、主流 SaaS 平台、MySQL 等关系型数据库及远程文件，并通过语义建模、AI 取数与业务数据画像，让模型更准确地理解你的数据。
+准备 Node.js >=22.13.0 和 [pnpm](https://pnpm.io/installation) 10.30.3，在项目目录执行：
 
-- 数据分析
-
-基于真实业务实践，沉淀 18+ 种数据分析方法和 100+ 条 Golden Queries。只需用自然语言提出业务问题，Sive 即可自动拆解分析任务，从多个维度查询、比较数据，识别趋势、异常、差异及关键影响因素。
-
-- 数据创作
-
-从一张图表、一份分析报告，到一套数据 PPT，依托 10+ 可视化库与 50+ 专业 Design Skills，结合对话、元素拾取、截图等灵活编辑方式，只需 2–5 分钟，即可将数据变成专业、可编辑、可分享的数据作品。
-
-- 开放能力
-
-免费申请 API Key，只需一条 Prompt，即可将 Sive 接入本地 Agent 工作流，让 Agent 不再止于文字回答，还能真正完成数据分析、图表生成与报告创作。
-
-## 🎨 数据作品集
-
-展示一些 Sive 创建的数据作品，扫码即可看到作品的具体内容，来 Sive 也可以创建同款！
-
-<table>
-  <tr>
-    <td align="center" width="25%">
-      <a href="https://sive.antv.antgroup.com/yG7JgAvXn1N4RQV06rO8" data-application-id="yG7JgAvXn1N4RQV06rO8" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*TzV2R7uJsTsAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-      </a>
-    </td>
-    <td align="center" width="25%">
-       <a href="https://sive.antv.antgroup.com/rx5pdyPR8GbD9NVkK4Jj" data-application-id="rx5pdyPR8GbD9NVkK4Jj" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*BuWIT5BQ120AAAAAQZAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-       </a>
-    </td>
-    <td align="center" width="25%">
-       <a href="https://sive.antv.antgroup.com/KjpgNDy9gnmvzEJZxnl4" data-application-id="KjpgNDy9gnmvzEJZxnl4" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*ioflQZjDAFIAAAAAQbAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-       </a>
-    </td>
-    <td align="center" width="25%">
-       <a href="https://sive.antv.antgroup.com/Kepl0j19EEQG9dPr8Z2E" data-application-id="Kepl0j19EEQG9dPr8Z2E" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*EyHhTKkNSjAAAAAAQgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-       </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="25%">
-       <a href="https://sive.antv.antgroup.com/eD6aPMgRkPN8X27GpwQJ" data-application-id="eD6aPMgRkPN8X27GpwQJ" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*Z04oTrUO3Z8AAAAAQdAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-       </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="https://sive.antv.antgroup.com/YAgb6DW9ae3Q9mwxprkl" data-application-id="YAgb6DW9ae3Q9mwxprkl" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*q0tdQL6l2rgAAAAAROAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-      </a>
-    </td>
-    <td align="center" width="25%">
-       <a href="https://sive.antv.antgroup.com/2L5kBeJX4lQgXgP4YlbG" data-application-id="2L5kBeJX4lQgXgP4YlbG" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*nzyuRIJnqvQAAAAAQmAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-       </a>
-    </td>
-    <td align="center" width="25%">
-       <a href="https://sive.antv.antgroup.com/oAqbY5dRr5YE920VeE4J" data-application-id="oAqbY5dRr5YE920VeE4J" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*Oqk5SqzmoyQAAAAARfAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-       </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="25%">
-      <a href="https://sive.antv.antgroup.com/gkMvYyazWpy392rE38Nw" data-application-id="gkMvYyazWpy392rE38Nw" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*t1jZSJbblsYAAAAAQfAAAAgAemJ7AQ/fmt.avif" alt="AntV Sive Screenshot" width="100%"/>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="https://sive.antv.antgroup.com/NADVaGQL9OGp91pYxvm6" data-application-id="NADVaGQL9OGp91pYxvm6" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*nACPRY7fZKUAAAAAQiAAAAgAemJ7AQ/fmt.avif" alt="AntV Sive Screenshot" width="100%"/>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="https://sive.antv.antgroup.com/n6gdvP8zyxvyXOGqNLB0" data-application-id="n6gdvP8zyxvyXOGqNLB0" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*ixNrRrlqVqsAAAAARgAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-      </a>
-    </td>
-    <td align="center" width="25%">
-      <a href="https://sive.antv.antgroup.com/lAxGEmgzPP3lz5o3DYpe" data-application-id="lAxGEmgzPP3lz5o3DYpe" target="_blank" rel="noopener">
-        <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*QHQ_SaQVMR8AAAAAQbAAAAgAemJ7AQ/original" alt="AntV Sive Screenshot" width="100%"/>
-      </a>
-    </td>
-  </tr>
-</table>
-
-<h2 align="center">✨ 在 AI 工具中使用</h2>
-
-AntV [Sive](https://sive.antv.antgroup.com/) 提供了 `API Key` 来支持在 AI 工具中免费使用，只需要登录之后在 个人中心 - 设置 - API key 中即可免费创建 API Key，然后复制以下提示词发送给本地 AI，即可生成「Sive 数据分析 Skill」。
-
-```
-本文档提供了 AI 数据分析能力 Skill 的安装方式，按照本文档在本地 AI 环境中生成「Sive 数据分析 Skill」，保证信息不要丢失。
-
-1. 询问用户输入 Sive 数据分析的 <API Key>，在 [Sive](https://sive.antv.antgroup.com/) 产品 「个人 - 设置 - API Key」 中免费创建。
-2. 加载 Sive 提供的 OpenAPI 接口文档 https://sive.antv.antgroup.com/api/open/v1/load-sive-skills。
-3. 基于加载的信息，在本地 AI 环境中生成 「Sive 数据分析 Skill」，确保 Skill 的名称和描述符合规范。
-
-安装成功之后，基于「Sive 数据分析 Skill」，就可以做一些数据的导入、查询分析、以及可视化，例如：
-
-> 帮我加载本地 csv 文件『sales.csv』，分析 『最近 10 天的销售额趋势』，最终绘制成折线图。
+```sh
+pnpm install
+pnpm run electron:install
+pnpm dev
 ```
 
-支持在 <img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*U5v0SrSH2VUAAAAAQCAAAAgAemJ7AQ/original" width="10"/> Claude、<img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*Q1F5RpfnnjAAAAAAKZAAAAgAemJ7AQ/original" width="10" /> CodeX、<img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*Q1F5RpfnnjAAAAAAKZAAAAgAemJ7AQ/original" width="10" /> Cursor、<img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*66WpQ4ZE-6kAAAAAQEAAAAgAemJ7AQ/original" width="10" /> Workbuddy、<img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*6yYNQYdNX_YAAAAAQCAAAAgAemJ7AQ/original" width="10"/> DeepSeek Harness、<img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*WINeTrWVIIoAAAAAQCAAAAgAemJ7AQ/original" width="10" /> 千问办公、<img src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*QlQxRoPqlzUAAAAAFHAAAAgAemJ7AQ/original" width="10" /> Trae 等 70+ AI 工具中使用。
+后续启动只需执行 `pnpm dev`。开发模式支持界面热更新；主进程或后端变化会重启应用，preload 变化会刷新窗口。
 
----
+| 命令           | 用途                                    |
+| -------------- | --------------------------------------- |
+| `pnpm check`   | 类型检查                                |
+| `pnpm build`   | 构建应用                                |
+| `pnpm package` | 生成当前平台的应用包，输出至 `release/` |
 
-<p align="center">
-  <a href="https://antv.vision">
-    <img width="100" src="https://gw.alipayobjects.com/mdn/rms_0d75e8/afts/img/A*T3edT7ChQTQAAAAAAAAAAAAAARQnAQ">
-  </a>
-</p>
+界面代码位于 `src/`，业务逻辑位于 `backend/`，桌面入口位于 `electron/`，跨端公共代码位于 `shared/`。开发和构建配置统一在 `electron.vite.config.ts`。
 
-<p align="center">「蚂蚁企业级 AI 数据可视化解决方案，让人们在数据世界里获得视觉化思考能力」</p>
+页面使用 React Router 的 Hash 路由，兼容打包后的本地文件加载。路由表在 `src/router.tsx`，`App.tsx` 提供布局和共享工作区状态；欢迎页、数据源列表、新增数据源、分析详情、收藏和设置分别由路由渲染。数据源、会话和分析记录定位通过 URL 管理，标签与问题草稿由工作区保存。
 
-<p align="center">
-  Made with ❤️ by <a href="https://sive.antv.antgroup.com/">AntV Sive</a>
-</p>
+数据预览、表结构和分析结果由 TanStack Query 管理读取状态与缓存，查询键包含数据或视图版本；写入与后台任务仍经由现有 IPC 和工作区订阅同步。Zod 定义共享输入规则，React Hook Form 通过 resolver 复用校验；持久化工作区使用独立的兼容性 schema。表格排序、分页和列宽由 TanStack Table 管理，分析页分栏使用 react-resizable-panels。
+
+界面样式优先使用 Tailwind，设计变量与语义 token 统一在 `src/styles.css` 维护。根字号为 13px，间距单位固定为 4px；使用 `text-body`、`bg-surface`、`text-muted` 等语义类适配主题。组件类名通过 `src/shared/cx.ts` 合并，共用样式放在 UI 或导航样式模块中；条件样式使用完整类名，避免动态拼接 Tailwind 类名。手写 CSS 仅保留全局基础、生成的 Markdown、第三方内容和动画；运行时计算的尺寸保留内联样式，导出文档的样式独立维护。
+
+模型辅助开发遵循 `AGENTS.md`；`CLAUDE.md` 引用同一份规范。项目不维护测试文件，后续也不新增。改动后按范围进行类型检查、差异检查和必要的手动验证，完整构建与打包需按实际任务确认。
+
+Sive 使用 [MIT License](LICENSE)。本项目基于 AntV AVA 构建，是独立项目，非 AntV 官方发行版。

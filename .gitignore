@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-electron/
+release/
+.env*
+!.env.example
+.DS_Store
+*.log
+*.sqlite
+*.duckdb
+*.key
+coverage/
+pnpm-lock.yaml
