@@ -1,4 +1,5 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useLayoutEffect, useReducer, useRef } from 'react';
+import type { DatasetLocation } from './routes';
 import type { State } from '../../shared/contracts';
 import { conversationReducer, initialConversationState, type ConversationAction } from './conversation-state';
 import {
@@ -12,7 +13,7 @@ import {
 type Navigation = { tabs: WorkspaceTab[]; activeId: string; ready: boolean };
 type Action =
   | { type: 'snapshot'; snapshot: State; serialized: string | null }
-  | { type: 'activate'; tab: WorkspaceTab }
+  | { type: 'select'; target: DatasetLocation }
   | { type: 'close'; id: string }
   | { type: 'conversation'; action: ConversationAction; id: string }
   | { type: 'display'; dataOpen: boolean };
@@ -49,11 +50,20 @@ function reducer(state: Navigation, action: Action): Navigation {
           : tabs.find((t) => t.open)?.id || '',
       };
     }
-    case 'activate': {
-      const existing = state.tabs.find((tab) => tab.id === action.tab.datasetId);
-      const tab = existing
-        ? { ...existing, open: true, dataOpen: existing.open ? existing.dataOpen : true }
-        : action.tab;
+    case 'select': {
+      const existing = state.tabs.find((tab) => tab.id === action.target.datasetId);
+      const previous = existing || dataTab(action.target.datasetId);
+      const sameConversation = previous.conversationId === action.target.conversationId;
+      const sameRun = previous.runId === action.target.runId;
+      if (existing?.open && state.activeId === existing.id && sameConversation && sameRun) return state;
+      const tab = {
+        ...previous,
+        ...(sameConversation && sameRun
+          ? previous
+          : conversationReducer(previous, { type: 'navigate', ...action.target })),
+        open: true,
+        dataOpen: existing?.open ? existing.dataOpen : true,
+      };
       return {
         ...state,
         tabs: existing ? state.tabs.map((t) => (t.id === tab.id ? tab : t)) : [...state.tabs, tab],
@@ -89,10 +99,17 @@ function reducer(state: Navigation, action: Action): Navigation {
     }
   }
 }
-export function useWorkspaceNavigation(report: (message: string) => void) {
+export function useWorkspaceNavigation(
+  report: (message: string) => void,
+  target?: DatasetLocation,
+  locationKey?: string,
+) {
   const [navigation, dispatch] = useReducer(reducer, initial);
   const persisted = useRef<string | null>(null);
   const initialized = useRef(false);
+  useLayoutEffect(() => {
+    if (navigation.ready && target) dispatch({ type: 'select', target });
+  }, [navigation.ready, target?.datasetId, target?.conversationId, target?.runId, locationKey]);
   const receive = (snapshot: State) => {
     if (!initialized.current) {
       initialized.current = true;
@@ -118,11 +135,10 @@ export function useWorkspaceNavigation(report: (message: string) => void) {
   const active = navigation.tabs.find((t) => t.id === navigation.activeId);
   return {
     workspaceTabs: navigation.tabs.filter((t) => t.open),
-    activeTabId: navigation.activeId,
+    getTab: (datasetId: string) => navigation.tabs.find((tab) => tab.datasetId === datasetId),
     conversationState: active || initialConversationState,
     dataOpen: active?.dataOpen || false,
     receive,
-    activate: (tab: WorkspaceTab) => dispatch({ type: 'activate', tab }),
     close: (id: string) => dispatch({ type: 'close', id }),
     newConversation: (datasetId: string, question?: string) =>
       dispatch({

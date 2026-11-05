@@ -45,4 +45,6 @@ pnpm dev
 
 界面代码位于 `src/`，业务逻辑位于 `backend/`，桌面入口位于 `electron/`，跨端公共代码位于 `shared/`。开发和构建配置统一在 `electron.vite.config.ts`。
 
+页面使用 React Router 的 Hash 路由，兼容打包后的本地文件加载。路由表在 `src/router.tsx`，`App.tsx` 提供布局和共享工作区状态；欢迎页、数据源列表、新增数据源、分析详情、收藏和设置分别由路由渲染。数据源、会话和分析记录定位通过 URL 管理，标签与问题草稿由工作区保存。
+
 Sive 使用 [MIT License](LICENSE)。本项目基于 AntV AVA 构建，是独立项目，非 AntV 官方发行版。

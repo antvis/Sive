@@ -28,6 +28,7 @@
     "ai": "^7.0.146",
     "markdown-it": "^14.1.0",
     "mysql2": "^3.24.6",
+    "react-router": "^7.18.5",
     "saxes": "^6.0.0"
   },
   "devDependencies": {

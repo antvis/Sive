@@ -22,22 +22,22 @@ export function observeWorkspace(
   let snapshotRevision = -1;
   let current: State | null = null;
   let progress: TaskUpdate | undefined;
-  const refresh = () => {
+  const refresh = async () => {
     const request = ++sequence;
-    api
-      .state()
-      .then((snapshot) => {
-        if (!live || request !== sequence || snapshot.revision < snapshotRevision) return;
-        snapshotRevision = snapshot.revision;
-        if (progress && progress.revision <= snapshotRevision) progress = undefined;
-        current = progress ? withTask(snapshot, progress) : snapshot;
-        receive(current);
-      })
-      .catch((error) => {
-        if (live && request === sequence) fail(error);
-      });
+    try {
+      const snapshot = await api.state();
+      if (!live || snapshot.revision < snapshotRevision) return;
+      snapshotRevision = snapshot.revision;
+      if (progress && progress.revision <= snapshotRevision) progress = undefined;
+      current = progress ? withTask(snapshot, progress) : snapshot;
+      receive(current);
+    } catch (error) {
+      if (live && request === sequence) fail(error);
+      throw error;
+    }
   };
-  const off = api.onChange(refresh);
+  const backgroundRefresh = () => void refresh().catch(() => {});
+  const off = api.onChange(backgroundRefresh);
   const offTask = api.onTaskChange((update) => {
     if (!live || update.revision <= snapshotRevision || (progress && update.revision <= progress.revision))
       return;
@@ -47,10 +47,13 @@ export function observeWorkspace(
       receive(current);
     }
   });
-  refresh();
-  return () => {
-    live = false;
-    off();
-    offTask();
+  backgroundRefresh();
+  return {
+    refresh,
+    dispose: () => {
+      live = false;
+      off();
+      offTask();
+    },
   };
 }

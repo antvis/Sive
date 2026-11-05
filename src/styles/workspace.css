@@ -43,7 +43,8 @@
 [data-theme='dark'] .brand img {
   filter: invert(1);
 }
-.sidebar button {
+.sidebar button,
+.sidebar a {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -57,25 +58,30 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-decoration: none;
 }
 .sidebar nav {
   display: grid;
   gap: 4px;
 }
-.sidebar button > svg {
+.sidebar button > svg,
+.sidebar a > svg {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
 }
-.sidebar nav button > svg {
+.sidebar nav button > svg,
+.sidebar nav a > svg {
   width: 16px;
   height: 16px;
 }
-.sidebar button:hover {
+.sidebar button:hover,
+.sidebar a:hover {
   background: color-mix(in srgb, var(--accent) 6%, transparent);
   color: var(--text);
 }
-.sidebar button.active {
+.sidebar button.active,
+.sidebar a.active {
   color: var(--accent-text);
   background: color-mix(in srgb, var(--accent) 11%, transparent);
   font-weight: 600;

@@ -45,4 +45,6 @@ For subsequent launches, run `pnpm dev`. Development supports UI hot reload; mai
 
 UI code lives in `src/`, business logic in `backend/`, desktop entry points in `electron/`, and cross-process shared code in `shared/`. Development and builds are configured in `electron.vite.config.ts`.
 
+Pages use React Router hash routing, compatible with local file loading in packaged Electron. Routes are defined in `src/router.tsx`; `App.tsx` provides the layout and shared workspace state. Welcome, datasets, new data source, analysis, saved analyses, and settings have separate routes. URLs identify the current dataset, conversation, and analysis run, while the workspace retains tabs and question drafts.
+
 Sive is licensed under the [MIT License](LICENSE). It is an independent project built on AntV AVA, not an official AntV distribution.
