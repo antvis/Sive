@@ -93,7 +93,7 @@ function ResultContent({
           <summary>计算依据 · {run.result.data.length} 行</summary>
           {dataOpen && (
             <>
-              <pre>{run.result.sql}</pre>
+              <pre className="result-sql">{run.result.sql}</pre>
               <Grid rows={run.result.data} />
             </>
           )}

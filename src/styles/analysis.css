@@ -173,3 +173,6 @@
   border-bottom: 1px solid var(--border);
   min-width: 0;
 }
+.result-sql {
+  margin-bottom: 12px;
+}
