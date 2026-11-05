@@ -51,6 +51,14 @@ Pages use React Router hash routing, compatible with local file loading in packa
 
 TanStack Query manages reads and caching for previews, table details, and analysis results, with data or view versions in query keys. Writes and background tasks retain the existing IPC and workspace subscriptions. Zod defines shared input rules, reused by React Hook Form through resolvers; persisted workspaces use a separate compatibility schema. TanStack Table manages sorting, pagination, and column widths, while react-resizable-panels manages the analysis split view.
 
+UI styles use Tailwind first, with design variables and semantic tokens in `src/styles.css`. The root font is 13px and the spacing unit is fixed at 4px; use semantic classes such as `text-body`, `bg-surface`, and `text-muted` for theme support. Compose classes with `src/shared/cx.ts` and keep shared recipes in the UI or navigation style modules. Use complete class literals for conditional styles rather than dynamically constructed Tailwind names. Handwritten CSS is reserved for global foundations, generated Markdown, third-party content, and animations. Runtime dimensions remain inline, and exported documents maintain their own styles.
+
+Run focused style composition checks (Node.js >=22.15):
+
+```sh
+node --import ./tests/register-typescript.mjs --test tests/styles.test.mjs
+```
+
 Run focused regression checks for queries, input validation, storage recovery, and table behavior (Node.js >=22.15):
 
 ```sh

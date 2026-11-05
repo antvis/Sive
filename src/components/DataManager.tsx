@@ -45,8 +45,9 @@ export default function DataManager({
   const { busy, perform, connection } = sourceActions;
   return (
     <>
-      <div className="toolbar toolbar-divider">
+      <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pb-4 border-b border-b-line">
         <SearchInput
+          className="max-w-70"
           aria-label="搜索数据"
           placeholder="搜索数据名称"
           value={search}
@@ -58,7 +59,6 @@ export default function DataManager({
             next.delete('page');
             setParams(next, { replace: true, flushSync: true });
           }}
-          style={{ maxWidth: 280 }}
         />
         <span className="min-w-[4px] flex-1" />
         <Button
@@ -75,21 +75,24 @@ export default function DataManager({
       <section aria-label="数据源卡片">
         <span className="text-muted">{filtered.length} 个数据源</span>
         {filtered.length ? (
-          <div className="collection-grid data-card-grid">
+          <div className="grid mt-5 grid-cols-[repeat(auto-fill,_minmax(min(320px,_100%),_1fr))] gap-4">
             {filtered.slice((current - 1) * 12, current * 12).map((d) => (
               <CollectionCard
-                className="data-card"
+                className="[&_.data-card-preview]:mr-auto [&_.data-card-preview]:pl-0 p-4.5 hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_3px_12px_color-mix(in_srgb,_var(--text)_5%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_3px_12px_color-mix(in_srgb,_var(--text)_5%,_transparent)] [&_h3]:mt-0 [&_h3]:mr-0 [&_h3]:mb-[5px] [&_h3]:ml-0 [&_h3]:text-label [&_h3]:text-ink [&_h3]:tracking-[-0.02em] [&_.collection-card-summary]:[-webkit-line-clamp:1] [&_.collection-card-summary]:min-h-0 [&_.collection-card-summary]:mt-3 [&_.collection-card-summary]:mr-0 [&_.collection-card-summary]:mb-0 [&_.collection-card-summary]:ml-0 [&_.collection-card-summary]:leading-[1.6] [&_.collection-card-date]:mt-auto [&_.collection-card-date]:gap-[5px] [&_.collection-card-date]:flex-wrap [&_.collection-card-actions]:gap-0.5 [&_.collection-card-actions]:mt-3.5 [&_.collection-card-actions]:border-t-[color-mix(in_srgb,_var(--border)_55%,_transparent)]"
                 key={d.id}
                 label={d.name}
                 action="打开分析"
                 onOpen={() => open(d)}
               >
-                <div className="data-card-header">
-                  <div className="data-card-source">
-                    <span className="data-card-icon" aria-hidden="true">
+                <div className="flex gap-2.5 justify-between items-start min-h-16.5 [&_.ui-badge]:m-0 [&_.ui-badge]:shrink-0">
+                  <div className="flex gap-2.5 min-w-0 items-start text-helper text-muted">
+                    <span
+                      className="shrink-0 grid place-items-center w-9 h-9 rounded-card text-accent-ink bg-[color-mix(in_srgb,_var(--accent)_8%,_var(--surface))] [&_svg]:w-5 [&_svg]:h-5"
+                      aria-hidden="true"
+                    >
                       {d.connection ? <DatabaseIcon /> : d.format === 'xlsx' ? <TableIcon /> : <FileIcon />}
                     </span>
-                    <div className="data-card-title">
+                    <div className="min-w-0">
                       <h3>{d.name}</h3>
                       <span>{d.format === 'mysql' ? 'MySQL · 远程只读' : d.format.toUpperCase()}</span>
                     </div>
@@ -102,29 +105,35 @@ export default function DataManager({
                 </div>
                 {d.connection && (
                   <p
-                    className="collection-card-summary"
+                    className="collection-card-summary [display:-webkit-box] [-webkit-box-orient:vertical] overflow-hidden wrap-anywhere [-webkit-line-clamp:3] text-muted text-body mt-0 mr-0 mb-3 ml-0 min-h-11"
                     title={`${d.connection.host}:${d.connection.port} / ${d.connection.database}`}
                   >
                     {`${d.connection.host}:${d.connection.port} / ${d.connection.database}`}
                   </p>
                 )}
                 {d.connection?.error && (
-                  <p className="collection-card-error" title={d.connection.error}>
+                  <p
+                    className="text-muted wrap-anywhere [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden text-helper"
+                    title={d.connection.error}
+                  >
                     {d.connection.error}
                   </p>
                 )}
-                <div className="data-card-metrics">
+                <div className="flex flex-wrap gap-4 mt-4 mr-0 mb-2.5 ml-0 text-helper text-muted">
                   <span>
-                    <strong>{d.schema.models.length}</strong> 张表
+                    <strong className="text-ink text-subtitle font-semibold tabular-nums">
+                      {d.schema.models.length}
+                    </strong>{' '}
+                    张表
                   </span>
                   <span>
-                    <strong>
+                    <strong className="text-ink text-subtitle font-semibold tabular-nums">
                       {d.schema.models.reduce((total, table) => total + table.columns.length, 0)}
                     </strong>{' '}
                     个字段
                   </span>
                 </div>
-                <div className="collection-card-date">
+                <div className="collection-card-date flex items-center gap-2 text-muted flex-wrap mt-2 text-caption">
                   <ClockIcon />
                   <span>{d.connection ? '最近验证' : '导入时间'}</span>
                   {d.connection && !d.connection.checkedAt ? (
@@ -141,7 +150,7 @@ export default function DataManager({
                     </time>
                   )}
                 </div>
-                <div className="collection-card-actions">
+                <div className="collection-card-actions [&_button]:relative [&_button]:z-2 flex items-center gap-2 text-muted text-helper mt-4 pt-3 border-t border-t-line justify-end flex-wrap">
                   <Button variant="link" size="small" className="data-card-preview" onClick={() => open(d)}>
                     打开分析 <ArrowUpRightIcon />
                   </Button>
@@ -178,7 +187,7 @@ export default function DataManager({
                   >
                     <Button
                       variant="ghost"
-                      className="data-card-remove"
+                      className="hover:text-danger hover:bg-[color-mix(in_srgb,_var(--danger)_8%,_transparent)]"
                       size="small"
                       icon={<TrashIcon />}
                       aria-label={`移除数据源：${d.name}`}
@@ -197,7 +206,7 @@ export default function DataManager({
         )}
         {filtered.length > 12 && (
           <Pagination
-            className="collection-pagination"
+            className="justify-end mt-5"
             current={current}
             pageSize={12}
             total={filtered.length}

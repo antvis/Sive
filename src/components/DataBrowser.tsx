@@ -1,3 +1,5 @@
+import { tableViewport } from './ui/styles';
+import { cx } from '../shared/cx';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { previewQuery } from '../shared/queries';
@@ -100,10 +102,16 @@ export default function DataBrowser({
     />
   );
   return (
-    <div ref={root} className={'data-browser' + (mysql && treeOpen && !compact ? ' with-tree' : '')}>
+    <div
+      ref={root}
+      className={cx(
+        'data-browser relative h-full min-h-0 grid grid-cols-1 overflow-hidden [&.with-tree]:grid-cols-[250px_minmax(0,_1fr)] [&.with-tree]:gap-4',
+        mysql && treeOpen && !compact ? ' with-tree' : '',
+      )}
+    >
       {mysql && treeOpen && (
         <aside
-          className="schema-sidebar"
+          className="schema-sidebar flex flex-col min-w-0 min-h-0 overflow-hidden border border-line rounded-control"
           aria-label="表结构"
           onKeyDown={(event) => {
             if (compact && event.key === 'Escape') {
@@ -113,7 +121,7 @@ export default function DataBrowser({
           }}
         >
           {compact && (
-            <div className="schema-panel-heading">
+            <div className="flex items-center justify-between pt-2 pr-10 pb-2 pl-3 border-b border-b-line">
               <strong>表结构</strong>
               <Button
                 variant="ghost"
@@ -127,9 +135,12 @@ export default function DataBrowser({
           {navigation}
         </aside>
       )}
-      <div className="data-content" hidden={mysql && compact && treeOpen}>
+      <div
+        className="min-w-0 min-h-0 overflow-hidden flex flex-col [&_>_.toolbar]:shrink-0 [&_>_.ui-alert]:shrink-0 [&_>_.quick-questions]:shrink-0 [&_>_.quick-questions]:mt-2 [&_>_.quick-questions]:pt-2 [&_>_.ui-tabs]:flex-1 [&_>_.ui-tabs]:min-h-0 [&_.ui-tab-content[data-state='active']]:h-full [&_.ui-tab-content[data-state='active']]:overflow-auto [&_.ui-tab-content[data-state='active']:has(.preview-page)]:overflow-hidden hidden:hidden"
+        hidden={mysql && compact && treeOpen}
+      >
         {showTableToolbar && (
-          <div className="toolbar data-toolbar">
+          <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pr-9">
             {mysql ? (
               <>
                 <Button
@@ -142,13 +153,19 @@ export default function DataBrowser({
                 >
                   {dataset.schema.models.length} 张表
                 </Button>
-                <strong className="current-table" title={activeTable}>
+                <strong
+                  className="flex items-center gap-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap max-w-full [&_>_svg]:shrink-0"
+                  title={activeTable}
+                >
                   <TableIcon />
-                  <span>{activeTable || '未选择数据表'}</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                    {activeTable || '未选择数据表'}
+                  </span>
                 </strong>
               </>
             ) : (
               <Select
+                className="min-w-45 max-w-75"
                 aria-label="选择数据表"
                 value={activeTable}
                 onChange={(name) => {
@@ -157,7 +174,6 @@ export default function DataBrowser({
                   setTab('rows');
                 }}
                 options={dataset.schema.models.map((m) => ({ value: m.name, label: m.name }))}
-                style={{ minWidth: 180, maxWidth: 300 }}
               />
             )}
             <span className="text-[12px] text-muted">{model?.columns.length} 个字段</span>
@@ -186,7 +202,7 @@ export default function DataBrowser({
               children: !activeTable ? (
                 <Empty description="没有可预览的数据表" />
               ) : (
-                <div className="preview-page">
+                <div className="preview-page relative h-full min-h-0">
                   <Grid
                     key={tableKey}
                     fill
@@ -194,8 +210,8 @@ export default function DataBrowser({
                     rows={pending ? [] : rows}
                     columns={model?.columns}
                     footer={
-                      <div className="preview-pagination">
-                        <span aria-live="polite">
+                      <div className="flex-1 flex items-center flex-wrap gap-2">
+                        <span className="[&:first-child]:mr-auto" aria-live="polite">
                           {pending
                             ? '正在读取…'
                             : error
@@ -207,7 +223,7 @@ export default function DataBrowser({
                                   : '本页暂无数据，可返回上一页'}
                         </span>
                         <span
-                          className="preview-sort-note"
+                          className="text-muted [&:first-child]:mr-auto"
                           title="分页按需读取；排序只作用于当前页。远程数据变化或无唯一键时，翻页结果可能变化。"
                         >
                           仅排序当前页
@@ -227,7 +243,7 @@ export default function DataBrowser({
                           disabled={pending || page === 1}
                           onClick={() => changePage(page - 1)}
                         />
-                        <span>第 {page} 页</span>
+                        <span className="[&:first-child]:mr-auto">第 {page} 页</span>
                         <Button
                           size="small"
                           aria-label="下一页"
@@ -239,7 +255,10 @@ export default function DataBrowser({
                     }
                   />
                   {pending && (
-                    <div className="preview-loading preview-loading-overlay" role="status">
+                    <div
+                      className="min-h-45 flex items-center justify-center gap-3 text-muted absolute [inset:0_0_50px] bg-surface z-3"
+                      role="status"
+                    >
                       <Spin />
                       <span>正在读取 {activeTable}…</span>
                     </div>
@@ -251,21 +270,31 @@ export default function DataBrowser({
               key: 'schema',
               label: !showTableToolbar && model ? `字段结构（${model.columns.length}）` : '字段结构',
               children: (
-                <div className="ui-table-scroll">
-                  <table className="ui-table schema-table">
+                <div className={tableViewport}>
+                  <table className="ui-table w-full text-left border-separate border-spacing-0 text-helper [&_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-[color-mix(in_srgb,_var(--muted)_3%,_transparent)] [&_th[aria-sort='ascending']_.ui-sort]:text-accent [&_th[aria-sort='descending']_.ui-sort]:text-accent [&_.ui-table-empty]:text-center [&_.ui-table-empty]:h-27.5 [&_.ui-table-empty]:text-muted min-w-165">
                     <thead>
                       <tr>
-                        <th>字段</th>
-                        <th style={{ width: 210 }}>类型</th>
-                        <th style={{ width: 160 }}>约束</th>
+                        <th className="font-medium bg-page text-muted sticky top-0 z-2 h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left">
+                          字段
+                        </th>
+                        <th className="font-medium bg-page text-muted sticky top-0 z-2 h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left w-52.5">
+                          类型
+                        </th>
+                        <th className="font-medium bg-page text-muted sticky top-0 z-2 h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left w-40">
+                          约束
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {model?.columns.map((column) => (
                         <tr key={column.name}>
-                          <td>{column.name}</td>
-                          <td>{column.type}</td>
-                          <td>
+                          <td className="h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left">
+                            {column.name}
+                          </td>
+                          <td className="h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left">
+                            {column.type}
+                          </td>
+                          <td className="h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left">
                             {(typeof model.primaryKey === 'string'
                               ? [model.primaryKey]
                               : model.primaryKey || []
@@ -321,7 +350,8 @@ export default function DataBrowser({
                   </Button>
                   {dataset.format === 'xlsx' && (
                     <Button
-                      style={{ marginLeft: 12 }}
+                      className="ml-3"
+
                       onClick={async () => {
                         try {
                           await api.reparseData(dataset.id);
@@ -339,7 +369,7 @@ export default function DataBrowser({
             },
           ]}
         />
-        <div className="quick-questions">
+        <div className="quick-questions flex items-center gap-2 flex-wrap mt-4 pt-3 border-t border-t-line">
           <span className="text-muted">开始分析</span>
           {quickQuestions(dataset, activeTable).map((q) => (
             <Button size="small" key={q.id} onClick={() => onAsk(q.question)}>

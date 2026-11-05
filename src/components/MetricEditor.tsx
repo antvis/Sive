@@ -33,14 +33,14 @@ export default function MetricEditor({
     setIndex(position);
   }
   return (
-    <details className="metric-editor">
+    <details>
       <summary>
         指标定义 <span className="text-muted">{metrics.length} 个 · 可复用</span>
       </summary>
       <p className="text-muted">
         把常用指标保存为名称、计算公式和单位，后续推荐与分析会统一参考。公式会校验，但模型执行仍需核对。
       </p>
-      <div className="metric-toolbar">
+      <div className="flex gap-2 flex-wrap">
         <Button size="small" disabled={disabled} onClick={() => edit(metrics.length)}>
           添加指标
         </Button>
@@ -71,14 +71,14 @@ export default function MetricEditor({
       </div>
       {!metrics.length && <p className="text-muted">还没有定义指标，可添加或从其他数据复制。</p>}
       {metrics.map((metric, position) => (
-        <div className="metric-row" key={position}>
-          <div>
+        <div className="flex items-center gap-2 py-2.5 px-0 border-t border-t-line" key={position}>
+          <div className="flex-1 min-w-0">
             <strong>{metric.name || '未命名指标'}</strong>
-            <small>
+            <small className="block text-muted wrap-anywhere">
               {metric.table || '待选择数据表'}
               {metric.unit ? ` · ${metric.unit}` : ''}
             </small>
-            <code>{metric.expression}</code>
+            <code className="block text-muted wrap-anywhere">{metric.expression}</code>
           </div>
           <Button variant="ghost" size="small" disabled={disabled} onClick={() => edit(position)}>
             编辑

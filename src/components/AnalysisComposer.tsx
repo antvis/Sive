@@ -1,3 +1,4 @@
+import { cx } from '../shared/cx';
 import { Button, Dropdown, TextArea, Tooltip } from './ui';
 import { ArrowUpIcon, XIcon, CaretDownIcon, InfoIcon, StopCircleIcon } from '@phosphor-icons/react';
 import type { Dataset, ModelProfile } from '../../shared/contracts';
@@ -60,9 +61,9 @@ export default function AnalysisComposer({
           ? '输入想分析的问题'
           : `发送 · ${sendKey}`;
   return (
-    <div className="composer">
+    <div className="composer pt-2 pr-3 pb-1.5 pl-3 bg-surface shrink-0">
       {hasContext && (
-        <div className="composer-context">
+        <div className="flex items-center justify-between gap-2 text-muted text-caption pt-0 pr-1 pb-1.5 pl-1">
           <span>已关联当前会话上下文</span>
           <Button
             variant="ghost"
@@ -75,7 +76,10 @@ export default function AnalysisComposer({
         </div>
       )}
       <div
-        className={'composer-box' + (locked ? ' is-busy' : '')}
+        className={cx(
+          'border border-line rounded-panel bg-surface shadow-[0_2px_6px_color-mix(in_srgb,_var(--text)_4%,_transparent)] overflow-visible [transition:border-color_120ms] focus-within:border-accent [&_.ui-textarea]:pt-3 [&_.ui-textarea]:pr-3 [&_.ui-textarea]:pb-1 [&_.ui-textarea]:pl-3 [&_.ui-textarea]:text-body [&_.ui-textarea]:leading-[1.7] [&_.ui-textarea]:bg-transparent [&.is-busy]:bg-page',
+          locked ? ' is-busy' : '',
+        )}
         onKeyDown={(event) => {
           if (
             event.target instanceof HTMLTextAreaElement &&
@@ -96,10 +100,11 @@ export default function AnalysisComposer({
           disabled={locked}
           variant="borderless"
         />
-        <div className="composer-actions">
+        <div className="flex items-center gap-0.5 pt-1.5 pr-2 pb-2 pl-2 [&_.ui-button]:h-7 [&_.ui-button]:text-helper [&_.composer-model]:min-w-0 [&_.composer-model]:max-w-45 [&_.composer-model]:flex-initial [&_.composer-model]:gap-[5px] [&_.composer-model]:text-muted [&_.composer-mode]:shrink-0 [&_.composer-mode]:gap-[5px] [&_.composer-mode]:text-muted [&_.composer-send]:w-7.5 [&_.composer-send]:h-7.5 [&_.composer-send]:shrink-0 [&_.composer-send]:rounded-control [&_.composer-send]:text-title">
           <Dropdown
+            contentClassName="w-65 max-h-75 overflow-y-auto"
             placement="topLeft"
-            style={{ width: 260, maxHeight: 300, overflowY: 'auto' }}
+
             disabled={locked || !models.length}
             menu={{
               selectedKeys: model ? [JSON.stringify([model.id, model.model])] : [],
@@ -118,7 +123,7 @@ export default function AnalysisComposer({
             <Button
               variant="ghost"
               size="small"
-              className="composer-model"
+              className="composer-model [&_.ui-icon]:w-3 [&_.ui-icon]:h-3"
               aria-label="选择模型"
               title={model ? `${model.name} · ${model.model}` : '选择模型'}
               disabled={locked || !models.length}
@@ -128,17 +133,18 @@ export default function AnalysisComposer({
             </Button>
           </Dropdown>
           <Dropdown
+            contentClassName="w-70"
             placement="topRight"
-            style={{ width: 280 }}
+
             disabled={locked}
             menu={{
               selectedKeys: [mode],
               items: analysisModes.map((item) => ({
                 key: item.value,
                 label: (
-                  <div className="analysis-mode-option">
+                  <div className="max-w-62.5 py-[3px] px-0">
                     <strong>{item.label}</strong>
-                    <small>{item.description}</small>
+                    <small className="block text-muted mt-1 leading-[1.5]">{item.description}</small>
                   </div>
                 ),
               })),
@@ -148,7 +154,7 @@ export default function AnalysisComposer({
             <Button
               variant="ghost"
               size="small"
-              className="composer-mode"
+              className="composer-mode [&_.ui-icon]:w-3 [&_.ui-icon]:h-3"
               aria-label="分析方式"
               disabled={locked}
             >
@@ -183,7 +189,7 @@ export default function AnalysisComposer({
           )}
         </div>
       </div>
-      <div className="composer-footer">
+      <div className="flex items-center justify-between gap-2 text-muted text-caption min-h-7.5 px-0.5 [&_.ui-button]:text-muted [&_.ui-button]:text-caption [&_.ui-button-link]:text-accent">
         {!model ? (
           <Button variant="link" size="small" onClick={onSettings}>
             添加模型后开始分析

@@ -45,13 +45,14 @@ export default function ModelPicker({
         </span>
       </div>
       {!!ids.length && (
-        <div className="model-picker-list my-[12px] max-h-[200px] overflow-y-auto">
+        <div className="border border-line rounded-control my-[12px] max-h-[200px] overflow-y-auto">
           {ids.map((name) => (
             <label
-              className="flex cursor-pointer items-center gap-[10px] px-[12px] py-[8px] [overflow-wrap:anywhere]"
+              className="flex cursor-pointer items-center gap-[10px] px-[12px] py-[8px] [overflow-wrap:anywhere] hover:bg-[color-mix(in_srgb,_var(--accent)_6%,_var(--surface))] [&:has(input:checked)]:bg-[color-mix(in_srgb,_var(--accent)_6%,_var(--surface))]"
               key={name}
             >
               <input
+                className="accent-accent"
                 type="checkbox"
                 checked={value.includes(name)}
                 disabled={disabled}

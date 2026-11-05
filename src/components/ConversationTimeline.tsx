@@ -36,9 +36,9 @@ export default function ConversationTimeline({
     return () => observer.disconnect();
   }, []);
   return (
-    <div className="conversation-feed">
+    <div className="relative flex flex-col min-h-0 flex-1">
       <div
-        className="conversation-body"
+        className="conversation-body [overflow-anchor:none] flex-1 min-h-0 overflow-auto py-5 px-4 overscroll-contain"
         ref={scroll}
         onScroll={(event) => {
           const node = event.currentTarget;
@@ -61,7 +61,7 @@ export default function ConversationTimeline({
       </div>
       {away && (
         <Button
-          className="conversation-latest"
+          className="absolute bottom-2.5 left-[50%] [transform:translateX(-50%)] z-2"
           size="small"
           aria-label="回到最新"
           icon={<ArrowDownIcon />}

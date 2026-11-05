@@ -1,3 +1,5 @@
+import { cx } from '../shared/cx';
+import { navigationIconButton } from './navigation-styles';
 import { useEffect, useRef, useState } from 'react';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import type { Conversation, Dataset } from '../../shared/contracts';
@@ -55,15 +57,19 @@ export default function ConversationSearch({
   };
   return (
     <>
-      <span className="conversation-search-trigger">
+      <span className="ml-auto">
         <Tooltip
           title={
-            <span className="search-shortcut-label">
-              搜索会话 <kbd>{shortcut}</kbd>
+            <span className="inline-flex items-center gap-2.5">
+              搜索会话{' '}
+              <kbd className="font-[family-name:inherit] py-0.5 px-[5px] border border-current rounded-[4px] text-caption font-normal leading-[1.2] opacity-65">
+                {shortcut}
+              </kbd>
             </span>
           }
         >
           <Button
+            className={cx(navigationIconButton, '[&>svg]:size-4.5')}
             variant="ghost"
             icon={<MagnifyingGlassIcon />}
             aria-label={`搜索所有会话 (${shortcut})`}
@@ -74,8 +80,11 @@ export default function ConversationSearch({
       </span>
       <Modal
         title={
-          <span className="search-shortcut-label">
-            搜索会话 <kbd>{shortcut}</kbd>
+          <span className="inline-flex items-center gap-2.5">
+            搜索会话{' '}
+            <kbd className="font-[family-name:inherit] py-0.5 px-[5px] border border-current rounded-[4px] text-caption font-normal leading-[1.2] opacity-65">
+              {shortcut}
+            </kbd>
           </span>
         }
         open={open}
@@ -96,11 +105,16 @@ export default function ConversationSearch({
               select(results[0]);
           }}
         />
-        <div className="conversation-search-results">
+        <div className="max-h-90 overflow-y-auto mt-3">
           {results.map((conversation) => (
-            <button key={conversation.id} disabled={disabled} onClick={() => select(conversation)}>
+            <button
+              className="flex flex-col gap-[5px] w-full p-3 border-0 rounded-control text-left bg-transparent text-ink wrap-anywhere hover:bg-page focus-visible:bg-page"
+              key={conversation.id}
+              disabled={disabled}
+              onClick={() => select(conversation)}
+            >
               <strong>{conversation.title}</strong>
-              <span>
+              <span className="text-helper text-muted">
                 {names.get(conversation.datasetId)} · {new Date(conversation.updatedAt).toLocaleDateString()}
               </span>
             </button>

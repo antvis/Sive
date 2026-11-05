@@ -90,9 +90,18 @@ function SavedCard({
     }
   };
   return (
-    <article className="saved-analysis-card" ref={root} aria-label={title}>
-      <header className="saved-card-header">
-        <h3 title={title}>{title}</h3>
+    <article
+      className="grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)]"
+      ref={root}
+      aria-label={title}
+    >
+      <header className="flex gap-2 items-start">
+        <h3
+          className="flex-1 min-w-0 m-0 text-label leading-[24px] wrap-anywhere [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden"
+          title={title}
+        >
+          {title}
+        </h3>
         <Dropdown
           menu={{
             items: [
@@ -129,15 +138,25 @@ function SavedCard({
           <Button variant="ghost" size="small" icon={<DotsThreeIcon />} aria-label={'分析操作：' + title} />
         </Dropdown>
       </header>
-      <div className="saved-card-meta">
+      <div className="items-center grid grid-cols-[auto_minmax(0,_1fr)] gap-y-1 gap-x-2 text-muted text-caption mt-2 mr-0 mb-3.5 ml-0">
         <DatabaseIcon />
-        <span title={run.sourceName}>{run.sourceName}</span>
-        <time dateTime={updatedAt}>数据更新于 {new Date(updatedAt).toLocaleString()}</time>
+        <span
+          className="[&:not(.ui-icon)]:min-w-0 [&:not(.ui-icon)]:overflow-hidden [&:not(.ui-icon)]:text-ellipsis [&:not(.ui-icon)]:whitespace-nowrap"
+          title={run.sourceName}
+        >
+          {run.sourceName}
+        </span>
+        <time className="[grid-column:2] tabular-nums" dateTime={updatedAt}>
+          数据更新于 {new Date(updatedAt).toLocaleString()}
+        </time>
       </div>
       <Segmented aria-label="分析内容" options={['数据', 'SQL', '图表']} value={tab} onChange={setTab} />
-      <div className="saved-card-content">
+      <div className="flex flex-col h-65 min-h-0 my-3 mx-0 overflow-auto [&_.chart-frame]:block [&_.chart-frame]:h-65 [&_.chart-frame]:flex-1 [&_.chart-frame]:min-h-0 [&_>_.data-grid]:shrink-0 [&_>_.ui-alert]:shrink-0 [&_>_.saved-card-feedback]:shrink-0 [&_.chart-render-status:has(span:empty)]:hidden">
         {refreshing && (
-          <div className="saved-card-feedback" role="status">
+          <div
+            className="saved-card-feedback flex gap-2 items-center mt-3 text-helper text-accent"
+            role="status"
+          >
             <Spin size="small" />
             正在重新查询{run.chart ? '并更新图表' : '数据'}，完成前保留上次结果…
           </div>
@@ -156,7 +175,7 @@ function SavedCard({
             visible ? (
               <Chart run={current} saved />
             ) : (
-              <div className="saved-card-placeholder">
+              <div className="h-65 grid place-items-center">
                 <Spin />
               </div>
             )
@@ -168,7 +187,7 @@ function SavedCard({
             />
           )
         ) : tab === 'SQL' ? (
-          <pre className="saved-card-sql">{run.result.sql || '此分析没有 SQL'}</pre>
+          <pre className="m-0 h-full overflow-auto">{run.result.sql || '此分析没有 SQL'}</pre>
         ) : (
           <Grid
             rows={current.result.data}
@@ -178,7 +197,7 @@ function SavedCard({
           />
         )}
       </div>
-      <footer className="saved-card-footer">
+      <footer className="flex items-center gap-2 justify-between border-t border-t-line pt-3">
         <span className="text-muted">
           {current.result.data.length} 行 · {current.result.schema.length} 列
           {current.result.truncated ? ' · 结果已截断' : ''}
@@ -226,13 +245,13 @@ function SavedCardLoader(props: {
   const detail = useRun(props.run);
   if (detail.error)
     return (
-      <article className="saved-analysis-card">
+      <article className="grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)]">
         <Alert type="error" title={detail.error} action={<Button onClick={detail.retry}>重试</Button>} />
       </article>
     );
   if (!detail.run)
     return (
-      <article className="saved-analysis-card">
+      <article className="grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)]">
         <h3>{props.run.savedTitle || props.run.question}</h3>
         <Spin />
       </article>
@@ -267,9 +286,10 @@ export default function SavedAnalyses({
     .sort((a, b) => b.savedAt!.localeCompare(a.savedAt!));
   const current = Math.min(page, Math.max(1, Math.ceil(filtered.length / 6)));
   return (
-    <section className="saved-analyses" aria-label="分析收藏卡片">
-      <div className="toolbar toolbar-divider">
+    <section aria-label="分析收藏卡片">
+      <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pb-4 border-b border-b-line">
         <SearchInput
+          className="max-w-75"
           aria-label="搜索分析收藏"
           placeholder="搜索标题、问题、数据或模型"
           allowClear
@@ -278,12 +298,11 @@ export default function SavedAnalyses({
             setSearch(event.target.value);
             setPage(1);
           }}
-          style={{ maxWidth: 300 }}
         />
         <span className="text-muted">{filtered.length} 个分析</span>
       </div>
       {filtered.length ? (
-        <div className="saved-analysis-grid">
+        <div className="grid grid-cols-[repeat(auto-fill,_minmax(min(360px,_100%),_1fr))] gap-4 items-stretch mt-5">
           {filtered.slice((current - 1) * 6, current * 6).map((run) => (
             <SavedCardLoader
               key={run.id}
@@ -300,7 +319,7 @@ export default function SavedAnalyses({
       )}
       {filtered.length > 6 && (
         <Pagination
-          className="collection-pagination"
+          className="justify-end mt-5"
           current={current}
           pageSize={6}
           total={filtered.length}

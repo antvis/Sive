@@ -69,7 +69,7 @@ function ResultContent({
     }
   };
   return (
-    <article className="result">
+    <article className="result pb-4.5 mb-4.5 border-b border-b-line min-w-0">
       <UserMessage
         question={run.question}
         time={run.events[0]?.at || run.createdAt}
@@ -93,7 +93,7 @@ function ResultContent({
           <summary>计算依据 · {run.result.data.length} 行</summary>
           {dataOpen && (
             <>
-              <pre className="result-sql">{run.result.sql}</pre>
+              <pre className="mb-3">{run.result.sql}</pre>
               <Grid rows={run.result.data} />
             </>
           )}
@@ -119,7 +119,7 @@ function ResultContent({
             />
           )}
         </details>
-        <div className="toolbar">
+        <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0">
           <Tooltip open={!!saveFeedback} title={<span role="status">{saveFeedback?.text}</span>}>
             <Button
               size="small"
@@ -129,7 +129,11 @@ function ResultContent({
               disabled={saving || saved}
               onClick={() => save()}
             >
-              <span key={saveLabel} className="result-save-label" aria-live="polite">
+              <span
+                key={saveLabel}
+                className="[animation:result-save-enter_180ms_ease-out] motion-reduce:[animation:none]"
+                aria-live="polite"
+              >
                 {saveLabel}
               </span>
             </Button>
@@ -180,7 +184,7 @@ export default function AnalysisResult(props: {
     return <Alert type="error" title={detail.error} action={<Button onClick={detail.retry}>重试</Button>} />;
   if (!detail.run)
     return (
-      <div className="loading">
+      <div className="loading grid place-content-center min-h-50">
         <Spin />
       </div>
     );

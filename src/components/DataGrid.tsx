@@ -1,3 +1,5 @@
+import { tableViewport, tableSurface } from './ui/styles';
+import { cx } from '../shared/cx';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   getCoreRowModel,
@@ -54,7 +56,10 @@ function ResizeHeader({
     >
       {children}
       <span
-        className={'column-resizer' + (column.getIsResizing() ? ' dragging' : '')}
+        className={cx(
+          "absolute z-2 top-0 right-0 w-[9px] h-full cursor-col-resize touch-none select-none [&::after]:[content:''] [&::after]:absolute [&::after]:top-[25%] [&::after]:bottom-[25%] [&::after]:right-[3px] [&::after]:w-0.5 [&::after]:rounded-[1px] [&::after]:bg-line [&:hover::after]:bg-accent [&:hover::after]:top-[10%] [&:hover::after]:bottom-[10%] [&:focus-visible::after]:bg-accent [&:focus-visible::after]:top-[10%] [&:focus-visible::after]:bottom-[10%] [&.dragging::after]:bg-accent [&.dragging::after]:top-[10%] [&.dragging::after]:bottom-[10%] focus-visible:outline-1 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-1",
+          column.getIsResizing() ? ' dragging' : '',
+        )}
         role="separator"
         aria-label={'调整列宽：' + name}
         aria-orientation="vertical"
@@ -171,9 +176,17 @@ export default function Grid({
   const visible = table.getRowModel().rows;
   const total = Math.max(table.getTotalSize(), available, 160);
   return (
-    <div className={'data-grid' + (fill ? ' data-grid-fill' : '')} ref={root}>
-      <div className="grid-table-viewport ui-table-scroll" ref={viewport}>
-        <table className="ui-table data-table" style={{ width: total, tableLayout: 'fixed' }}>
+    <div
+      className={cx(
+        'data-grid min-w-0 [&_.ui-table_th]:sticky [&_.ui-table_th]:pr-4',
+        fill
+          ? ' flex flex-col h-full min-h-0 [&_.grid-table-viewport]:flex-1 [&_.grid-table-viewport]:min-h-0 [&_.grid-table-viewport]:overflow-auto [&_.grid-footer]:shrink-0 [&_.grid-footer]:border-t [&_.grid-footer]:border-t-line [&_.grid-footer]:pt-2 [&_.grid-footer]:mt-1'
+          : '',
+      )}
+      ref={root}
+    >
+      <div className={cx(tableViewport, 'grid-table-viewport')} ref={viewport}>
+        <table className={cx(tableSurface, 'table-fixed')} style={{ width: total }}>
           <colgroup>
             {table.getAllLeafColumns().map((column) => (
               <col key={column.id} style={{ width: column.getSize() }} />
@@ -189,7 +202,7 @@ export default function Grid({
                   <ResizeHeader key={header.id} header={header}>
                     {column.getCanSort() ? (
                       <button
-                        className="ui-sort"
+                        className="ui-sort flex items-center gap-2 w-full border-0 bg-transparent text-inherit text-left p-0 [&_svg]:shrink-0 [&_svg]:text-muted"
                         title={name}
                         aria-label={'排序：' + name}
                         onClick={() => {
@@ -197,7 +210,7 @@ export default function Grid({
                           table.setPageIndex(0);
                         }}
                       >
-                        <span>{name}</span>
+                        <span className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</span>
                         {sorted === 'asc' ? (
                           <CaretUpIcon size={12} />
                         ) : sorted === 'desc' ? (
@@ -207,7 +220,7 @@ export default function Grid({
                         )}
                       </button>
                     ) : (
-                      <span className="ui-column-title" title={name}>
+                      <span className="overflow-hidden text-ellipsis whitespace-nowrap block" title={name}>
                         {name}
                       </span>
                     )}
@@ -222,7 +235,11 @@ export default function Grid({
                 {row.getVisibleCells().map((entry) => {
                   const text = cell(entry.getValue());
                   return (
-                    <td key={entry.id} title={text}>
+                    <td
+                      className="h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left overflow-hidden text-ellipsis whitespace-nowrap"
+                      key={entry.id}
+                      title={text}
+                    >
                       {text}
                     </td>
                   );
@@ -231,7 +248,10 @@ export default function Grid({
             ))}
             {!visible.length && (
               <tr>
-                <td colSpan={Math.max(fields.length, 1)} className="ui-table-empty">
+                <td
+                  colSpan={Math.max(fields.length, 1)}
+                  className="ui-table-empty h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left overflow-hidden text-ellipsis whitespace-nowrap"
+                >
                   暂无数据
                 </td>
               </tr>
@@ -247,7 +267,7 @@ export default function Grid({
           onChange={(page) => table.setPageIndex(page - 1)}
         />
       )}
-      <div className="grid-footer">
+      <div className="grid-footer flex justify-between items-center gap-2 min-h-7 text-muted text-caption [&_.ui-button]:text-muted">
         {footer || <span>{rows.length} 行 · 排序仅作用于已加载数据</span>}
         <Tooltip title="恢复全部列宽；拖动表头右边界可调整，双击可恢复单列">
           <Button

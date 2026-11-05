@@ -44,11 +44,11 @@ export default function DeletedConversations({ state }: { state: State }) {
       onOk: () => perform(() => window.workbench.purgeConversations(ids), '已永久删除'),
     });
   return (
-    <section className="deleted-conversations">
-      <header className="deleted-header">
+    <section>
+      <header className="flex items-start justify-between gap-5 mb-7 [&_>_button]:shrink-0">
         <div>
-          <h2>已删除会话</h2>
-          <p className="text-muted">移除的会话保留在这里，恢复后可继续分析。</p>
+          <h2 className="mt-0 mr-0 mb-2 ml-0">已删除会话</h2>
+          <p className="text-muted m-0 text-body">移除的会话保留在这里，恢复后可继续分析。</p>
         </div>
         <Button
           danger
@@ -62,13 +62,13 @@ export default function DeletedConversations({ state }: { state: State }) {
       </header>
       {deleted.length > 0 ? (
         <>
-          <div className="deleted-filters">
+          <div className="deleted-filters grid grid-cols-[minmax(0,_1fr)_minmax(150px,_200px)] gap-3 mb-7">
             <SearchInput
+              className="w-full"
               aria-label="搜索已删除会话"
               placeholder="搜索会话或数据源"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              style={{ width: '100%' }}
             />
             <Select
               aria-label="按数据源筛选"
@@ -81,18 +81,32 @@ export default function DeletedConversations({ state }: { state: State }) {
             />
           </div>
           {groups.map(({ dataset, conversations }) => (
-            <section className="deleted-group" key={dataset.id}>
-              <header>
+            <section
+              className="mb-7 [&_>_header_strong]:flex-1 [&_>_header_strong]:min-w-0 [&_>_header_strong]:overflow-hidden [&_>_header_strong]:text-ellipsis [&_>_header_strong]:whitespace-nowrap [&_>_header_strong]:text-ink [&_>_header_strong]:text-body [&_>_header_strong]:font-medium [&_>_header_span]:text-helper [&_>_header_span]:whitespace-nowrap"
+              key={dataset.id}
+            >
+              <header className="flex items-center gap-2.5 mb-3 text-muted">
                 <DatabaseIcon />
                 <strong title={dataset.name}>{dataset.name}</strong>
                 <span>{conversations.length} 个会话</span>
               </header>
-              <div className="deleted-list">
+              <div className="px-4 border border-line rounded-[14px]">
                 {conversations.map((conversation) => (
-                  <div className="deleted-row" key={conversation.id}>
-                    <div className="deleted-row-content">
-                      <strong title={conversation.title}>{conversation.title}</strong>
-                      <time dateTime={conversation.deletedAt}>
+                  <div
+                    className="deleted-row flex items-center gap-2.5 py-4 px-0 [&_+_.deleted-row]:border-t [&_+_.deleted-row]:border-t-[color-mix(in_srgb,_var(--border)_65%,_transparent)] [&_>_button]:shrink-0"
+                    key={conversation.id}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <strong
+                        className="block overflow-hidden text-ellipsis whitespace-nowrap text-body font-medium"
+                        title={conversation.title}
+                      >
+                        {conversation.title}
+                      </strong>
+                      <time
+                        className="block mt-[5px] text-helper text-muted"
+                        dateTime={conversation.deletedAt}
+                      >
                         移除于{' '}
                         {new Date(conversation.deletedAt!).toLocaleString('zh-CN', {
                           year: 'numeric',
@@ -128,17 +142,17 @@ export default function DeletedConversations({ state }: { state: State }) {
             </section>
           ))}
           {!groups.length && (
-            <div className="deleted-empty">
-              <p>没有匹配的会话</p>
-              <span>试试其他关键词或数据源。</span>
+            <div className="grid justify-items-center py-16 px-4 text-muted text-center">
+              <p className="text-ink mt-4 mr-0 mb-1.5 ml-0">没有匹配的会话</p>
+              <span className="text-body">试试其他关键词或数据源。</span>
             </div>
           )}
         </>
       ) : (
-        <div className="deleted-empty">
+        <div className="grid justify-items-center py-16 px-4 text-muted text-center">
           <ArchiveIcon size={28} />
-          <p>暂无已删除会话</p>
-          <span>从左侧列表移除的会话会显示在这里。</span>
+          <p className="text-ink mt-4 mr-0 mb-1.5 ml-0">暂无已删除会话</p>
+          <span className="text-body">从左侧列表移除的会话会显示在这里。</span>
         </div>
       )}
     </section>

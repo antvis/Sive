@@ -25,7 +25,10 @@ function ChartFrame({ html, title }: { html: string; title: string }) {
   }, [html, attempt]);
   return (
     <>
-      <div className="chart-render-status" role="status">
+      <div
+        className="chart-render-status flex items-center justify-between text-muted text-helper [&:has(span:empty)]:justify-end"
+        role="status"
+      >
         <span>
           {status === 'loading'
             ? '正在绘制图表…'
@@ -42,7 +45,7 @@ function ChartFrame({ html, title }: { html: string; title: string }) {
       <iframe
         key={attempt}
         ref={frame}
-        className="chart-frame"
+        className="chart-frame w-full h-85 border-0 bg-surface"
         title={title}
         sandbox="allow-scripts"
         srcDoc={html}
@@ -72,7 +75,7 @@ export function Chart({ run, saved = false }: { run: Run; saved?: boolean }) {
   ) : html ? (
     <ChartFrame html={html} title={run.question} />
   ) : (
-    <div className="loading">
+    <div className="loading grid place-content-center min-h-50">
       <Spin />
     </div>
   );

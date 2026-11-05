@@ -1,3 +1,4 @@
+import { floatingSurface, menuItem } from './styles';
 import {
   cloneElement,
   createContext,
@@ -6,7 +7,6 @@ import {
   useState,
   type ReactNode,
   type ReactElement,
-  type CSSProperties,
 } from 'react';
 import { Dialog, DropdownMenu, Popover, Tooltip as TooltipPrimitive } from 'radix-ui';
 import { CaretRightIcon, CheckIcon, XIcon } from '@phosphor-icons/react';
@@ -29,10 +29,13 @@ export function Tooltip({
   return (
     <TooltipPrimitive.Root open={open ?? visible} onOpenChange={setVisible}>
       <TooltipPrimitive.Trigger asChild>
-        <span className="ui-tooltip-trigger">{children}</span>
+        <span className="inline-flex align-middle">{children}</span>
       </TooltipPrimitive.Trigger>
       <TooltipPrimitive.Portal>
-        <TooltipPrimitive.Content className="ui-tooltip" sideOffset={7}>
+        <TooltipPrimitive.Content
+          className="z-150 max-w-80 bg-ink text-surface text-helper leading-[1.6] py-1.5 px-2.5 rounded-button shadow-[0_3px_10px_#0001]"
+          sideOffset={7}
+        >
           {title}
         </TooltipPrimitive.Content>
       </TooltipPrimitive.Portal>
@@ -55,7 +58,7 @@ export function Dropdown({
   open,
   onOpenChange,
   popupRender,
-  style,
+  contentClassName,
 }: {
   children: ReactElement;
   menu: {
@@ -69,7 +72,7 @@ export function Dropdown({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   popupRender?: (menu: ReactNode) => ReactNode;
-  style?: CSSProperties;
+  contentClassName?: string;
 }) {
   const side = placement.startsWith('top') ? 'top' : 'bottom';
   const align = placement.endsWith('Left') ? 'start' : 'end';
@@ -86,13 +89,18 @@ export function Dropdown({
           {children}
         </Popover.Trigger>
         <Popover.Portal>
-          <Popover.Content side={side} align={align} sideOffset={7} className="ui-floating" style={style}>
+          <Popover.Content
+            side={side}
+            align={align}
+            sideOffset={7}
+            className={cx(floatingSurface, contentClassName)}
+          >
             {popupRender(
               <div className={menu.className}>
                 {menu.items.map((item) => (
                   <button
                     type="button"
-                    className="ui-menu-item"
+                    className={menuItem}
                     key={item.key}
                     disabled={item.disabled}
                     aria-current={menu.selectedKeys?.includes(item.key) ? 'true' : undefined}
@@ -122,14 +130,18 @@ export function Dropdown({
           side={side}
           align={align}
           sideOffset={7}
-          className={cx('ui-floating ui-menu', menu.className)}
-          style={style}
+          className={cx(
+            floatingSurface,
+            'min-w-42.5 max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-auto',
+            menu.className,
+            contentClassName,
+          )}
         >
           {menu.items.map((item) =>
             item.children ? (
               <DropdownMenu.Sub key={item.key}>
                 <DropdownMenu.SubTrigger
-                  className="ui-menu-item"
+                  className={menuItem}
                   disabled={item.disabled}
                   data-selected={
                     item.children.some((child) => menu.selectedKeys?.includes(child.key)) || undefined
@@ -141,25 +153,21 @@ export function Dropdown({
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.SubContent
-                    className="ui-floating ui-menu"
+                    className={cx(
+                      floatingSurface,
+                      'min-w-42.5 overflow-auto max-h-[min(320px,_var(--radix-dropdown-menu-content-available-height))] max-w-[min(360px,_90vw)]',
+                    )}
                     sideOffset={6}
-                    style={{
-                      maxHeight: 'min(320px, var(--radix-dropdown-menu-content-available-height))',
-                      overflowY: 'auto',
-                      maxWidth: 'min(360px, 90vw)',
-                    }}
                   >
                     {item.children.map((child) => (
                       <DropdownMenu.Item
                         key={child.key}
-                        className="ui-menu-item"
+                        className={menuItem}
                         disabled={child.disabled}
                         data-selected={menu.selectedKeys?.includes(child.key) || undefined}
                         onSelect={() => menu.onClick({ key: child.key })}
                       >
-                        <span className="min-w-0 flex-1" style={{ overflowWrap: 'anywhere' }}>
-                          {child.label}
-                        </span>
+                        <span className="min-w-0 flex-1 wrap-anywhere">{child.label}</span>
                         {menu.selectedKeys?.includes(child.key) && <CheckIcon size={14} />}
                       </DropdownMenu.Item>
                     ))}
@@ -169,7 +177,7 @@ export function Dropdown({
             ) : (
               <DropdownMenu.Item
                 key={item.key}
-                className={cx('ui-menu-item', item.danger && 'ui-danger')}
+                className={cx(menuItem, item.danger && 'ui-danger text-danger')}
                 disabled={item.disabled}
                 data-selected={menu.selectedKeys?.includes(item.key) || undefined}
                 onSelect={() => menu.onClick({ key: item.key })}
@@ -225,7 +233,7 @@ export function Modal({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="ui-overlay" />
+        <Dialog.Overlay className="fixed inset-0 z-90 bg-[#0c14234d] [backdrop-filter:blur(3px)] [animation:ui-fade_120ms_ease-out]" />
         <Dialog.Content
           onOpenAutoFocus={() => {
             returnFocus.current =
@@ -237,7 +245,7 @@ export function Modal({
               returnFocus.current.focus();
             }
           }}
-          className="ui-dialog"
+          className="fixed z-100 top-[50%] left-[50%] [transform:translate(-50%,_-50%)] w-[calc(100vw_-_40px)] max-h-[calc(100dvh_-_64px)] flex flex-col text-ink bg-surface border border-line rounded-dialog shadow-[0_20px_70px_#0003] outline-none [animation:ui-fade_150ms_ease-out]"
           aria-describedby={undefined}
           style={{ maxWidth: width }}
           onPointerDownOutside={(e) => {
@@ -247,7 +255,7 @@ export function Modal({
             if (busy) e.preventDefault();
           }}
         >
-          <div className="ui-dialog-header">
+          <div className="flex items-center gap-4 justify-between pt-4.5 pr-5.5 pb-2.5 pl-5.5 shrink-0 [&_h2]:text-[17px] [&_h2]:font-semibold [&_h2]:m-0">
             <Dialog.Title>{title}</Dialog.Title>
             <Button
               variant="ghost"
@@ -258,8 +266,10 @@ export function Modal({
               onClick={onCancel}
             />
           </div>
-          <div className="ui-dialog-body">{children}</div>
-          <div className="ui-dialog-footer">
+          <div className="overflow-auto pt-2 pr-5.5 pb-4 pl-5.5 [&_>_p]:mt-0 [&_>_p]:mr-0 [&_>_p]:mb-4 [&_>_p]:ml-0 [&_>_p]:text-muted">
+            {children}
+          </div>
+          <div className="flex justify-end gap-2 pt-3.5 pr-5.5 pb-4.5 pl-5.5 shrink-0 border-t border-t-[color-mix(in_srgb,_var(--border)_60%,_transparent)]">
             {footer !== undefined ? (
               footer
             ) : (

@@ -22,7 +22,7 @@ export function Form<T extends FieldValues>({
   return (
     <FormProvider {...form}>
       <DisabledContext.Provider value={disabled}>
-        <div className="ui-form" onChange={onValuesChange}>
+        <div className="grid gap-4" onChange={onValuesChange}>
           {children}
         </div>
       </DisabledContext.Provider>
@@ -50,11 +50,11 @@ export function Field({
       name={name}
       control={control}
       render={({ field, fieldState }) => (
-        <div className="ui-field">
-          <label id={`${id}-label`} htmlFor={id}>
+        <div className="flex flex-col gap-[7px] min-w-0">
+          <label className="font-medium text-body" id={`${id}-label`} htmlFor={id}>
             {label}
             {required && (
-              <span aria-hidden className="ui-required">
+              <span aria-hidden className="text-muted ml-[5px]">
                 *
               </span>
             )}
@@ -68,9 +68,13 @@ export function Field({
             'aria-invalid': !!fieldState.error,
             'aria-describedby': fieldState.error ? `${id}-error` : extra ? `${id}-help` : undefined,
           })}
-          {extra && <small id={`${id}-help`}>{extra}</small>}
+          {extra && (
+            <small className="text-muted leading-[1.6] text-helper" id={`${id}-help`}>
+              {extra}
+            </small>
+          )}
           {fieldState.error && (
-            <span role="alert" className="ui-field-error" id={`${id}-error`}>
+            <span role="alert" className="text-danger text-helper" id={`${id}-error`}>
               {fieldState.error.message}
             </span>
           )}

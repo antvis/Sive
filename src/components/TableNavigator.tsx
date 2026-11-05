@@ -1,3 +1,4 @@
+import { cx } from '../shared/cx';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { tableDetailsQuery } from '../shared/queries';
@@ -51,15 +52,25 @@ export default function TableNavigator({
           error: query.error ? '结构详情读取失败，请检查连接或查看权限。' : undefined,
         };
   return (
-    <div className="table-navigator">
-      <div className="database-heading">
+    <div className="flex-1 flex flex-col h-full min-h-0 bg-surface">
+      <div className="flex items-center gap-2.5 p-3 border-b border-b-line [&_>_.ui-icon]:text-accent [&_>_.ui-icon]:text-section">
         <DatabaseIcon />
-        <div>
-          <strong title={dataset.connection?.database}>{dataset.connection?.database}</strong>
-          <small title={dataset.name}>{dataset.name} · MySQL</small>
+        <div className="min-w-0">
+          <strong
+            className="block overflow-hidden text-ellipsis whitespace-nowrap"
+            title={dataset.connection?.database}
+          >
+            {dataset.connection?.database}
+          </strong>
+          <small
+            className="block overflow-hidden text-ellipsis whitespace-nowrap text-muted mt-1"
+            title={dataset.name}
+          >
+            {dataset.name} · MySQL
+          </small>
         </div>
       </div>
-      <div className="table-search">
+      <div className="flex items-center gap-1 pt-2 pr-2 pb-0 pl-2 [&_.ui-input-wrap]:min-w-0">
         <Input
           aria-label="搜索数据表"
           prefix={<MagnifyingGlassIcon />}
@@ -77,21 +88,26 @@ export default function TableNavigator({
           onClick={onRefresh}
         />
       </div>
-      <div className="table-count">
+      <div className="flex justify-between py-2 px-3 text-caption text-muted">
         {search ? `${tables.length} / ${dataset.schema.models.length}` : dataset.schema.models.length} 张表{' '}
         <span>括号内为字段数</span>
       </div>
-      <nav className="table-tree" aria-label="数据表列表">
-        <ul>
+      <nav className="flex-1 min-h-0 overflow-auto pt-0 pr-1.5 pb-3 pl-1.5" aria-label="数据表列表">
+        <ul className="list-none p-0 m-0">
           {tables.map((model) => {
             const isOpen = expanded === model.name;
             const primary =
               typeof model.primaryKey === 'string' ? [model.primaryKey] : model.primaryKey || [];
             return (
               <li key={model.name}>
-                <div className={'table-node ' + (selected === model.name ? 'selected' : '')}>
+                <div
+                  className={cx(
+                    'flex items-center rounded-control my-0.5 mx-0 hover:bg-page [&.selected]:bg-[color-mix(in_srgb,_var(--accent)_9%,_var(--surface))] [&.selected]:text-accent [&_button]:text-inherit [&_button]:bg-transparent [&_button]:border-0 [&.selected_.table-select]:font-semibold ',
+                    selected === model.name ? 'selected' : '',
+                  )}
+                >
                   <button
-                    className="table-expander"
+                    className="w-6.5 h-8.5 shrink-0 [&_.ui-icon]:w-3 [&_.ui-icon]:h-3"
                     aria-label={(isOpen ? '收起 ' : '展开 ') + model.name}
                     aria-expanded={isOpen}
                     onClick={() => setExpanded(isOpen ? null : model.name)}
@@ -99,7 +115,7 @@ export default function TableNavigator({
                     {isOpen ? <CaretDownIcon /> : <CaretRightIcon />}
                   </button>
                   <button
-                    className="table-select"
+                    className="table-select flex items-center gap-[7px] min-w-0 flex-1 pt-2 pr-2 pb-2 pl-0 text-left"
                     aria-label={'预览 ' + model.name}
                     aria-current={selected === model.name ? 'true' : undefined}
                     title={model.name}
@@ -109,20 +125,23 @@ export default function TableNavigator({
                     }}
                   >
                     <TableIcon />
-                    <span>{model.name}</span>
-                    <small>({model.columns.length})</small>
+                    <span className="[&:not(.ui-icon)]:overflow-hidden [&:not(.ui-icon)]:text-ellipsis [&:not(.ui-icon)]:whitespace-nowrap">
+                      {model.name}
+                    </span>
+                    <small className="shrink-0 ml-auto text-muted">({model.columns.length})</small>
                   </button>
                 </div>
                 {isOpen && (
-                  <div className="table-structure">
-                    <ul className="column-list">
+                  <div className="mt-1 mr-2 mb-3 ml-7.5">
+                    <ul className="[&_.column-name]:min-w-0 [&_.column-name]:overflow-hidden [&_.column-name]:text-ellipsis [&_.column-name]:whitespace-nowrap list-none p-0 m-0">
                       {model.columns.map((column) => (
                         <li
+                          className="flex items-center gap-2 py-1.5 px-0"
                           key={column.name}
                           title={`${column.name} · ${column.type}${primary.includes(column.name) ? ' · 主键' : ''}${column.notNull ? ' · 非空' : ''}`}
                         >
                           <span
-                            className={primary.includes(column.name) ? 'primary-key' : 'text-muted'}
+                            className={primary.includes(column.name) ? 'text-accent' : 'text-muted'}
                             aria-label={primary.includes(column.name) ? '主键' : undefined}
                           >
                             {primary.includes(column.name) ? (
@@ -136,19 +155,21 @@ export default function TableNavigator({
                             )}
                           </span>
                           <span className="column-name">{column.name}</span>
-                          <small>{column.type}</small>
+                          <small className="text-muted max-w-20 overflow-hidden text-ellipsis whitespace-nowrap ml-auto shrink-0">
+                            {column.type}
+                          </small>
                         </li>
                       ))}
                     </ul>
-                    <div className="table-indexes">
-                      <small className="structure-label">索引</small>
+                    <div className="border-t border-t-line mt-2.5 pt-2.5 [&_.ui-button]:mt-1.5">
+                      <small className="block text-muted tracking-[0.06em] mb-1.5">索引</small>
                       {!details ? (
-                        <div className="structure-loading">
+                        <div className="flex items-center gap-2 text-muted text-helper py-2 px-0">
                           <Spin size="small" />
                           读取结构详情…
                         </div>
                       ) : details.error ? (
-                        <div className="structure-error">
+                        <div className="text-muted text-helper">
                           <span>{details.error}</span>
                           <Button variant="link" size="small" onClick={() => query.refetch()}>
                             重试
@@ -159,14 +180,16 @@ export default function TableNavigator({
                           {details.value!.indexes.length ? (
                             details.value!.indexes.map((index) => (
                               <div
-                                className="index-item"
+                                className="flex gap-2 my-2 mx-0 text-muted"
                                 key={index.name}
                                 title={`${index.name} · ${index.type} · ${index.columns.join(', ')}`}
                               >
                                 <ListIcon />
-                                <div>
-                                  <span>{index.name}</span>
-                                  <small>
+                                <div className="min-w-0">
+                                  <span className="[&:not(.ui-icon)]:block [&:not(.ui-icon)]:overflow-hidden [&:not(.ui-icon)]:text-ellipsis [&:not(.ui-icon)]:whitespace-nowrap">
+                                    {index.name}
+                                  </span>
+                                  <small className="block overflow-hidden text-ellipsis whitespace-nowrap text-caption mt-[3px]">
                                     {index.columns.join(', ')}
                                     {index.unique ? ' · 唯一' : ''}
                                   </small>
@@ -186,7 +209,7 @@ export default function TableNavigator({
                             查看建表语句
                           </Button>
                           {details.value!.ddlError && (
-                            <div className="structure-error">
+                            <div className="text-muted text-helper">
                               {details.value!.ddlError}
                               <Button variant="link" size="small" onClick={() => query.refetch()}>
                                 重试
@@ -226,7 +249,7 @@ export default function TableNavigator({
         }
       >
         <p className="text-muted">数据库返回的实际定义，仅供查看，不会执行。</p>
-        <pre className="ddl-preview">{definition?.ddl}</pre>
+        <pre className="max-h-[55vh] overflow-auto leading-[1.7]">{definition?.ddl}</pre>
       </Modal>
     </div>
   );

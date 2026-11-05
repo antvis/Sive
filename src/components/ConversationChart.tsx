@@ -29,11 +29,16 @@ export default function ConversationChart({ run }: { run: Run }) {
   }, []);
 
   return (
-    <div className="conversation-chart" ref={root}>
+    <div
+      className="grid grid-rows-[32px_340px] h-93 min-w-0 [&_>_.chart-frame]:block [&_>_.chart-frame]:h-full [&_>_.loading]:[grid-row:1_/_-1] [&_>_.loading]:min-h-0 [&_>_.loading]:overflow-auto [&_>_.ui-alert]:[grid-row:1_/_-1] [&_>_.ui-alert]:min-h-0 [&_>_.ui-alert]:overflow-auto"
+      ref={root}
+    >
       {active ? (
         <Chart run={run} />
       ) : (
-        <div className="conversation-chart-placeholder">滚动到此处加载图表</div>
+        <div className="[grid-row:1_/_-1] min-h-0 overflow-auto grid place-items-center text-muted text-helper">
+          滚动到此处加载图表
+        </div>
       )}
     </div>
   );

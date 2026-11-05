@@ -50,6 +50,14 @@ pnpm dev
 
 数据预览、表结构和分析结果由 TanStack Query 管理读取状态与缓存，查询键包含数据或视图版本；写入与后台任务仍经由现有 IPC 和工作区订阅同步。Zod 定义共享输入规则，React Hook Form 通过 resolver 复用校验；持久化工作区使用独立的兼容性 schema。表格排序、分页和列宽由 TanStack Table 管理，分析页分栏使用 react-resizable-panels。
 
+界面样式优先使用 Tailwind，设计变量与语义 token 统一在 `src/styles.css` 维护。根字号为 13px，间距单位固定为 4px；使用 `text-body`、`bg-surface`、`text-muted` 等语义类适配主题。组件类名通过 `src/shared/cx.ts` 合并，共用样式放在 UI 或导航样式模块中；条件样式使用完整类名，避免动态拼接 Tailwind 类名。手写 CSS 仅保留全局基础、生成的 Markdown、第三方内容和动画；运行时计算的尺寸保留内联样式，导出文档的样式独立维护。
+
+样式合并的定向检查（Node.js >=22.15）：
+
+```sh
+node --import ./tests/register-typescript.mjs --test tests/styles.test.mjs
+```
+
 针对查询、输入校验、存储恢复和表格行为的回归检查（Node.js >=22.15）：
 
 ```sh

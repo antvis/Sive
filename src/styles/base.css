@@ -1,4 +1,16 @@
 :root {
+  --danger: #c64646;
+  --success: #318667;
+  --warning: #a87528;
+  --control-height: 34px;
+}
+[data-theme='dark'] {
+  --danger: #f08a88;
+  --success: #73b99d;
+  --warning: #d9b574;
+}
+
+:root {
   --accent-text: var(--accent);
   --scrollbar-size: 4px;
   --scrollbar-thumb: color-mix(in srgb, var(--muted) 36%, var(--surface));
@@ -101,27 +113,20 @@ details[open] > summary::before {
 details {
   margin: 8px 0;
 }
-.loading {
-  display: grid;
-  place-content: center;
-  min-height: 200px;
+
+@keyframes ui-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin: 4px 0 12px;
-}
-.toolbar-divider {
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-}
-.toolbar h2,
-.toolbar h3 {
-  margin: 0;
-}
-.collection-pagination {
-  justify-content: flex-end;
-  margin-top: 20px;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

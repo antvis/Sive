@@ -1,3 +1,4 @@
+import { cx } from '../shared/cx';
 import { useId, type ReactNode } from 'react';
 import {
   CheckCircleIcon,
@@ -23,12 +24,14 @@ function SettingRow({
   children: ReactNode;
 }) {
   return (
-    <div className="setting-row">
-      <div className="setting-copy">
-        <h3>{title}</h3>
-        <p>{description}</p>
+    <div className="setting-row flex items-center justify-between gap-6 p-5 [&_+_.setting-row]:border-t [&_+_.setting-row]:border-t-[color-mix(in_srgb,_var(--border)_65%,_transparent)] max-[1101px]:gap-4 max-[1101px]:py-4.5 max-[1101px]:px-4 max-[541px]:items-start max-[541px]:flex-col">
+      <div className="flex-1 min-w-0">
+        <h3 className="mt-0 mr-0 mb-[5px] ml-0 text-body font-medium">{title}</h3>
+        <p className="m-0 max-w-107.5 text-helper text-muted leading-[1.65]">{description}</p>
       </div>
-      <div className="setting-control">{children}</div>
+      <div className="shrink-0 [&_>_.ui-select]:min-w-42 max-[1101px]:[&_>_.ui-select]:min-w-35.5 max-[541px]:w-full max-[541px]:[&_>_.ui-select]:w-full">
+        {children}
+      </div>
     </div>
   );
 }
@@ -41,29 +44,41 @@ export default function GeneralSettings() {
   const modifier = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl';
   return (
     <section>
-      <header className="settings-heading">
+      <header className="flex items-start justify-between gap-4 mt-0 mr-0 mb-7 ml-0 flex-wrap max-[541px]:gap-2">
         <div>
-          <h2>通用设置</h2>
-          <p>调整外观、分析习惯与数据预览。</p>
+          <h2 className="m-0 text-heading tracking-[-0.03em]">通用设置</h2>
+          <p className="mt-2 mr-0 mb-0 ml-0 text-muted text-body">调整外观、分析习惯与数据预览。</p>
         </div>
-        <span className="settings-autosave">
+        <span className="inline-flex items-center gap-[5px] text-muted text-caption pt-[9px] whitespace-nowrap [&_svg]:text-accent-ink">
           <CheckCircleIcon />
           自动保存
         </span>
       </header>
-      <section className="settings-group" aria-labelledby="appearance-heading">
-        <h3 id="appearance-heading" className="settings-group-title">
+      <section
+        className="border border-line rounded-card mb-3 overflow-hidden"
+        aria-labelledby="appearance-heading"
+      >
+        <h3
+          id="appearance-heading"
+          className="m-0 py-3 px-5 text-helper font-semibold bg-[color-mix(in_srgb,_var(--background)_55%,_var(--surface))] border-b border-b-line"
+        >
           外观
         </h3>
         <SettingRow title="界面主题" description="选择适合当前环境的配色，图表与导出同步使用。">
-          <div className="theme-choices" role="radiogroup" aria-label="界面主题">
+          <div className="flex gap-2.5" role="radiogroup" aria-label="界面主题">
             {(
               [
                 { mode: 'light', label: '浅色', icon: SunIcon },
                 { mode: 'dark', label: '深色', icon: MoonIcon },
               ] as const
             ).map(({ mode, label, icon: Icon }) => (
-              <label key={mode} className={'theme-choice' + (settings.mode === mode ? ' selected' : '')}>
+              <label
+                key={mode}
+                className={cx(
+                  'relative grid gap-[7px] w-20 p-1.5 border border-line rounded-[8px] cursor-pointer [&.selected]:border-accent [&.selected]:shadow-[0_0_0_1px_var(--accent)] [&_input]:absolute [&_input]:w-[1px] [&_input]:h-[1px] [&_input]:opacity-0 [&:has(input:focus-visible)]:outline-2 [&:has(input:focus-visible)]:outline-solid [&:has(input:focus-visible)]:outline-accent [&:has(input:focus-visible)]:outline-offset-4 [&:has(input:disabled)]:opacity-60 [&:has(input:disabled)]:cursor-wait [&_>_span:last-child]:flex [&_>_span:last-child]:justify-center [&_>_span:last-child]:items-center [&_>_span:last-child]:gap-1 [&_>_span:last-child]:text-caption',
+                  settings.mode === mode ? ' selected' : '',
+                )}
+              >
                 <input
                   type="radio"
                   name={themeName}
@@ -71,7 +86,13 @@ export default function GeneralSettings() {
                   disabled={changing}
                   onChange={() => setMode(mode).catch((error) => message.error(errorMessage(error)))}
                 />
-                <span className={'theme-preview ' + mode} aria-hidden="true">
+                <span
+                  className={cx(
+                    'grid grid-cols-[15px_1fr] grid-rows-[1fr_1fr] gap-[5px] p-1.5 h-10.5 rounded-[4px] bg-[#f1f3f5] border border-[#dce1e5] [&_i]:[grid-row:1_/_-1] [&_i]:rounded-[2px] [&_i]:bg-[#d3dfdc] [&_b]:self-center [&_b]:h-1 [&_b]:rounded-[2px] [&_b]:bg-[#cbd2d8] [&.dark]:bg-[#20262d] [&.dark]:border-[#38434e] [&.dark_i]:bg-[#36544e] [&.dark_b]:bg-[#56616d] ',
+                    mode,
+                  )}
+                  aria-hidden="true"
+                >
                   <i />
                   <b />
                   <b />
@@ -85,8 +106,14 @@ export default function GeneralSettings() {
           </div>
         </SettingRow>
       </section>
-      <section className="settings-group" aria-labelledby="analysis-heading">
-        <h3 id="analysis-heading" className="settings-group-title">
+      <section
+        className="border border-line rounded-card mb-3 overflow-hidden"
+        aria-labelledby="analysis-heading"
+      >
+        <h3
+          id="analysis-heading"
+          className="m-0 py-3 px-5 text-helper font-semibold bg-[color-mix(in_srgb,_var(--background)_55%,_var(--surface))] border-b border-b-line"
+        >
           分析与输入
         </h3>
         <SettingRow
@@ -119,8 +146,14 @@ export default function GeneralSettings() {
           />
         </SettingRow>
       </section>
-      <section className="settings-group" aria-labelledby="preview-heading">
-        <h3 id="preview-heading" className="settings-group-title">
+      <section
+        className="border border-line rounded-card mb-3 overflow-hidden"
+        aria-labelledby="preview-heading"
+      >
+        <h3
+          id="preview-heading"
+          className="m-0 py-3 px-5 text-helper font-semibold bg-[color-mix(in_srgb,_var(--background)_55%,_var(--surface))] border-b border-b-line"
+        >
           数据预览
         </h3>
         <SettingRow
@@ -135,12 +168,18 @@ export default function GeneralSettings() {
           />
         </SettingRow>
       </section>
-      <section className="settings-shortcuts" aria-labelledby="shortcuts-heading">
-        <h3 id="shortcuts-heading">
+      <section
+        className="p-5 border border-line rounded-card bg-[color-mix(in_srgb,_var(--background)_45%,_var(--surface))] text-helper [&_h3_svg]:text-muted [&_dl_>_div]:flex [&_dl_>_div]:justify-between [&_dl_>_div]:items-center [&_dl_>_div]:gap-3 [&_dl_>_div]:min-h-9"
+        aria-labelledby="shortcuts-heading"
+      >
+        <h3
+          className="flex items-center gap-2 mt-0 mr-0 mb-4 ml-0 text-body font-medium"
+          id="shortcuts-heading"
+        >
           <KeyboardIcon size={18} aria-hidden="true" />
           常用快捷键
         </h3>
-        <dl>
+        <dl className="grid grid-cols-2 gap-y-2 gap-x-7 m-0 max-[1101px]:grid-cols-1">
           {[
             { label: '搜索所有会话', keys: [modifier, 'K'] },
             {
@@ -154,17 +193,22 @@ export default function GeneralSettings() {
             { label: '关闭弹窗', keys: ['Esc'] },
           ].map(({ label, keys }) => (
             <div key={label}>
-              <dt>{label}</dt>
-              <dd aria-label={keys.join(' + ')}>
+              <dt className="text-muted">{label}</dt>
+              <dd className="flex items-center gap-[5px] shrink-0 m-0" aria-label={keys.join(' + ')}>
                 {keys.map((key) => (
-                  <kbd key={key}>{key}</kbd>
+                  <kbd
+                    className="font-[family-name:inherit] inline-flex items-center justify-center min-w-7 h-7 px-[7px] border border-line rounded-[5px] bg-surface shadow-[0_2px_0_var(--border)] text-caption font-medium whitespace-nowrap"
+                    key={key}
+                  >
+                    {key}
+                  </kbd>
                 ))}
               </dd>
             </div>
           ))}
         </dl>
       </section>
-      <footer className="settings-footer">
+      <footer className="flex justify-between items-center gap-3 flex-wrap text-muted text-caption mt-3">
         <span>使用偏好保存在当前设备。</span>
         <Button
           size="small"

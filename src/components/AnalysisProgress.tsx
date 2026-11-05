@@ -1,3 +1,4 @@
+import { cx } from '../shared/cx';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   CheckCircleIcon,
@@ -22,7 +23,10 @@ function Artifact({ title, content }: { title: string; content: () => string }) 
   const [open, setOpen] = useState(false);
   const { message } = useUI();
   return (
-    <details className="task-artifact" onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <details
+      className="mt-2 text-helper [&_>_.ui-button]:mt-2 [&_pre]:max-h-90 [&_pre]:overflow-auto [&_pre]:whitespace-pre-wrap [&_pre]:wrap-anywhere"
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
       <summary>{title}</summary>
       {open && (
         <ArtifactContent
@@ -76,9 +80,14 @@ function ArtifactContent({
 function Step({ step, now, children }: { step: ProgressStep; now: number; children?: ReactNode }) {
   const active = step.status === 'running';
   return (
-    <li className={`task-step ${step.status}`}>
+    <li
+      className={cx(
+        '[&.running_.task-step-icon]:text-accent [&.running_strong]:text-accent [&_details]:text-helper [&_details]:mt-1.5 [&_pre]:whitespace-pre-wrap [&_pre]:wrap-anywhere [&.error_strong]:font-bold [&.error_strong]:underline [&.error_strong]:[text-decoration-style:dotted] ',
+        step.status,
+      )}
+    >
       <span
-        className="task-step-icon"
+        className="task-step-icon text-muted text-body pt-0.5"
         aria-label={
           { running: '进行中', done: '已完成', error: '失败', stopped: '已停止', skipped: '已跳过' }[
             step.status
@@ -86,7 +95,7 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
         }
       >
         {active ? (
-          <CircleNotchIcon className="ui-icon animate-spin" />
+          <CircleNotchIcon className="ui-icon inline-block shrink-0 align-middle animate-spin" />
         ) : step.status === 'skipped' ? (
           <MinusCircleIcon />
         ) : step.status === 'done' ? (
@@ -98,7 +107,7 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
         )}
       </span>
       <div>
-        <div className="task-step-heading">
+        <div className="flex flex-wrap [align-items:baseline] gap-y-1 gap-x-3 text-helper">
           <strong>{step.label}</strong>
           {(active || step.durationMs !== undefined) && (
             <span className="text-muted">
@@ -119,7 +128,7 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
           </details>
         )}
         {!!step.calls.length && (
-          <details className="task-model-calls">
+          <details className="text-muted">
             <summary>
               模型调用 · {step.calls.filter((event) => event.stage === 'modelstart').length} 次
             </summary>
@@ -187,9 +196,12 @@ export default function AnalysisProgress({
     interrupted: '分析已中断',
   }[task.status];
   return (
-    <section className={`task ${task.status}`} aria-label="实时执行过程">
+    <section
+      className={cx('task my-3 mx-0 p-3 bg-page border border-line rounded-control ', task.status)}
+      aria-label="实时执行过程"
+    >
       {task.persistenceError && <Alert type="warning" title={task.persistenceError} />}
-      <div className="task-title">
+      <div className="flex gap-2 items-center">
         {running ? (
           <Spin size="small" />
         ) : task.status === 'done' ? (
@@ -200,7 +212,7 @@ export default function AnalysisProgress({
           <XCircleIcon />
         )}
         <strong>{title}</strong>
-        <span>
+        <span className="[&:last-child]:ml-auto [&:last-child]:text-muted [&:last-child]:text-helper">
           {running ? '已用时' : '耗时'} {elapsed}
         </span>
       </div>
@@ -208,7 +220,7 @@ export default function AnalysisProgress({
         {task.sourceName} · {task.modelName}
         {task.strategy && ` · ${analysisLabel(task.strategy)}`}
       </small>
-      <div className="task-current" role="status">
+      <div className="my-3 mx-0 pl-2.5 [border-left:2px_solid_var(--accent)]" role="status">
         <strong>
           {running
             ? task.status === 'cancelling'
@@ -216,29 +228,40 @@ export default function AnalysisProgress({
               : current?.label || (steps.length ? '正在完成本次分析' : '正在准备分析')
             : task.error || '执行结束，已保留查询和过程记录'}
         </strong>
-        {running && task.status !== 'cancelling' && current && <p>{stageDescription(current.stage)}</p>}
+        {running && task.status !== 'cancelling' && current && (
+          <p className="my-[5px] mx-0 text-helper text-muted">{stageDescription(current.stage)}</p>
+        )}
         {waiting && task.status === 'running' && (
-          <p className="task-waiting">
+          <p className="my-[5px] mx-0 text-helper text-muted">
             {lastCall.label} · 等待响应 {progressDuration(waitingMs)}
-            {waitingMs >= 20000 && <span>尚未收到完整响应，可继续等待或停止分析。</span>}
+            {waitingMs >= 20000 && (
+              <span className="block mt-1">尚未收到完整响应，可继续等待或停止分析。</span>
+            )}
           </p>
         )}
       </div>
-      <button className="task-log-toggle" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+      <button
+        className="border-0 p-0 bg-transparent text-accent"
+        onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
+      >
         {expanded ? '收起' : '查看'}执行过程 · {steps.length} 个步骤
       </button>
       {expanded && (
-        <div className="task-process">
+        <div className="mt-3">
           {setupDone ? (
-            <details className="task-preparation">
-              <summary>
+            <details>
+              <summary className="text-helper cursor-pointer">
                 <CheckCircleIcon /> 数据准备已完成{' '}
                 <span className="text-muted">
                   · {progressDuration(setup.reduce((sum, step) => sum + (step.durationMs || 0), 0))} ·{' '}
                   {setup.length} 项
                 </span>
               </summary>
-              <ol className="task-log" aria-label="数据准备记录">
+              <ol
+                className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
+                aria-label="数据准备记录"
+              >
                 {setup.map((step, index) => (
                   <Step key={index} step={step} now={now} />
                 ))}
@@ -246,7 +269,10 @@ export default function AnalysisProgress({
             </details>
           ) : (
             !!setup.length && (
-              <ol className="task-log" aria-label="数据准备记录">
+              <ol
+                className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
+                aria-label="数据准备记录"
+              >
                 {setup.map((step, index) => (
                   <Step key={index} step={step} now={now} />
                 ))}
@@ -254,7 +280,10 @@ export default function AnalysisProgress({
             )
           )}
           {!!work.length && (
-            <ol className="task-log" aria-label="执行记录">
+            <ol
+              className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
+              aria-label="执行记录"
+            >
               {work.map((step, index) => (
                 <Step key={index} step={step} now={now}>
                   {step === summaryStep && conclusion}

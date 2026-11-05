@@ -142,31 +142,42 @@ export default function AnalysisPage() {
       dataOpen={dataOpen}
       onDataOpenChange={setDataOpen}
       data={
-        <section className="data-panel" aria-label="数据面板" inert={!dataOpen} aria-hidden={!dataOpen}>
+        <section
+          className="data-panel overflow-hidden [transition:opacity_160ms_ease,_padding-inline_220ms_cubic-bezier(0.2,_0,_0,_1)] flex flex-col min-w-0 min-h-0 py-3 px-4 [&_>_.data-browser]:flex-1 max-[1151px]:px-3 motion-reduce:transition-none"
+          aria-label="数据面板"
+          inert={!dataOpen}
+          aria-hidden={!dataOpen}
+        >
           <DataBrowser key={dataset.id} dataset={dataset} datasets={state.datasets} onAsk={ask} />
         </section>
       }
     >
-      <section className="conversation" aria-label="分析会话">
+      <section
+        className="conversation flex flex-col min-h-0 min-w-0 bg-surface overflow-hidden"
+        aria-label="分析会话"
+      >
         <ConversationTimeline sessionKey={datasetId + conversationId + runId}>
           {!session.length && !currentTask && (
-            <div className="chat-empty">
-              <img src={logo} alt="" />
-              <h3>从一个问题开始</h3>
-              <p className="text-muted">描述你的问题，或从下面的方向开始。</p>
-              <div className="chat-suggestions">
+            <div className="w-full max-w-85 mt-[clamp(20px,_8vh,_80px)] mr-auto mb-6 ml-auto text-center">
+              <img className="mx-auto w-7 h-7 opacity-80 dark:[filter:invert(1)]" src={logo} alt="" />
+              <h3 className="font-semibold text-[21px] tracking-[-0.4px] mt-4.5 mr-0 mb-2 ml-0">
+                从一个问题开始
+              </h3>
+              <p className="text-muted text-body m-0 leading-[1.8]">描述你的问题，或从下面的方向开始。</p>
+              <div className="grid mt-7 [&_button_>_span]:grid [&_button_>_span]:gap-1 [&_button_>_span_>_span]:text-muted [&_button_>_span_>_span]:text-helper [&_button_>_svg]:absolute [&_button_>_svg]:right-0 [&_button_>_svg]:w-3.5 [&_button_>_svg]:h-3.5 [&_button_>_svg]:text-muted [&_button_>_svg]:opacity-0 [&_button:hover:not(:disabled)_strong]:text-accent-ink [&_button:hover:not(:disabled)_>_svg]:opacity-100 [&_button:focus-visible_>_svg]:opacity-100">
                 {[
                   { title: '了解这份数据', description: '概览数据，找出值得关注的指标' },
                   { title: '检查数据质量', description: '检查缺失值、重复记录和异常数据' },
                 ].map(({ title, description }) => (
                   <button
+                    className="flex items-center relative justify-center py-4 px-0 text-ink bg-transparent border-0 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-center leading-[1.6] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:outline-offset-4 disabled:opacity-50"
                     key={title}
                     title="填入问题"
                     disabled={!dataset || busy}
                     onClick={() => ask(description)}
                   >
                     <span>
-                      <strong>{title}</strong>
+                      <strong className="text-body font-medium">{title}</strong>
                       <span>{description}</span>
                     </span>
                     <CaretRightIcon aria-hidden="true" />
@@ -208,7 +219,7 @@ export default function AnalysisPage() {
                   </details>
                 )}
                 {!['running', 'cancelling', 'done'].includes(currentTask.status) && (
-                  <div className="toolbar">
+                  <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0">
                     <Button onClick={openModelSettings}>检查模型设置</Button>
                   </div>
                 )}

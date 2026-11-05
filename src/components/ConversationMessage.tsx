@@ -1,3 +1,4 @@
+import { cx } from '../shared/cx';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Button, TextArea, Tooltip } from './ui';
 import { PencilSimpleIcon, CopyIcon, CheckIcon } from '@phosphor-icons/react';
@@ -38,9 +39,16 @@ function MessageActions({
     }
   };
   return (
-    <div className="message-actions message-hover-actions" data-feedback={feedback !== 'idle'}>
+    <div
+      className="flex items-center justify-end flex-wrap gap-1 [&_.ui-button-ghost]:text-muted [&_.ui-button-ghost]:text-helper message-hover-actions min-h-7 opacity-0 pointer-events-none data-[feedback=true]:opacity-100 data-[feedback=true]:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto"
+      data-feedback={feedback !== 'idle'}
+    >
       {date && Number.isFinite(date.getTime()) && (
-        <time dateTime={date.toISOString()} title={date.toLocaleString('zh-CN', { hour12: false })}>
+        <time
+          className="text-muted text-caption tabular-nums"
+          dateTime={date.toISOString()}
+          title={date.toLocaleString('zh-CN', { hour12: false })}
+        >
           {compactTime
             ? date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
             : date.toLocaleString('zh-CN', { hour12: false })}
@@ -98,8 +106,16 @@ export function UserMessage({
     }
   };
   return (
-    <section className="user-message" aria-label="用户问题">
-      <div className={'user-bubble' + (editing ? ' editing' : '')}>
+    <section
+      className="flex flex-col items-end mt-1 mr-0 mb-6 ml-0 gap-1.5 min-w-0 [&_>_.message-hover-actions]:pr-2 [&_>_.message-hover-actions]:gap-1.5 [&_>_.message-hover-actions_time]:text-helper [&_>_.message-hover-actions_time]:mr-1 [&:hover_>_.message-hover-actions]:opacity-100 [&:hover_>_.message-hover-actions]:pointer-events-auto [&:focus-within_>_.message-hover-actions]:opacity-100 [&:focus-within_>_.message-hover-actions]:pointer-events-auto"
+      aria-label="用户问题"
+    >
+      <div
+        className={cx(
+          'max-w-[92%] min-w-0 text-ink bg-[color-mix(in_srgb,_var(--muted)_8%,_var(--surface))] py-2.5 px-4 rounded-[20px] [&.editing]:w-full [&.editing]:max-w-full [&.editing]:pt-3.5 [&.editing]:pr-4 [&.editing]:pb-3 [&.editing]:pl-4 [&.editing]:border-0 [&.editing]:rounded-[calc(var(--radius)_+_14px)] [&.editing]:bg-[color-mix(in_srgb,_var(--muted)_8%,_var(--surface))] [&.editing_.ui-textarea]:p-0 [&.editing_.ui-textarea]:rounded-none [&.editing_.ui-textarea]:text-body [&.editing_.ui-textarea]:leading-[1.7]',
+          editing ? ' editing' : '',
+        )}
+      >
         {editing ? (
           <>
             <TextArea
@@ -118,7 +134,7 @@ export function UserMessage({
                 }
               }}
             />
-            <div className="message-actions message-edit-actions">
+            <div className="flex items-center justify-end flex-wrap [&_.ui-button-ghost]:text-muted [&_.ui-button-ghost]:text-helper mt-3 gap-2 [&_.ui-button-secondary]:border-line [&_.ui-button-secondary]:bg-surface [&_.ui-button-primary]:bg-ink [&_.ui-button-primary]:text-surface [&_.ui-button:hover:not(:disabled)]:[filter:brightness(0.95)]">
               <Button size="small" disabled={sending} onClick={() => setEditing(false)}>
                 取消
               </Button>
@@ -135,7 +151,7 @@ export function UserMessage({
             </div>
           </>
         ) : (
-          <div className="user-question-text">{question}</div>
+          <div className="font-normal whitespace-pre-wrap wrap-anywhere leading-[1.7]">{question}</div>
         )}
       </div>
       {!editing && (
@@ -169,11 +185,16 @@ export function AssistantMessage({
   markdown: string | (() => string);
 }) {
   return (
-    <section className="assistant-message" aria-label="Sive 回复">
-      <div className="message-author">
-        <img src={logo} alt="" />
+    <section
+      className="[&:hover_>_.message-hover-actions]:opacity-100 [&:hover_>_.message-hover-actions]:pointer-events-auto [&:focus-within_>_.message-hover-actions]:opacity-100 [&:focus-within_>_.message-hover-actions]:pointer-events-auto [&_>_.message-hover-actions]:justify-start [&_>_.message-hover-actions]:mt-2 min-w-0 [&_>_.task]:mt-0 [&_>_p]:text-helper"
+      aria-label="Sive 回复"
+    >
+      <div className="flex items-center gap-[7px] text-helper text-ink mb-2.5">
+        <img className="w-5 h-5 dark:[filter:invert(1)]" src={logo} alt="" />
         <strong>Sive</strong>
-        <span>数据分析</span>
+        <span className="[&:last-child:not(.ui-icon)]:text-muted [&:last-child:not(.ui-icon)]:font-normal">
+          数据分析
+        </span>
       </div>
       {children}
       <MessageActions time={time} text={markdown} markdown />

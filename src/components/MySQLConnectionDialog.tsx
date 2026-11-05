@@ -40,7 +40,7 @@ export default function MySQLConnectionDialog({
         <Field name="name" label="连接名称" required>
           <Input placeholder="例如：业务分析库" />
         </Field>
-        <div className="form-columns">
+        <div className="grid grid-cols-[2fr_1fr] gap-4 [&_.ui-input-wrap]:w-full">
           <Field name="host" label="主机" required>
             <Input placeholder="127.0.0.1" />
           </Field>

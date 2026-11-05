@@ -1,3 +1,4 @@
+import { navigationItem } from './navigation-styles';
 import ComposeIcon from './ComposeIcon';
 import { useState } from 'react';
 import { PlusIcon } from '@phosphor-icons/react';
@@ -26,6 +27,7 @@ export default function NewConversation({
   return (
     <>
       <button
+        className={navigationItem}
         type="button"
         disabled={disabled}
         onClick={() => {
@@ -60,18 +62,20 @@ export default function NewConversation({
         {datasets.length > 0 ? (
           <>
             <SearchInput
-              style={{ width: '100%' }}
+              className="w-full"
+
               autoFocus
               aria-label="搜索会话数据源"
               placeholder="搜索数据源"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
-            <div className="conversation-source-list">
+            <div className="mt-3 max-h-80 overflow-y-auto [&_.data-source-icon]:w-5 [&_.data-source-icon]:h-5 [&_.data-source-icon]:shrink-0 [&_.data-source-icon]:text-[var(--source-color)]">
               {filtered.map((dataset) => {
                 const SourceIcon = DATA_SOURCE_ICONS[dataset.format];
                 return (
                   <button
+                    className="flex items-center gap-2.5 w-full py-3 px-2 border-0 rounded-control bg-transparent text-ink text-left hover:bg-page focus-visible:bg-page"
                     type="button"
                     key={dataset.id}
                     disabled={disabled}
@@ -81,14 +85,21 @@ export default function NewConversation({
                     }}
                   >
                     <SourceIcon
-                      className="ui-icon data-source-icon"
+                      className="ui-icon inline-block shrink-0 align-middle data-source-icon data-[source=csv]:[--source-color:#25804d] data-[source=json]:[--source-color:#8054b6] data-[source=xlsx]:[--source-color:#18734b] data-[source=parquet]:[--source-color:#a66a1c] data-[source=mysql]:[--source-color:#28769a] dark:data-[source=csv]:[--source-color:#70cc92] dark:data-[source=json]:[--source-color:#bb96ed] dark:data-[source=xlsx]:[--source-color:#57c393] dark:data-[source=parquet]:[--source-color:#e3b36a] dark:data-[source=mysql]:[--source-color:#78bddd]"
                       data-source={dataset.format}
                       size={20}
                       weight="duotone"
                       aria-hidden="true"
                     />
-                    <span title={dataset.name}>{dataset.name}</span>
-                    <small>{dataset.format === 'mysql' ? 'MySQL' : dataset.format.toUpperCase()}</small>
+                    <span
+                      className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
+                      title={dataset.name}
+                    >
+                      {dataset.name}
+                    </span>
+                    <small className="text-muted">
+                      {dataset.format === 'mysql' ? 'MySQL' : dataset.format.toUpperCase()}
+                    </small>
                   </button>
                 );
               })}

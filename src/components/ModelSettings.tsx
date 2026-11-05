@@ -77,30 +77,35 @@ export default function ModelSettings({ state }: { state: State }) {
     }
   };
   return (
-    <section className="model-settings">
-      <div className="model-section-header">
+    <section>
+      <div className="flex items-start justify-between gap-4 mt-0 mr-0 mb-7 ml-0 flex-wrap">
         <div>
-          <h2>模型服务</h2>
-          <p className="text-muted">连接兼容 OpenAI 的服务，获取并选择可用模型。</p>
+          <h2 className="m-0 text-heading tracking-[-0.03em]">模型服务</h2>
+          <p className="mt-2 mr-0 mb-0 ml-0 text-muted text-body">
+            连接兼容 OpenAI 的服务，获取并选择可用模型。
+          </p>
         </div>
         <Button variant="primary" icon={<PlusIcon />} disabled={busy} onClick={() => startEdit()}>
           添加服务
         </Button>
       </div>
       {state.models.map((model) => (
-        <div className="model-row" key={model.id}>
-          <div>
-            <strong>{model.name}</strong>
+        <div
+          className="flex items-center gap-5 p-5.5 border border-line rounded-card mb-3.5 flex-wrap [&:has(.ui-badge[data-tone='success'])]:border-[color-mix(in_srgb,_var(--accent)_40%,_var(--border))] [&_>_div_>_.ui-badge]:ml-2.5"
+          key={model.id}
+        >
+          <div className="[&:first-child]:flex-1 [&:first-child]:min-w-[min(240px,_100%)] [&:first-child]:wrap-anywhere">
+            <strong className="text-label">{model.name}</strong>
             {state.activeModelId === model.id && <Tag color="success">默认服务</Tag>}
-            <p className="text-muted">
+            <p className="text-muted my-2 mx-0 text-helper">
               {model.modelIds.length} 个模型 · {model.baseURL}
             </p>
-            <p className="text-muted">{model.modelIds.join('、')}</p>
-            <small>
+            <p className="text-muted my-2 mx-0 text-helper">{model.modelIds.join('、')}</p>
+            <small className="text-muted text-caption">
               {model.testedAt ? `最近测试：${new Date(model.testedAt).toLocaleString()}` : '尚未验证'}
             </small>
           </div>
-          <div className="model-row-actions">
+          <div className="flex items-center flex-wrap gap-2 [&:first-child]:flex-1 [&:first-child]:min-w-[min(240px,_100%)] [&:first-child]:wrap-anywhere">
             {state.activeModelId !== model.id && (
               <Button disabled={busy} onClick={() => perform(() => api.activateModel(model.id))}>
                 设为默认
@@ -121,10 +126,10 @@ export default function ModelSettings({ state }: { state: State }) {
         </div>
       ))}
       {!state.models.length && (
-        <div className="settings-empty">
+        <div className="grid justify-items-center text-center py-14 px-6 border border-dashed border-line rounded-[12px] [&_>_svg]:text-accent-ink">
           <CpuIcon size={32} />
-          <h3>连接你的第一个模型服务</h3>
-          <p>
+          <h3 className="mt-4.5 mr-0 mb-2 ml-0 text-title font-medium">连接你的第一个模型服务</h3>
+          <p className="mt-0 mr-0 mb-6 ml-0 text-muted leading-[1.8]">
             支持兼容 OpenAI 接口的云端或本地服务。
             <br />
             添加服务并验证模型后，就可以开始分析。
@@ -176,7 +181,7 @@ export default function ModelSettings({ state }: { state: State }) {
           >
             <PasswordInput autoComplete="new-password" />
           </Field>
-          <div className="model-discovery-toolbar">
+          <div className="flex items-center flex-wrap gap-2 mt-1 mr-0 mb-4 ml-0">
             <Button disabled={busy} loading={discovering} onClick={() => discover()}>
               {currentCatalog ? '刷新模型列表' : '获取可用模型'}
             </Button>

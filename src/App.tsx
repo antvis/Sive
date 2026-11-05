@@ -1,3 +1,5 @@
+import { navigationItem } from './components/navigation-styles';
+import { cx } from './shared/cx';
 import { useEffect, useRef, useState } from 'react';
 import {
   Navigate,
@@ -74,7 +76,11 @@ export default function App() {
   }, []);
   const refresh = async () => subscription.current?.refresh();
   if (!state)
-    return <div className="loading">{loadError ? <Alert type="error" title={loadError} /> : <Spin />}</div>;
+    return (
+      <div className="grid place-content-center min-h-50">
+        {loadError ? <Alert type="error" title={loadError} /> : <Spin />}
+      </div>
+    );
   if (redirect) return <Navigate to={redirect} replace />;
   const busy = state.task?.status === 'running' || state.task?.status === 'cancelling';
   const dataset = state.datasets.find((d) => d.id === datasetId);
@@ -137,11 +143,23 @@ export default function App() {
     openModelSettings,
   };
   return (
-    <div className={'shell' + (sidebarOpen ? '' : ' sidebar-collapsed')}>
-      <aside className="sidebar" id="workspace-sidebar" inert={!sidebarOpen} aria-hidden={!sidebarOpen}>
-        <div className="brand">
-          <img src={logo} alt="Sive 标志" />
-          <strong>Sive</strong>
+    <div
+      className={cx(
+        '[--sidebar-width:210px] h-dvh grid grid-cols-[var(--sidebar-width)_minmax(0,_1fr)] [transition:grid-template-columns_220ms_cubic-bezier(0.2,_0,_0,_1)] overflow-hidden max-[1151px]:[--sidebar-width:190px] [&.sidebar-collapsed]:grid-cols-[0px_minmax(0,_1fr)] motion-reduce:transition-none',
+        sidebarOpen
+          ? ''
+          : ' sidebar-collapsed [&_>_.sidebar]:[transform:translateX(-100%)] [&_>_.sidebar]:opacity-0 [&_>_.sidebar]:pointer-events-none',
+      )}
+    >
+      <aside
+        className="sidebar mac:relative mac:pt-12 mac:before:content-[''] mac:before:absolute mac:before:top-0 mac:before:inset-x-0 mac:before:h-9 mac:before:[-webkit-app-region:drag] w-[var(--sidebar-width)] min-w-0 min-h-0 overflow-hidden [transition:transform_220ms_cubic-bezier(0.2,_0,_0,_1),_opacity_160ms_ease] flex flex-col py-5 px-3 bg-page border-r border-line motion-reduce:transition-none"
+        id="workspace-sidebar"
+        inert={!sidebarOpen}
+        aria-hidden={!sidebarOpen}
+      >
+        <div className="shrink-0 flex items-center gap-2 h-11 mb-4 pt-0 pr-2.5 pb-2 pl-2.5">
+          <img className="w-6 h-6 object-contain dark:[filter:invert(1)]" src={logo} alt="Sive 标志" />
+          <strong className="text-headline tracking-[-0.5px]">Sive</strong>
           <ConversationSearch
             conversations={state.conversations.filter((item) => contentIds.has(item.id))}
             datasets={state.datasets}
@@ -149,7 +167,7 @@ export default function App() {
             onSelect={selectConversation}
           />
         </div>
-        <nav>
+        <nav className="grid gap-1 shrink-0">
           <NewConversation
             datasets={state.datasets}
             current={dataset}
@@ -160,11 +178,11 @@ export default function App() {
             }}
             onAddData={() => navigate(paths.newData)}
           />
-          <NavLink to={paths.data}>
+          <NavLink to={paths.data} className={navigationItem}>
             <DatabaseIcon />
             数据源
           </NavLink>
-          <NavLink to={paths.saved}>
+          <NavLink to={paths.saved} className={navigationItem}>
             <FolderSimpleIcon />
             分析收藏
           </NavLink>
@@ -198,12 +216,12 @@ export default function App() {
             }
           />
         )}
-        <NavLink to="/settings" className={({ isActive }) => 'settings-link' + (isActive ? ' active' : '')}>
+        <NavLink to="/settings" className={cx(navigationItem, 'mt-auto shrink-0 [&>svg]:size-4.5')}>
           <GearSixIcon />
           设置
         </NavLink>
       </aside>
-      <main className="workspace">
+      <main className="min-w-0 min-h-0 flex flex-col bg-surface">
         <DatasetTabs
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -230,8 +248,13 @@ export default function App() {
               );
           }}
         />
-        <header className="topbar">
-          <strong title={pageTitle}>{pageTitle}</strong>
+        <header className="h-12.5 min-h-12.5 flex items-center gap-4 py-0 px-5 border-b border-b-[color-mix(in_srgb,_var(--border)_45%,_transparent)] max-[1151px]:px-3 max-[1151px]:gap-2.5">
+          <strong
+            className="text-label min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
+            title={pageTitle}
+          >
+            {pageTitle}
+          </strong>
           <span className="min-w-[4px] flex-1" />
           {busy && (
             <Button
@@ -246,7 +269,7 @@ export default function App() {
         </header>
         {loadError && <Alert type="error" title={loadError} />}
         <div
-          className="page"
+          className="page flex-1 min-h-0 overflow-auto py-4 px-6 [&:has(>_.dataset-detail)]:p-0 [&:has(>_.dataset-detail)]:overflow-hidden max-[1151px]:px-3"
           id="workspace-panel"
           role={dataset ? 'tabpanel' : undefined}
           aria-label={dataset?.name}
