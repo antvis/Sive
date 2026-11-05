@@ -59,9 +59,6 @@ export default function Settings({
               {count !== undefined && <small>{count}</small>}
             </button>
           ))}
-          <p className="my-5 mx-3 text-muted text-caption leading-[1.7] max-[801px]:hidden">
-            按你的习惯，调整工作台。
-          </p>
         </nav>
         <div className="min-w-0">
           {tab === 'general' && <GeneralSettings />}
