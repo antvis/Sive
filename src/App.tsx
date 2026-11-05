@@ -17,6 +17,7 @@ import type { Conversation, Dataset, State } from '../shared/contracts';
 import type { AnalysisMode } from '../shared/analysis-options';
 import { conversationIdsWithContent, type WorkspaceTab } from './shared/workspace-tabs';
 import DatasetTabs from './components/DatasetTabs';
+import WorkspaceLayout from './components/WorkspaceLayout';
 import ConversationHistory from './components/ConversationHistory';
 import NewConversation from './components/NewConversation';
 import ConversationSearch from './components/ConversationSearch';
@@ -137,73 +138,71 @@ export default function App() {
     openModelSettings,
   };
   return (
-    <div
-      className={cx(
-        '[--sidebar-width:210px] h-dvh grid grid-cols-[var(--sidebar-width)_minmax(0,_1fr)] [transition:grid-template-columns_220ms_cubic-bezier(0.2,_0,_0,_1)] overflow-hidden max-[1151px]:[--sidebar-width:190px] [&.sidebar-collapsed]:grid-cols-[0px_minmax(0,_1fr)] motion-reduce:transition-none',
-        sidebarOpen
-          ? ''
-          : ' sidebar-collapsed [&_>_.sidebar]:[transform:translateX(-100%)] [&_>_.sidebar]:opacity-0 [&_>_.sidebar]:pointer-events-none',
-      )}
+    <WorkspaceLayout
+      sidebarOpen={sidebarOpen}
+      onSidebarOpenChange={setSidebarOpen}
+      sidebar={
+        <aside
+          className="sidebar mac:relative mac:pt-12 mac:before:content-[''] mac:before:absolute mac:before:top-0 mac:before:inset-x-0 mac:before:h-9 mac:before:[-webkit-app-region:drag] w-full h-full min-w-0 min-h-0 overflow-hidden flex flex-col py-5 px-3 bg-page"
+          id="workspace-sidebar"
+          inert={!sidebarOpen}
+          aria-hidden={!sidebarOpen}
+        >
+          <div className="shrink-0 flex items-center gap-2 h-11 mb-4 pt-0 pr-2.5 pb-2 pl-2.5">
+            <img className="w-6 h-6 object-contain dark:[filter:invert(1)]" src={logo} alt="Sive 标志" />
+            <strong className="text-headline tracking-[-0.5px]">Sive</strong>
+            <ConversationSearch
+              conversations={state.conversations.filter((item) => contentIds.has(item.id))}
+              datasets={state.datasets}
+              disabled={submitting}
+              onSelect={selectConversation}
+            />
+          </div>
+          <nav className="grid gap-1 shrink-0">
+            <NewConversation
+              datasets={state.datasets}
+              current={dataset}
+              disabled={submitting}
+              onNew={(source) => {
+                navigation.newConversation(source.id);
+                navigate(datasetPath(source.id));
+              }}
+              onAddData={() => navigate(paths.newData)}
+            />
+            <NavLink to={paths.data} className={navigationItem}>
+              <DatabaseIcon />
+              数据源
+            </NavLink>
+            <NavLink to={paths.saved} className={navigationItem}>
+              <FolderSimpleIcon />
+              分析收藏
+            </NavLink>
+          </nav>
+          {dataset && (
+            <ConversationHistory
+              key={dataset.id}
+              conversations={conversations}
+              currentId={conversationId}
+              disabled={submitting}
+              onSelect={selectConversation}
+              archiveDisabled={(conversation) =>
+                !!archivingId ||
+                submitting ||
+                (busy && state.task?.conversationId === conversation.id) ||
+                state.runs.some(
+                  (run) => run.id === state.refreshingSavedId && run.conversationId === conversation.id,
+                )
+              }
+              onArchive={(conversation) => archiveConversation(conversation.id)}
+            />
+          )}
+          <NavLink to="/settings" className={cx(navigationItem, 'mt-auto shrink-0 [&>svg]:size-4.5')}>
+            <GearSixIcon />
+            设置
+          </NavLink>
+        </aside>
+      }
     >
-      <aside
-        className="sidebar mac:relative mac:pt-12 mac:before:content-[''] mac:before:absolute mac:before:top-0 mac:before:inset-x-0 mac:before:h-9 mac:before:[-webkit-app-region:drag] w-[var(--sidebar-width)] min-w-0 min-h-0 overflow-hidden [transition:transform_220ms_cubic-bezier(0.2,_0,_0,_1),_opacity_160ms_ease] flex flex-col py-5 px-3 bg-page border-r border-line motion-reduce:transition-none"
-        id="workspace-sidebar"
-        inert={!sidebarOpen}
-        aria-hidden={!sidebarOpen}
-      >
-        <div className="shrink-0 flex items-center gap-2 h-11 mb-4 pt-0 pr-2.5 pb-2 pl-2.5">
-          <img className="w-6 h-6 object-contain dark:[filter:invert(1)]" src={logo} alt="Sive 标志" />
-          <strong className="text-headline tracking-[-0.5px]">Sive</strong>
-          <ConversationSearch
-            conversations={state.conversations.filter((item) => contentIds.has(item.id))}
-            datasets={state.datasets}
-            disabled={submitting}
-            onSelect={selectConversation}
-          />
-        </div>
-        <nav className="grid gap-1 shrink-0">
-          <NewConversation
-            datasets={state.datasets}
-            current={dataset}
-            disabled={submitting}
-            onNew={(source) => {
-              navigation.newConversation(source.id);
-              navigate(datasetPath(source.id));
-            }}
-            onAddData={() => navigate(paths.newData)}
-          />
-          <NavLink to={paths.data} className={navigationItem}>
-            <DatabaseIcon />
-            数据源
-          </NavLink>
-          <NavLink to={paths.saved} className={navigationItem}>
-            <FolderSimpleIcon />
-            分析收藏
-          </NavLink>
-        </nav>
-        {dataset && (
-          <ConversationHistory
-            key={dataset.id}
-            conversations={conversations}
-            currentId={conversationId}
-            disabled={submitting}
-            onSelect={selectConversation}
-            archiveDisabled={(conversation) =>
-              !!archivingId ||
-              submitting ||
-              (busy && state.task?.conversationId === conversation.id) ||
-              state.runs.some(
-                (run) => run.id === state.refreshingSavedId && run.conversationId === conversation.id,
-              )
-            }
-            onArchive={(conversation) => archiveConversation(conversation.id)}
-          />
-        )}
-        <NavLink to="/settings" className={cx(navigationItem, 'mt-auto shrink-0 [&>svg]:size-4.5')}>
-          <GearSixIcon />
-          设置
-        </NavLink>
-      </aside>
       <main className="min-w-0 min-h-0 flex flex-col bg-surface">
         <DatasetTabs
           sidebarOpen={sidebarOpen}
@@ -261,6 +260,6 @@ export default function App() {
           <Outlet context={context} />
         </div>
       </main>
-    </div>
+    </WorkspaceLayout>
   );
 }
