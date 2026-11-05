@@ -39,7 +39,10 @@ export default function DatasetTabs({
       container.scrollLeft = left + item.offsetWidth - container.clientWidth;
   }, [selectedId, tabs]);
   return (
-    <div className="dataset-tabs-bar mac:min-h-9 mac:[-webkit-app-region:drag] mac:after:content-[''] mac:after:flex-[1_0_40px] mac:after:self-stretch mac:[&_button]:[-webkit-app-region:no-drag] mac:[.sidebar-collapsed_&]:pl-21 mac:[transition:padding-left_220ms_cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none flex items-end gap-1 pt-1 pr-2.5 pb-0 pl-2.5 min-w-0 shrink-0 shadow-[inset_0_-1px_var(--border)] bg-page [&_>_.ui-button]:shrink-0 [&_>_.ui-button]:self-center [&_>_.ui-button]:w-7 [&_>_.ui-button]:h-7 [&_>_.ui-button]:min-h-0 [&_>_.ui-button]:mb-0.5 [&_>_.ui-button]:p-[5px]">
+    <div
+      data-sidebar-collapsed={!sidebarOpen}
+      className="dataset-tabs-bar mac:min-h-9 mac:[-webkit-app-region:drag] mac:after:content-[''] mac:after:flex-[1_0_40px] mac:after:self-stretch mac:[&_button]:[-webkit-app-region:no-drag] mac:data-[sidebar-collapsed=true]:pl-21 flex items-end gap-1 pt-1 pr-2.5 pb-0 pl-2.5 min-w-0 shrink-0 [background-image:linear-gradient(var(--border),_var(--border))] bg-size-[100%_1px] bg-position-[bottom] bg-no-repeat bg-page [&_>_.ui-button]:shrink-0 [&_>_.ui-button]:self-center [&_>_.ui-button]:w-7 [&_>_.ui-button]:h-7 [&_>_.ui-button]:min-h-0 [&_>_.ui-button]:mb-0.5 [&_>_.ui-button]:p-[5px]"
+    >
       <Button
         variant="ghost"
         size="small"
