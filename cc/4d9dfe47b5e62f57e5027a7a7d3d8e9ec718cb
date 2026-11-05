@@ -1,0 +1,32 @@
+src/components/NewConversation.tsx
+  s_c84803441339e3::t_6dbfc0a365e5cf 42
+src/components/ConversationHistory.tsx
+  s_c84803441339e3::t_d00d969a05a9ea 49-50
+src/router.tsx
+  s_c84803441339e3::t_17009937887821 51
+  s_3d5937d58040fa::t_ecb62aa81079ca 73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cc4d9dfe47b5e62f57e5027a7a7d3d8e9ec718cb",
+  "prompts": {},
+  "sessions": {
+    "s_3d5937d58040fa": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "76f4fbfd-35e0-41df-983d-ac5fe70de34d",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_c84803441339e3": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "867d49bb-746b-4b88-bb7d-153eaa5c767d",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
