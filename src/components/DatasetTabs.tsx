@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DatabaseIcon, PlusIcon, XIcon, SidebarSimpleIcon } from '@phosphor-icons/react';
 import type { Dataset } from '../../shared/contracts';
-import { Button, Dropdown } from './ui';
+import { Button } from './ui';
+import DatasetPickerDialog from './DatasetPickerDialog';
 
 export default function DatasetTabs({
   sidebarOpen,
@@ -12,6 +13,7 @@ export default function DatasetTabs({
   onSelect,
   onClose,
   onOpenData,
+  onAddData,
 }: {
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
@@ -20,8 +22,10 @@ export default function DatasetTabs({
   selectedId: string;
   onSelect: (id: string) => void;
   onOpenData: (dataset: Dataset) => void;
+  onAddData: () => void;
   onClose: (id: string) => void;
 }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
   const list = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const container = list.current;
@@ -103,28 +107,22 @@ export default function DatasetTabs({
           </div>
         ))}
       </div>
-      <Dropdown
-        contentClassName="max-w-90 max-h-80 overflow-y-auto"
-        disabled={!datasets.length}
-        menu={{
-          items: datasets.map((dataset) => ({ key: dataset.id, label: dataset.name })),
-          selectedKeys: tabs.filter((tab) => tab.id === selectedId).map((tab) => tab.id),
-          onClick: ({ key }) => {
-            const dataset = datasets.find((entry) => entry.id === key);
-            if (dataset) onOpenData(dataset);
-          },
-        }}
-      >
-        <Button
-          variant="ghost"
-          size="small"
-          disabled={!datasets.length}
-          aria-label="打开数据标签"
-          title="打开数据标签"
-        >
-          <PlusIcon />
-        </Button>
-      </Dropdown>
+      <Button
+        variant="ghost"
+        size="small"
+        icon={<PlusIcon />}
+        aria-label="打开数据标签"
+        title="打开数据标签"
+        onClick={() => setPickerOpen(true)}
+      />
+      {pickerOpen && (
+        <DatasetPickerDialog
+          datasets={datasets}
+          onSelect={onOpenData}
+          onClose={() => setPickerOpen(false)}
+          onAddData={onAddData}
+        />
+      )}
     </div>
   );
 }

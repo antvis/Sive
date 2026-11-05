@@ -24,7 +24,7 @@ export default function Settings({
   const sections = [
     { key: 'general', label: '通用设置', icon: SlidersHorizontalIcon },
     { key: 'models', label: '模型服务', icon: CpuIcon, count: state.models.length },
-    { key: 'deleted', label: '已删除会话', icon: ArchiveIcon, count: state.deletedConversations.length },
+    { key: 'deleted', label: '已归档会话', icon: ArchiveIcon, count: state.deletedConversations.length },
   ];
   return (
     <div

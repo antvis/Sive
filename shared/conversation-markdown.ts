@@ -64,10 +64,3 @@ export function taskReplyMarkdown(task: Task) {
   sections.push('### 执行过程', eventsMarkdown(task.events) || '暂无执行记录');
   return sections.join('\n\n');
 }
-
-export function conversationMarkdown(runs: Run[], task: Task | null) {
-  const sections = runs.map((run) => `## ${run.question}\n\n${replyMarkdown(run)}`);
-  if (task && !runs.some((run) => run.id === task.runId))
-    sections.push(`## ${task.question}\n\n${taskReplyMarkdown(task)}`);
-  return '# Sive 分析会话\n\n' + sections.join('\n\n---\n\n');
-}

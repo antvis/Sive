@@ -12,7 +12,6 @@ import { Workbench } from '../backend/workbench';
 import { Connections } from '../backend/connections';
 import { themePalette } from '../shared/theme';
 import { analysisHTML } from '../backend/render';
-import { conversationHTML, conversationMarkdown } from '../backend/conversation-export';
 import { exportFilename } from './export-filename';
 app.setName('Sive');
 app.setPath('userData', process.env.SIVE_DATA || path.join(app.getPath('appData'), 'sive'));
@@ -138,7 +137,7 @@ app.whenReady().then(async () => {
     importData: async (format) => {
       let defaultPath: string | undefined;
       try {
-        const directory = store.view.lastImportDirectory;
+        const directory = store.lastImportDirectory;
         if (directory && fs.statSync(directory).isDirectory()) defaultPath = directory;
       } catch {
         // A moved or unavailable directory should not prevent opening the picker.
@@ -199,37 +198,6 @@ app.whenReady().then(async () => {
     saveAnalysis: (id) => {
       store.saveAnalysis(id);
       controller.change();
-    },
-    exportConversation: async (runIds, taskId, format) => {
-      const runs = [...new Set(runIds)].map((id) => store.run(id));
-      const task =
-        taskId === controller.analysis.task?.id
-          ? structuredClone(controller.analysis.task)
-          : taskId
-            ? store.taskRecord(taskId)
-            : null;
-      if (taskId && !task) throw new WorkbenchError('INVALID_INPUT', '任务记录已不存在，请重新打开会话');
-      if (!runs.length && !task) throw new WorkbenchError('INVALID_INPUT', '此会话暂无可导出的分析记录');
-      const theme = store.theme();
-      const content =
-        format === 'html'
-          ? await conversationHTML(runs, task || null, theme)
-          : conversationMarkdown(runs, task || null);
-      const dest = await dialog.showSaveDialog(win, {
-        defaultPath: exportFilename('Sive-分析会话', format),
-        filters: [
-          { name: format === 'html' ? 'HTML（离线图表）' : 'Markdown（含图表配置）', extensions: [format] },
-        ],
-      });
-      if (dest.canceled || !dest.filePath) return false;
-      const temporary = `${dest.filePath}.${randomUUID()}.tmp`;
-      try {
-        fs.writeFileSync(temporary, content, { mode: 0o600 });
-        fs.renameSync(temporary, dest.filePath);
-      } finally {
-        fs.rmSync(temporary, { force: true });
-      }
-      return true;
     },
     exportAnalysis: async (id, format, saved = false) => {
       const run = store.run(id);

@@ -1,18 +1,7 @@
+import { useScrollLoad } from '../shared/use-scroll-load';
 import { useRun } from '../shared/use-run';
 import { useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  useUI,
-  Button,
-  Dropdown,
-  Empty,
-  SearchInput,
-  Pagination,
-  Segmented,
-  Spin,
-  Modal,
-  Input,
-} from './ui';
+import { Alert, useUI, Button, Dropdown, Empty, SearchInput, Segmented, Spin, Modal, Input } from './ui';
 import {
   DatabaseIcon,
   TrashIcon,
@@ -312,7 +301,6 @@ export default function SavedAnalyses({
   refreshingId?: string;
 }) {
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
   const keyword = search.trim().toLocaleLowerCase();
   const filtered = runs
     .filter(
@@ -323,7 +311,7 @@ export default function SavedAnalyses({
         ),
     )
     .sort((a, b) => b.savedAt!.localeCompare(a.savedAt!));
-  const current = Math.min(page, Math.max(1, Math.ceil(filtered.length / 6)));
+  const { count, hasMore, footer } = useScrollLoad(filtered.length, 6, keyword);
   return (
     <section aria-label="分析收藏卡片">
       <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pb-4 border-b border-b-line">
@@ -335,14 +323,13 @@ export default function SavedAnalyses({
           value={search}
           onChange={(event) => {
             setSearch(event.target.value);
-            setPage(1);
           }}
         />
         <span className="text-muted">{filtered.length} 个分析</span>
       </div>
       {filtered.length ? (
         <div className="grid grid-cols-[repeat(auto-fill,_minmax(min(360px,_100%),_1fr))] gap-4 items-stretch mt-5">
-          {filtered.slice((current - 1) * 6, current * 6).map((run) => (
+          {filtered.slice(0, count).map((run) => (
             <SavedCardLoader
               key={run.id}
               run={run}
@@ -356,14 +343,10 @@ export default function SavedAnalyses({
       ) : (
         <Empty description={search ? '没有匹配的分析' : '暂无分析收藏，点击结果中的“保存分析”后显示在这里'} />
       )}
-      {filtered.length > 6 && (
-        <Pagination
-          className="justify-end mt-5"
-          current={current}
-          pageSize={6}
-          total={filtered.length}
-          onChange={setPage}
-        />
+      {hasMore && (
+        <div ref={footer} className="py-5 text-center text-muted text-helper" role="status">
+          正在加载更多分析收藏…
+        </div>
       )}
     </section>
   );

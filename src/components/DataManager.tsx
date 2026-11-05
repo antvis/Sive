@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
+import { useScrollLoad } from '../shared/use-scroll-load';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { paths } from '../shared/routes';
-import { useUI, Button, SearchInput, ConfirmAction, Empty, Pagination, Tag } from './ui';
+import { useUI, Button, SearchInput, ConfirmAction, Empty, Tag } from './ui';
 import {
   ArrowUpRightIcon,
   ClockIcon,
@@ -29,18 +31,16 @@ export default function DataManager({
   const location = useLocation();
   const [params, setParams] = useSearchParams();
   const search = params.get('q') || '';
-  const requestedPage = Number(params.get('page'));
-  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-  const setPage = (value: number) => {
+  useEffect(() => {
+    if (!params.has('page')) return;
     const next = new URLSearchParams(params);
-    if (value > 1) next.set('page', String(value));
-    else next.delete('page');
+    next.delete('page');
     setParams(next, { replace: true });
-  };
+  }, [params, setParams]);
   const filtered = datasets.filter((d) =>
     d.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
   );
-  const current = Math.min(page, Math.max(1, Math.ceil(filtered.length / 12)));
+  const { count, hasMore, footer } = useScrollLoad(filtered.length, 12, search);
   const sourceActions = useDataSourceActions({ onImported: open, onConnected: () => {} });
   const { busy, perform, connection } = sourceActions;
   return (
@@ -76,7 +76,7 @@ export default function DataManager({
         <span className="text-muted">{filtered.length} 个数据源</span>
         {filtered.length ? (
           <div className="grid mt-5 grid-cols-[repeat(auto-fill,_minmax(min(320px,_100%),_1fr))] gap-4">
-            {filtered.slice((current - 1) * 12, current * 12).map((d) => (
+            {filtered.slice(0, count).map((d) => (
               <CollectionCard
                 className="[&_.data-card-preview]:mr-auto [&_.data-card-preview]:pl-0 p-4.5 hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_3px_12px_color-mix(in_srgb,_var(--text)_5%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_3px_12px_color-mix(in_srgb,_var(--text)_5%,_transparent)] [&_h3]:mt-0 [&_h3]:mr-0 [&_h3]:mb-[5px] [&_h3]:ml-0 [&_h3]:text-label [&_h3]:text-ink [&_h3]:tracking-[-0.02em] [&_.collection-card-summary]:[-webkit-line-clamp:1] [&_.collection-card-summary]:min-h-0 [&_.collection-card-summary]:mt-3 [&_.collection-card-summary]:mr-0 [&_.collection-card-summary]:mb-0 [&_.collection-card-summary]:ml-0 [&_.collection-card-summary]:leading-[1.6] [&_.collection-card-date]:mt-auto [&_.collection-card-date]:gap-[5px] [&_.collection-card-date]:flex-wrap [&_.collection-card-actions]:gap-0.5 [&_.collection-card-actions]:mt-3.5 [&_.collection-card-actions]:border-t-[color-mix(in_srgb,_var(--border)_55%,_transparent)]"
                 key={d.id}
@@ -182,7 +182,7 @@ export default function DataManager({
                   )}
                   <ConfirmAction
                     title="删除数据源及关联内容？"
-                    description="将永久删除此数据源的全部会话（包括已删除会话）、草稿和分析收藏，无法恢复。原始文件或数据库不会被删除。"
+                    description="将永久删除此数据源的全部会话（包括已归档会话）、草稿和分析收藏，无法恢复。原始文件或数据库不会被删除。"
                     onConfirm={() => perform('delete', () => api.deleteData(d.id))}
                   >
                     <Button
@@ -204,14 +204,10 @@ export default function DataManager({
             description={datasets.length ? '没有匹配的数据' : '还没有数据源，点击右上角“新增数据源”开始。'}
           />
         )}
-        {filtered.length > 12 && (
-          <Pagination
-            className="justify-end mt-5"
-            current={current}
-            pageSize={12}
-            total={filtered.length}
-            onChange={setPage}
-          />
+        {hasMore && (
+          <div ref={footer} className="py-5 text-center text-muted text-helper" role="status">
+            正在加载更多数据源…
+          </div>
         )}
       </section>
       <MySQLConnectionDialog {...sourceActions} />
