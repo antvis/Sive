@@ -1,6 +1,6 @@
 import { cx } from '../shared/cx';
 import { Button, Dropdown, TextArea, Tooltip } from './ui';
-import { ArrowUpIcon, CaretDownIcon, InfoIcon, StopCircleIcon } from '@phosphor-icons/react';
+import { ArrowUpIcon, CaretDownIcon, StopCircleIcon } from '@phosphor-icons/react';
 import type { Dataset, ModelProfile } from '../../shared/contracts';
 import { analysisModes, type AnalysisMode } from '../../shared/analysis-options';
 import { usePreferences } from '../preferences';
@@ -190,9 +190,6 @@ export default function AnalysisComposer({
                 : `${sendKey} 发送 · ${preferences.sendShortcut === 'enter' ? 'Shift + Enter' : 'Enter'} 换行`}
           </span>
         )}
-        <Tooltip title="将向所选模型发送问题、表结构、数据语义及必要的查询结果。">
-          <Button variant="ghost" size="small" icon={<InfoIcon />} aria-label="数据发送说明" />
-        </Tooltip>
       </div>
     </div>
   );

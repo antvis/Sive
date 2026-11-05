@@ -69,7 +69,7 @@ function ResultContent({
     }
   };
   return (
-    <article className="result pb-4.5 mb-4.5 border-b border-b-line min-w-0">
+    <article className="result pb-4.5 mb-4.5 min-w-0">
       <UserMessage
         question={run.question}
         time={run.events[0]?.at || run.createdAt}
