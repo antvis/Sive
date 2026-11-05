@@ -1,9 +1,37 @@
 import type { TableField } from '../../shared/table-values';
+import { compareNumeric } from '../../shared/table-values';
+import type { ColumnDef, SortingState } from '@tanstack/react-table';
 
 export const MIN_COLUMN_WIDTH = 80;
 export const MAX_COLUMN_WIDTH = 1000;
 export const clampColumnWidth = (width: number) =>
   Math.round(Math.max(MIN_COLUMN_WIDTH, Math.min(MAX_COLUMN_WIDTH, width)));
+
+export function gridColumns(
+  fields: TableField[],
+  widths: number[],
+  numeric: ReadonlySet<string>,
+  sorting: SortingState,
+): ColumnDef<Record<string, unknown>>[] {
+  return fields.map(({ name }, index) => ({
+    id: name,
+    header: name,
+    // Accessor functions preserve literal field names containing dots.
+    accessorFn: (row) => row[name],
+    size: widths[index],
+    minSize: MIN_COLUMN_WIDTH,
+    maxSize: MAX_COLUMN_WIDTH,
+    enableSorting: numeric.has(name),
+    sortDescFirst: false,
+    sortUndefined: false,
+    sortingFn: (left, right, id) =>
+      compareNumeric(
+        left.getValue(id),
+        right.getValue(id),
+        sorting.find((item) => item.id === id)?.desc ? 'descend' : 'ascend',
+      ),
+  }));
+}
 
 function textWidth(value: unknown) {
   const text = value == null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value);

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { metricFormSchema } from '../../shared/input-schemas';
 import { Button, Form, Field, useForm, Input, TextArea, Modal, ConfirmAction, Select } from './ui';
 import type { BusinessMetric, Dataset } from '../../shared/contracts';
 
@@ -16,7 +18,7 @@ export default function MetricEditor({
   disabled: boolean;
 }) {
   const [index, setIndex] = useState<number | null>(null);
-  const form = useForm<BusinessMetric>({ mode: 'onChange' });
+  const form = useForm<BusinessMetric>({ mode: 'onChange', resolver: zodResolver(metricFormSchema) });
   const sources = datasets.filter((item) => item.id !== dataset.id && item.metrics?.length);
   function edit(position: number) {
     form.reset(
@@ -109,10 +111,10 @@ export default function MetricEditor({
         }}
       >
         <Form form={form}>
-          <Field name="name" label="指标名称" required="请填写指标名称">
+          <Field name="name" label="指标名称" required>
             <Input placeholder="例如：净收入" />
           </Field>
-          <Field name="table" label="数据表" required="请选择数据表">
+          <Field name="table" label="数据表" required>
             <Select
               options={dataset.schema.models.map((model) => ({ value: model.name, label: model.name }))}
             />
@@ -121,7 +123,7 @@ export default function MetricEditor({
             name="expression"
             label="聚合公式"
             extra="例如 SUM(amount - refund) 或 COUNT(DISTINCT customer_id)。按实际字段填写，过滤规则可补充在上方的数据语义说明中。"
-            required="请填写聚合公式"
+            required
           >
             <TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
           </Field>

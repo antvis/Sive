@@ -1,24 +1,10 @@
+import { mysqlInputSchema, parseInput } from '../shared/input-schemas';
 import { WorkbenchError } from '../shared/errors';
 import { randomUUID } from 'node:crypto';
 import type { DataSourceConfig } from '@antv/ava';
 import type { MySQLInput } from '../shared/contracts';
 import type { Store, StoredDataset } from './store';
 
-function validateMySQL(input: MySQLInput) {
-  if (!Number.isInteger(input.port) || input.port < 1 || input.port > 65535)
-    throw new WorkbenchError('INVALID_INPUT', '端口应为 1–65535');
-  for (const key of ['host', 'database', 'user'] as const)
-    if (typeof input[key] !== 'string' || !input[key])
-      throw new WorkbenchError('INVALID_INPUT', '请填写主机、数据库和用户名');
-  // AVA beta joins DuckDB MySQL connection fields without quoting. Reject
-  // ambiguous values instead of letting them become connection-string options.
-  for (const value of [input.host, input.database, input.user, input.password ?? ''])
-    if (typeof value !== 'string' || /[\s'"\\\x00-\x1f\x7f]/u.test(value))
-      throw new WorkbenchError(
-        'INVALID_INPUT',
-        '当前 MySQL 驱动暂不支持连接字段含空白、引号、反斜杠或控制字符',
-      );
-}
 export function connectionFailure(error: unknown) {
   const text =
     error instanceof Error
@@ -42,7 +28,7 @@ export class Connections {
     private decrypt: (s: string) => string,
   ) {}
   prepare(input: MySQLInput): StoredDataset {
-    validateMySQL(input);
+    input = parseInput(mysqlInputSchema, input);
     const old = input.id ? this.store.dataset(input.id) : undefined;
     if (old && old.format !== 'mysql') throw new WorkbenchError('INVALID_INPUT', '只能编辑 MySQL 连接');
     const sameSource =
@@ -90,7 +76,7 @@ export class Connections {
       user: c.user,
       password,
     };
-    validateMySQL(input);
+    parseInput(mysqlInputSchema, input);
     return {
       type: 'mysql',
       options: { host: input.host, port: input.port, database: input.database, user: input.user, password },

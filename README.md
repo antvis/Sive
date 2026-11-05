@@ -47,4 +47,12 @@ pnpm dev
 
 页面使用 React Router 的 Hash 路由，兼容打包后的本地文件加载。路由表在 `src/router.tsx`，`App.tsx` 提供布局和共享工作区状态；欢迎页、数据源列表、新增数据源、分析详情、收藏和设置分别由路由渲染。数据源、会话和分析记录定位通过 URL 管理，标签与问题草稿由工作区保存。
 
+数据预览、表结构和分析结果由 TanStack Query 管理读取状态与缓存，查询键包含数据或视图版本；写入与后台任务仍经由现有 IPC 和工作区订阅同步。Zod 定义共享输入规则，React Hook Form 通过 resolver 复用校验；持久化工作区使用独立的兼容性 schema。表格排序、分页和列宽由 TanStack Table 管理，分析页分栏使用 react-resizable-panels。
+
+针对查询、输入校验、存储恢复和表格行为的回归检查（Node.js >=22.15）：
+
+```sh
+node --import ./tests/register-typescript.mjs --test tests/library-migrations.test.mjs
+```
+
 Sive 使用 [MIT License](LICENSE)。本项目基于 AntV AVA 构建，是独立项目，非 AntV 官方发行版。

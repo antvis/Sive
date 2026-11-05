@@ -25,6 +25,7 @@ import { useWorkspaceNavigation } from './shared/use-workspace-navigation';
 import { observeWorkspace } from './shared/workspace-subscription';
 import { datasetPath, datasetRedirect, paths } from './shared/routes';
 import type { WorkspaceContext } from './shared/workspace-context';
+import { pruneWorkspaceQueries } from './shared/queries';
 
 const api = window.workbench;
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
   const matches = useMatches();
   const title = (matches.at(-1)?.handle as { title?: string } | undefined)?.title || 'Sive';
   const receive = (snapshot: State) => {
+    pruneWorkspaceQueries(snapshot);
     setState(snapshot);
     navigation.receive(snapshot);
     setLoadError('');

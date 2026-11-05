@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { previewQuery } from '../shared/queries';
 import { Alert, useUI, Button, Empty, TextArea, Select, Spin, Tabs, Tag } from './ui';
 import {
   CaretLeftIcon,
@@ -26,11 +28,7 @@ export default function DataBrowser({
 }) {
   const { message } = useUI();
   const [table, setTable] = useState(dataset.schema.models[0]?.name);
-  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
-  const [loadedKey, setLoadedKey] = useState('');
   const [pagination, setPagination] = useState({ key: '', page: 1, size: 100 });
-  const [hasMore, setHasMore] = useState(false);
-  const [retry, setRetry] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [treeOpen, setTreeOpen] = useState(true);
   const [compact, setCompact] = useState(false);
@@ -61,45 +59,14 @@ export default function DataBrowser({
   useEffect(() => {
     if (compact && treeOpen) root.current?.querySelector<HTMLInputElement>('.schema-sidebar input')?.focus();
   }, [compact, treeOpen]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [semantic, setSemantic] = useState(dataset.semantic);
   const [metrics, setMetrics] = useState(dataset.metrics || []);
   const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    let live = true;
-    if (!activeTable) {
-      setRows([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError('');
-    api
-      .preview(dataset.id, activeTable, { offset: (page - 1) * pageSize, limit: pageSize + 1 })
-      .then((data) => {
-        if (live) {
-          setRows(data.slice(0, pageSize));
-          setHasMore(data.length > pageSize);
-          setLoadedKey(requestKey);
-        }
-      })
-      .catch((e) => {
-        if (live) {
-          setError(errorMessage(e));
-          setRows([]);
-          setHasMore(false);
-          setLoadedKey(requestKey);
-        }
-      })
-      .finally(() => {
-        if (live) setLoading(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [dataset.id, activeTable, dataset.fingerprint, page, pageSize, requestKey, retry]);
-  const pending = loading || loadedKey !== requestKey;
+  const preview = useQuery(previewQuery(dataset, activeTable, page, pageSize));
+  const pending = !!activeTable && (preview.isPending || preview.isFetching);
+  const error = preview.error && !pending ? errorMessage(preview.error) : '';
+  const rows = preview.isError ? [] : (preview.data || []).slice(0, pageSize);
+  const hasMore = !preview.isError && (preview.data?.length || 0) > pageSize;
   const refresh = async () => {
     if (refreshing) return;
     setRefreshing(true);
@@ -197,7 +164,7 @@ export default function DataBrowser({
             type="error"
             title={error}
             action={
-              <Button size="small" onClick={() => setRetry((v) => v + 1)}>
+              <Button size="small" onClick={() => preview.refetch()}>
                 重试预览
               </Button>
             }

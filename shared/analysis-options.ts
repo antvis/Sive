@@ -1,5 +1,7 @@
-export type AnalysisMode = 'direct' | 'loop';
-export type AnalysisOptions = { maxRetries?: number; maxSteps?: number };
+import type { z } from 'zod';
+import type { analysisModeSchema, analysisOptionsSchema } from './input-schemas';
+export type AnalysisMode = z.infer<typeof analysisModeSchema>;
+export type AnalysisOptions = z.infer<typeof analysisOptionsSchema>;
 export const analysisModes = [
   { value: 'direct' as const, label: '直接分析', description: '适合明确的统计问题：生成查询、计算并总结。' },
   {

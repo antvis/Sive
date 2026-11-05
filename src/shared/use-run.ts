@@ -1,35 +1,14 @@
-import { useEffect, useState } from 'react';
-import type { Run, RunSummary } from '../../shared/contracts';
+import { useQuery } from '@tanstack/react-query';
+import type { RunSummary } from '../../shared/contracts';
 import { errorMessage } from './feedback';
+import { runQuery } from './queries';
 
 // Saving changes metadata only. Keep mounted charts and drafts intact until content changes.
 export function useRun(summary: RunSummary) {
-  const key = JSON.stringify([summary.id, summary.viewUpdatedAt]);
-  const [loaded, setLoaded] = useState<{ key: string; run?: Run; error?: string }>();
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    let live = true;
-    window.workbench.run(summary.id).then(
-      (run) => {
-        if (live) setLoaded({ key, run });
-      },
-      (error) => {
-        if (live) setLoaded({ key, error: errorMessage(error) });
-      },
-    );
-    return () => {
-      live = false;
-    };
-  }, [key, attempt]);
+  const query = useQuery(runQuery(summary));
   return {
-    run:
-      loaded?.key === key && loaded.run
-        ? { ...loaded.run, savedAt: summary.savedAt, savedTitle: summary.savedTitle }
-        : undefined,
-    error: loaded?.key === key ? loaded.error : undefined,
-    retry: () => {
-      setLoaded(undefined);
-      setAttempt((value) => value + 1);
-    },
+    run: query.data ? { ...query.data, savedAt: summary.savedAt, savedTitle: summary.savedTitle } : undefined,
+    error: query.error && !query.isFetching ? errorMessage(query.error) : undefined,
+    retry: () => query.refetch(),
   };
 }

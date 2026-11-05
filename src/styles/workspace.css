@@ -246,20 +246,20 @@
   position: relative;
   height: 100%;
   min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 0px 0px;
   overflow: hidden;
-  transition: grid-template-columns 220ms cubic-bezier(0.2, 0, 0, 1);
 }
-.dataset-detail.with-data {
-  grid-template-columns: minmax(0, 1fr) 6px clamp(
-      380px,
-      calc(100% - var(--conversation-width) - 6px),
-      calc(100% - 346px)
-    );
+.dataset-detail > [data-panel] {
+  transition: flex-grow 220ms cubic-bezier(0.2, 0, 0, 1);
 }
-.dataset-detail.resizing {
+.dataset-detail:has([data-separator='active']) > [data-panel] {
   transition: none;
+}
+.dataset-pane,
+.dataset-pane > .conversation,
+.dataset-pane > .data-panel {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
 }
 .page:has(> .dataset-detail) {
   padding: 0;
@@ -416,32 +416,26 @@
   opacity: 0.65;
 }
 
-.dataset-detail > .conversation {
-  order: 0;
-}
 .dataset-divider {
-  order: 1;
+  width: 6px;
   cursor: col-resize;
   touch-action: none;
   background: linear-gradient(var(--border), var(--border)) center / 1px 100% no-repeat;
 }
-.dataset-detail > .data-panel {
-  order: 2;
-}
 .dataset-divider:hover,
 .dataset-divider:focus-visible,
-.resizing > .dataset-divider {
+.dataset-divider[data-separator='active'] {
   background-image: linear-gradient(
     color-mix(in srgb, var(--muted) 55%, var(--border)),
     color-mix(in srgb, var(--muted) 55%, var(--border))
   );
   outline: none;
 }
-.dataset-detail.resizing {
+.dataset-detail:has([data-separator='active']) {
   cursor: col-resize;
   user-select: none;
 }
-.dataset-detail.resizing iframe {
+.dataset-detail:has([data-separator='active']) iframe {
   pointer-events: none;
 }
 
@@ -532,12 +526,13 @@
   color: var(--muted);
 }
 
-.dataset-detail:not(.with-data) > .data-panel {
+.dataset-detail:not(.with-data) .data-panel {
   padding-inline: 0;
   opacity: 0;
   pointer-events: none;
 }
 .dataset-detail:not(.with-data) > .dataset-divider {
+  width: 0;
   visibility: hidden;
 }
 .dataset-detail .conversation-body,
@@ -545,7 +540,7 @@
   transition: padding-inline 220ms cubic-bezier(0.2, 0, 0, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .dataset-detail,
+  .dataset-detail > [data-panel],
   .data-panel,
   .dataset-detail .conversation-body,
   .dataset-detail .composer {

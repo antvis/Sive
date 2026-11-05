@@ -3,105 +3,11 @@ import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import type { Run } from '../shared/contracts';
 import type { Workspace } from './store';
+import { validateWorkspace } from './workspace-schema';
 
 type RecordValue = Record<string, unknown>;
 const record = (value: unknown): value is RecordValue =>
   !!value && typeof value === 'object' && !Array.isArray(value);
-const strings = (value: RecordValue, keys: string[]) => keys.every((key) => typeof value[key] === 'string');
-const records = (value: unknown): value is RecordValue[] => Array.isArray(value) && value.every(record);
-const entities = (value: unknown): value is RecordValue[] =>
-  records(value) &&
-  value.every((entry) => typeof entry.id === 'string' && !!entry.id) &&
-  new Set(value.map((entry) => entry.id)).size === value.length;
-const response = (value: unknown) =>
-  record(value) &&
-  records(value.data) &&
-  records(value.schema) &&
-  value.schema.every((field) => typeof field.name === 'string');
-const events = (value: unknown) =>
-  records(value) && value.every((event) => strings(event, ['at', 'stage', 'label']));
-const chart = (value: unknown) =>
-  value === undefined || (record(value) && typeof value.chartType === 'string' && record(value.config));
-const metrics = (value: unknown) =>
-  value === undefined ||
-  (records(value) && value.every((m) => strings(m, ['name', 'table', 'expression', 'unit', 'description'])));
-
-function validateWorkspace(value: unknown): asserts value is Workspace {
-  if (
-    !record(value) ||
-    value.version !== 2 ||
-    !strings(value, ['activeModelId']) ||
-    !record(value.theme) ||
-    !['light', 'dark'].includes(String(value.theme.mode)) ||
-    !entities(value.datasets) ||
-    !entities(value.models) ||
-    !entities(value.runs) ||
-    !value.datasets.every(
-      (d) =>
-        strings(d, ['name', 'file', 'fingerprint', 'semantic', 'createdAt']) &&
-        ['csv', 'xlsx', 'json', 'parquet', 'mysql'].includes(String(d.format)) &&
-        record(d.schema) &&
-        records(d.schema.models) &&
-        d.schema.models.every((m) => typeof m.name === 'string' && records(m.columns)) &&
-        record(d.profile) &&
-        records(d.profile.models) &&
-        records(d.preview) &&
-        metrics(d.metrics) &&
-        ((d.format !== 'xlsx' && d.excelSheets === undefined) ||
-          (records(d.excelSheets) &&
-            d.excelSheets.every((s) => typeof s.sheet === 'string' && typeof s.header === 'boolean'))) &&
-        (d.format !== 'mysql' ||
-          (record(d.connection) &&
-            strings(d.connection, ['host', 'database', 'user']) &&
-            Number.isInteger(d.connection.port))),
-    ) ||
-    !value.models.every(
-      (m) =>
-        strings(m, ['name', 'model', 'baseURL']) &&
-        Array.isArray(m.modelIds) &&
-        m.modelIds.every((id) => typeof id === 'string'),
-    ) ||
-    !value.runs.every(
-      (r) =>
-        strings(r, [
-          'datasetId',
-          'sourceName',
-          'fingerprint',
-          'question',
-          'strategy',
-          'createdAt',
-          'semantic',
-          'modelName',
-        ]) &&
-        response(r.result) &&
-        (r.savedTitle === undefined || typeof r.savedTitle === 'string') &&
-        events(r.events) &&
-        chart(r.chart) &&
-        metrics(r.metrics) &&
-        (r.savedView === undefined ||
-          (record(r.savedView) &&
-            response(r.savedView.result) &&
-            chart(r.savedView.chart) &&
-            typeof r.savedView.updatedAt === 'string')),
-    ) ||
-    !entities(value.tasks) ||
-    !value.tasks.every(
-      (t) =>
-        strings(t, ['datasetId', 'question']) &&
-        events(t.events) &&
-        ['running', 'cancelling', 'done', 'error', 'cancelled', 'interrupted'].includes(String(t.status)) &&
-        (t.status !== 'done' || strings(t, ['runId', 'finishedAt'])) &&
-        (t.preview === undefined || response(t.preview)),
-    ) ||
-    !entities(value.conversations) ||
-    !value.conversations.every(
-      (c) =>
-        strings(c, ['datasetId', 'title', 'createdAt', 'updatedAt']) &&
-        (c.deletedAt === undefined || typeof c.deletedAt === 'string'),
-    )
-  )
-    throw new Error('工作区数据结构无效');
-}
 
 function atomicWrite(file: string, content: string) {
   const temporary = `${file}.${randomUUID()}.tmp`;

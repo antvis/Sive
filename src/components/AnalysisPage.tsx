@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { Button, useUI } from './ui';
-import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
+import { CaretRightIcon } from '@phosphor-icons/react';
 import type { RunSummary, Task } from '../../shared/contracts';
 import { taskReplyMarkdown } from '../../shared/conversation-markdown';
 import { useWorkspace } from '../shared/workspace-context';
@@ -138,7 +138,15 @@ export default function AnalysisPage() {
   if (!dataset || datasetId !== route.datasetId || conversationId !== (search.get('conversation') || ''))
     return null;
   return (
-    <DatasetLayout dataOpen={dataOpen}>
+    <DatasetLayout
+      dataOpen={dataOpen}
+      onDataOpenChange={setDataOpen}
+      data={
+        <section className="data-panel" aria-label="数据面板" inert={!dataOpen} aria-hidden={!dataOpen}>
+          <DataBrowser key={dataset.id} dataset={dataset} datasets={state.datasets} onAsk={ask} />
+        </section>
+      }
+    >
       <section className="conversation" aria-label="分析会话">
         <ConversationTimeline sessionKey={datasetId + conversationId + runId}>
           {!session.length && !currentTask && (
@@ -228,18 +236,6 @@ export default function AnalysisPage() {
           onCancel={() => perform(() => api.cancel())}
           onSettings={openModelSettings}
         />
-      </section>
-      <Button
-        className="data-panel-toggle"
-        size="small"
-        title={dataOpen ? '收起数据面板' : '展开数据面板'}
-        aria-label={dataOpen ? '收起数据面板' : '展开数据面板'}
-        aria-expanded={dataOpen}
-        icon={dataOpen ? <CaretRightIcon /> : <CaretLeftIcon />}
-        onClick={() => setDataOpen(!dataOpen)}
-      />
-      <section className="data-panel" aria-label="数据面板" inert={!dataOpen} aria-hidden={!dataOpen}>
-        <DataBrowser key={dataset.id} dataset={dataset} datasets={state.datasets} onAsk={ask} />
       </section>
     </DatasetLayout>
   );

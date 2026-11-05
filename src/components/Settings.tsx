@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { modelInputSchema } from '../../shared/input-schemas';
 import { Switch } from 'radix-ui';
 import {
   Alert,
@@ -35,7 +37,7 @@ export default function Settings({
   const { message } = useUI();
   const [edit, setEdit] = useState<ModelProfile | 'new' | null>(null);
   const [busy, setBusy] = useState(false);
-  const form = useForm<ModelInput>({ mode: 'onChange' });
+  const form = useForm<ModelInput>({ mode: 'onChange', resolver: zodResolver(modelInputSchema) });
   const [discovering, setDiscovering] = useState(false);
   const [testProgress, setTestProgress] = useState<ModelTestProgress | null>(null);
   const [catalog, setCatalog] = useState<{ baseURL: string; apiKey: string; ids: string[] } | null>(null);
@@ -239,7 +241,7 @@ export default function Settings({
             </span>
           </div>
           {catalogError && <Alert type="error" title={catalogError} />}
-          <Field name="modelIds" label="启用模型" required="请至少选择一个模型">
+          <Field name="modelIds" label="启用模型" required>
             <ModelPicker options={currentCatalog?.ids || []} />
           </Field>
           <Field name="name" label="服务名称" required>

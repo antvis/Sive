@@ -1,15 +1,14 @@
 import type { AnalysisMode, AnalysisOptions } from './analysis-options';
 import type { Schema, Profile, AnalysisResponse, ChartSpec } from '@antv/ava';
 import type { ThemeSettings } from './theme';
-export type MySQLInput = {
-  id?: string;
-  name: string;
-  host: string;
-  port: number;
-  database: string;
-  user: string;
-  password?: string;
-};
+import type { z } from 'zod';
+import type {
+  mysqlInputSchema,
+  modelConnectionSchema,
+  modelInputSchema,
+  businessMetricSchema,
+} from './input-schemas';
+export type MySQLInput = z.infer<typeof mysqlInputSchema>;
 export type ConnectionInfo = Omit<MySQLInput, 'id' | 'name' | 'password'> & {
   hasPassword: boolean;
   checkedAt?: string;
@@ -42,13 +41,7 @@ export type TableDetails = {
   ddl?: string;
   ddlError?: string;
 };
-export type BusinessMetric = {
-  name: string;
-  table: string;
-  expression: string;
-  unit: string;
-  description: string;
-};
+export type BusinessMetric = z.infer<typeof businessMetricSchema>;
 export type Run = {
   id: string;
   conversationId?: string;
@@ -100,10 +93,9 @@ export type RunSummary = Pick<
   | 'savedTitle'
   | 'modelName'
 > & { viewUpdatedAt?: string };
-export type ModelConnectionInput = { baseURL: string; apiKey?: string; credentialSourceId?: string };
+export type ModelConnectionInput = z.infer<typeof modelConnectionSchema>;
 export type ModelTestProgress = { completed: number; total: number; active: string[] };
-export type ModelInput = Omit<ModelProfile, 'hasKey' | 'testedAt' | 'id' | 'model'> &
-  ModelConnectionInput & { id?: string };
+export type ModelInput = z.infer<typeof modelInputSchema>;
 export type Progress = {
   chartOutcome?: 'generated' | 'not-needed' | 'empty-data' | 'invalid-response' | 'failed';
   chartSelection?: string;

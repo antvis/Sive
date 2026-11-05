@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useUI, useForm } from '../components/ui';
 import type { Dataset, LocalDataset, MySQLInput } from '../../shared/contracts';
 import { errorMessage } from './feedback';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { mysqlInputSchema } from '../../shared/input-schemas';
 
 const api = window.workbench;
 
@@ -16,7 +18,7 @@ export function useDataSourceActions({
   const [editing, setEditing] = useState<Dataset | 'new' | null>(null);
   const [busy, setBusy] = useState('');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const form = useForm<MySQLInput>({ mode: 'onChange' });
+  const form = useForm<MySQLInput>({ mode: 'onChange', resolver: zodResolver(mysqlInputSchema) });
   const perform = async (key: string, fn: () => Promise<unknown>) => {
     setBusy(key);
     try {

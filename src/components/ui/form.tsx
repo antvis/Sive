@@ -38,30 +38,17 @@ export function Field({
 }: {
   name: string;
   label: string;
-  required?: boolean | string;
+  required?: boolean;
   extra?: ReactNode;
   children: ReactElement;
 }) {
   const { control } = useFormContext();
   const disabled = useContext(DisabledContext);
   const id = useId();
-  const { min, max } = children.props as { min?: number; max?: number };
   return (
     <Controller
       name={name}
       control={control}
-      rules={{
-        validate: (value) => {
-          if (required && (value === undefined || value === null || String(value).trim() === ''))
-            return typeof required === 'string' ? required : `请填写${label}`;
-          if (typeof value === 'number' && !Number.isFinite(value)) return `请填写有效的${label}`;
-          if (value !== '' && value != null && min !== undefined && Number(value) < min)
-            return `${label}不能小于 ${min}`;
-          if (value !== '' && value != null && max !== undefined && Number(value) > max)
-            return `${label}不能大于 ${max}`;
-          return true;
-        },
-      }}
       render={({ field, fieldState }) => (
         <div className="ui-field">
           <label id={`${id}-label`} htmlFor={id}>

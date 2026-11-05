@@ -1,3 +1,4 @@
+import { modelConnectionSchema, modelInputSchema, parseInput } from '../shared/input-schemas';
 import { WorkbenchError } from '../shared/errors';
 import { createOpenAI } from '@ai-sdk/openai';
 import { APICallError, generateText, wrapLanguageModel } from 'ai';
@@ -16,30 +17,6 @@ export class Models {
     private encrypt: (s: string) => string,
     private decrypt: (s: string) => string,
   ) {}
-  private validateURL(baseURL: string) {
-    let url: URL;
-    try {
-      url = new URL(baseURL);
-    } catch {
-      throw new WorkbenchError('INVALID_INPUT', '模型服务地址无效');
-    }
-    if (url.hostname === 'platform.deepseek.com')
-      throw new WorkbenchError(
-        'MODEL',
-        '这是 DeepSeek 管理控制台地址，请将服务地址改为 https://api.deepseek.com。',
-      );
-    if (
-      url.username ||
-      url.password ||
-      url.search ||
-      url.hash ||
-      !(
-        url.protocol === 'https:' ||
-        (url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))
-      )
-    )
-      throw new WorkbenchError('MODEL', '服务地址需使用 HTTPS，或本机 HTTP 地址');
-  }
   private encryptedKey(input: ModelConnectionInput) {
     if (input.apiKey) return this.encrypt(input.apiKey);
     if (!input.credentialSourceId) return undefined;
@@ -57,7 +34,7 @@ export class Models {
     }
   }
   async list(input: ModelConnectionInput): Promise<string[]> {
-    this.validateURL(input.baseURL);
+    input = parseInput(modelConnectionSchema, input);
     const key = this.decryptKey(this.encryptedKey(input));
     try {
       const response = await fetch(input.baseURL.replace(/\/+$/, '') + '/models', {
@@ -177,7 +154,7 @@ export class Models {
     return p;
   }
   async save(input: ModelInput, onProgress?: (progress: ModelTestProgress) => void) {
-    this.validateURL(input.baseURL);
+    input = parseInput(modelInputSchema, input);
     const old = this.store.view.models.find((m) => m.id === input.id);
     if (input.id && !old) throw new WorkbenchError('CONFLICT', '模型已移除，请重新打开设置');
     const modelIds = [...new Set(input.modelIds.map((id) => id.trim()))];

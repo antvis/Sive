@@ -47,4 +47,12 @@ UI code lives in `src/`, business logic in `backend/`, desktop entry points in `
 
 Pages use React Router hash routing, compatible with local file loading in packaged Electron. Routes are defined in `src/router.tsx`; `App.tsx` provides the layout and shared workspace state. Welcome, datasets, new data source, analysis, saved analyses, and settings have separate routes. URLs identify the current dataset, conversation, and analysis run, while the workspace retains tabs and question drafts.
 
+TanStack Query manages reads and caching for previews, table details, and analysis results, with data or view versions in query keys. Writes and background tasks retain the existing IPC and workspace subscriptions. Zod defines shared input rules, reused by React Hook Form through resolvers; persisted workspaces use a separate compatibility schema. TanStack Table manages sorting, pagination, and column widths, while react-resizable-panels manages the analysis split view.
+
+Run focused regression checks for queries, input validation, storage recovery, and table behavior (Node.js >=22.15):
+
+```sh
+node --import ./tests/register-typescript.mjs --test tests/library-migrations.test.mjs
+```
+
 Sive is licensed under the [MIT License](LICENSE). It is an independent project built on AntV AVA, not an official AntV distribution.

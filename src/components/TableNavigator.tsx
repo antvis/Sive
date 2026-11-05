@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { tableDetailsQuery } from '../shared/queries';
 import { useUI, Button, Empty, Input, Modal, Spin } from './ui';
 import {
   DatabaseIcon,
@@ -14,7 +16,7 @@ import {
   ListIcon,
   CodeIcon,
 } from '@phosphor-icons/react';
-import type { Dataset, TableDetails } from '../../shared/contracts';
+import type { Dataset } from '../../shared/contracts';
 
 export default function TableNavigator({
   dataset,
@@ -32,48 +34,22 @@ export default function TableNavigator({
   const { message } = useUI();
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<string | null>(selected || null);
-  const [retry, setRetry] = useState(0);
-  const [info, setInfo] = useState<{
-    table: string;
-    revision: string;
-    value?: TableDetails;
-    error?: string;
-  } | null>(null);
+  const query = useQuery(tableDetailsQuery(dataset, expanded));
   const [definition, setDefinition] = useState<{ table: string; ddl: string } | null>(null);
   useEffect(() => {
     if (expanded && !dataset.schema.models.some((model) => model.name === expanded))
       setExpanded(selected || null);
   }, [dataset.schema, expanded, selected]);
-  useEffect(() => {
-    let live = true;
-    setInfo(null);
-    if (expanded && dataset.schema.models.some((model) => model.name === expanded)) {
-      window.workbench
-        .tableDetails(dataset.id, expanded)
-        .then((value) => {
-          if (live)
-            setInfo({ table: expanded, revision: dataset.schemaRevision || dataset.fingerprint, value });
-        })
-        .catch(() => {
-          if (live)
-            setInfo({
-              table: expanded,
-              revision: dataset.schemaRevision || dataset.fingerprint,
-              error: '结构详情读取失败，请检查连接或查看权限。',
-            });
-        });
-    }
-    return () => {
-      live = false;
-    };
-  }, [dataset.id, dataset.fingerprint, dataset.schemaRevision, expanded, retry]);
   const tables = dataset.schema.models.filter((model) =>
     model.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
   );
   const details =
-    info?.table === expanded && info.revision === (dataset.schemaRevision || dataset.fingerprint)
-      ? info
-      : null;
+    query.isPending || query.isFetching
+      ? null
+      : {
+          value: query.data,
+          error: query.error ? '结构详情读取失败，请检查连接或查看权限。' : undefined,
+        };
   return (
     <div className="table-navigator">
       <div className="database-heading">
@@ -174,7 +150,7 @@ export default function TableNavigator({
                       ) : details.error ? (
                         <div className="structure-error">
                           <span>{details.error}</span>
-                          <Button variant="link" size="small" onClick={() => setRetry((v) => v + 1)}>
+                          <Button variant="link" size="small" onClick={() => query.refetch()}>
                             重试
                           </Button>
                         </div>
@@ -212,7 +188,7 @@ export default function TableNavigator({
                           {details.value!.ddlError && (
                             <div className="structure-error">
                               {details.value!.ddlError}
-                              <Button variant="link" size="small" onClick={() => setRetry((v) => v + 1)}>
+                              <Button variant="link" size="small" onClick={() => query.refetch()}>
                                 重试
                               </Button>
                             </div>
