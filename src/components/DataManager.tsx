@@ -48,8 +48,8 @@ export default function DataManager({
       <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pb-4 border-b border-b-line">
         <SearchInput
           className="max-w-70"
-          aria-label="搜索数据"
-          placeholder="搜索数据名称"
+          aria-label="搜索源数据名称"
+          placeholder="搜索源数据名称"
           value={search}
           allowClear
           onChange={(e) => {

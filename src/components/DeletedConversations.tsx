@@ -35,7 +35,7 @@ export default function DeletedConversations({ state }: { state: State }) {
   };
   const purge = (ids: string[]) =>
     confirm({
-      title: ids.length === 1 ? '永久删除这个会话？' : `永久删除全部 ${ids.length} 个会话？`,
+      title: ids.length === 1 ? '永久删除这个会话？' : `永久删除全部 ${ids.length} 个分析会话？`,
       content: '会话的分析结果、执行记录和收藏将一并删除，此操作无法恢复。数据源不受影响。',
       okText: '永久删除',
       okButtonProps: { danger: true },
@@ -48,8 +48,8 @@ export default function DeletedConversations({ state }: { state: State }) {
           <div className="mb-7">
             <SearchInput
               className="max-w-75"
-              aria-label="搜索已归档会话"
-              placeholder="搜索会话或数据源"
+              aria-label="搜索分析会话或者数据源"
+              placeholder="搜索分析会话或者数据源"
               allowClear
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -63,7 +63,7 @@ export default function DeletedConversations({ state }: { state: State }) {
               <header className="flex items-center gap-2.5 mb-3 text-muted">
                 <DatabaseIcon />
                 <strong title={dataset.name}>{dataset.name}</strong>
-                <span>{conversations.length} 个会话</span>
+                <span>{conversations.length} 个分析会话</span>
               </header>
               <div className="px-4 border border-line rounded-[14px]">
                 {conversations.map((conversation) => (
@@ -126,7 +126,7 @@ export default function DeletedConversations({ state }: { state: State }) {
       ) : (
         <div className="grid justify-items-center py-16 px-4 text-muted text-center">
           <ArchiveIcon size={28} />
-          <p className="text-ink mt-4 mr-0 mb-1.5 ml-0">暂无已归档会话</p>
+          <p className="text-ink mt-4 mr-0 mb-1.5 ml-0">暂无已归档分析</p>
           <span className="text-body">从左侧列表归档的会话会显示在这里。</span>
         </div>
       )}
