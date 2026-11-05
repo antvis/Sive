@@ -22,7 +22,7 @@ export default function DataSourcePicker({
           key={name}
           aria-label={name}
         >
-          <h3 className="flex items-center gap-[9px] mt-0 mr-0 mb-3.5 ml-0 text-subtitle font-semibold tracking-[0.01em]">
+          <h3 className="flex items-center gap-[9px] mt-0 mr-0 mb-3.5 ml-0 text-subtitle font-normal tracking-[0.01em]">
             <GroupIcon aria-hidden="true" />
             {name}
           </h3>
@@ -59,18 +59,13 @@ export default function DataSourcePicker({
                     <span className="data-source-symbol grid place-items-center w-8 h-8 shrink-0 rounded-card border border-[color-mix(in_srgb,_var(--source-color)_12%,_var(--surface))] [background:linear-gradient(_145deg,_color-mix(in_srgb,_var(--source-color)_6%,_var(--surface)),_color-mix(in_srgb,_var(--source-color)_13%,_var(--surface))_)] text-[var(--source-color)] [&_svg]:w-5.5 [&_svg]:h-5.5">
                       <SourceIcon weight="duotone" />
                     </span>
-                    <strong className="text-label font-semibold wrap-anywhere leading-[1.5]">{label}</strong>
-                    {available && (
-                      <small className="text-helper text-muted">
-                        {mysql ? '只读连接' : `.${format} 文件`}
-                      </small>
-                    )}
+                    <strong className="text-label font-normal wrap-anywhere leading-[1.5]">{label}</strong>
                   </span>
                   <span
                     className="data-source-details [grid-area:1_/_1] flex flex-col items-center justify-center gap-1 min-w-0 invisible text-center"
                     aria-hidden="true"
                   >
-                    <strong className="text-label font-semibold wrap-anywhere leading-[1.5]">
+                    <strong className="text-label font-normal wrap-anywhere leading-[1.5]">
                       {mysql ? 'MySQL 业务数据库' : label}
                     </strong>
                     <small className="text-helper text-muted">{description}</small>

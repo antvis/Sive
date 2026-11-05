@@ -6,12 +6,11 @@ import {
   NavLink,
   Outlet,
   useLocation,
-  useMatches,
   useNavigate,
   useParams,
   useSearchParams,
 } from 'react-router';
-import { Alert, useUI, Button, Spin } from './components/ui';
+import { Alert, useUI, Spin } from './components/ui';
 import { DatabaseIcon, GearSixIcon, ChartBarIcon } from '@phosphor-icons/react';
 import type { Conversation, Dataset, State } from '../shared/contracts';
 import type { AnalysisMode } from '../shared/analysis-options';
@@ -56,8 +55,6 @@ export default function App() {
     location.key,
   );
   const { workspaceTabs } = navigation;
-  const matches = useMatches();
-  const title = (matches.at(-1)?.handle as { title?: string } | undefined)?.title || 'Sive';
   const receive = (snapshot: State) => {
     pruneWorkspaceQueries(snapshot);
     setState(snapshot);
@@ -83,7 +80,6 @@ export default function App() {
   if (redirect) return <Navigate to={redirect} replace />;
   const busy = state.task?.status === 'running' || state.task?.status === 'cancelling';
   const dataset = state.datasets.find((d) => d.id === datasetId);
-  const pageTitle = dataset?.name || title;
   const contentIds = conversationIdsWithContent(state);
   const conversations = state.conversations
     .filter((item) => item.datasetId === datasetId && contentIds.has(item.id))
@@ -229,25 +225,6 @@ export default function App() {
               );
           }}
         />
-        <header className="h-12.5 min-h-12.5 flex items-center gap-4 py-0 px-5 border-b border-b-[color-mix(in_srgb,_var(--border)_45%,_transparent)] max-[1151px]:px-3 max-[1151px]:gap-2.5">
-          <strong
-            className="text-label min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
-            title={pageTitle}
-          >
-            {pageTitle}
-          </strong>
-          <span className="min-w-[4px] flex-1" />
-          {busy && (
-            <Button
-              variant="ghost"
-              size="small"
-              onClick={() => navigate(datasetPath(state.task!.datasetId, state.task!.conversationId))}
-            >
-              <Spin size="small" />
-              分析进行中
-            </Button>
-          )}
-        </header>
         {loadError && <Alert type="error" title={loadError} />}
         <div
           className="page flex-1 min-h-0 overflow-auto py-4 px-6 [&:has(>_.dataset-detail)]:p-0 [&:has(>_.dataset-detail)]:overflow-hidden max-[1151px]:px-3"

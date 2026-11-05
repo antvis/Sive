@@ -1,7 +1,7 @@
 import { cx } from '../shared/cx';
 import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
-import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
+import { CaretLeftIcon, CaretRightIcon, DotsSixVerticalIcon } from '@phosphor-icons/react';
 import { Button } from './ui';
 
 export default function DatasetLayout({
@@ -43,13 +43,20 @@ export default function DatasetLayout({
         {children}
       </Panel>
       <Separator
-        className="dataset-divider w-1.5 cursor-col-resize touch-none [background:linear-gradient(var(--border),_var(--border))_center_/_1px_100%_no-repeat] hover:[background-image:linear-gradient(_color-mix(in_srgb,_var(--muted)_55%,_var(--border)),_color-mix(in_srgb,_var(--muted)_55%,_var(--border))_)] hover:outline-none focus-visible:[background-image:linear-gradient(_color-mix(in_srgb,_var(--muted)_55%,_var(--border)),_color-mix(in_srgb,_var(--muted)_55%,_var(--border))_)] focus-visible:outline-none data-[separator=active]:[background-image:linear-gradient(_color-mix(in_srgb,_var(--muted)_55%,_var(--border)),_color-mix(in_srgb,_var(--muted)_55%,_var(--border))_)] data-[separator=active]:outline-none"
+        className="dataset-divider group/divider relative w-1.5 cursor-col-resize touch-none outline-none"
         disabled={!dataOpen}
         aria-label="调整分析会话与数据面板宽度"
         title="拖动调整宽度，双击恢复默认"
         aria-hidden={!dataOpen}
         inert={!dataOpen}
-      />
+      >
+        <span
+          aria-hidden="true"
+          className="absolute top-1/2 left-1 flex h-6 w-3 -translate-y-1/2 items-center justify-center rounded-sm text-muted opacity-0 transition-[color,opacity] group-hover/divider:text-accent group-hover/divider:opacity-100 group-focus-visible/divider:text-accent group-focus-visible/divider:opacity-100 group-focus-visible/divider:ring-2 group-focus-visible/divider:ring-accent/30 group-data-[separator=active]/divider:text-accent group-data-[separator=active]/divider:opacity-100 motion-reduce:transition-none"
+        >
+          <DotsSixVerticalIcon size={14} weight="bold" />
+        </span>
+      </Separator>
       <Panel
         id="data-pane"
         className="h-full min-h-0 min-w-0 [&_>_.conversation]:h-full [&_>_.conversation]:min-h-0 [&_>_.conversation]:min-w-0 [&_>_.data-panel]:h-full [&_>_.data-panel]:min-h-0 [&_>_.data-panel]:min-w-0 overflow-hidden"

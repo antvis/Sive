@@ -27,10 +27,7 @@ export default function Settings({
     { key: 'deleted', label: '已归档会话', icon: ArchiveIcon, count: state.deletedConversations.length },
   ];
   return (
-    <div
-      className="settings w-full max-w-280 mx-auto pt-[16px] pb-[40px] max-[541px]:[&_.deleted-filters]:grid-cols-1"
-      ref={root}
-    >
+    <div className="settings w-full max-w-280 mx-auto pt-[16px] pb-[40px]" ref={root}>
       {onBack && (
         <div className="mb-4">
           <Button variant="ghost" icon={<ArrowLeftIcon />} onClick={onBack}>

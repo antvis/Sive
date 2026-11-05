@@ -1,19 +1,17 @@
 import { useState } from 'react';
 import { ArchiveIcon, ArrowCounterClockwiseIcon, DatabaseIcon, TrashIcon } from '@phosphor-icons/react';
 import type { State } from '../../shared/contracts';
-import { Button, SearchInput, Select, useUI } from './ui';
+import { Button, SearchInput, useUI } from './ui';
 import { errorMessage } from '../shared/feedback';
 
 export default function DeletedConversations({ state }: { state: State }) {
   const { confirm, message } = useUI();
   const [search, setSearch] = useState('');
-  const [source, setSource] = useState('all');
   const [busy, setBusy] = useState(false);
   const deleted = state.deletedConversations;
   const sources = state.datasets.filter((dataset) => deleted.some((c) => c.datasetId === dataset.id));
   const needle = search.trim().toLocaleLowerCase();
   const groups = sources
-    .filter((dataset) => source === 'all' || dataset.id === source)
     .map((dataset) => ({
       dataset,
       conversations: deleted
@@ -45,39 +43,16 @@ export default function DeletedConversations({ state }: { state: State }) {
     });
   return (
     <section>
-      <header className="flex items-start justify-between gap-5 mb-7 [&_>_button]:shrink-0">
-        <div>
-          <h2 className="mt-0 mr-0 mb-2 ml-0">已归档会话</h2>
-          <p className="text-muted m-0 text-body">归档的会话保留在这里，恢复后可继续分析。</p>
-        </div>
-        <Button
-          danger
-          variant="ghost"
-          icon={<TrashIcon />}
-          disabled={busy || !deleted.length}
-          onClick={() => purge(deleted.map((c) => c.id))}
-        >
-          全部删除
-        </Button>
-      </header>
       {deleted.length > 0 ? (
         <>
-          <div className="deleted-filters grid grid-cols-[minmax(0,_1fr)_minmax(150px,_200px)] gap-3 mb-7">
+          <div className="mb-7">
             <SearchInput
-              className="w-full"
+              className="max-w-75"
               aria-label="搜索已归档会话"
               placeholder="搜索会话或数据源"
+              allowClear
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-            />
-            <Select
-              aria-label="按数据源筛选"
-              value={source}
-              onChange={setSource}
-              options={[
-                { value: 'all', label: '所有数据源' },
-                ...sources.map((d) => ({ value: d.id, label: d.name })),
-              ]}
             />
           </div>
           {groups.map(({ dataset, conversations }) => (
