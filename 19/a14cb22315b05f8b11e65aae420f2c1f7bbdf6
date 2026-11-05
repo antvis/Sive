@@ -1,0 +1,58 @@
+src/components/DatasetLayout.tsx
+  s_7fe1b4f81c8b8b::t_69a8a6e803dcce 4
+  s_7fe1b4f81c8b8b::t_094bb787abe118 46
+  s_7fe1b4f81c8b8b::t_1562616fba6800 52-54,56,58-59
+  s_7fe1b4f81c8b8b::t_627022d0bd1050 55,57
+src/components/NewDataSourcePage.tsx
+  s_5879b0442f8950::t_5883dde55013f5 16
+src/components/WelcomePage.tsx
+  s_5879b0442f8950::t_f41232b528f4de 17
+src/components/Settings.tsx
+  s_5879b0442f8950::t_f4f8bbaa3d0d8b 30
+src/router.tsx
+  s_5879b0442f8950::t_87bac0b38816fe 69-73,75
+src/components/ModelSettings.tsx
+  s_5879b0442f8950::t_028bf8ac986b32 81-82
+src/components/DeletedConversations.tsx
+  s_5879b0442f8950::t_719af4df42cbc5 48,50,53
+  s_5879b0442f8950::t_776925c0ff3d8a 4
+src/components/DataSourcePicker.tsx
+  s_2b40e845f91c5e::t_efffaf3cb28509 25
+  s_2b40e845f91c5e::t_a5748f3eb9a787 62,68
+src/components/GeneralSettings.tsx
+  s_5879b0442f8950::t_2a4091d88c6aaf 3
+src/App.tsx
+  s_5879b0442f8950::t_da32c3eb2f58f3 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "19a14cb22315b05f8b11e65aae420f2c1f7bbdf6",
+  "prompts": {},
+  "sessions": {
+    "s_2b40e845f91c5e": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "55790261-7eee-473e-a6be-55ffd7265dd8",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_5879b0442f8950": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "0c2754a9-3d12-4a24-85b8-e9ff7d7d49cc",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_7fe1b4f81c8b8b": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "68665690-3349-4ae6-bad1-bfd3c36064ab",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
