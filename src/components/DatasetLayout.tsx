@@ -15,18 +15,25 @@ export default function DatasetLayout({
   children: ReactNode;
 }) {
   const panel = usePanelRef();
-  // Changing defaultSize re-registers the panel and loses its expanded width.
-  const [initialDataSize] = useState(() => (dataOpen ? '48%' : '0%'));
+  // Seed both panel sizes before registration, including cached/hidden content.
+  const [initialLayout] = useState(() => ({
+    'analysis-pane': dataOpen ? 52 : 100,
+    'data-pane': dataOpen ? 48 : 0,
+  }));
   useLayoutEffect(() => {
     if (dataOpen) panel.current?.expand();
     else panel.current?.collapse();
   }, [dataOpen, panel]);
   return (
-    <Group className={'dataset-detail' + (dataOpen ? ' with-data' : '')} orientation="horizontal">
+    <Group
+      className={'dataset-detail' + (dataOpen ? ' with-data' : '')}
+      orientation="horizontal"
+      defaultLayout={initialLayout}
+    >
       <Panel
         id="analysis-pane"
         className="dataset-pane"
-        defaultSize="52%"
+        defaultSize={`${initialLayout['analysis-pane']}%`}
         minSize={340}
         style={{ overflow: 'hidden' }}
       >
@@ -44,7 +51,7 @@ export default function DatasetLayout({
         id="data-pane"
         className="dataset-pane"
         panelRef={panel}
-        defaultSize={initialDataSize}
+        defaultSize={`${initialLayout['data-pane']}%`}
         minSize={380}
         collapsible
         collapsedSize="0%"
