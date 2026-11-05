@@ -164,7 +164,6 @@ export interface API {
   saveMySQL(input: MySQLInput): Promise<Dataset>;
   refreshMySQL(id: string): Promise<void>;
   exportAnalysis(id: string, format: 'html' | 'pdf' | 'png', saved?: boolean): Promise<boolean>;
-  exportConversation(runIds: string[], taskId: string | null, format: 'html' | 'md'): Promise<boolean>;
   importData(format?: LocalDataset['format']): Promise<Dataset | null>;
   touchData(id: string): Promise<void>;
   deleteData(id: string): Promise<void>;

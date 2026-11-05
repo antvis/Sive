@@ -47,8 +47,8 @@ export default function DeletedConversations({ state }: { state: State }) {
     <section>
       <header className="flex items-start justify-between gap-5 mb-7 [&_>_button]:shrink-0">
         <div>
-          <h2 className="mt-0 mr-0 mb-2 ml-0">已删除会话</h2>
-          <p className="text-muted m-0 text-body">移除的会话保留在这里，恢复后可继续分析。</p>
+          <h2 className="mt-0 mr-0 mb-2 ml-0">已归档会话</h2>
+          <p className="text-muted m-0 text-body">归档的会话保留在这里，恢复后可继续分析。</p>
         </div>
         <Button
           danger
@@ -65,7 +65,7 @@ export default function DeletedConversations({ state }: { state: State }) {
           <div className="deleted-filters grid grid-cols-[minmax(0,_1fr)_minmax(150px,_200px)] gap-3 mb-7">
             <SearchInput
               className="w-full"
-              aria-label="搜索已删除会话"
+              aria-label="搜索已归档会话"
               placeholder="搜索会话或数据源"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -107,7 +107,7 @@ export default function DeletedConversations({ state }: { state: State }) {
                         className="block mt-[5px] text-helper text-muted"
                         dateTime={conversation.deletedAt}
                       >
-                        移除于{' '}
+                        归档于{' '}
                         {new Date(conversation.deletedAt!).toLocaleString('zh-CN', {
                           year: 'numeric',
                           month: '2-digit',
@@ -151,8 +151,8 @@ export default function DeletedConversations({ state }: { state: State }) {
       ) : (
         <div className="grid justify-items-center py-16 px-4 text-muted text-center">
           <ArchiveIcon size={28} />
-          <p className="text-ink mt-4 mr-0 mb-1.5 ml-0">暂无已删除会话</p>
-          <span className="text-body">从左侧列表移除的会话会显示在这里。</span>
+          <p className="text-ink mt-4 mr-0 mb-1.5 ml-0">暂无已归档会话</p>
+          <span className="text-body">从左侧列表归档的会话会显示在这里。</span>
         </div>
       )}
     </section>
