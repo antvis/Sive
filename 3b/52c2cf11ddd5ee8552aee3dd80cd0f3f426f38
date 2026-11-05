@@ -1,0 +1,19 @@
+src/components/AnalysisComposer.tsx
+  s_50e9a7631f4bc7::t_889dd282a1164a 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3b52c2cf11ddd5ee8552aee3dd80cd0f3f426f38",
+  "prompts": {},
+  "sessions": {
+    "s_50e9a7631f4bc7": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "01310f42-4db3-4cd2-bda7-46af9f771510",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
