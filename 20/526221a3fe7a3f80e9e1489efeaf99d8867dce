@@ -1,0 +1,29 @@
+src/App.tsx
+  s_c84803441339e3::t_eded09bdffc1ac 190
+  s_c84803441339e3::t_dd4be4b752e86b 15,189
+  s_3d5937d58040fa::t_13fc9f411ba402 160-171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "20526221a3fe7a3f80e9e1489efeaf99d8867dce",
+  "prompts": {},
+  "sessions": {
+    "s_3d5937d58040fa": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "76f4fbfd-35e0-41df-983d-ac5fe70de34d",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_c84803441339e3": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "867d49bb-746b-4b88-bb7d-153eaa5c767d",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
