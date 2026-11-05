@@ -231,12 +231,13 @@ app.whenReady().then(async () => {
       }
       return true;
     },
-    exportAnalysis: async (id, format) => {
+    exportAnalysis: async (id, format, saved = false) => {
       const run = store.run(id);
+      if (saved && !run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从收藏中移除');
       const theme = store.theme();
-      const html = await analysisHTML(run, theme);
+      const html = await analysisHTML(run, theme, saved);
       const dest = await dialog.showSaveDialog(win, {
-        defaultPath: exportFilename(run.question, format),
+        defaultPath: exportFilename((saved && run.savedTitle) || run.question, format),
         filters: [{ name: format.toUpperCase(), extensions: [format] }],
       });
       if (dest.canceled || !dest.filePath) return false;

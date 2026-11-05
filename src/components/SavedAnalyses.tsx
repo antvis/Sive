@@ -19,11 +19,13 @@ import {
   DotsThreeIcon,
   ArrowClockwiseIcon,
   PencilSimpleIcon,
+  DownloadSimpleIcon,
 } from '@phosphor-icons/react';
 import type { Run, RunSummary } from '../../shared/contracts';
 import { errorMessage } from '../shared/feedback';
 import { Chart } from './Results';
 import Grid from './DataGrid';
+import { cx } from '../shared/cx';
 
 function SavedCard({
   run,
@@ -45,6 +47,8 @@ function SavedCard({
   const [visible, setVisible] = useState(false);
   const [titleDraft, setTitleDraft] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const title = run.savedTitle || run.question;
   const rename = async () => {
     if (renaming || !titleDraft?.trim()) return;
@@ -76,6 +80,19 @@ function SavedCard({
   }, []);
   const current = run.savedView ? { ...run, result: run.savedView.result, chart: run.savedView.chart } : run;
   const updatedAt = run.savedView?.updatedAt || run.createdAt;
+  const exportCard = async (format: string) => {
+    if (exporting || refreshing) return;
+    if (format !== 'pdf' && format !== 'png' && format !== 'html') return;
+    setExporting(true);
+    try {
+      const exported = await window.workbench.exportAnalysis(run.id, format, true);
+      if (exported) message.success('导出成功');
+    } catch (error) {
+      message.error(errorMessage(error));
+    } finally {
+      setExporting(false);
+    }
+  };
   const refresh = async () => {
     if (refreshing || busy || refreshingId) return;
     setPending(true);
@@ -151,7 +168,12 @@ function SavedCard({
         </time>
       </div>
       <Segmented aria-label="分析内容" options={['数据', 'SQL', '图表']} value={tab} onChange={setTab} />
-      <div className="flex flex-col h-65 min-h-0 my-3 mx-0 overflow-auto [&_.chart-frame]:block [&_.chart-frame]:h-65 [&_.chart-frame]:flex-1 [&_.chart-frame]:min-h-0 [&_>_.data-grid]:shrink-0 [&_>_.ui-alert]:shrink-0 [&_>_.saved-card-feedback]:shrink-0 [&_.chart-render-status:has(span:empty)]:hidden">
+      <div
+        className={cx(
+          'flex flex-col h-65 min-h-0 min-w-0 my-3 mx-0 [&_.chart-frame]:block [&_.chart-frame]:h-0 [&_.chart-frame]:flex-1 [&_.chart-frame]:min-h-0 [&_>_.data-grid]:shrink-0 [&_>_.ui-alert]:shrink-0 [&_>_.saved-card-feedback]:shrink-0 [&_.chart-render-status:has(span:empty)]:hidden',
+          tab === '图表' ? 'overflow-hidden' : 'overflow-auto',
+        )}
+      >
         {refreshing && (
           <div
             className="saved-card-feedback flex gap-2 items-center mt-3 text-helper text-accent"
@@ -187,7 +209,7 @@ function SavedCard({
             />
           )
         ) : tab === 'SQL' ? (
-          <pre className="m-0 h-full overflow-auto">{run.result.sql || '此分析没有 SQL'}</pre>
+          <pre className="m-0 h-full overflow-auto">{current.result.sql || '此分析没有 SQL'}</pre>
         ) : (
           <Grid
             rows={current.result.data}
@@ -197,14 +219,32 @@ function SavedCard({
           />
         )}
       </div>
-      <footer className="flex items-center gap-2 justify-between border-t border-t-line pt-3">
+      <footer className="flex items-center gap-2 flex-wrap justify-between border-t border-t-line pt-3">
         <span className="text-muted">
           {current.result.data.length} 行 · {current.result.schema.length} 列
           {current.result.truncated ? ' · 结果已截断' : ''}
         </span>
-        <Button size="small" onClick={() => onOpen(run)}>
-          查看分析
-        </Button>
+        <div className="flex items-center gap-2 ml-auto">
+          <Dropdown
+            disabled={exporting || refreshing}
+            open={exportMenuOpen}
+            onOpenChange={setExportMenuOpen}
+            menu={{
+              items: ['pdf', 'png', 'html'].map((key) => ({ key, label: key.toUpperCase() })),
+              onClick: ({ key }) => {
+                setExportMenuOpen(false);
+                exportCard(key);
+              },
+            }}
+          >
+            <Button size="small" icon={<DownloadSimpleIcon />} loading={exporting} disabled={refreshing}>
+              导出
+            </Button>
+          </Dropdown>
+          <Button size="small" onClick={() => onOpen(run)}>
+            查看分析
+          </Button>
+        </div>
       </footer>
       <Modal
         title="修改收藏标题"
@@ -219,7 +259,6 @@ function SavedCard({
         <Input
           aria-label="收藏标题"
           value={titleDraft ?? ''}
-
           disabled={renaming}
           placeholder="输入收藏标题"
           onChange={(event) => setTitleDraft(event.target.value)}

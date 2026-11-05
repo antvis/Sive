@@ -13,7 +13,7 @@ It is designed for business data exploration, everyday metric analysis, and work
 - **Manage your data**: Import CSV, Excel (XLSX), JSON and Parquet, or connect to MySQL. Test, edit and revalidate connections, and browse multiple database tables.
 - **Analyze within each data source**: Each source has one tab with its conversation history in the sidebar. “New conversation” uses the current source or asks you to choose one. The data panel opens by default to show previews, fields and data semantics. Drag the divider to resize it; use the same button at the panel’s top-right corner to collapse or expand it.
 - **Follow the analysis process**: See data preparation, query generation, SQL execution, corrections, summaries and chart rendering. Inspect durations, SQL and result data, or stop a task.
-- **Save and reuse results**: Save useful analyses as cards with interactive charts, data and SQL. Refresh the data or return to the original conversation.
+- **Save and reuse results**: Save useful analyses as cards with interactive charts, data and SQL. Refresh the data, export the current saved analysis as PDF, PNG, or HTML, or return to the original conversation. Exports use the saved title and the latest successfully refreshed data and chart; original conversation results remain independent.
 
 ## Usage guide
 
@@ -53,16 +53,6 @@ TanStack Query manages reads and caching for previews, table details, and analys
 
 UI styles use Tailwind first, with design variables and semantic tokens in `src/styles.css`. The root font is 13px and the spacing unit is fixed at 4px; use semantic classes such as `text-body`, `bg-surface`, and `text-muted` for theme support. Compose classes with `src/shared/cx.ts` and keep shared recipes in the UI or navigation style modules. Use complete class literals for conditional styles rather than dynamically constructed Tailwind names. Handwritten CSS is reserved for global foundations, generated Markdown, third-party content, and animations. Runtime dimensions remain inline, and exported documents maintain their own styles.
 
-Run focused style composition checks (Node.js >=22.15):
-
-```sh
-node --import ./tests/register-typescript.mjs --test tests/styles.test.mjs
-```
-
-Run focused regression checks for queries, input validation, storage recovery, and table behavior (Node.js >=22.15):
-
-```sh
-node --import ./tests/register-typescript.mjs --test tests/library-migrations.test.mjs
-```
+For model-assisted development, follow `AGENTS.md`; `CLAUDE.md` references the same conventions. This project does not maintain test files; do not add new ones. Validate changes with scoped type checks, diff checks, and necessary manual verification. Confirm full builds and packaging according to the task.
 
 Sive is licensed under the [MIT License](LICENSE). It is an independent project built on AntV AVA, not an official AntV distribution.

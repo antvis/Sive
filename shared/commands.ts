@@ -58,7 +58,7 @@ export const commandSchemas = {
     idSchema.optional(),
   ]),
   chartHTML: z.tuple([idSchema, themeSchema.optional(), z.boolean().optional()]),
-  exportAnalysis: z.tuple([idSchema, z.enum(['html', 'pdf', 'png'])]),
+  exportAnalysis: z.tuple([idSchema, z.enum(['html', 'pdf', 'png']), z.boolean().optional()]),
   exportConversation: z.tuple([z.array(idSchema), idSchema.nullable(), z.enum(['html', 'md'])]),
   saveModel: z.tuple([modelInputSchema]),
   listModels: z.tuple([modelConnectionSchema]),

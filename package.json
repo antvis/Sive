@@ -17,7 +17,7 @@
     "check": "tsc --noEmit",
     "build": "electron-vite build",
     "start": "electron .",
-    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=^/(src|backend|electron|tests|docs|samples|.git|.github)$",
+    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=^/(src|backend|electron|docs|samples|.git|.github)$",
     "format": "prettier --write src backend electron electron.vite.config.ts"
   },
   "dependencies": {
