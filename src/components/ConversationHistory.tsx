@@ -20,11 +20,9 @@ export default function ConversationHistory({
   onSelect: (conversation: Conversation) => void;
 }) {
   return (
-    <section
-      className="flex flex-col gap-2.5 min-h-0 mt-6 pt-4 border-t border-t-line"
-      aria-label="当前数据源会话"
-    >
-      <div className="overflow-y-auto min-h-0">
+    <section className="flex flex-col gap-2.5 min-h-0 mt-6 pt-4 border-t border-t-line" aria-label="分析任务">
+      <h2 className="m-0 shrink-0 px-3 text-helper font-medium text-muted">分析任务</h2>
+      <div className="flex flex-col gap-1 overflow-y-auto min-h-0">
         {conversations.map((c) => (
           <div className="group/history relative" key={c.id}>
             <button
@@ -55,7 +53,7 @@ export default function ConversationHistory({
             </div>
           </div>
         ))}
-        {!conversations.length && <p className="text-muted px-2.5 text-helper">暂无历史会话</p>}
+        {!conversations.length && <p className="text-muted px-2.5 text-helper">暂无分析任务</p>}
       </div>
     </section>
   );

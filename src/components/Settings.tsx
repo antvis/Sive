@@ -27,10 +27,7 @@ export default function Settings({
     { key: 'deleted', label: '已归档会话', icon: ArchiveIcon, count: state.deletedConversations.length },
   ];
   return (
-    <div
-      className="settings w-full max-w-280 mx-auto pt-[16px] pb-[40px] max-[541px]:[&_.deleted-filters]:grid-cols-1"
-      ref={root}
-    >
+    <div className="settings w-full max-w-280 mx-auto pt-[16px] pb-[40px]" ref={root}>
       {onBack && (
         <div className="mb-4">
           <Button variant="ghost" icon={<ArrowLeftIcon />} onClick={onBack}>
@@ -59,9 +56,6 @@ export default function Settings({
               {count !== undefined && <small>{count}</small>}
             </button>
           ))}
-          <p className="my-5 mx-3 text-muted text-caption leading-[1.7] max-[801px]:hidden">
-            按你的习惯，调整工作台。
-          </p>
         </nav>
         <div className="min-w-0">
           {tab === 'general' && <GeneralSettings />}

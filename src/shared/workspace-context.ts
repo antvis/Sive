@@ -13,7 +13,6 @@ export type WorkspaceContext = {
   navigation: ReturnType<typeof useWorkspaceNavigation>;
   open: (dataset: Dataset) => void;
   refresh: () => Promise<void>;
-  newConversation: (keepDraft?: boolean) => void;
   openModelSettings: () => void;
 };
 export const useWorkspace = () => useOutletContext<WorkspaceContext>();
