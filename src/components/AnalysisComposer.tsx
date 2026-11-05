@@ -1,6 +1,6 @@
 import { cx } from '../shared/cx';
 import { Button, Dropdown, TextArea, Tooltip } from './ui';
-import { ArrowUpIcon, XIcon, CaretDownIcon, InfoIcon, StopCircleIcon } from '@phosphor-icons/react';
+import { ArrowUpIcon, CaretDownIcon, InfoIcon, StopCircleIcon } from '@phosphor-icons/react';
 import type { Dataset, ModelProfile } from '../../shared/contracts';
 import { analysisModes, type AnalysisMode } from '../../shared/analysis-options';
 import { usePreferences } from '../preferences';
@@ -20,8 +20,6 @@ export default function AnalysisComposer({
   busyElsewhereLabel = '其他会话正在分析，结束后可发送',
   cancelling,
   submitting,
-  hasContext,
-  onClearContext,
   onSubmit,
   onCancel,
   onSettings,
@@ -39,8 +37,6 @@ export default function AnalysisComposer({
   busyElsewhereLabel?: string;
   cancelling: boolean;
   submitting: boolean;
-  hasContext: boolean;
-  onClearContext: () => void;
   onSubmit: () => void;
   onCancel: () => void;
   onSettings: () => void;
@@ -62,19 +58,6 @@ export default function AnalysisComposer({
           : `发送 · ${sendKey}`;
   return (
     <div className="composer pt-2 pr-3 pb-1.5 pl-3 bg-surface shrink-0">
-      {hasContext && (
-        <div className="flex items-center justify-between gap-2 text-muted text-caption pt-0 pr-1 pb-1.5 pl-1">
-          <span>已关联当前会话上下文</span>
-          <Button
-            variant="ghost"
-            size="small"
-            icon={<XIcon />}
-            aria-label="清除上下文"
-            disabled={locked}
-            onClick={onClearContext}
-          />
-        </div>
-      )}
       <div
         className={cx(
           'border border-line rounded-panel bg-surface shadow-[0_2px_6px_color-mix(in_srgb,_var(--text)_4%,_transparent)] overflow-visible [transition:border-color_120ms] focus-within:border-accent [&_.ui-textarea]:pt-3 [&_.ui-textarea]:pr-3 [&_.ui-textarea]:pb-1 [&_.ui-textarea]:pl-3 [&_.ui-textarea]:text-body [&_.ui-textarea]:leading-[1.7] [&_.ui-textarea]:bg-transparent [&.is-busy]:bg-page',

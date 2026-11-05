@@ -55,7 +55,7 @@ export default function App() {
     state && datasetId && !redirect ? target : undefined,
     location.key,
   );
-  const { workspaceTabs, conversationState } = navigation;
+  const { workspaceTabs } = navigation;
   const matches = useMatches();
   const title = (matches.at(-1)?.handle as { title?: string } | undefined)?.title || 'Sive';
   const receive = (snapshot: State) => {
@@ -90,11 +90,6 @@ export default function App() {
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   const selectConversation = (conversation: Conversation) =>
     navigate(datasetPath(conversation.datasetId, conversation.id));
-  const newConversation = (keepDraft = false) => {
-    if (!dataset || submitting) return;
-    navigation.newConversation(dataset.id, keepDraft ? conversationState.question : undefined);
-    navigate(datasetPath(dataset.id));
-  };
   const openModelSettings = () =>
     navigate('/settings/models', { state: { returnTo: location.pathname + location.search } });
   const activateTab = (tab: WorkspaceTab) =>
@@ -133,7 +128,6 @@ export default function App() {
     navigation,
     open,
     refresh,
-    newConversation,
     openModelSettings,
   };
   return (

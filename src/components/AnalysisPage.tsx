@@ -30,7 +30,6 @@ export default function AnalysisPage() {
     setAnalysisMode: setMode,
     navigation,
     refresh,
-    newConversation,
     openModelSettings,
   } = useWorkspace();
   const route = useParams();
@@ -241,8 +240,6 @@ export default function AnalysisPage() {
           busyElsewhereLabel={state.refreshingSavedId ? '收藏的分析正在刷新，完成后可发送' : undefined}
           cancelling={state.task?.status === 'cancelling'}
           submitting={submitting}
-          hasContext={!!activeRunId}
-          onClearContext={() => newConversation(true)}
           onSubmit={() => start()}
           onCancel={() => perform(() => api.cancel())}
           onSettings={openModelSettings}
