@@ -1,12 +1,6 @@
 import { cx } from '../shared/cx';
 import { useId, type ReactNode } from 'react';
-import {
-  CheckCircleIcon,
-  SunIcon,
-  MoonIcon,
-  ArrowCounterClockwiseIcon,
-  KeyboardIcon,
-} from '@phosphor-icons/react';
+import { SunIcon, MoonIcon, ArrowCounterClockwiseIcon, KeyboardIcon } from '@phosphor-icons/react';
 import { Button, Select, useUI } from './ui';
 import { useTheme } from '../theme';
 import { usePreferences } from '../preferences';
@@ -44,16 +38,6 @@ export default function GeneralSettings() {
   const modifier = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl';
   return (
     <section>
-      <header className="flex items-start justify-between gap-4 mt-0 mr-0 mb-7 ml-0 flex-wrap max-[541px]:gap-2">
-        <div>
-          <h2 className="m-0 text-heading tracking-[-0.03em]">通用设置</h2>
-          <p className="mt-2 mr-0 mb-0 ml-0 text-muted text-body">调整外观、分析习惯与数据预览。</p>
-        </div>
-        <span className="inline-flex items-center gap-[5px] text-muted text-caption pt-[9px] whitespace-nowrap [&_svg]:text-accent-ink">
-          <CheckCircleIcon />
-          自动保存
-        </span>
-      </header>
       <section
         className="border border-line rounded-card mb-3 overflow-hidden"
         aria-labelledby="appearance-heading"

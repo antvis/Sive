@@ -140,11 +140,11 @@ export function useWorkspaceNavigation(
     dataOpen: active?.dataOpen || false,
     receive,
     close: (id: string) => dispatch({ type: 'close', id }),
-    newConversation: (datasetId: string, question?: string) =>
+    newConversation: (datasetId: string) =>
       dispatch({
         type: 'conversation',
         id: datasetId,
-        action: { type: 'navigate', datasetId, question },
+        action: { type: 'navigate', datasetId },
       }),
     dispatchConversation: (action: ConversationAction) =>
       dispatch({ type: 'conversation', action, id: navigation.activeId }),

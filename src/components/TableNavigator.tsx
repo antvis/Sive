@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { tableDetailsQuery } from '../shared/queries';
 import { useUI, Button, Empty, Input, Modal, Spin } from './ui';
 import {
-  DatabaseIcon,
   MagnifyingGlassIcon,
   ArrowClockwiseIcon,
   CaretRightIcon,
@@ -53,23 +52,6 @@ export default function TableNavigator({
         };
   return (
     <div className="flex-1 flex flex-col h-full min-h-0 bg-surface">
-      <div className="flex items-center gap-2.5 p-3 border-b border-b-line [&_>_.ui-icon]:text-accent [&_>_.ui-icon]:text-section">
-        <DatabaseIcon />
-        <div className="min-w-0">
-          <strong
-            className="block overflow-hidden text-ellipsis whitespace-nowrap"
-            title={dataset.connection?.database}
-          >
-            {dataset.connection?.database}
-          </strong>
-          <small
-            className="block overflow-hidden text-ellipsis whitespace-nowrap text-muted mt-1"
-            title={dataset.name}
-          >
-            {dataset.name} · MySQL
-          </small>
-        </div>
-      </div>
       <div className="flex items-center gap-1 pt-2 pr-2 pb-0 pl-2 [&_.ui-input-wrap]:min-w-0">
         <Input
           aria-label="搜索数据表"

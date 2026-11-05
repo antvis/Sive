@@ -6,13 +6,12 @@ import {
   NavLink,
   Outlet,
   useLocation,
-  useMatches,
   useNavigate,
   useParams,
   useSearchParams,
 } from 'react-router';
-import { Alert, useUI, Button, Spin } from './components/ui';
-import { DatabaseIcon, GearSixIcon, FolderSimpleIcon } from '@phosphor-icons/react';
+import { Alert, useUI, Spin } from './components/ui';
+import { DatabaseIcon, GearSixIcon, ChartBarIcon } from '@phosphor-icons/react';
 import type { Conversation, Dataset, State } from '../shared/contracts';
 import type { AnalysisMode } from '../shared/analysis-options';
 import { conversationIdsWithContent, type WorkspaceTab } from './shared/workspace-tabs';
@@ -21,7 +20,7 @@ import WorkspaceLayout from './components/WorkspaceLayout';
 import ConversationHistory from './components/ConversationHistory';
 import NewConversation from './components/NewConversation';
 import ConversationSearch from './components/ConversationSearch';
-import logo from '../assets/sive-logo.svg';
+import logo from '../assets/sive.svg';
 import { errorMessage } from './shared/feedback';
 import { useWorkspaceNavigation } from './shared/use-workspace-navigation';
 import { observeWorkspace } from './shared/workspace-subscription';
@@ -56,9 +55,7 @@ export default function App() {
     state && datasetId && !redirect ? target : undefined,
     location.key,
   );
-  const { workspaceTabs, conversationState } = navigation;
-  const matches = useMatches();
-  const title = (matches.at(-1)?.handle as { title?: string } | undefined)?.title || 'Sive';
+  const { workspaceTabs } = navigation;
   const receive = (snapshot: State) => {
     pruneWorkspaceQueries(snapshot);
     setState(snapshot);
@@ -84,18 +81,12 @@ export default function App() {
   if (redirect) return <Navigate to={redirect} replace />;
   const busy = state.task?.status === 'running' || state.task?.status === 'cancelling';
   const dataset = state.datasets.find((d) => d.id === datasetId);
-  const pageTitle = dataset?.name || title;
   const contentIds = conversationIdsWithContent(state);
   const conversations = state.conversations
     .filter((item) => item.datasetId === datasetId && contentIds.has(item.id))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   const selectConversation = (conversation: Conversation) =>
     navigate(datasetPath(conversation.datasetId, conversation.id));
-  const newConversation = (keepDraft = false) => {
-    if (!dataset || submitting) return;
-    navigation.newConversation(dataset.id, keepDraft ? conversationState.question : undefined);
-    navigate(datasetPath(dataset.id));
-  };
   const openModelSettings = () =>
     navigate('/settings/models', { state: { returnTo: location.pathname + location.search } });
   const activateTab = (tab: WorkspaceTab) =>
@@ -134,7 +125,6 @@ export default function App() {
     navigation,
     open,
     refresh,
-    newConversation,
     openModelSettings,
   };
   return (
@@ -174,8 +164,8 @@ export default function App() {
               数据源
             </NavLink>
             <NavLink to={paths.saved} className={navigationItem}>
-              <FolderSimpleIcon />
-              分析收藏
+              <ChartBarIcon />
+              洞察 Snippet
             </NavLink>
           </nav>
           {dataset && (
@@ -231,25 +221,6 @@ export default function App() {
               );
           }}
         />
-        <header className="h-12.5 min-h-12.5 flex items-center gap-4 py-0 px-5 border-b border-b-[color-mix(in_srgb,_var(--border)_45%,_transparent)] max-[1151px]:px-3 max-[1151px]:gap-2.5">
-          <strong
-            className="text-label min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
-            title={pageTitle}
-          >
-            {pageTitle}
-          </strong>
-          <span className="min-w-[4px] flex-1" />
-          {busy && (
-            <Button
-              variant="ghost"
-              size="small"
-              onClick={() => navigate(datasetPath(state.task!.datasetId, state.task!.conversationId))}
-            >
-              <Spin size="small" />
-              分析进行中
-            </Button>
-          )}
-        </header>
         {loadError && <Alert type="error" title={loadError} />}
         <div
           className="page flex-1 min-h-0 overflow-auto py-4 px-6 [&:has(>_.dataset-detail)]:p-0 [&:has(>_.dataset-detail)]:overflow-hidden max-[1151px]:px-3"

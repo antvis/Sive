@@ -78,13 +78,8 @@ export default function ModelSettings({ state }: { state: State }) {
   };
   return (
     <section>
-      <div className="flex items-start justify-between gap-4 mt-0 mr-0 mb-7 ml-0 flex-wrap">
-        <div>
-          <h2 className="m-0 text-heading tracking-[-0.03em]">模型服务</h2>
-          <p className="mt-2 mr-0 mb-0 ml-0 text-muted text-body">
-            连接兼容 OpenAI 的服务，获取并选择可用模型。
-          </p>
-        </div>
+      <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+        <p className="m-0 text-muted text-body">连接兼容 OpenAI 的服务，获取并选择可用模型。</p>
         <Button variant="primary" icon={<PlusIcon />} disabled={busy} onClick={() => startEdit()}>
           添加服务
         </Button>

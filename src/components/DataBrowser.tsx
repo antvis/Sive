@@ -11,7 +11,6 @@ import {
   SidebarSimpleIcon,
   SidebarIcon,
   TableIcon,
-  XIcon,
 } from '@phosphor-icons/react';
 import type { Dataset } from '../../shared/contracts';
 import { quickQuestions } from '../shared/quick-questions';
@@ -120,18 +119,6 @@ export default function DataBrowser({
             }
           }}
         >
-          {compact && (
-            <div className="flex items-center justify-between pt-2 pr-10 pb-2 pl-3 border-b border-b-line">
-              <strong>表结构</strong>
-              <Button
-                variant="ghost"
-                size="small"
-                icon={<XIcon />}
-                aria-label="关闭表结构"
-                onClick={closeTree}
-              />
-            </div>
-          )}
           {navigation}
         </aside>
       )}

@@ -3,9 +3,9 @@
   "productName": "Sive",
   "version": "0.1.0",
   "private": true,
-  "description": "An independent open-source desktop workbench for AntV AVA visual analytics",
+  "description": "An independent open-source desktop workbench for AntV AVA visual analytics.",
   "license": "MIT",
-  "author": "Sive contributors",
+  "author": "AntV AI Visualization Team",
   "type": "module",
   "main": "dist-electron/main.cjs",
   "engines": {

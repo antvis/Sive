@@ -2,7 +2,7 @@ import { cx } from '../shared/cx';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Button, TextArea, Tooltip } from './ui';
 import { PencilSimpleIcon, CopyIcon, CheckIcon } from '@phosphor-icons/react';
-import logo from '../../assets/sive-logo.svg';
+import logo from '../../assets/sive.svg';
 
 function MessageActions({
   time,
