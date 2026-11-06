@@ -1,0 +1,24 @@
+src/components/WorkspaceLayout.tsx
+  s_5c425d937244a3::t_f2888f71114417 72
+  s_5c425d937244a3::t_313ec3f0d21f41 73
+  s_5c425d937244a3::t_d905967cd4fa46 81-83,85-88
+  s_5c425d937244a3::t_8e1c9ea5f194c2 84
+  s_5c425d937244a3::t_dc52515306f11d 3
+  s_5c425d937244a3::t_ba8ea4d7ff3b4d 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1e4695370eccc5509774b8cea8447d084be7d6ba",
+  "prompts": {},
+  "sessions": {
+    "s_5c425d937244a3": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "a8dbc43b-7474-4b75-bfe5-a9d5c7fd7172",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
