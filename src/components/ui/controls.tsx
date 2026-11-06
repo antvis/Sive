@@ -90,7 +90,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <span
       className={cx(
         controlSurface,
-        "min-h-[var(--control-height)] w-full py-0 px-3 min-w-0 focus-within:border-focus focus-within:shadow-[0_0_0_3px] focus-within:shadow-accent/8 [&:has([aria-invalid='true'])]:border-danger flex items-center gap-2 transition-colors",
+        "min-h-[var(--control-height)] w-full py-0 px-3 min-w-0 focus-within:border-focus focus-within:ring-2 focus-within:ring-accent/8 [&:has([aria-invalid='true'])]:border-danger flex items-center gap-2 transition-colors",
         disabled && 'opacity-50 cursor-not-allowed',
         className,
       )}
@@ -204,8 +204,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
         rows={autoSize?.minRows || props.rows}
         className={cx(
           controlSurface,
-          "block w-full resize-y py-2.5 px-3 leading-[1.7] [&::placeholder]:text-muted/80 focus:border-focus focus:shadow-[0_0_0_3px] focus:shadow-accent/8 [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed",
-          variant === 'borderless' && 'border-0 bg-transparent resize-none focus:shadow-none',
+          "block w-full resize-y py-2.5 px-3 leading-[1.7] [&::placeholder]:text-muted/80 focus:border-focus focus:ring-2 focus:ring-accent/8 [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed",
+          variant === 'borderless' && 'border-0 bg-transparent resize-none focus:ring-0',
           className,
         )}
         ref={(node) => {
@@ -268,7 +268,7 @@ export function Select<T extends string | number>({
         style={style}
         className={cx(
           controlSurface,
-          "h-[var(--control-height)] py-0 px-3 cursor-pointer min-w-22.5 text-left focus-visible:border-focus focus-visible:shadow-[0_0_0_3px] focus-visible:shadow-accent/8 [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-between gap-2",
+          "h-[var(--control-height)] py-0 px-3 cursor-pointer min-w-22.5 text-left focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-accent/8 [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-between gap-2",
           size === 'small' && 'h-7 text-helper',
           className,
         )}
