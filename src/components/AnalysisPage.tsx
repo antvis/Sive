@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
-import { Button, useUI } from './ui';
+import { Alert, Button, useUI } from './ui';
 import { CaretRightIcon } from '@phosphor-icons/react';
 import type { RunSummary, Task } from '../../shared/contracts';
 import { taskReplyMarkdown } from '../../shared/conversation-markdown';
@@ -72,7 +72,16 @@ export default function AnalysisPage() {
   };
   const start = async () => {
     const text = question.trim();
-    if (!dataset || busy || !!state.refreshingSavedId || submitting || !text || !state.activeModelId) return;
+    if (
+      !dataset ||
+      dataset.deletedAt ||
+      busy ||
+      !!state.refreshingSavedId ||
+      submitting ||
+      !text ||
+      !state.activeModelId
+    )
+      return;
     setSubmitting(true);
     const originKey = location.key;
     try {
@@ -98,8 +107,8 @@ export default function AnalysisPage() {
   const resubmitReason = (target: RunSummary | Task) => {
     if (state.refreshingSavedId) return '请等待收藏的分析刷新完成';
     if (busy || submitting) return '请等待当前操作结束，或先停止分析';
-    if (!state.datasets.some((source) => source.id === target.datasetId))
-      return '原数据源已移除，请重新导入数据后发起分析';
+    if (!state.datasets.some((source) => source.id === target.datasetId && !source.deletedAt))
+      return '连接已删除，历史分析仍可查看和导出';
     if (!state.activeModelId) return '请先在设置中配置模型';
     if (target.parentId && !state.runs.some((run) => run.id === target.parentId))
       return '上一轮分析已删除，请开始新会话';
@@ -147,7 +156,22 @@ export default function AnalysisPage() {
           inert={!dataOpen}
           aria-hidden={!dataOpen}
         >
-          <DataBrowser key={dataset.id} dataset={dataset} datasets={state.datasets} onAsk={ask} />
+          {dataset.deletedAt ? (
+            <Alert
+              type="info"
+              title="连接已删除"
+              description="无法读取数据预览，历史分析和收藏仍可查看和导出。"
+            />
+          ) : (
+            <DataBrowser
+              key={dataset.id}
+              dataset={dataset}
+              datasets={state.datasets.filter((d) => !d.deletedAt)}
+              onAsk={ask}
+              active={dataOpen}
+              busy={busy || submitting || !!state.refreshingSavedId}
+            />
+          )}
         </section>
       }
     >
@@ -156,7 +180,7 @@ export default function AnalysisPage() {
         aria-label="分析会话"
       >
         <ConversationTimeline sessionKey={datasetId + conversationId + runId}>
-          {!session.length && !currentTask && (
+          {!dataset.deletedAt && !session.length && !currentTask && (
             <div className="w-full max-w-85 mt-[clamp(20px,_8vh,_80px)] mr-auto mb-6 ml-auto text-center">
               <img className="mx-auto w-7 h-7 opacity-80 dark:[filter:invert(1)]" src={logo} alt="" />
               <h3 className="font-semibold text-[21px] tracking-[-0.4px] mt-4.5 mr-0 mb-2 ml-0">
@@ -226,24 +250,30 @@ export default function AnalysisPage() {
             </>
           )}
         </ConversationTimeline>
-        <AnalysisComposer
-          question={question}
-          onChange={(text) => dispatchConversation({ type: 'edit', question: text })}
-          dataset={dataset}
-          models={state.models}
-          modelId={state.activeModelId}
-          onModel={(id, model) => perform(() => api.activateModel(id, model))}
-          mode={mode}
-          onMode={setMode}
-          busy={busy || !!state.refreshingSavedId}
-          busyElsewhere={!!state.refreshingSavedId || (busy && state.task?.conversationId !== conversationId)}
-          busyElsewhereLabel={state.refreshingSavedId ? '收藏的分析正在刷新，完成后可发送' : undefined}
-          cancelling={state.task?.status === 'cancelling'}
-          submitting={submitting}
-          onSubmit={() => start()}
-          onCancel={() => perform(() => api.cancel())}
-          onSettings={openModelSettings}
-        />
+        {dataset.deletedAt ? (
+          <Alert type="info" title="连接已删除，无法继续分析" />
+        ) : (
+          <AnalysisComposer
+            question={question}
+            onChange={(text) => dispatchConversation({ type: 'edit', question: text })}
+            dataset={dataset}
+            models={state.models}
+            modelId={state.activeModelId}
+            onModel={(id, model) => perform(() => api.activateModel(id, model))}
+            mode={mode}
+            onMode={setMode}
+            busy={busy || !!state.refreshingSavedId}
+            busyElsewhere={
+              !!state.refreshingSavedId || (busy && state.task?.conversationId !== conversationId)
+            }
+            busyElsewhereLabel={state.refreshingSavedId ? '收藏的分析正在刷新，完成后可发送' : undefined}
+            cancelling={state.task?.status === 'cancelling'}
+            submitting={submitting}
+            onSubmit={() => start()}
+            onCancel={() => perform(() => api.cancel())}
+            onSettings={openModelSettings}
+          />
+        )}
       </section>
     </DatasetLayout>
   );

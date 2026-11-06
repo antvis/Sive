@@ -83,11 +83,11 @@ export async function withAVA<T>(
       if (dataset?.format === 'mysql' && p.error && ['sourceend', 'schemaend'].includes(event))
         p.detail = connectionFailure(payload.data?.error);
       if (event === 'profileend' && dataset?.profile && !p.error) {
-        p.label = dataset.format === 'mysql' ? '已采用表结构上下文' : '已恢复导入时的数据画像';
+        p.label = dataset.format === 'mysql' ? '已采用表结构上下文' : '已恢复当前数据画像';
         p.detail =
           dataset.format === 'mysql'
             ? '未全库扫描；行数和统计指标将在实际查询中计算。'
-            : '使用导入时保存的统计信息。';
+            : '使用源文件变化检查后保存的统计信息。';
       }
       progress?.(p);
     });

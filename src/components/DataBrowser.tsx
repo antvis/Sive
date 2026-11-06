@@ -18,15 +18,20 @@ import MetricEditor from './MetricEditor';
 import TableNavigator from './TableNavigator';
 import Grid from './DataGrid';
 import { errorMessage } from '../shared/feedback';
+import LocalConnectionActions from './LocalConnectionActions';
 const api = window.workbench;
 export default function DataBrowser({
   dataset,
   datasets,
   onAsk,
+  active = true,
+  busy = false,
 }: {
   dataset: Dataset;
   datasets: Dataset[];
   onAsk: (q: string) => void;
+  active?: boolean;
+  busy?: boolean;
 }) {
   const { message } = useUI();
   const { preferences } = usePreferences();
@@ -69,7 +74,7 @@ export default function DataBrowser({
   const [semantic, setSemantic] = useState(dataset.semantic);
   const [metrics, setMetrics] = useState(dataset.metrics || []);
   const [saving, setSaving] = useState(false);
-  const preview = useQuery(previewQuery(dataset, activeTable, page, pageSize));
+  const preview = useQuery(previewQuery(dataset, activeTable, page, pageSize, active));
   const pending = !!activeTable && (preview.isPending || preview.isFetching);
   const error = preview.error && !pending ? errorMessage(preview.error) : '';
   const rows = preview.isError ? [] : (preview.data || []).slice(0, pageSize);
@@ -126,6 +131,12 @@ export default function DataBrowser({
         className="min-w-0 min-h-0 overflow-hidden flex flex-col [&_>_.toolbar]:shrink-0 [&_>_.ui-alert]:shrink-0 [&_>_.quick-questions]:shrink-0 [&_>_.quick-questions]:mt-2 [&_>_.quick-questions]:pt-2 [&_>_.ui-tabs]:flex-1 [&_>_.ui-tabs]:min-h-0 [&_.ui-tab-content[data-state='active']]:h-full [&_.ui-tab-content[data-state='active']]:overflow-auto [&_.ui-tab-content[data-state='active']:has(.preview-page)]:overflow-hidden hidden:hidden"
         hidden={mysql && compact && treeOpen}
       >
+        {!mysql && (
+          <div className="toolbar flex items-center flex-wrap gap-2 mb-3 pr-9">
+            <Tag>本地文件引用</Tag>
+            <LocalConnectionActions dataset={dataset} disabled={busy || saving} />
+          </div>
+        )}
         {showTableToolbar && (
           <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pr-9">
             {mysql ? (
@@ -320,6 +331,7 @@ export default function DataBrowser({
                   />
                   <Button
                     loading={saving}
+                    disabled={busy}
                     variant="primary"
                     onClick={async () => {
                       setSaving(true);
@@ -338,13 +350,18 @@ export default function DataBrowser({
                   {dataset.format === 'xlsx' && (
                     <Button
                       className="ml-3"
-
+                      disabled={busy || refreshing}
+                      loading={refreshing}
                       onClick={async () => {
+                        if (refreshing) return;
+                        setRefreshing(true);
                         try {
                           await api.reparseData(dataset.id);
                           message.success('表头已重新识别');
                         } catch (e) {
                           message.error(String(e));
+                        } finally {
+                          setRefreshing(false);
                         }
                       }}
                     >

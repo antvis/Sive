@@ -150,8 +150,8 @@ export default function App() {
           </div>
           <nav className="grid gap-1 shrink-0">
             <NewConversation
-              datasets={state.datasets}
-              current={dataset}
+              datasets={state.datasets.filter((d) => !d.deletedAt)}
+              current={dataset?.deletedAt ? undefined : dataset}
               disabled={submitting}
               onNew={(source) => {
                 navigation.newConversation(source.id);
@@ -197,7 +197,7 @@ export default function App() {
         <DatasetTabs
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          datasets={state.datasets}
+          datasets={state.datasets.filter((d) => !d.deletedAt)}
           tabs={workspaceTabs.map((tab) => ({
             id: tab.id,
             name: state.datasets.find((d) => d.id === tab.datasetId)?.name || '数据源',

@@ -10,7 +10,7 @@ import {
   PencilSimpleIcon,
   DownloadSimpleIcon,
 } from '@phosphor-icons/react';
-import type { Run, RunSummary } from '../../shared/contracts';
+import type { Dataset, Run, RunSummary } from '../../shared/contracts';
 import { errorMessage } from '../shared/feedback';
 import { Chart } from './Results';
 import Grid from './DataGrid';
@@ -22,12 +22,14 @@ function SavedCard({
   onRemove,
   busy,
   refreshingId,
+  source,
 }: {
   run: Run;
   onOpen: (run: RunSummary) => void;
   onRemove: (id: string) => Promise<unknown>;
   busy: boolean;
   refreshingId?: string;
+  source?: Dataset;
 }) {
   const { message, confirm } = useUI();
   const [tab, setTab] = useState('图表');
@@ -39,6 +41,8 @@ function SavedCard({
   const [exporting, setExporting] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const title = run.savedTitle || run.question;
+  const disconnected = !source || !!source.deletedAt;
+  const sourceName = source?.name || run.sourceName;
   const rename = async () => {
     if (renaming || !titleDraft?.trim()) return;
     setRenaming(true);
@@ -83,7 +87,7 @@ function SavedCard({
     }
   };
   const refresh = async () => {
-    if (refreshing || busy || refreshingId) return;
+    if (disconnected || refreshing || busy || refreshingId) return;
     setPending(true);
     setError('');
     try {
@@ -116,7 +120,7 @@ function SavedCard({
                 key: 'refresh',
                 label: '刷新数据',
                 icon: <ArrowClockwiseIcon />,
-                disabled: busy || !!refreshingId || pending,
+                disabled: disconnected || busy || !!refreshingId || pending,
               },
               {
                 key: 'remove',
@@ -148,9 +152,10 @@ function SavedCard({
         <DatabaseIcon />
         <span
           className="[&:not(.ui-icon)]:min-w-0 [&:not(.ui-icon)]:overflow-hidden [&:not(.ui-icon)]:text-ellipsis [&:not(.ui-icon)]:whitespace-nowrap"
-          title={run.sourceName}
+          title={sourceName}
         >
-          {run.sourceName}
+          {sourceName}
+          {disconnected ? ' · 连接已删除' : ''}
         </span>
         <time className="[grid-column:2] tabular-nums" dateTime={updatedAt}>
           数据更新于 {new Date(updatedAt).toLocaleString()}
@@ -269,6 +274,7 @@ function SavedCardLoader(props: {
   onRemove: (id: string) => Promise<unknown>;
   busy: boolean;
   refreshingId?: string;
+  source?: Dataset;
 }) {
   const detail = useRun(props.run);
   if (detail.error)
@@ -293,12 +299,14 @@ export default function SavedAnalyses({
   onRemove,
   busy = false,
   refreshingId,
+  datasets,
 }: {
   runs: RunSummary[];
   onOpen: (run: RunSummary) => void;
   onRemove: (id: string) => Promise<unknown>;
   busy?: boolean;
   refreshingId?: string;
+  datasets: Dataset[];
 }) {
   const [search, setSearch] = useState('');
   const keyword = search.trim().toLocaleLowerCase();
@@ -306,9 +314,12 @@ export default function SavedAnalyses({
     .filter(
       (run) =>
         !!run.savedAt &&
-        [run.savedTitle || '', run.question, run.sourceName, run.modelName].some((text) =>
-          text.toLocaleLowerCase().includes(keyword),
-        ),
+        [
+          run.savedTitle || '',
+          run.question,
+          datasets.find((d) => d.id === run.datasetId)?.name || run.sourceName,
+          run.modelName,
+        ].some((text) => text.toLocaleLowerCase().includes(keyword)),
     )
     .sort((a, b) => b.savedAt!.localeCompare(a.savedAt!));
   const { count, hasMore, footer } = useScrollLoad(filtered.length, 6, keyword);
@@ -337,6 +348,7 @@ export default function SavedAnalyses({
               onRemove={onRemove}
               busy={busy}
               refreshingId={refreshingId}
+              source={datasets.find((d) => d.id === run.datasetId)}
             />
           ))}
         </div>

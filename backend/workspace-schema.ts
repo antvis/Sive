@@ -22,6 +22,7 @@ const connection = z.looseObject({
 const dataset = entity
   .extend({
     name: z.string(),
+    deletedAt: z.string().optional(),
     file: z.string(),
     fingerprint: z.string(),
     semantic: z.string(),
@@ -29,7 +30,6 @@ const dataset = entity
     format: z.enum(['csv', 'xlsx', 'json', 'parquet', 'mysql']),
     schema: z.looseObject({ models: z.array(z.looseObject({ name: z.string(), columns: z.array(record) })) }),
     profile: z.looseObject({ models: z.array(record) }),
-    preview: z.array(record),
     metrics,
     excelSheets: z.array(z.looseObject({ sheet: z.string(), header: z.boolean() })).optional(),
   })

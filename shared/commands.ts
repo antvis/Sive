@@ -34,6 +34,8 @@ export const commandSchemas = {
   restoreConversation: oneId,
   purgeConversations: z.tuple([z.array(idSchema).min(1)]),
   deleteData: oneId,
+  renameData: z.tuple([idSchema, requiredText('请填写连接名称')]),
+  relocateData: oneId,
   reparseData: oneId,
   touchData: oneId,
   refreshMySQL: oneId,

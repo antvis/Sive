@@ -15,6 +15,7 @@ import {
 import type { Dataset } from '../../shared/contracts';
 import CollectionCard from './CollectionCard';
 import MySQLConnectionDialog from './MySQLConnectionDialog';
+import LocalConnectionActions from './LocalConnectionActions';
 import { useDataSourceActions } from '../shared/use-data-source-actions';
 const api = window.workbench;
 export default function DataManager({
@@ -94,7 +95,9 @@ export default function DataManager({
                     </span>
                     <div className="min-w-0">
                       <h3>{d.name}</h3>
-                      <span>{d.format === 'mysql' ? 'MySQL · 远程只读' : d.format.toUpperCase()}</span>
+                      <span>
+                        {d.format === 'mysql' ? 'MySQL · 远程只读' : `${d.format.toUpperCase()} · 文件引用`}
+                      </span>
                     </div>
                   </div>
                   {d.connection && (
@@ -181,8 +184,8 @@ export default function DataManager({
                     </>
                   )}
                   <ConfirmAction
-                    title="删除数据源及关联内容？"
-                    description="将永久删除此数据源的全部会话（包括已归档会话）、草稿和分析收藏，无法恢复。原始文件或数据库不会被删除。"
+                    title="删除连接？"
+                    description="仅解除连接，不删除原始文件或数据库。历史会话和分析收藏仍可查看和导出，但不能继续分析或刷新。"
                     onConfirm={() => perform('delete', () => api.deleteData(d.id))}
                   >
                     <Button
@@ -195,6 +198,7 @@ export default function DataManager({
                       disabled={analyzing || !!busy}
                     />
                   </ConfirmAction>
+                  <LocalConnectionActions dataset={d} disabled={analyzing || !!busy} />
                 </div>
               </CollectionCard>
             ))}
