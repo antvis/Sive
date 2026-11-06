@@ -45,7 +45,6 @@ export class Connections {
       lastUsedAt: old?.lastUsedAt,
       semantic: old?.semantic || '',
       metrics: old?.metrics || [],
-      preview: [],
       schema: { models: [] },
       profile: { models: [] },
       connection: {

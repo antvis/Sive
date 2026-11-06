@@ -1,36 +1,25 @@
 import { queryOptions } from './query-options';
 import { WorkbenchError } from '../shared/errors';
-import fs from 'node:fs/promises';
-import { copySource, fingerprintFile } from './local-files';
+import { fingerprintFile } from './local-files';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import type {
-  Dataset,
-  LocalDataset,
-  Task,
-  BusinessMetric,
-  MySQLInput,
-  ExcelSheet,
-} from '../shared/contracts';
+import type { Dataset, LocalDataset, BusinessMetric, MySQLInput, ExcelSheet } from '../shared/contracts';
 import { businessSemantic } from './semantics';
-import { Store } from './store';
+import { Store, type StoredDataset } from './store';
 import { withAVA, identifier } from './ava-service';
 import { Connections, connectionFailure } from './connections';
 import { inspectExcel } from './excel';
 import { mysqlTableDetails } from './mysql-table-details';
 export class DatasetService {
+  private preparing = new Map<string, Promise<StoredDataset>>();
   constructor(
     private store: Store,
     private change: () => void,
-    private currentTask: () => Task | null,
+    private isAnalyzing: () => boolean,
     private afterDelete: (id: string) => void,
     private connections?: Connections,
     private isRefreshing: () => boolean = () => false,
   ) {}
-  private get busy() {
-    const task = this.currentTask();
-    return task?.status === 'running' || task?.status === 'cancelling';
-  }
   private async inspectMySQL(input: MySQLInput) {
     if (!this.connections) throw new WorkbenchError('INVALID_INPUT', 'MySQL 连接服务不可用');
     const dataset = this.connections.prepare(input);
@@ -47,36 +36,37 @@ export class DatasetService {
             `SELECT * FROM ${identifier(schema.models[0].name)} LIMIT 30`,
             queryOptions,
           );
-          return { schema, preview: result.data };
+          return { schema, rows: result.data.length };
         },
         this.connections,
       );
-      Object.assign(dataset, inspected);
+      dataset.schema = inspected.schema;
       dataset.connection!.checkedAt = new Date().toISOString();
-      return dataset;
+      return { dataset, rows: inspected.rows };
     } catch (error) {
       if (error instanceof WorkbenchError) throw error;
       throw new WorkbenchError('CONNECTION', connectionFailure(error));
     }
   }
   async testMySQL(input: MySQLInput) {
-    const dataset = await this.inspectMySQL(input);
-    return { tables: dataset.schema.models.length, rows: dataset.preview.length };
+    const { dataset, rows } = await this.inspectMySQL(input);
+    return { tables: dataset.schema.models.length, rows };
   }
   async saveMySQL(input: MySQLInput) {
-    if (this.busy) throw new WorkbenchError('INVALID_INPUT', '请等待当前分析结束后修改连接');
+    if (this.isAnalyzing()) throw new WorkbenchError('INVALID_INPUT', '请等待当前分析结束后修改连接');
     const original = input.id ? this.store.dataset(input.id) : undefined;
-    const dataset = await this.inspectMySQL(input);
-    if (this.busy) throw new WorkbenchError('INVALID_INPUT', '分析已开始，请结束后再保存连接');
+    const { dataset } = await this.inspectMySQL(input);
+    if (this.isAnalyzing()) throw new WorkbenchError('INVALID_INPUT', '分析已开始，请结束后再保存连接');
     this.store.putDataset(dataset, original);
     this.change();
-    return this.store.publicState(this.currentTask()).datasets.find((d) => d.id === dataset.id)!;
+    const { file, encryptedPassword, revision, ...publicData } = dataset;
+    return publicData;
   }
   async refreshMySQL(id: string) {
     const dataset = this.store.dataset(id);
     if (dataset.format !== 'mysql' || !dataset.connection)
       throw new WorkbenchError('INVALID_INPUT', '请选择 MySQL 连接');
-    if (this.busy) throw new WorkbenchError('CONFLICT', '请等待当前分析结束后刷新连接');
+    if (this.isAnalyzing()) throw new WorkbenchError('CONFLICT', '请等待当前分析结束后刷新连接');
     try {
       await this.saveMySQL({ ...dataset.connection, id, name: dataset.name });
     } catch (error) {
@@ -108,67 +98,105 @@ export class DatasetService {
           metrics: ['row_count', 'null_count', 'distinct_count', 'min', 'max', 'mean'],
         });
         if (!schema.models.length) throw new WorkbenchError('INVALID_INPUT', '未发现可分析的数据表');
-        const preview = await ava.query(
-          `SELECT * FROM ${identifier(schema.models[0].name)} LIMIT 30`,
-          queryOptions,
-        );
-        return { schema, profile, preview: preview.data };
+        return { schema, profile };
       },
     );
   }
   async reparseData(id: string) {
-    if (this.busy) throw new WorkbenchError('INVALID_INPUT', '请等待当前分析结束后再重新识别');
+    this.assertEditable();
     const original = this.store.dataset(id);
     if (original.format !== 'xlsx') throw new WorkbenchError('INVALID_INPUT', '仅 Excel 需要重新识别表头');
-    if ((await fingerprintFile(original.file)) !== original.fingerprint)
-      throw new WorkbenchError('INVALID_INPUT', '数据副本已变化，请重新导入');
-    const excelSheets = inspectExcel(original.file);
-    const inspected = await this.inspect(original.file, original.format, excelSheets);
-    if (this.busy) throw new WorkbenchError('INVALID_INPUT', '数据正在使用或已变化，请稍后重试');
-    this.store.assertDatasetCurrent(original);
-    const next = { ...original, ...inspected, excelSheets };
-    this.store.putDataset(next, original);
+    const next = await this.readLocal(original.file);
+    this.assertEditable();
+    this.store.putDataset({ ...original, ...next }, original);
     this.change();
   }
-  async import(file: string): Promise<Dataset> {
+  private assertEditable() {
+    if (this.isAnalyzing() || this.isRefreshing())
+      throw new WorkbenchError('CONFLICT', '请等待当前分析或收藏刷新结束后修改连接');
+  }
+  private async readLocal(file: string) {
+    file = path.resolve(file);
     const format = path.extname(file).slice(1).toLowerCase() as LocalDataset['format'];
     if (!['csv', 'xlsx', 'json', 'parquet'].includes(format))
       throw new WorkbenchError('INVALID_INPUT', '请选择 CSV、XLSX、JSON 或 Parquet 文件');
-    const id = randomUUID(),
-      dest = path.join(this.store.root, 'sources', id + '.' + format);
-    await copySource(file, dest);
+    const fingerprint = await fingerprintFile(file);
     try {
-      const excelSheets = format === 'xlsx' ? inspectExcel(dest) : undefined;
-      const inspected = await this.inspect(dest, format, excelSheets);
-      const d = {
-        id,
-        file: dest,
-        name: path.basename(file),
-        format,
-        fingerprint: await fingerprintFile(dest),
-        createdAt: new Date().toISOString(),
-        semantic: '',
-        excelSheets,
-        ...inspected,
-      };
-      this.store.putDataset(d);
-      this.change();
-      const { file: _, ...publicData } = d;
-      return publicData;
+      const excelSheets = format === 'xlsx' ? inspectExcel(file) : undefined;
+      const inspected = await this.inspect(file, format, excelSheets);
+      await this.assertFileUnchanged({ file, format, fingerprint });
+      return { file, format, fingerprint, schemaRevision: randomUUID(), excelSheets, ...inspected };
     } catch (error) {
-      await fs.rm(dest, { force: true });
-      throw error;
+      if (error instanceof WorkbenchError) throw error;
+      // Prefer an actionable missing/permission error if the file vanished during parsing.
+      await fingerprintFile(file);
+      throw new WorkbenchError('INVALID_INPUT', '无法解析源文件，请检查文件格式和内容后重试');
     }
   }
+  async assertFileUnchanged(source: Pick<StoredDataset, 'file' | 'format' | 'fingerprint'>) {
+    if (source.format !== 'mysql' && (await fingerprintFile(source.file)) !== source.fingerprint)
+      throw new WorkbenchError(
+        'CONFLICT',
+        '读取期间源文件发生变化，本次结果未保存，请等待文件写入完成后重试',
+      );
+  }
+  prepare(id: string): Promise<StoredDataset> {
+    const pending = this.preparing.get(id);
+    if (pending) return pending;
+    const operation = this.prepareSource(id).finally(() => this.preparing.delete(id));
+    this.preparing.set(id, operation);
+    return operation;
+  }
+  private async prepareSource(id: string) {
+    const original = this.store.dataset(id);
+    if (original.format === 'mysql') return original;
+    const fingerprint = await fingerprintFile(original.file);
+    if (fingerprint !== original.fingerprint) {
+      const refreshed = await this.readLocal(original.file);
+      this.store.putDataset({ ...original, ...refreshed }, original);
+      this.change();
+    } else this.store.assertDatasetCurrent(original);
+    return this.store.dataset(id);
+  }
+  async import(file: string): Promise<Dataset> {
+    const inspected = await this.readLocal(file);
+    const d = {
+      ...inspected,
+      id: randomUUID(),
+      name: path.basename(file),
+      createdAt: new Date().toISOString(),
+      semantic: '',
+    };
+    this.store.putDataset(d);
+    this.change();
+    const { file: _, ...publicData } = d;
+    return publicData;
+  }
+  rename(id: string, name: string) {
+    this.assertEditable();
+    const original = this.store.dataset(id);
+    if (!name.trim()) throw new WorkbenchError('INVALID_INPUT', '请填写连接名称');
+    this.store.putDataset({ ...original, name: name.trim() }, original);
+    this.change();
+  }
+  async relocate(id: string, file: string) {
+    this.assertEditable();
+    const original = this.store.dataset(id);
+    if (original.format === 'mysql') throw new WorkbenchError('INVALID_INPUT', '请选择本地文件连接');
+    const inspected = await this.readLocal(file);
+    this.assertEditable();
+    this.store.putDataset({ ...original, ...inspected }, original);
+    this.change();
+  }
   deleteData(id: string) {
-    if (this.busy || this.isRefreshing())
+    if (this.isAnalyzing() || this.isRefreshing())
       throw new WorkbenchError('CONFLICT', '请先停止分析或等待收藏刷新完成后再删除数据源');
     this.store.deleteDataset(id);
     this.afterDelete(id);
     this.change();
   }
   async preview(id: string, table: string, options = { offset: 0, limit: 30 }) {
-    const d = this.store.dataset(id);
+    const d = await this.prepare(id);
     const model = d.schema.models.find((m) => m.name === table);
     if (!model) throw new WorkbenchError('INVALID_INPUT', '数据表不存在');
     const { offset, limit } = options;
@@ -186,6 +214,8 @@ export class DatasetService {
           `SELECT * FROM ${identifier(table)}${order} LIMIT ${limit} OFFSET ${offset}`,
           queryOptions,
         );
+        await this.assertFileUnchanged(d);
+        this.store.assertDatasetCurrent(d);
         return result.data;
       },
       this.connections,
@@ -206,7 +236,8 @@ export class DatasetService {
     }
   }
   async semantic(id: string, text: string, inputMetrics?: BusinessMetric[]) {
-    const d = this.store.dataset(id);
+    this.assertEditable();
+    const d = await this.prepare(id);
     const metrics = inputMetrics ?? d.metrics ?? [];
     const names = new Set<string>();
     for (const metric of metrics) {
@@ -243,6 +274,9 @@ export class DatasetService {
       },
       this.connections,
     );
+    this.assertEditable();
+    await this.assertFileUnchanged(d);
+    this.assertEditable();
     this.store.putDataset(
       {
         ...d,

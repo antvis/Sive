@@ -62,7 +62,10 @@ export default function DeletedConversations({ state }: { state: State }) {
             >
               <header className="flex items-center gap-2.5 mb-3 text-muted">
                 <DatabaseIcon />
-                <strong title={dataset.name}>{dataset.name}</strong>
+                <strong title={dataset.name}>
+                  {dataset.name}
+                  {dataset.deletedAt ? ' · 连接已删除' : ''}
+                </strong>
                 <span>{conversations.length} 个分析会话</span>
               </header>
               <div className="px-4 border border-line rounded-[14px]">

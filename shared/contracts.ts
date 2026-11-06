@@ -17,6 +17,7 @@ export type ConnectionInfo = Omit<MySQLInput, 'id' | 'name' | 'password'> & {
 };
 type DatasetFields = {
   id: string;
+  deletedAt?: string;
   name: string;
   fingerprint: string;
   schemaRevision?: string;
@@ -26,7 +27,6 @@ type DatasetFields = {
   profile: Profile;
   semantic: string;
   metrics?: BusinessMetric[];
-  preview: Record<string, unknown>[];
   excelSheets?: ExcelSheet[];
 };
 export type LocalDataset = DatasetFields & {
@@ -167,6 +167,8 @@ export interface API {
   importData(format?: LocalDataset['format']): Promise<Dataset | null>;
   touchData(id: string): Promise<void>;
   deleteData(id: string): Promise<void>;
+  renameData(id: string, name: string): Promise<void>;
+  relocateData(id: string): Promise<boolean>;
   reparseData(id: string): Promise<void>;
   preview(
     id: string,

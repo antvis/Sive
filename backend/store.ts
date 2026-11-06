@@ -35,7 +35,6 @@ export class Store {
     return structuredClone(this.data.theme);
   }
   constructor(public root: string) {
-    fs.mkdirSync(path.join(root, 'sources'), { recursive: true, mode: 0o700 });
     this.storage = new WorkspaceStorage(root);
     const loaded = this.storage.load();
     this.data = loaded ?? {
@@ -151,6 +150,7 @@ export class Store {
   dataset(id: string) {
     const d = this.data.datasets.find((d) => d.id === id);
     if (!d) throw new WorkbenchError('CONFLICT', '数据不存在');
+    if (d.deletedAt) throw new WorkbenchError('CONFLICT', '连接已删除，历史分析仍可查看和导出');
     return structuredClone(d);
   }
   taskRecord(id: string) {
@@ -269,7 +269,6 @@ export class Store {
   restoreConversation(id: string) {
     const conversation = this.data.conversations.find((c) => c.id === id && c.deletedAt);
     if (!conversation) throw new WorkbenchError('CONFLICT', '已归档会话不存在');
-    this.dataset(conversation.datasetId);
     this.commit({
       conversations: this.data.conversations.map((c) => {
         if (c.id !== id) return c;
@@ -290,35 +289,12 @@ export class Store {
     this.storage.collectUnusedResults();
   }
   deleteDataset(id: string) {
-    const dataset = this.dataset(id);
-    // Only remove the managed copy, never a path outside the sources directory.
-    if (
-      dataset.format !== 'mysql' &&
-      path.dirname(path.resolve(dataset.file)) !== path.resolve(this.root, 'sources')
-    )
-      throw new WorkbenchError('CONFLICT', '数据副本路径无效，无法删除');
-    const previous = this.data;
-    this.data = {
-      ...previous,
-      datasets: previous.datasets.filter((d) => d.id !== id),
-      conversations: previous.conversations.filter((c) => c.datasetId !== id),
-      runs: previous.runs.filter((r) => r.datasetId !== id),
-      tasks: previous.tasks.filter((t) => t.datasetId !== id),
-    };
-    try {
-      this.save();
-    } catch (error) {
-      this.data = previous;
-      throw error;
-    }
-    try {
-      if (dataset.format !== 'mysql') fs.rmSync(dataset.file, { force: true });
-    } catch (error) {
-      this.data = previous;
-      this.save();
-      throw error;
-    }
-    this.storage.collectUnusedResults();
+    const original = this.dataset(id);
+    // Keep the identity for history, but detach the source and discard credentials.
+    this.putDataset(
+      { ...original, file: '', encryptedPassword: undefined, deletedAt: new Date().toISOString() },
+      original,
+    );
   }
   run(id: string) {
     return structuredClone(this.storedRun(id));

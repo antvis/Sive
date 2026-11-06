@@ -7,11 +7,13 @@ import { withAVA } from './ava-service';
 import { refreshChart } from './refresh-chart';
 import { chartHTML } from './render';
 import { validateTheme, type ThemeSettings } from '../shared/theme';
+import type { DatasetService } from './datasets';
 export class SavedAnalysisService {
   refreshingId?: string;
   constructor(
     private store: Store,
     private models: Models,
+    private datasets: DatasetService,
     private change: () => void,
     private isAnalyzing: () => boolean,
     private connections?: Connections,
@@ -27,20 +29,17 @@ export class SavedAnalysisService {
   async refresh(id: string) {
     if (this.isAnalyzing() || this.refreshingId)
       throw new WorkbenchError('CONFLICT', '请等待当前分析或刷新完成');
-    const run = this.store.run(id);
-    if (this.store.view.conversations.some((c) => c.id === run.conversationId && c.deletedAt))
-      throw new WorkbenchError('CONFLICT', '请先恢复此分析所属的会话');
-    if (!run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从已保存列表移除');
-    const source = this.store.dataset(run.datasetId);
-    if (source.fingerprint !== run.fingerprint)
-      throw new WorkbenchError('CONFLICT', '数据来源已变化，请重新分析后保存，不能沿用原收藏刷新');
-    if (!run.result.sql?.trim()) throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
-    if (JSON.stringify(source.excelSheets) !== JSON.stringify(run.excelSheets))
-      throw new WorkbenchError('CONFLICT', 'Excel 读取区域已变化，请重新分析后保存');
-    const model = run.chart && run.chart.chartType !== 'table' ? this.models.active() : undefined;
     this.refreshingId = id;
     this.change();
     try {
+      const run = this.store.run(id);
+      if (this.store.view.conversations.some((c) => c.id === run.conversationId && c.deletedAt))
+        throw new WorkbenchError('CONFLICT', '请先恢复此分析所属的会话');
+      if (!run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从已保存列表移除');
+      const source = await this.datasets.prepare(run.datasetId);
+      if (source.format === 'mysql' && source.fingerprint !== run.fingerprint)
+        throw new WorkbenchError('CONFLICT', '数据来源已变化，请重新分析后保存，不能沿用原收藏刷新');
+      if (!run.result.sql?.trim()) throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
       const view = await withAVA(
         { ...source, semantic: run.semantic, metrics: run.metrics },
         undefined,
@@ -56,18 +55,24 @@ export class SavedAnalysisService {
                 run.chart,
                 queried.data,
                 run.question,
-                model ? this.models.model(model) : undefined,
+                run.chart.chartType !== 'table' ? this.models.model(this.models.active()) : undefined,
               );
             } catch {
               throw new WorkbenchError('CONFLICT', '图表更新失败，本次刷新未保存。请检查当前模型后重试。');
             }
           }
+          await this.datasets.assertFileUnchanged(source);
           return { result, chart, updatedAt: new Date().toISOString() };
         },
         this.connections,
-        model,
       );
       this.store.saveView(id, run.savedAt!, source, view);
+    } catch (error) {
+      if (error instanceof WorkbenchError) throw error;
+      throw new WorkbenchError(
+        'CONFLICT',
+        '刷新查询失败，请检查源文件、数据表及字段是否变化。上次成功结果已保留。',
+      );
     } finally {
       this.refreshingId = undefined;
       this.change();

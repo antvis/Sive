@@ -117,6 +117,29 @@ app.whenReady().then(async () => {
     if (choice === 1) event.preventDefault();
   });
   win.webContents.session.setPermissionRequestHandler((_w, _p, callback) => callback(false));
+  const selectLocalFile = async (format?: Parameters<API['importData']>[0]) => {
+    let defaultPath: string | undefined;
+    try {
+      const directory = store.lastImportDirectory;
+      if (directory && fs.statSync(directory).isDirectory()) defaultPath = directory;
+    } catch {
+      // An unavailable directory should not prevent opening the picker.
+    }
+    const result = await dialog.showOpenDialog(win, {
+      defaultPath,
+      properties: ['openFile'],
+      filters: [
+        {
+          name: format ? `${format.toUpperCase()} 文件` : '数据文件',
+          extensions: format ? [format] : ['csv', 'xlsx', 'json', 'parquet'],
+        },
+      ],
+    });
+    if (result.canceled || !result.filePaths[0]) return null;
+    const file = result.filePaths[0];
+    store.rememberImportDirectory(path.dirname(file));
+    return file;
+  };
   const methods: CommandHandlers = {
     writeClipboard: (text) => clipboard.writeText(text),
     run: (id) => store.run(id),
@@ -135,26 +158,17 @@ app.whenReady().then(async () => {
     saveMySQL: (input) => controller.datasets.saveMySQL(input),
     refreshMySQL: (id) => controller.datasets.refreshMySQL(id),
     importData: async (format) => {
-      let defaultPath: string | undefined;
-      try {
-        const directory = store.lastImportDirectory;
-        if (directory && fs.statSync(directory).isDirectory()) defaultPath = directory;
-      } catch {
-        // A moved or unavailable directory should not prevent opening the picker.
-      }
-      const r = await dialog.showOpenDialog(win, {
-        defaultPath,
-        properties: ['openFile'],
-        filters: [
-          {
-            name: format ? `${format.toUpperCase()} 文件` : '数据文件',
-            extensions: format ? [format] : ['csv', 'xlsx', 'json', 'parquet'],
-          },
-        ],
-      });
-      if (r.canceled || !r.filePaths[0]) return null;
-      store.rememberImportDirectory(path.dirname(r.filePaths[0]));
-      return controller.datasets.import(r.filePaths[0]);
+      const file = await selectLocalFile(format);
+      return file ? controller.datasets.import(file) : null;
+    },
+    renameData: (id, name) => controller.datasets.rename(id, name),
+    relocateData: async (id) => {
+      if (store.dataset(id).format === 'mysql')
+        throw new WorkbenchError('INVALID_INPUT', '请选择本地文件连接');
+      const file = await selectLocalFile();
+      if (!file) return false;
+      await controller.datasets.relocate(id, file);
+      return true;
     },
     createConversation: (datasetId) => {
       const conversation = store.createConversation(datasetId);

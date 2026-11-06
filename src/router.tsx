@@ -12,7 +12,7 @@ import { datasetPath, paths, settingsReturnTo } from './shared/routes';
 
 function HomeRoute() {
   const { state } = useWorkspace();
-  return <Navigate to={state.datasets.length ? paths.data : paths.welcome} replace />;
+  return <Navigate to={state.datasets.some((d) => !d.deletedAt) ? paths.data : paths.welcome} replace />;
 }
 function WelcomeRoute() {
   const { open, busy, state } = useWorkspace();
@@ -20,7 +20,13 @@ function WelcomeRoute() {
 }
 function DataRoute() {
   const { open, busy, state } = useWorkspace();
-  return <DataManager datasets={state.datasets} open={open} busy={busy || !!state.refreshingSavedId} />;
+  return (
+    <DataManager
+      datasets={state.datasets.filter((d) => !d.deletedAt)}
+      open={open}
+      busy={busy || !!state.refreshingSavedId}
+    />
+  );
 }
 function SettingsRoute() {
   const { state } = useWorkspace();
@@ -45,6 +51,7 @@ function SavedRoute() {
   return (
     <SavedAnalyses
       runs={state.runs}
+      datasets={state.datasets}
       onOpen={(run) => {
         const conversation = state.conversations.find((c) => c.id === run.conversationId);
         if (!conversation) {

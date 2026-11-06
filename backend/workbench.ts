@@ -17,24 +17,32 @@ export class Workbench {
     connections?: Connections,
     taskChanged: (task: Task) => void = () => {},
   ) {
-    this.analysis = new AnalysisRunner(
-      store,
-      models,
-      change,
-      () => !!this.saved.refreshingId,
-      connections,
-      taskChanged,
-    );
-    this.saved = new SavedAnalysisService(store, models, change, () => this.analysis.busy, connections);
     this.datasets = new DatasetService(
       store,
       change,
-      () => this.analysis.task,
+      () => this.analysis.busy,
       (id) => {
         if (this.analysis.task?.datasetId === id) this.analysis.task = null;
       },
       connections,
       () => !!this.saved.refreshingId,
+    );
+    this.analysis = new AnalysisRunner(
+      store,
+      models,
+      this.datasets,
+      change,
+      () => !!this.saved.refreshingId,
+      connections,
+      taskChanged,
+    );
+    this.saved = new SavedAnalysisService(
+      store,
+      models,
+      this.datasets,
+      change,
+      () => this.analysis.busy,
+      connections,
     );
   }
 }

@@ -8,7 +8,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-export function previewQuery(dataset: Dataset, table: string, page: number, pageSize: number) {
+export function previewQuery(dataset: Dataset, table: string, page: number, pageSize: number, active = true) {
   return queryOptions({
     queryKey: ['preview', dataset.id, dataset.fingerprint, dataset.schemaRevision, table, page, pageSize],
     queryFn: () =>
@@ -16,7 +16,7 @@ export function previewQuery(dataset: Dataset, table: string, page: number, page
         offset: (page - 1) * pageSize,
         limit: pageSize + 1,
       }),
-    enabled: !!table,
+    enabled: active && !!table && !dataset.deletedAt,
     gcTime: 60_000,
   });
 }
@@ -39,7 +39,7 @@ export function runQuery(summary: RunSummary) {
 }
 
 export function pruneWorkspaceQueries(state: State) {
-  const datasets = new Set(state.datasets.map(({ id }) => id));
+  const datasets = new Set(state.datasets.filter((d) => !d.deletedAt).map(({ id }) => id));
   const runs = new Set(state.runs.map(({ id }) => id));
   queryClient.removeQueries({
     predicate: ({ queryKey: [kind, id] }) =>

@@ -23,10 +23,14 @@ export default function DataBrowser({
   dataset,
   datasets,
   onAsk,
+  active = true,
+  busy = false,
 }: {
   dataset: Dataset;
   datasets: Dataset[];
   onAsk: (q: string) => void;
+  active?: boolean;
+  busy?: boolean;
 }) {
   const { message } = useUI();
   const { preferences } = usePreferences();
@@ -69,7 +73,7 @@ export default function DataBrowser({
   const [semantic, setSemantic] = useState(dataset.semantic);
   const [metrics, setMetrics] = useState(dataset.metrics || []);
   const [saving, setSaving] = useState(false);
-  const preview = useQuery(previewQuery(dataset, activeTable, page, pageSize));
+  const preview = useQuery(previewQuery(dataset, activeTable, page, pageSize, active));
   const pending = !!activeTable && (preview.isPending || preview.isFetching);
   const error = preview.error && !pending ? errorMessage(preview.error) : '';
   const rows = preview.isError ? [] : (preview.data || []).slice(0, pageSize);
@@ -320,6 +324,7 @@ export default function DataBrowser({
                   />
                   <Button
                     loading={saving}
+                    disabled={busy}
                     variant="primary"
                     onClick={async () => {
                       setSaving(true);
@@ -338,13 +343,18 @@ export default function DataBrowser({
                   {dataset.format === 'xlsx' && (
                     <Button
                       className="ml-3"
-
+                      disabled={busy || refreshing}
+                      loading={refreshing}
                       onClick={async () => {
+                        if (refreshing) return;
+                        setRefreshing(true);
                         try {
                           await api.reparseData(dataset.id);
                           message.success('表头已重新识别');
                         } catch (e) {
                           message.error(String(e));
+                        } finally {
+                          setRefreshing(false);
                         }
                       }}
                     >
