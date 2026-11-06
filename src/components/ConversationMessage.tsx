@@ -130,7 +130,7 @@ export function UserMessage({
               autoSize={{ minRows: 3, maxRows: 8 }}
 
               variant="borderless"
-              textareaClassName="p-0 rounded-none"
+              className="p-0 rounded-none"
               value={draft}
               disabled={sending}
               onChange={(event) => setDraft(event.target.value)}

@@ -84,7 +84,7 @@ export default function AnalysisComposer({
           autoSize={{ minRows: 3, maxRows: 7 }}
           disabled={locked}
           variant="borderless"
-          textareaClassName="pt-3 px-3 pb-1"
+          className="pt-3 px-3 pb-1"
         />
         <div className="flex items-center gap-0.5 pt-1.5 px-2 pb-2">
           <Dropdown

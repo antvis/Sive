@@ -183,8 +183,6 @@ export default function DataBrowser({
           />
         )}
         <Tabs
-          className="flex-1"
-          contentClassName="h-full overflow-auto"
           activeKey={tab}
           onChange={setTab}
           items={[

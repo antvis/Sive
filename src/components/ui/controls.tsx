@@ -84,10 +84,9 @@ type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'prefix' | 'size'>
   prefix?: ReactNode;
   allowClear?: boolean;
   onClear?: () => void;
-  inputClassName?: string;
 };
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { prefix, allowClear, onClear, value, onChange, className, inputClassName, style, disabled, ...props },
+  { prefix, allowClear, onClear, value, onChange, className, style, disabled, ...props },
   ref,
 ) {
   const internal = useRef<HTMLInputElement | null>(null);
@@ -104,10 +103,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {prefix && <span className="inline-flex text-muted shrink-0">{prefix}</span>}
       <input
         {...props}
-        className={cx(
-          'w-full min-w-0 outline-none border-0 bg-transparent py-[7px] px-0 leading-[18px] text-inherit placeholder:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)]',
-          inputClassName,
-        )}
+        className="w-full min-w-0 outline-none border-0 bg-transparent py-[7px] px-0 leading-[18px] text-inherit placeholder:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)]"
         disabled={disabled}
         value={value}
         onChange={onChange}
@@ -188,10 +184,9 @@ export type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   autoSize?: { minRows: number; maxRows: number };
   showCount?: boolean;
   variant?: 'borderless';
-  textareaClassName?: string;
 };
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
-  { autoSize, showCount, className, textareaClassName, variant, style, ...props },
+  { autoSize, showCount, className, variant, style, ...props },
   ref,
 ) {
   const internal = useRef<HTMLTextAreaElement | null>(null);
@@ -206,7 +201,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
   };
   useLayoutEffect(resize, [props.value, autoSize?.minRows, autoSize?.maxRows]);
   return (
-    <div className={cx('relative min-w-0', className)}>
+    <div className="relative min-w-0">
       <textarea
         {...props}
         style={style}
@@ -215,7 +210,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
           controlSurface,
           "block w-full resize-y py-2.5 px-3 leading-[1.7] [&::placeholder]:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)] focus:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed",
           variant === 'borderless' && 'border-0 bg-transparent resize-none focus:shadow-none',
-          textareaClassName,
+          className,
         )}
         ref={(node) => {
           internal.current = node;
@@ -328,21 +323,13 @@ export function Tabs({
   activeKey,
   onChange,
   items,
-  className,
-  contentClassName,
 }: {
   activeKey: string;
   onChange: (key: string) => void;
   items: { key: string; label: ReactNode; children: ReactNode; className?: string }[];
-  className?: string;
-  contentClassName?: string;
 }) {
   return (
-    <TabsPrimitive.Root
-      className={cx('flex flex-col min-h-0', className)}
-      value={activeKey}
-      onValueChange={onChange}
-    >
+    <TabsPrimitive.Root className="flex flex-col flex-1 min-h-0" value={activeKey} onValueChange={onChange}>
       <TabsPrimitive.List className="flex gap-1 p-[3px] bg-[color-mix(in_srgb,_var(--muted)_6%,_transparent)] rounded-tabs w-fit max-w-full mb-4 shrink-0">
         {items.map((item) => (
           <TabsPrimitive.Trigger
@@ -357,8 +344,7 @@ export function Tabs({
       {items.map((item) => (
         <TabsPrimitive.Content
           className={cx(
-            'min-h-0 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-2 data-[state=inactive]:hidden',
-            contentClassName,
+            'h-full min-h-0 overflow-auto focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-2 data-[state=inactive]:hidden',
             item.className,
           )}
           value={item.key}
