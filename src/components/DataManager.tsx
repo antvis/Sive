@@ -50,7 +50,7 @@ export default function DataManager({
   const { busy, perform, connection } = sourceActions;
   return (
     <>
-      <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pb-4 border-b border-b-line">
+      <div className="flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 pb-4 border-b border-b-line">
         <SearchInput
           className="max-w-70"
           aria-label="搜索源数据名称"
@@ -83,23 +83,31 @@ export default function DataManager({
           <div className="grid mt-5 grid-cols-[repeat(auto-fill,_minmax(min(320px,_100%),_1fr))] gap-4">
             {filtered.slice(0, count).map((d) => (
               <CollectionCard
-                className="[&_.data-card-preview]:mr-auto [&_.data-card-preview]:pl-0 p-4.5 hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_3px_12px_color-mix(in_srgb,_var(--text)_5%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_3px_12px_color-mix(in_srgb,_var(--text)_5%,_transparent)] [&_h3]:mt-0 [&_h3]:mr-0 [&_h3]:mb-[5px] [&_h3]:ml-0 [&_h3]:text-label [&_h3]:text-ink [&_h3]:tracking-[-0.02em] [&_.collection-card-summary]:[-webkit-line-clamp:1] [&_.collection-card-summary]:min-h-0 [&_.collection-card-summary]:mt-3 [&_.collection-card-summary]:mr-0 [&_.collection-card-summary]:mb-0 [&_.collection-card-summary]:ml-0 [&_.collection-card-summary]:leading-[1.6] [&_.collection-card-date]:mt-auto [&_.collection-card-date]:gap-[5px] [&_.collection-card-date]:flex-wrap [&_.collection-card-actions]:gap-0.5 [&_.collection-card-actions]:mt-3.5 [&_.collection-card-actions]:border-t-[color-mix(in_srgb,_var(--border)_55%,_transparent)]"
+                className="hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_3px_12px_color-mix(in_srgb,_var(--text)_5%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_3px_12px_color-mix(in_srgb,_var(--text)_5%,_transparent)] "
                 key={d.id}
                 label={d.name}
                 action="打开分析"
                 onOpen={() => open(d)}
               >
-                <div className="flex gap-2.5 justify-between items-start min-h-16.5 [&_.ui-badge]:m-0 [&_.ui-badge]:shrink-0">
+                <div className="flex gap-2.5 justify-between items-start min-h-16.5">
                   <div className="flex flex-1 gap-2.5 min-w-0 items-start text-helper text-muted">
                     <span
-                      className="shrink-0 grid place-items-center w-9 h-9 rounded-card text-accent-ink bg-[color-mix(in_srgb,_var(--accent)_8%,_var(--surface))] [&_svg]:w-5 [&_svg]:h-5"
+                      className="shrink-0 grid place-items-center size-9 rounded-card text-accent-ink bg-[color-mix(in_srgb,_var(--accent)_8%,_var(--surface))]"
                       aria-hidden="true"
                     >
-                      {d.connection ? <DatabaseIcon /> : d.format === 'xlsx' ? <TableIcon /> : <FileIcon />}
+                      {d.connection ? (
+                        <DatabaseIcon size={20} />
+                      ) : d.format === 'xlsx' ? (
+                        <TableIcon size={20} />
+                      ) : (
+                        <FileIcon size={20} />
+                      )}
                     </span>
                     <div className="min-w-0 flex-1">
                       {d.format === 'mysql' ? (
-                        <h3>{d.name}</h3>
+                        <h3 className="line-clamp-2 wrap-anywhere text-label text-ink tracking-[-0.02em] leading-[1.5] mt-0 mb-[5px] min-h-6">
+                          {d.name}
+                        </h3>
                       ) : (
                         <DatasetName dataset={d} disabled={analyzing || !!busy} onOpen={() => open(d)} />
                       )}
@@ -109,24 +117,24 @@ export default function DataManager({
                     </div>
                   </div>
                   {d.connection && (
-                    <Tag color={d.connection.status === 'ready' ? 'success' : 'error'}>
+                    <Tag
+                      className="m-0 shrink-0"
+                      color={d.connection.status === 'ready' ? 'success' : 'error'}
+                    >
                       {d.connection.status === 'ready' ? '已验证' : '验证失败'}
                     </Tag>
                   )}
                 </div>
                 {d.connection && (
                   <p
-                    className="collection-card-summary [display:-webkit-box] [-webkit-box-orient:vertical] overflow-hidden wrap-anywhere [-webkit-line-clamp:3] text-muted text-body mt-0 mr-0 mb-3 ml-0 min-h-11"
+                    className="line-clamp-1 wrap-anywhere text-muted text-body mt-3 mb-0 min-h-0 leading-[1.6]"
                     title={`${d.connection.host}:${d.connection.port} / ${d.connection.database}`}
                   >
                     {`${d.connection.host}:${d.connection.port} / ${d.connection.database}`}
                   </p>
                 )}
                 {d.connection?.error && (
-                  <p
-                    className="text-muted wrap-anywhere [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden text-helper"
-                    title={d.connection.error}
-                  >
+                  <p className="text-muted wrap-anywhere line-clamp-2 text-helper" title={d.connection.error}>
                     {d.connection.error}
                   </p>
                 )}
@@ -144,7 +152,7 @@ export default function DataManager({
                     个字段
                   </span>
                 </div>
-                <div className="collection-card-date flex items-center gap-2 text-muted flex-wrap mt-2 text-caption">
+                <div className="flex items-center gap-[5px] text-muted flex-wrap mt-auto text-caption">
                   <ClockIcon />
                   <span>{d.connection ? '最近验证' : '导入时间'}</span>
                   {d.connection && !d.connection.checkedAt ? (
@@ -161,8 +169,13 @@ export default function DataManager({
                     </time>
                   )}
                 </div>
-                <div className="collection-card-actions [&_button]:relative [&_button]:z-2 flex items-center gap-2 text-muted text-helper mt-4 pt-3 border-t border-t-line justify-end flex-wrap">
-                  <Button variant="link" size="small" className="data-card-preview" onClick={() => open(d)}>
+                <div className="flex items-center gap-0.5 text-muted text-helper mt-3.5 pt-3 border-t border-t-[color-mix(in_srgb,_var(--border)_55%,_transparent)] justify-end flex-wrap">
+                  <Button
+                    variant="link"
+                    size="small"
+                    className="relative z-2 mr-auto pl-0"
+                    onClick={() => open(d)}
+                  >
                     打开分析 <ArrowUpRightIcon />
                   </Button>
                   {d.connection && (
@@ -172,6 +185,7 @@ export default function DataManager({
                           variant="ghost"
                           size="small"
                           icon={<PencilSimpleIcon />}
+                          className="relative z-2"
                           aria-label="编辑连接"
                           disabled={analyzing || !!busy}
                           onClick={() => connection(d)}
@@ -182,6 +196,7 @@ export default function DataManager({
                           variant="ghost"
                           size="small"
                           icon={<ArrowsClockwiseIcon />}
+                          className="relative z-2"
                           aria-label="重新验证"
                           disabled={analyzing || !!busy}
                           loading={busy === d.id}
@@ -203,7 +218,7 @@ export default function DataManager({
                     >
                       <Button
                         variant="ghost"
-                        className="hover:text-danger hover:bg-[color-mix(in_srgb,_var(--danger)_8%,_transparent)]"
+                        className="relative z-2 hover:text-danger hover:bg-[color-mix(in_srgb,_var(--danger)_8%,_transparent)]"
                         size="small"
                         icon={<TrashIcon />}
                         aria-label={`移除数据源：${d.name}`}
@@ -217,6 +232,7 @@ export default function DataManager({
                         size="small"
                         variant="ghost"
                         icon={<FolderOpenIcon />}
+                        className="relative z-2"
                         aria-label="重新选择源文件"
                         disabled={analyzing || !!busy}
                         loading={busy === d.id}

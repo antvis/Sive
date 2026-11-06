@@ -37,7 +37,7 @@ export default function Settings({
       )}
       <div className="grid grid-cols-[176px_minmax(0,_1fr)] gap-10 items-start max-[1101px]:grid-cols-[148px_minmax(0,_1fr)] max-[1101px]:gap-6 max-[801px]:grid-cols-1 max-[801px]:gap-6">
         <nav
-          className="sticky top-0 grid gap-1 [&_button_span]:flex-1 [&_button_small]:min-w-4.5 [&_button_small]:text-center [&_button_small]:text-caption max-[801px]:static max-[801px]:flex max-[801px]:flex-wrap max-[801px]:gap-1"
+          className="sticky top-0 grid gap-1 max-[801px]:static max-[801px]:flex max-[801px]:flex-wrap max-[801px]:gap-1"
           aria-label="设置分类"
         >
           <span className="pt-1 pr-3 pb-3 pl-3 text-caption text-muted tracking-[0.08em] max-[801px]:hidden">
@@ -52,8 +52,8 @@ export default function Settings({
               onClick={() => onTab(key)}
             >
               <Icon />
-              <span>{label}</span>
-              {count !== undefined && <small>{count}</small>}
+              <span className="flex-1">{label}</span>
+              {count !== undefined && <small className="min-w-4.5 text-center text-caption">{count}</small>}
             </button>
           ))}
         </nav>

@@ -104,7 +104,10 @@ export default function DatasetName({
     </form>
   ) : (
     <div className="group/name relative z-2 flex min-w-0 items-start gap-1">
-      <h3 className="min-w-0 flex-1" title={dataset.name}>
+      <h3
+        className="min-w-0 flex-1 line-clamp-2 wrap-anywhere text-label text-ink tracking-[-0.02em] leading-[1.5] mt-0 mb-[5px] min-h-6"
+        title={dataset.name}
+      >
         <button
           type="button"
           className="border-0 bg-transparent p-0 text-left text-inherit [font:inherit] cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"

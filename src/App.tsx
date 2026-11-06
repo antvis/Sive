@@ -186,14 +186,14 @@ export default function App() {
               onArchive={(conversation) => archiveConversation(conversation.id)}
             />
           )}
-          <NavLink to="/settings" className={cx(navigationItem, 'mt-auto shrink-0 [&>svg]:size-4.5')}>
-            <GearSixIcon />
+          <NavLink to="/settings" className={cx(navigationItem, 'mt-auto shrink-0')}>
+            <GearSixIcon size={18} />
             设置
           </NavLink>
         </aside>
       }
     >
-      <main className="min-w-0 min-h-0 flex flex-col bg-surface">
+      <main className="h-full min-w-0 min-h-0 flex flex-col bg-surface">
         <DatasetTabs
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -223,7 +223,10 @@ export default function App() {
         />
         {loadError && <Alert type="error" title={loadError} />}
         <div
-          className="page flex-1 min-h-0 overflow-auto py-4 px-6 [&:has(>_.dataset-detail)]:p-0 [&:has(>_.dataset-detail)]:overflow-hidden max-[1151px]:px-3"
+          className={cx(
+            'page flex-1 min-h-0',
+            dataset ? 'overflow-hidden p-0' : 'overflow-auto py-4 px-6 max-[1151px]:px-3',
+          )}
           id="workspace-panel"
           role={dataset ? 'tabpanel' : undefined}
           aria-label={dataset?.name}

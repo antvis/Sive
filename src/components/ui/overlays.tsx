@@ -177,7 +177,7 @@ export function Dropdown({
             ) : (
               <DropdownMenu.Item
                 key={item.key}
-                className={cx(menuItem, item.danger && 'ui-danger text-danger')}
+                className={cx(menuItem, item.danger && 'text-danger')}
                 disabled={item.disabled}
                 data-selected={menu.selectedKeys?.includes(item.key) || undefined}
                 onSelect={() => menu.onClick({ key: item.key })}
@@ -255,8 +255,8 @@ export function Modal({
             if (busy) e.preventDefault();
           }}
         >
-          <div className="flex items-center gap-4 justify-between pt-4.5 pr-5.5 pb-2.5 pl-5.5 shrink-0 [&_h2]:text-[17px] [&_h2]:font-semibold [&_h2]:m-0">
-            <Dialog.Title>{title}</Dialog.Title>
+          <div className="flex items-center gap-4 justify-between pt-4.5 pr-5.5 pb-2.5 pl-5.5 shrink-0">
+            <Dialog.Title className="text-dialog-title font-semibold m-0">{title}</Dialog.Title>
             <Button
               variant="ghost"
               size="small"
@@ -266,9 +266,7 @@ export function Modal({
               onClick={onCancel}
             />
           </div>
-          <div className="overflow-auto pt-2 pr-5.5 pb-4 pl-5.5 [&_>_p]:mt-0 [&_>_p]:mr-0 [&_>_p]:mb-4 [&_>_p]:ml-0 [&_>_p]:text-muted">
-            {children}
-          </div>
+          <div className="overflow-auto pt-2 pr-5.5 pb-4 pl-5.5">{children}</div>
           <div className="flex justify-end gap-2 pt-3.5 pr-5.5 pb-4.5 pl-5.5 shrink-0 border-t border-t-[color-mix(in_srgb,_var(--border)_60%,_transparent)]">
             {footer !== undefined ? (
               footer
@@ -354,7 +352,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
           close(true);
         }}
       >
-        <p>{confirmation?.content}</p>
+        <p className="mt-0 mb-4 text-muted">{confirmation?.content}</p>
       </Modal>
     </UIContext.Provider>
   );
@@ -400,7 +398,7 @@ export function ConfirmAction({
           setOpen(false);
         }}
       >
-        <p>{description || '此操作无法撤销，请确认后继续。'}</p>
+        <p className="mt-0 mb-4 text-muted">{description || '此操作无法撤销，请确认后继续。'}</p>
       </Modal>
     </>
   );

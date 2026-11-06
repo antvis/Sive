@@ -16,7 +16,7 @@
   --scrollbar-thumb: color-mix(in srgb, var(--muted) 36%, var(--surface));
   --scrollbar-thumb-hover: color-mix(in srgb, var(--muted) 55%, var(--surface));
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-body);
   line-height: 1.5;
   color: var(--text);
   background: var(--background);
@@ -64,18 +64,18 @@ summary:focus-visible {
 }
 h2 {
   font-weight: 600;
-  font-size: 18px;
+  font-size: var(--text-section);
   margin: 8px 0 16px;
 }
 h3 {
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--text-label);
 }
 p {
   line-height: 1.65;
 }
 small {
-  font-size: 12px;
+  font-size: var(--text-helper);
 }
 pre {
   white-space: pre-wrap;
@@ -83,7 +83,7 @@ pre {
   background: var(--background);
   padding: 12px;
   border-radius: var(--radius);
-  font-size: 12px;
+  font-size: var(--text-helper);
 }
 summary {
   position: relative;
@@ -120,13 +120,5 @@ details {
   }
   to {
     opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
   }
 }

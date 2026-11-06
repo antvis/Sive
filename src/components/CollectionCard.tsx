@@ -17,7 +17,7 @@ export default function CollectionCard({
   return (
     <article
       className={cx(
-        'relative flex flex-col min-w-0 p-4.5 border rounded-card border-[color-mix(in_srgb,_var(--border)_70%,_transparent)] bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_30%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_30%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] [&_h3]:[display:-webkit-box] [&_h3]:[-webkit-box-orient:vertical] [&_h3]:overflow-hidden [&_h3]:wrap-anywhere [&_h3]:[-webkit-line-clamp:2] [&_h3]:text-title [&_h3]:leading-[1.5] [&_h3]:mt-4 [&_h3]:mr-0 [&_h3]:mb-2.5 [&_h3]:ml-0 [&_h3]:min-h-6 ',
+        'relative flex flex-col min-w-0 p-4.5 border rounded-card border-[color-mix(in_srgb,_var(--border)_70%,_transparent)] bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_30%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_30%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] ',
         className,
       )}
       aria-label={label}

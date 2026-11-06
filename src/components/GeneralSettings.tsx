@@ -18,14 +18,12 @@ function SettingRow({
   children: ReactNode;
 }) {
   return (
-    <div className="setting-row flex items-center justify-between gap-6 p-5 [&_+_.setting-row]:border-t [&_+_.setting-row]:border-t-[color-mix(in_srgb,_var(--border)_65%,_transparent)] max-[1101px]:gap-4 max-[1101px]:py-4.5 max-[1101px]:px-4 max-[541px]:items-start max-[541px]:flex-col">
+    <div className="flex items-center justify-between gap-6 p-5 [&+&]:border-t [&+&]:border-t-[color-mix(in_srgb,_var(--border)_65%,_transparent)] max-[1101px]:gap-4 max-[1101px]:py-4.5 max-[1101px]:px-4 max-[541px]:items-start max-[541px]:flex-col">
       <div className="flex-1 min-w-0">
         <h3 className="mt-0 mr-0 mb-[5px] ml-0 text-body font-medium">{title}</h3>
         <p className="m-0 max-w-107.5 text-helper text-muted leading-[1.65]">{description}</p>
       </div>
-      <div className="shrink-0 [&_>_.ui-select]:min-w-42 max-[1101px]:[&_>_.ui-select]:min-w-35.5 max-[541px]:w-full max-[541px]:[&_>_.ui-select]:w-full">
-        {children}
-      </div>
+      <div className="shrink-0 max-[541px]:w-full">{children}</div>
     </div>
   );
 }
@@ -59,11 +57,12 @@ export default function GeneralSettings() {
               <label
                 key={mode}
                 className={cx(
-                  'relative grid gap-[7px] w-20 p-1.5 border border-line rounded-[8px] cursor-pointer [&.selected]:border-accent [&.selected]:shadow-[0_0_0_1px_var(--accent)] [&_input]:absolute [&_input]:w-[1px] [&_input]:h-[1px] [&_input]:opacity-0 [&:has(input:focus-visible)]:outline-2 [&:has(input:focus-visible)]:outline-solid [&:has(input:focus-visible)]:outline-accent [&:has(input:focus-visible)]:outline-offset-4 [&:has(input:disabled)]:opacity-60 [&:has(input:disabled)]:cursor-wait [&_>_span:last-child]:flex [&_>_span:last-child]:justify-center [&_>_span:last-child]:items-center [&_>_span:last-child]:gap-1 [&_>_span:last-child]:text-caption',
-                  settings.mode === mode ? ' selected' : '',
+                  'relative grid gap-[7px] w-20 p-1.5 border border-line rounded-button cursor-pointer [&:has(input:focus-visible)]:outline-2 [&:has(input:focus-visible)]:outline-solid [&:has(input:focus-visible)]:outline-accent [&:has(input:focus-visible)]:outline-offset-4 [&:has(input:disabled)]:opacity-60 [&:has(input:disabled)]:cursor-wait',
+                  settings.mode === mode && 'border-accent shadow-[0_0_0_1px_var(--accent)]',
                 )}
               >
                 <input
+                  className="absolute size-px opacity-0"
                   type="radio"
                   name={themeName}
                   checked={settings.mode === mode}
@@ -72,16 +71,31 @@ export default function GeneralSettings() {
                 />
                 <span
                   className={cx(
-                    'grid grid-cols-[15px_1fr] grid-rows-[1fr_1fr] gap-[5px] p-1.5 h-10.5 rounded-[4px] bg-[#f1f3f5] border border-[#dce1e5] [&_i]:[grid-row:1_/_-1] [&_i]:rounded-[2px] [&_i]:bg-[#d3dfdc] [&_b]:self-center [&_b]:h-1 [&_b]:rounded-[2px] [&_b]:bg-[#cbd2d8] [&.dark]:bg-[#20262d] [&.dark]:border-[#38434e] [&.dark_i]:bg-[#36544e] [&.dark_b]:bg-[#56616d] ',
-                    mode,
+                    'grid grid-cols-[15px_1fr] grid-rows-[1fr_1fr] gap-[5px] p-1.5 h-10.5 rounded-compact border',
+                    mode === 'dark' ? 'bg-[#20262d] border-[#38434e]' : 'bg-[#f1f3f5] border-[#dce1e5]',
                   )}
                   aria-hidden="true"
                 >
-                  <i />
-                  <b />
-                  <b />
+                  <i
+                    className={cx(
+                      'row-span-full rounded-mini',
+                      mode === 'dark' ? 'bg-[#36544e]' : 'bg-[#d3dfdc]',
+                    )}
+                  />
+                  <b
+                    className={cx(
+                      'self-center h-1 rounded-mini',
+                      mode === 'dark' ? 'bg-[#56616d]' : 'bg-[#cbd2d8]',
+                    )}
+                  />
+                  <b
+                    className={cx(
+                      'self-center h-1 rounded-mini',
+                      mode === 'dark' ? 'bg-[#56616d]' : 'bg-[#cbd2d8]',
+                    )}
+                  />
                 </span>
-                <span>
+                <span className="flex justify-center items-center gap-1 text-caption">
                   <Icon />
                   {label}
                 </span>
@@ -105,6 +119,7 @@ export default function GeneralSettings() {
           description="记住最近选择，分析输入框中的切换也会同步保存。多步探索通常耗时更长、调用更多。"
         >
           <Select
+            className="min-w-42 max-[1101px]:min-w-35.5 max-[541px]:w-full"
             aria-label="分析方式"
             value={preferences.analysisMode}
             onChange={(analysisMode) => updatePreferences({ analysisMode })}
@@ -120,6 +135,7 @@ export default function GeneralSettings() {
           }
         >
           <Select
+            className="min-w-42 max-[1101px]:min-w-35.5 max-[541px]:w-full"
             aria-label="发送快捷键"
             value={preferences.sendShortcut}
             onChange={(sendShortcut) => updatePreferences({ sendShortcut })}
@@ -145,6 +161,7 @@ export default function GeneralSettings() {
           description="下次打开数据预览时生效，仍可在表格底部临时调整。行数越多，单次读取的数据越多。"
         >
           <Select
+            className="min-w-42 max-[1101px]:min-w-35.5 max-[541px]:w-full"
             aria-label="默认每页行数"
             value={preferences.previewPageSize}
             onChange={(previewPageSize) => updatePreferences({ previewPageSize })}
@@ -153,14 +170,14 @@ export default function GeneralSettings() {
         </SettingRow>
       </section>
       <section
-        className="p-5 border border-line rounded-card bg-[color-mix(in_srgb,_var(--background)_45%,_var(--surface))] text-helper [&_h3_svg]:text-muted [&_dl_>_div]:flex [&_dl_>_div]:justify-between [&_dl_>_div]:items-center [&_dl_>_div]:gap-3 [&_dl_>_div]:min-h-9"
+        className="p-5 border border-line rounded-card bg-[color-mix(in_srgb,_var(--background)_45%,_var(--surface))] text-helper"
         aria-labelledby="shortcuts-heading"
       >
         <h3
           className="flex items-center gap-2 mt-0 mr-0 mb-4 ml-0 text-body font-medium"
           id="shortcuts-heading"
         >
-          <KeyboardIcon size={18} aria-hidden="true" />
+          <KeyboardIcon className="text-muted" size={18} aria-hidden="true" />
           常用快捷键
         </h3>
         <dl className="grid grid-cols-2 gap-y-2 gap-x-7 m-0 max-[1101px]:grid-cols-1">
@@ -176,12 +193,12 @@ export default function GeneralSettings() {
             },
             { label: '关闭弹窗', keys: ['Esc'] },
           ].map(({ label, keys }) => (
-            <div key={label}>
+            <div className="flex justify-between items-center gap-3 min-h-9" key={label}>
               <dt className="text-muted">{label}</dt>
               <dd className="flex items-center gap-[5px] shrink-0 m-0" aria-label={keys.join(' + ')}>
                 {keys.map((key) => (
                   <kbd
-                    className="font-[family-name:inherit] inline-flex items-center justify-center min-w-7 h-7 px-[7px] border border-line rounded-[5px] bg-surface shadow-[0_2px_0_var(--border)] text-caption font-medium whitespace-nowrap"
+                    className="font-[family-name:inherit] inline-flex items-center justify-center min-w-7 h-7 px-[7px] border border-line rounded-key bg-surface shadow-[0_2px_0_var(--border)] text-caption font-medium whitespace-nowrap"
                     key={key}
                   >
                     {key}

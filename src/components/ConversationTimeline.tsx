@@ -1,3 +1,4 @@
+import { cx } from '../shared/cx';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from './ui';
 import { ArrowDownIcon } from '@phosphor-icons/react';
@@ -5,9 +6,11 @@ import { ArrowDownIcon } from '@phosphor-icons/react';
 export default function ConversationTimeline({
   children,
   sessionKey,
+  className,
 }: {
   children: ReactNode;
   sessionKey: string;
+  className?: string;
 }) {
   const scroll = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -38,7 +41,10 @@ export default function ConversationTimeline({
   return (
     <div className="relative flex flex-col min-h-0 flex-1">
       <div
-        className="conversation-body [overflow-anchor:none] flex-1 min-h-0 overflow-auto py-5 px-4 overscroll-contain"
+        className={cx(
+          'conversation-body [overflow-anchor:none] flex-1 min-h-0 overflow-auto py-5 px-4 overscroll-contain',
+          className,
+        )}
         ref={scroll}
         onScroll={(event) => {
           const node = event.currentTarget;

@@ -23,6 +23,7 @@ export default function AnalysisComposer({
   onSubmit,
   onCancel,
   onSettings,
+  className,
 }: {
   question: string;
   onChange: (text: string) => void;
@@ -40,6 +41,7 @@ export default function AnalysisComposer({
   onSubmit: () => void;
   onCancel: () => void;
   onSettings: () => void;
+  className?: string;
 }) {
   const { preferences } = usePreferences();
   const mac = navigator.platform.includes('Mac');
@@ -57,11 +59,11 @@ export default function AnalysisComposer({
           ? '输入想分析的问题'
           : `发送 · ${sendKey}`;
   return (
-    <div className="composer pt-2 pr-3 pb-1.5 pl-3 bg-surface shrink-0">
+    <div className={cx('pt-2 px-3 pb-1.5 bg-surface shrink-0', className)}>
       <div
         className={cx(
-          'border border-line rounded-panel bg-surface shadow-[0_2px_6px_color-mix(in_srgb,_var(--text)_4%,_transparent)] overflow-visible [transition:border-color_120ms] focus-within:border-accent [&_.ui-textarea]:pt-3 [&_.ui-textarea]:pr-3 [&_.ui-textarea]:pb-1 [&_.ui-textarea]:pl-3 [&_.ui-textarea]:text-body [&_.ui-textarea]:leading-[1.7] [&_.ui-textarea]:bg-transparent [&.is-busy]:bg-page',
-          locked ? ' is-busy' : '',
+          'border border-line rounded-panel bg-surface shadow-[0_2px_6px_color-mix(in_srgb,_var(--text)_4%,_transparent)] overflow-visible [transition:border-color_120ms] focus-within:border-accent',
+          locked && 'bg-page',
         )}
         onKeyDown={(event) => {
           if (
@@ -82,8 +84,9 @@ export default function AnalysisComposer({
           autoSize={{ minRows: 3, maxRows: 7 }}
           disabled={locked}
           variant="borderless"
+          className="pt-3 px-3 pb-1"
         />
-        <div className="flex items-center gap-0.5 pt-1.5 pr-2 pb-2 pl-2 [&_.ui-button]:h-7 [&_.ui-button]:text-helper [&_.composer-model]:min-w-0 [&_.composer-model]:max-w-45 [&_.composer-model]:flex-initial [&_.composer-model]:gap-[5px] [&_.composer-model]:text-muted [&_.composer-mode]:shrink-0 [&_.composer-mode]:gap-[5px] [&_.composer-mode]:text-muted [&_.composer-send]:w-7.5 [&_.composer-send]:h-7.5 [&_.composer-send]:shrink-0 [&_.composer-send]:rounded-control [&_.composer-send]:text-title">
+        <div className="flex items-center gap-0.5 pt-1.5 px-2 pb-2">
           <Dropdown
             contentClassName="w-65 max-h-75 overflow-y-auto"
             placement="topLeft"
@@ -106,13 +109,13 @@ export default function AnalysisComposer({
             <Button
               variant="ghost"
               size="small"
-              className="composer-model [&_.ui-icon]:w-3 [&_.ui-icon]:h-3"
+              className="min-w-0 max-w-45 flex-initial gap-[5px] hover:text-muted"
               aria-label="选择模型"
               title={model ? `${model.name} · ${model.model}` : '选择模型'}
               disabled={locked || !models.length}
             >
               <span className="truncate">{model ? `${model.name} · ${model.model}` : '选择模型'}</span>
-              <CaretDownIcon />
+              <CaretDownIcon size={12} />
             </Button>
           </Dropdown>
           <Dropdown
@@ -137,19 +140,19 @@ export default function AnalysisComposer({
             <Button
               variant="ghost"
               size="small"
-              className="composer-mode [&_.ui-icon]:w-3 [&_.ui-icon]:h-3"
+              className="shrink-0 gap-[5px] hover:text-muted"
               aria-label="分析方式"
               disabled={locked}
             >
               {analysisModes.find((item) => item.value === mode)?.label}
-              <CaretDownIcon />
+              <CaretDownIcon size={12} />
             </Button>
           </Dropdown>
           <span className="min-w-[4px] flex-1" />
           {busy && !busyElsewhere ? (
             <Tooltip title={cancelling ? '正在停止' : '停止分析'}>
               <Button
-                className="composer-send"
+                className="size-7.5 shrink-0 rounded-control text-title"
                 danger
                 aria-label={cancelling ? '正在停止' : '停止分析'}
                 disabled={cancelling}
@@ -160,7 +163,7 @@ export default function AnalysisComposer({
           ) : (
             <Tooltip title={sendHint}>
               <Button
-                className="composer-send"
+                className="size-7.5 shrink-0 rounded-control text-title"
                 variant="primary"
                 aria-label="开始分析"
                 loading={submitting}
@@ -172,9 +175,9 @@ export default function AnalysisComposer({
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2 text-muted text-caption min-h-7.5 px-0.5 [&_.ui-button]:text-muted [&_.ui-button]:text-caption [&_.ui-button-link]:text-accent">
+      <div className="flex items-center justify-between gap-2 text-muted text-caption min-h-7.5 px-0.5">
         {!model ? (
-          <Button variant="link" size="small" onClick={onSettings}>
+          <Button variant="link" size="small" className="text-accent text-caption" onClick={onSettings}>
             添加模型后开始分析
           </Button>
         ) : !dataset ? (

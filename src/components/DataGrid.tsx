@@ -1,4 +1,4 @@
-import { tableViewport, tableSurface } from './ui/styles';
+import { tableViewport, tableSurface, tableHeader, tableRow, tableCell } from './ui/styles';
 import { cx } from '../shared/cx';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
@@ -42,6 +42,7 @@ function ResizeHeader({
     );
   return (
     <th
+      className={cx(tableHeader, 'pr-4')}
       scope="col"
       aria-label={name}
       aria-sort={
@@ -57,7 +58,7 @@ function ResizeHeader({
       {children}
       <span
         className={cx(
-          "absolute z-2 top-0 right-0 w-[9px] h-full cursor-col-resize touch-none select-none [&::after]:[content:''] [&::after]:absolute [&::after]:top-[25%] [&::after]:bottom-[25%] [&::after]:right-[3px] [&::after]:w-0.5 [&::after]:rounded-[1px] [&::after]:bg-line [&:hover::after]:bg-accent [&:hover::after]:top-[10%] [&:hover::after]:bottom-[10%] [&:focus-visible::after]:bg-accent [&:focus-visible::after]:top-[10%] [&:focus-visible::after]:bottom-[10%] [&.dragging::after]:bg-accent [&.dragging::after]:top-[10%] [&.dragging::after]:bottom-[10%] focus-visible:outline-1 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-1",
+          "absolute z-2 top-0 right-0 w-[9px] h-full cursor-col-resize touch-none select-none after:content-[''] after:absolute after:top-[25%] after:bottom-[25%] after:right-[3px] after:w-0.5 after:rounded-detail after:bg-line hover:after:bg-accent hover:after:top-[10%] hover:after:bottom-[10%] focus-visible:after:bg-accent focus-visible:after:top-[10%] focus-visible:after:bottom-[10%] [&.dragging]:after:bg-accent [&.dragging]:after:top-[10%] [&.dragging]:after:bottom-[10%] focus-visible:outline-1 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-1",
           column.getIsResizing() ? ' dragging' : '',
         )}
         role="separator"
@@ -115,6 +116,7 @@ export default function Grid({
   footer,
   resetKey,
   pageSize = 10,
+  className,
 }: {
   rows: Record<string, unknown>[];
   columns?: TableField[];
@@ -122,6 +124,7 @@ export default function Grid({
   footer?: ReactNode;
   resetKey?: string;
   pageSize?: number;
+  className?: string;
 }) {
   const root = useRef<HTMLDivElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
@@ -176,16 +179,8 @@ export default function Grid({
   const visible = table.getRowModel().rows;
   const total = Math.max(table.getTotalSize(), available, 160);
   return (
-    <div
-      className={cx(
-        'data-grid min-w-0 [&_.ui-table_th]:sticky [&_.ui-table_th]:pr-4',
-        fill
-          ? ' flex flex-col h-full min-h-0 [&_.grid-table-viewport]:flex-1 [&_.grid-table-viewport]:min-h-0 [&_.grid-table-viewport]:overflow-auto [&_.grid-footer]:shrink-0 [&_.grid-footer]:border-t [&_.grid-footer]:border-t-line [&_.grid-footer]:pt-2 [&_.grid-footer]:mt-1'
-          : '',
-      )}
-      ref={root}
-    >
-      <div className={cx(tableViewport, 'grid-table-viewport')} ref={viewport}>
+    <div className={cx('min-w-0', className, fill ? 'flex flex-col h-full min-h-0' : '')} ref={root}>
+      <div className={cx(tableViewport, fill && 'flex-1 min-h-0')} ref={viewport}>
         <table className={cx(tableSurface, 'table-fixed')} style={{ width: total }}>
           <colgroup>
             {table.getAllLeafColumns().map((column) => (
@@ -202,7 +197,10 @@ export default function Grid({
                   <ResizeHeader key={header.id} header={header}>
                     {column.getCanSort() ? (
                       <button
-                        className="ui-sort flex items-center gap-2 w-full border-0 bg-transparent text-inherit text-left p-0 [&_svg]:shrink-0 [&_svg]:text-muted"
+                        className={cx(
+                          'flex items-center gap-2 w-full border-0 bg-transparent text-left p-0',
+                          sorted ? 'text-accent' : 'text-inherit',
+                        )}
                         title={name}
                         aria-label={'排序：' + name}
                         onClick={() => {
@@ -210,17 +208,17 @@ export default function Grid({
                           table.setPageIndex(0);
                         }}
                       >
-                        <span className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</span>
+                        <span className="truncate">{name}</span>
                         {sorted === 'asc' ? (
-                          <CaretUpIcon size={12} />
+                          <CaretUpIcon className="text-muted shrink-0" size={12} />
                         ) : sorted === 'desc' ? (
-                          <CaretDownIcon size={12} />
+                          <CaretDownIcon className="text-muted shrink-0" size={12} />
                         ) : (
-                          <ArrowsDownUpIcon size={12} />
+                          <ArrowsDownUpIcon className="text-muted shrink-0" size={12} />
                         )}
                       </button>
                     ) : (
-                      <span className="overflow-hidden text-ellipsis whitespace-nowrap block" title={name}>
+                      <span className="truncate block" title={name}>
                         {name}
                       </span>
                     )}
@@ -231,15 +229,11 @@ export default function Grid({
           </thead>
           <tbody>
             {visible.map((row) => (
-              <tr key={row.id}>
+              <tr className={tableRow} key={row.id}>
                 {row.getVisibleCells().map((entry) => {
                   const text = cell(entry.getValue());
                   return (
-                    <td
-                      className="h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left overflow-hidden text-ellipsis whitespace-nowrap"
-                      key={entry.id}
-                      title={text}
-                    >
+                    <td className={cx(tableCell, 'truncate')} key={entry.id} title={text}>
                       {text}
                     </td>
                   );
@@ -247,10 +241,10 @@ export default function Grid({
               </tr>
             ))}
             {!visible.length && (
-              <tr>
+              <tr className={tableRow}>
                 <td
                   colSpan={Math.max(fields.length, 1)}
-                  className="ui-table-empty h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left overflow-hidden text-ellipsis whitespace-nowrap"
+                  className={cx(tableCell, 'h-27.5 text-center text-muted truncate')}
                 >
                   暂无数据
                 </td>
@@ -267,7 +261,12 @@ export default function Grid({
           onChange={(page) => table.setPageIndex(page - 1)}
         />
       )}
-      <div className="grid-footer flex justify-between items-center gap-2 min-h-7 text-muted text-caption [&_.ui-button]:text-muted">
+      <div
+        className={cx(
+          'flex justify-between items-center gap-2 min-h-7 text-muted text-caption',
+          fill && 'shrink-0 border-t border-t-line pt-2 mt-1',
+        )}
+      >
         {footer || <span>{rows.length} 行 · 排序仅作用于已加载数据</span>}
         <Tooltip title="恢复全部列宽；拖动表头右边界可调整，双击可恢复单列">
           <Button
@@ -275,6 +274,7 @@ export default function Grid({
             variant="ghost"
             icon={<ArrowCounterClockwiseIcon />}
             aria-label="恢复全部列宽"
+            className="hover:text-muted"
             disabled={!Object.keys(table.getState().columnSizing).length}
             onClick={() => table.resetColumnSizing()}
           />

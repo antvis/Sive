@@ -1,3 +1,5 @@
+import { cx } from '../shared/cx';
+import { dataSourceColors } from './ui/styles';
 import { useState } from 'react';
 import { PlusIcon } from '@phosphor-icons/react';
 import type { Dataset } from '../../shared/contracts';
@@ -39,7 +41,7 @@ export default function DatasetPickerDialog({
         </Button>
       }
     >
-      <p className="text-muted mb-4">选择要分析的数据，开始新会话。</p>
+      <p className="text-muted mt-0 mb-4">选择要分析的数据，开始新会话。</p>
       {datasets.length > 0 ? (
         <>
           <SearchInput
@@ -50,7 +52,7 @@ export default function DatasetPickerDialog({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
-          <div className="mt-3 max-h-80 overflow-y-auto [&_.data-source-icon]:w-5 [&_.data-source-icon]:h-5 [&_.data-source-icon]:shrink-0 [&_.data-source-icon]:text-[var(--source-color)]">
+          <div className="mt-3 max-h-80 overflow-y-auto">
             {filtered.map((dataset) => {
               const SourceIcon = DATA_SOURCE_ICONS[dataset.format];
               return (
@@ -65,16 +67,16 @@ export default function DatasetPickerDialog({
                   }}
                 >
                   <SourceIcon
-                    className="ui-icon inline-block shrink-0 align-middle data-source-icon data-[source=csv]:[--source-color:#25804d] data-[source=json]:[--source-color:#8054b6] data-[source=xlsx]:[--source-color:#18734b] data-[source=parquet]:[--source-color:#a66a1c] data-[source=mysql]:[--source-color:#28769a] dark:data-[source=csv]:[--source-color:#70cc92] dark:data-[source=json]:[--source-color:#bb96ed] dark:data-[source=xlsx]:[--source-color:#57c393] dark:data-[source=parquet]:[--source-color:#e3b36a] dark:data-[source=mysql]:[--source-color:#78bddd]"
+                    className={cx(
+                      'inline-block shrink-0 align-middle text-[var(--source-color)]',
+                      dataSourceColors,
+                    )}
                     data-source={dataset.format}
                     size={20}
                     weight="duotone"
                     aria-hidden="true"
                   />
-                  <span
-                    className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
-                    title={dataset.name}
-                  >
+                  <span className="flex-1 min-w-0 truncate" title={dataset.name}>
                     {dataset.name}
                   </span>
                   <small className="text-muted">
@@ -87,7 +89,7 @@ export default function DatasetPickerDialog({
           </div>
         </>
       ) : (
-        <p className="text-muted">还没有数据源，请先导入本地文件或连接 MySQL。</p>
+        <p className="mt-0 mb-4 text-muted">还没有数据源，请先导入本地文件或连接 MySQL。</p>
       )}
     </Modal>
   );

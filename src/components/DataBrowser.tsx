@@ -1,4 +1,4 @@
-import { tableViewport } from './ui/styles';
+import { tableViewport, tableSurface, tableHeader, tableRow, tableCell } from './ui/styles';
 import { cx } from '../shared/cx';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -25,12 +25,14 @@ export default function DataBrowser({
   onAsk,
   active = true,
   busy = false,
+  className,
 }: {
   dataset: Dataset;
   datasets: Dataset[];
   onAsk: (q: string) => void;
   active?: boolean;
   busy?: boolean;
+  className?: string;
 }) {
   const { message } = useUI();
   const { preferences } = usePreferences();
@@ -108,8 +110,9 @@ export default function DataBrowser({
     <div
       ref={root}
       className={cx(
-        'data-browser relative h-full min-h-0 grid grid-cols-1 overflow-hidden [&.with-tree]:grid-cols-[250px_minmax(0,_1fr)] [&.with-tree]:gap-4',
-        mysql && treeOpen && !compact ? ' with-tree' : '',
+        'relative h-full min-h-0 grid grid-cols-1 overflow-hidden',
+        mysql && treeOpen && !compact && 'grid-cols-[250px_minmax(0,_1fr)] gap-4',
+        className,
       )}
     >
       {mysql && treeOpen && (
@@ -127,11 +130,11 @@ export default function DataBrowser({
         </aside>
       )}
       <div
-        className="min-w-0 min-h-0 overflow-hidden flex flex-col [&_>_.toolbar]:shrink-0 [&_>_.ui-alert]:shrink-0 [&_>_.quick-questions]:shrink-0 [&_>_.quick-questions]:mt-2 [&_>_.quick-questions]:pt-2 [&_>_.ui-tabs]:flex-1 [&_>_.ui-tabs]:min-h-0 [&_.ui-tab-content[data-state='active']]:h-full [&_.ui-tab-content[data-state='active']]:overflow-auto [&_.ui-tab-content[data-state='active']:has(.preview-page)]:overflow-hidden hidden:hidden"
+        className="min-w-0 min-h-0 overflow-hidden flex flex-col hidden:hidden"
         hidden={mysql && compact && treeOpen}
       >
         {showTableToolbar && (
-          <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pr-9">
+          <div className="shrink-0 flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 pr-9">
             {mysql ? (
               <>
                 <Button
@@ -144,14 +147,9 @@ export default function DataBrowser({
                 >
                   {dataset.schema.models.length} 张表
                 </Button>
-                <strong
-                  className="flex items-center gap-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap max-w-full [&_>_svg]:shrink-0"
-                  title={activeTable}
-                >
+                <strong className="flex items-center gap-2 min-w-0 truncate max-w-full" title={activeTable}>
                   <TableIcon />
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                    {activeTable || '未选择数据表'}
-                  </span>
+                  <span className="truncate">{activeTable || '未选择数据表'}</span>
                 </strong>
               </>
             ) : (
@@ -167,13 +165,14 @@ export default function DataBrowser({
                 options={dataset.schema.models.map((m) => ({ value: m.name, label: m.name }))}
               />
             )}
-            <span className="text-[12px] text-muted">{model?.columns.length} 个字段</span>
+            <span className="text-helper text-muted">{model?.columns.length} 个字段</span>
             <span className="min-w-[4px] flex-1" />
             {dataset.format === 'mysql' && <Tag>远程实时读取</Tag>}
           </div>
         )}
         {error && (
           <Alert
+            className="shrink-0"
             type="error"
             title={error}
             action={
@@ -189,11 +188,12 @@ export default function DataBrowser({
           items={[
             {
               key: 'rows',
+              className: activeTable ? 'overflow-hidden' : undefined,
               label: '数据预览',
               children: !activeTable ? (
                 <Empty description="没有可预览的数据表" />
               ) : (
-                <div className="preview-page relative h-full min-h-0">
+                <div className="relative h-full min-h-0">
                   <Grid
                     key={tableKey}
                     fill
@@ -262,30 +262,20 @@ export default function DataBrowser({
               label: !showTableToolbar && model ? `字段结构（${model.columns.length}）` : '字段结构',
               children: (
                 <div className={tableViewport}>
-                  <table className="ui-table w-full text-left border-separate border-spacing-0 text-helper [&_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-[color-mix(in_srgb,_var(--muted)_3%,_transparent)] [&_th[aria-sort='ascending']_.ui-sort]:text-accent [&_th[aria-sort='descending']_.ui-sort]:text-accent [&_.ui-table-empty]:text-center [&_.ui-table-empty]:h-27.5 [&_.ui-table-empty]:text-muted min-w-165">
+                  <table className={cx(tableSurface, 'min-w-165')}>
                     <thead>
                       <tr>
-                        <th className="font-medium bg-page text-muted sticky top-0 z-2 h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left">
-                          字段
-                        </th>
-                        <th className="font-medium bg-page text-muted sticky top-0 z-2 h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left w-52.5">
-                          类型
-                        </th>
-                        <th className="font-medium bg-page text-muted sticky top-0 z-2 h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left w-40">
-                          约束
-                        </th>
+                        <th className={tableHeader}>字段</th>
+                        <th className={cx(tableHeader, 'w-52.5')}>类型</th>
+                        <th className={cx(tableHeader, 'w-40')}>约束</th>
                       </tr>
                     </thead>
                     <tbody>
                       {model?.columns.map((column) => (
-                        <tr key={column.name}>
-                          <td className="h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left">
-                            {column.name}
-                          </td>
-                          <td className="h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left">
-                            {column.type}
-                          </td>
-                          <td className="h-9 py-2 px-3 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-left">
+                        <tr className={tableRow} key={column.name}>
+                          <td className={tableCell}>{column.name}</td>
+                          <td className={tableCell}>{column.type}</td>
+                          <td className={tableCell}>
                             {(typeof model.primaryKey === 'string'
                               ? [model.primaryKey]
                               : model.primaryKey || []
@@ -366,7 +356,7 @@ export default function DataBrowser({
             },
           ]}
         />
-        <div className="quick-questions flex items-center gap-2 flex-wrap mt-4 pt-3 border-t border-t-line">
+        <div className="shrink-0 flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-t-line">
           <span className="text-muted">开始分析</span>
           {quickQuestions(dataset, activeTable).map((q) => (
             <Button size="small" key={q.id} onClick={() => onAsk(q.question)}>

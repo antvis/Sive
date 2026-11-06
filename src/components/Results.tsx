@@ -1,9 +1,10 @@
+import { cx } from '../shared/cx';
 import { useState, useEffect, useRef } from 'react';
 import { Alert, Spin, Button } from './ui';
 import type { Run } from '../../shared/contracts';
 import { useTheme } from '../theme';
 const api = window.workbench;
-function ChartFrame({ html, title }: { html: string; title: string }) {
+function ChartFrame({ html, title, saved }: { html: string; title: string; saved: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState('loading');
@@ -26,7 +27,10 @@ function ChartFrame({ html, title }: { html: string; title: string }) {
   return (
     <>
       <div
-        className="chart-render-status flex items-center justify-between text-muted text-helper [&:has(span:empty)]:justify-end"
+        className={cx(
+          'flex items-center justify-between text-muted text-helper',
+          status === 'ready' && (saved ? 'hidden' : 'justify-end'),
+        )}
         role="status"
       >
         <span>
@@ -45,7 +49,7 @@ function ChartFrame({ html, title }: { html: string; title: string }) {
       <iframe
         key={attempt}
         ref={frame}
-        className="chart-frame w-full h-85 border-0 bg-surface"
+        className={cx('block w-full border-0 bg-surface', saved ? 'h-0 flex-1 min-h-0' : 'h-full')}
         title={title}
         sandbox="allow-scripts"
         srcDoc={html}
@@ -71,11 +75,17 @@ export function Chart({ run, saved = false }: { run: Run; saved?: boolean }) {
     };
   }, [run.id, settings.mode, saved, run.savedView?.updatedAt]);
   return error ? (
-    <Alert type="warning" title={error} />
+    <Alert
+      className={saved ? 'shrink-0' : 'row-span-full min-h-0 overflow-auto'}
+      type="warning"
+      title={error}
+    />
   ) : html ? (
-    <ChartFrame html={html} title={run.question} />
+    <ChartFrame html={html} title={run.question} saved={saved} />
   ) : (
-    <div className="loading grid place-content-center min-h-50">
+    <div
+      className={cx('grid place-content-center', saved ? 'min-h-50' : 'row-span-full min-h-0 overflow-auto')}
+    >
       <Spin />
     </div>
   );

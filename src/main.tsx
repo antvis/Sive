@@ -13,7 +13,7 @@ createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
       <IconContext.Provider
-        value={{ size: 16, weight: 'regular', className: 'ui-icon inline-block shrink-0 align-middle' }}
+        value={{ size: 16, weight: 'regular', className: 'inline-block shrink-0 align-middle' }}
       >
         <UIProvider>
           <PreferencesProvider>

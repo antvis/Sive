@@ -1,4 +1,3 @@
-import { cx } from '../shared/cx';
 import { navigationIconButton } from './navigation-styles';
 import { useEffect, useRef, useState } from 'react';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
@@ -62,16 +61,16 @@ export default function ConversationSearch({
           title={
             <span className="inline-flex items-center gap-2.5">
               搜索会话{' '}
-              <kbd className="font-[family-name:inherit] py-0.5 px-[5px] border border-current rounded-[4px] text-caption font-normal leading-[1.2] opacity-65">
+              <kbd className="font-[family-name:inherit] py-0.5 px-[5px] border border-current rounded-compact text-caption font-normal leading-[1.2] opacity-65">
                 {shortcut}
               </kbd>
             </span>
           }
         >
           <Button
-            className={cx(navigationIconButton, '[&>svg]:size-4.5')}
+            className={navigationIconButton}
             variant="ghost"
-            icon={<MagnifyingGlassIcon />}
+            icon={<MagnifyingGlassIcon size={18} />}
             aria-label={`搜索所有会话 (${shortcut})`}
             aria-keyshortcuts="Meta+K Control+K"
             onClick={show}
@@ -82,7 +81,7 @@ export default function ConversationSearch({
         title={
           <span className="inline-flex items-center gap-2.5">
             搜索会话{' '}
-            <kbd className="font-[family-name:inherit] py-0.5 px-[5px] border border-current rounded-[4px] text-caption font-normal leading-[1.2] opacity-65">
+            <kbd className="font-[family-name:inherit] py-0.5 px-[5px] border border-current rounded-compact text-caption font-normal leading-[1.2] opacity-65">
               {shortcut}
             </kbd>
           </span>

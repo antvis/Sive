@@ -33,14 +33,14 @@ export default function MySQLConnectionDialog({
         </>
       }
     >
-      <p className="text-muted">
+      <p className="mt-0 mb-4 text-muted">
         验证包含建立连接、读取表结构和首表抽样。不会全库扫描；账号权限决定可读取范围。当前不支持 SSH 配置。
       </p>
       <Form form={form} disabled={!!busy} onValuesChange={() => setFeedback(null)}>
         <Field name="name" label="连接名称" required>
           <Input placeholder="例如：业务分析库" />
         </Field>
-        <div className="grid grid-cols-[2fr_1fr] gap-4 [&_.ui-input-wrap]:w-full">
+        <div className="grid grid-cols-[2fr_1fr] gap-4">
           <Field name="host" label="主机" required>
             <Input placeholder="127.0.0.1" />
           </Field>

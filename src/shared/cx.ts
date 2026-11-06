@@ -17,6 +17,8 @@ const merge = extendTailwindMerge({
         'section',
         'headline',
         'heading',
+        'welcome',
+        'dialog-title',
       ],
     },
   },
