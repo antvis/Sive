@@ -39,3 +39,7 @@
   border-color: var(--border) !important;
   font-family: inherit !important;
 }
+
+.ui-toast[data-type='success'] [data-icon] {
+  color: var(--success);
+}

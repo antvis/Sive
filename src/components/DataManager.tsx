@@ -2,12 +2,15 @@ import { useEffect } from 'react';
 import { useScrollLoad } from '../shared/use-scroll-load';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { paths } from '../shared/routes';
-import { useUI, Button, SearchInput, ConfirmAction, Empty, Tag } from './ui';
+import { useUI, Button, SearchInput, ConfirmAction, Empty, Tag, Tooltip } from './ui';
 import {
   ArrowUpRightIcon,
+  ArrowsClockwiseIcon,
   ClockIcon,
   DatabaseIcon,
   FileIcon,
+  FolderOpenIcon,
+  PencilSimpleIcon,
   TableIcon,
   TrashIcon,
   PlusIcon,
@@ -15,7 +18,8 @@ import {
 import type { Dataset } from '../../shared/contracts';
 import CollectionCard from './CollectionCard';
 import MySQLConnectionDialog from './MySQLConnectionDialog';
-import LocalConnectionActions from './LocalConnectionActions';
+import DatasetName from './DatasetName';
+import { queryClient } from '../shared/queries';
 import { useDataSourceActions } from '../shared/use-data-source-actions';
 const api = window.workbench;
 export default function DataManager({
@@ -86,15 +90,19 @@ export default function DataManager({
                 onOpen={() => open(d)}
               >
                 <div className="flex gap-2.5 justify-between items-start min-h-16.5 [&_.ui-badge]:m-0 [&_.ui-badge]:shrink-0">
-                  <div className="flex gap-2.5 min-w-0 items-start text-helper text-muted">
+                  <div className="flex flex-1 gap-2.5 min-w-0 items-start text-helper text-muted">
                     <span
                       className="shrink-0 grid place-items-center w-9 h-9 rounded-card text-accent-ink bg-[color-mix(in_srgb,_var(--accent)_8%,_var(--surface))] [&_svg]:w-5 [&_svg]:h-5"
                       aria-hidden="true"
                     >
                       {d.connection ? <DatabaseIcon /> : d.format === 'xlsx' ? <TableIcon /> : <FileIcon />}
                     </span>
-                    <div className="min-w-0">
-                      <h3>{d.name}</h3>
+                    <div className="min-w-0 flex-1">
+                      {d.format === 'mysql' ? (
+                        <h3>{d.name}</h3>
+                      ) : (
+                        <DatasetName dataset={d} disabled={analyzing || !!busy} onOpen={() => open(d)} />
+                      )}
                       <span>
                         {d.format === 'mysql' ? 'MySQL · 远程只读' : `${d.format.toUpperCase()} · 文件引用`}
                       </span>
@@ -159,46 +167,70 @@ export default function DataManager({
                   </Button>
                   {d.connection && (
                     <>
+                      <Tooltip title="编辑连接">
+                        <Button
+                          variant="ghost"
+                          size="small"
+                          icon={<PencilSimpleIcon />}
+                          aria-label="编辑连接"
+                          disabled={analyzing || !!busy}
+                          onClick={() => connection(d)}
+                        />
+                      </Tooltip>
+                      <Tooltip title="重新验证">
+                        <Button
+                          variant="ghost"
+                          size="small"
+                          icon={<ArrowsClockwiseIcon />}
+                          aria-label="重新验证"
+                          disabled={analyzing || !!busy}
+                          loading={busy === d.id}
+                          onClick={() =>
+                            perform(d.id, async () => {
+                              await api.refreshMySQL(d.id);
+                              message.success('连接和结构已更新');
+                            })
+                          }
+                        />
+                      </Tooltip>
+                    </>
+                  )}
+                  <Tooltip title="移除数据源">
+                    <ConfirmAction
+                      title="删除连接？"
+                      description="仅解除连接，不删除原始文件或数据库。历史会话和分析收藏仍可查看和导出，但不能继续分析或刷新。"
+                      onConfirm={() => perform('delete', () => api.deleteData(d.id))}
+                    >
                       <Button
                         variant="ghost"
+                        className="hover:text-danger hover:bg-[color-mix(in_srgb,_var(--danger)_8%,_transparent)]"
                         size="small"
+                        icon={<TrashIcon />}
+                        aria-label={`移除数据源：${d.name}`}
                         disabled={analyzing || !!busy}
-                        onClick={() => connection(d)}
-                      >
-                        编辑
-                      </Button>
+                      />
+                    </ConfirmAction>
+                  </Tooltip>
+                  {d.format !== 'mysql' && (
+                    <Tooltip title="重新选择源文件">
                       <Button
-                        variant="ghost"
                         size="small"
+                        variant="ghost"
+                        icon={<FolderOpenIcon />}
+                        aria-label="重新选择源文件"
                         disabled={analyzing || !!busy}
                         loading={busy === d.id}
                         onClick={() =>
                           perform(d.id, async () => {
-                            await api.refreshMySQL(d.id);
-                            message.success('连接和结构已更新');
+                            if (await api.relocateData(d.id)) {
+                              await queryClient.invalidateQueries({ queryKey: ['preview', d.id] });
+                              message.success('源文件已重新连接');
+                            }
                           })
                         }
-                      >
-                        重新验证
-                      </Button>
-                    </>
+                      />
+                    </Tooltip>
                   )}
-                  <ConfirmAction
-                    title="删除连接？"
-                    description="仅解除连接，不删除原始文件或数据库。历史会话和分析收藏仍可查看和导出，但不能继续分析或刷新。"
-                    onConfirm={() => perform('delete', () => api.deleteData(d.id))}
-                  >
-                    <Button
-                      variant="ghost"
-                      className="hover:text-danger hover:bg-[color-mix(in_srgb,_var(--danger)_8%,_transparent)]"
-                      size="small"
-                      icon={<TrashIcon />}
-                      aria-label={`移除数据源：${d.name}`}
-                      title="移除数据源"
-                      disabled={analyzing || !!busy}
-                    />
-                  </ConfirmAction>
-                  <LocalConnectionActions dataset={d} disabled={analyzing || !!busy} />
                 </div>
               </CollectionCard>
             ))}

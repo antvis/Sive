@@ -340,7 +340,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
       <Toaster
         theme={dark ? 'dark' : 'light'}
         position="bottom-right"
-        closeButton
         toastOptions={{ className: 'ui-toast' }}
       />
       <Modal

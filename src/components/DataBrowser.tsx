@@ -18,7 +18,6 @@ import MetricEditor from './MetricEditor';
 import TableNavigator from './TableNavigator';
 import Grid from './DataGrid';
 import { errorMessage } from '../shared/feedback';
-import LocalConnectionActions from './LocalConnectionActions';
 const api = window.workbench;
 export default function DataBrowser({
   dataset,
@@ -131,12 +130,6 @@ export default function DataBrowser({
         className="min-w-0 min-h-0 overflow-hidden flex flex-col [&_>_.toolbar]:shrink-0 [&_>_.ui-alert]:shrink-0 [&_>_.quick-questions]:shrink-0 [&_>_.quick-questions]:mt-2 [&_>_.quick-questions]:pt-2 [&_>_.ui-tabs]:flex-1 [&_>_.ui-tabs]:min-h-0 [&_.ui-tab-content[data-state='active']]:h-full [&_.ui-tab-content[data-state='active']]:overflow-auto [&_.ui-tab-content[data-state='active']:has(.preview-page)]:overflow-hidden hidden:hidden"
         hidden={mysql && compact && treeOpen}
       >
-        {!mysql && (
-          <div className="toolbar flex items-center flex-wrap gap-2 mb-3 pr-9">
-            <Tag>本地文件引用</Tag>
-            <LocalConnectionActions dataset={dataset} disabled={busy || saving} />
-          </div>
-        )}
         {showTableToolbar && (
           <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pr-9">
             {mysql ? (
