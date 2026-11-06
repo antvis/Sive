@@ -192,7 +192,7 @@ export default function AnalysisPage() {
           {!dataset.deletedAt && !session.length && !currentTask && (
             <div className="w-full max-w-85 mt-[clamp(20px,_8vh,_80px)] mr-auto mb-6 ml-auto text-center">
               <img className="mx-auto size-7 opacity-80 dark:[filter:invert(1)]" src={logo} alt="" />
-              <h3 className="font-semibold text-welcome tracking-[-0.4px] mt-4.5 mr-0 mb-2 ml-0">
+              <h3 className="font-semibold text-headline tracking-[-0.4px] mt-4.5 mr-0 mb-2 ml-0">
                 从一个问题开始
               </h3>
               <p className="text-muted text-body m-0 leading-[1.8]">描述你的问题，或从下面的方向开始。</p>
@@ -202,7 +202,7 @@ export default function AnalysisPage() {
                   { title: '检查数据质量', description: '检查缺失值、重复记录和异常数据' },
                 ].map(({ title, description }) => (
                   <button
-                    className="group/suggestion flex items-center relative justify-center py-4 px-0 text-ink bg-transparent border-0 border-b border-b-[color-mix(in_srgb,_var(--border)_65%,_transparent)] text-center leading-[1.6] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:outline-offset-4 disabled:opacity-50"
+                    className="group/suggestion flex items-center relative justify-center py-4 px-0 text-ink bg-transparent border-0 border-b border-b-line/65 text-center leading-[1.6] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:outline-offset-4 disabled:opacity-50"
                     key={title}
                     title="填入问题"
                     disabled={!dataset || busy}

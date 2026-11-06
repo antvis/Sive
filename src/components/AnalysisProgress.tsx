@@ -150,7 +150,7 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
             </summary>
             {step.calls.map((call, index) => (
               <p className="my-1 mx-0 text-helper" key={index}>
-                <time className="text-caption text-muted" dateTime={call.at}>
+                <time className="text-helper text-muted" dateTime={call.at}>
                   {new Date(call.at).toLocaleTimeString('zh-CN')}
                 </time>{' '}
                 · {call.label}
@@ -255,10 +255,10 @@ export default function AnalysisProgress({
             : task.error || '执行结束，已保留查询和过程记录'}
         </strong>
         {running && task.status !== 'cancelling' && current && (
-          <p className="my-[5px] mx-0 text-helper text-muted">{stageDescription(current.stage)}</p>
+          <p className="my-1 mx-0 text-helper text-muted">{stageDescription(current.stage)}</p>
         )}
         {waiting && task.status === 'running' && (
-          <p className="my-[5px] mx-0 text-helper text-muted">
+          <p className="my-1 mx-0 text-helper text-muted">
             {lastCall.label} · 等待响应 {progressDuration(waitingMs)}
             {waitingMs >= 20000 && (
               <span className="block mt-1">尚未收到完整响应，可继续等待或停止分析。</span>

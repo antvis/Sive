@@ -17,7 +17,7 @@ import Grid from './DataGrid';
 import { cx } from '../shared/cx';
 
 const savedCardSurface =
-  'grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)]';
+  'grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-accent-line hover:shadow-[0_4px_18px] hover:shadow-ink/4 focus-within:border-accent-line focus-within:shadow-[0_4px_18px] focus-within:shadow-ink/4';
 
 function SavedCard({
   run,
@@ -105,7 +105,7 @@ function SavedCard({
   return (
     <article className={savedCardSurface} ref={root} aria-label={title}>
       <header className="flex gap-2 items-start">
-        <h3 className="flex-1 min-w-0 m-0 text-label leading-[24px] wrap-anywhere line-clamp-2" title={title}>
+        <h3 className="flex-1 min-w-0 m-0 text-body leading-[24px] wrap-anywhere line-clamp-2" title={title}>
           {title}
         </h3>
         <Dropdown
@@ -144,7 +144,7 @@ function SavedCard({
           <Button variant="ghost" size="small" icon={<DotsThreeIcon />} aria-label={'分析操作：' + title} />
         </Dropdown>
       </header>
-      <div className="items-center grid grid-cols-[auto_minmax(0,_1fr)] gap-y-1 gap-x-2 text-muted text-caption mt-2 mr-0 mb-3.5 ml-0">
+      <div className="items-center grid grid-cols-[auto_minmax(0,_1fr)] gap-y-1 gap-x-2 text-muted text-helper mt-2 mr-0 mb-3.5 ml-0">
         <DatabaseIcon />
         <span className="min-w-0 truncate" title={sourceName}>
           {sourceName}

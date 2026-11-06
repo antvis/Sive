@@ -58,7 +58,7 @@ function ResizeHeader({
       {children}
       <span
         className={cx(
-          "absolute z-2 top-0 right-0 w-[9px] h-full cursor-col-resize touch-none select-none after:content-[''] after:absolute after:top-[25%] after:bottom-[25%] after:right-[3px] after:w-0.5 after:rounded-detail after:bg-line hover:after:bg-accent hover:after:top-[10%] hover:after:bottom-[10%] focus-visible:after:bg-accent focus-visible:after:top-[10%] focus-visible:after:bottom-[10%] [&.dragging]:after:bg-accent [&.dragging]:after:top-[10%] [&.dragging]:after:bottom-[10%] focus-visible:outline-1 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-1",
+          "absolute z-2 top-0 right-0 w-[9px] h-full cursor-col-resize touch-none select-none after:content-[''] after:absolute after:top-[25%] after:bottom-[25%] after:right-[3px] after:w-0.5 after:rounded-mini after:bg-line hover:after:bg-accent hover:after:top-[10%] hover:after:bottom-[10%] focus-visible:after:bg-accent focus-visible:after:top-[10%] focus-visible:after:bottom-[10%] [&.dragging]:after:bg-accent [&.dragging]:after:top-[10%] [&.dragging]:after:bottom-[10%] focus-visible:outline-1 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-1",
           column.getIsResizing() ? ' dragging' : '',
         )}
         role="separator"
@@ -263,7 +263,7 @@ export default function Grid({
       )}
       <div
         className={cx(
-          'flex justify-between items-center gap-2 min-h-7 text-muted text-caption',
+          'flex justify-between items-center gap-2 min-h-7 text-muted text-helper',
           fill && 'shrink-0 border-t border-t-line pt-2 mt-1',
         )}
       >

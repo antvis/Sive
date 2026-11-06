@@ -6,20 +6,7 @@ const merge = extendTailwindMerge({
   override: { conflictingClassGroups: { 'font-size': [] } },
   extend: {
     theme: {
-      text: [
-        'tiny',
-        'caption',
-        'helper',
-        'body',
-        'label',
-        'subtitle',
-        'title',
-        'section',
-        'headline',
-        'heading',
-        'welcome',
-        'dialog-title',
-      ],
+      text: ['tiny', 'helper', 'body', 'title', 'section', 'headline'],
     },
   },
 });

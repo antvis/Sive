@@ -41,7 +41,7 @@ export default function ConversationHistory({
             <div className="absolute right-1 top-2 opacity-0 pointer-events-none group-hover/history:opacity-100 group-hover/history:pointer-events-auto group-focus-within/history:opacity-100 group-focus-within/history:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
               <Tooltip title="归档会话">
                 <Button
-                  className={cx(navigationIconButton, 'size-7 p-[5px]')}
+                  className={cx(navigationIconButton, 'size-7 p-1')}
                   variant="ghost"
                   size="small"
                   icon={<ArchiveIcon size={18} />}

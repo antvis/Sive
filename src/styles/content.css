@@ -1,6 +1,6 @@
 /* Styles for generated Markdown and third-party toast markup. */
 .markdown {
-  font-size: var(--text-label);
+  font-size: var(--text-body);
   line-height: 1.75;
   overflow-wrap: anywhere;
 }

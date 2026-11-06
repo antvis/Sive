@@ -1,26 +1,29 @@
 import { cx } from '../shared/cx';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 export default function CollectionCard({
   label,
   action,
   onOpen,
   className = '',
+  style,
   children,
 }: {
   label: string;
   action: string;
   onOpen: () => void;
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
 }) {
   return (
     <article
       className={cx(
-        'relative flex flex-col min-w-0 p-4.5 border rounded-card border-[color-mix(in_srgb,_var(--border)_70%,_transparent)] bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_30%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_30%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] ',
+        'relative flex flex-col min-w-0 p-4.5 border rounded-card border-line/70 bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-accent-line hover:shadow-[0_4px_18px] hover:shadow-ink/4 focus-within:border-accent-line focus-within:shadow-[0_4px_18px] focus-within:shadow-ink/4 ',
         className,
       )}
       aria-label={label}
+      style={style}
     >
       <button
         type="button"

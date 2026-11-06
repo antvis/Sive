@@ -50,7 +50,7 @@ function MessageActions({
     >
       {date && Number.isFinite(date.getTime()) && (
         <time
-          className={cx('text-muted text-caption tabular-nums', compactTime && 'text-helper mr-1')}
+          className={cx('text-muted text-helper tabular-nums', compactTime && 'text-helper mr-1')}
           dateTime={date.toISOString()}
           title={date.toLocaleString('zh-CN', { hour12: false })}
         >
@@ -118,8 +118,8 @@ export function UserMessage({
     >
       <div
         className={cx(
-          'max-w-[92%] min-w-0 text-ink bg-[color-mix(in_srgb,_var(--muted)_8%,_var(--surface))] py-2.5 px-4 rounded-bubble',
-          editing && 'w-full max-w-full pt-3.5 pb-3 border-0 rounded-editor',
+          'max-w-[92%] min-w-0 text-ink bg-neutral-soft py-2.5 px-4 rounded-[20px]',
+          editing && 'w-full max-w-full pt-3.5 pb-3 border-0 rounded-[calc(var(--radius)_+_14px)]',
         )}
       >
         {editing ? (
@@ -200,7 +200,7 @@ export function AssistantMessage({
 }) {
   return (
     <section className="group/message min-w-0" aria-label="Sive 回复">
-      <div className="flex items-center gap-[7px] text-helper text-ink mb-2.5">
+      <div className="flex items-center gap-2 text-helper text-ink mb-2.5">
         <img className="size-5 dark:[filter:invert(1)]" src={logo} alt="" />
         <strong>Sive</strong>
         <span className="text-muted font-normal">数据分析</span>

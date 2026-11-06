@@ -31,7 +31,7 @@ export default function ModelPicker({
   };
   return (
     <div id={id} role="group" {...props}>
-      <div className="flex items-center gap-[12px]">
+      <div className="flex items-center gap-3">
         <SearchInput
           className="flex-1"
           aria-label="搜索可用模型"
@@ -45,10 +45,10 @@ export default function ModelPicker({
         </span>
       </div>
       {!!ids.length && (
-        <div className="border border-line rounded-control my-[12px] max-h-[200px] overflow-y-auto">
+        <div className="border border-line rounded-control my-3 max-h-[200px] overflow-y-auto">
           {ids.map((name) => (
             <label
-              className="flex cursor-pointer items-center gap-[10px] px-[12px] py-[8px] [overflow-wrap:anywhere] hover:bg-[color-mix(in_srgb,_var(--accent)_6%,_var(--surface))] [&:has(input:checked)]:bg-[color-mix(in_srgb,_var(--accent)_6%,_var(--surface))]"
+              className="flex cursor-pointer items-center gap-2.5 px-3 py-2 [overflow-wrap:anywhere] hover:bg-accent-soft [&:has(input:checked)]:bg-accent-soft"
               key={name}
             >
               <input
@@ -70,7 +70,7 @@ export default function ModelPicker({
       {!ids.length && (
         <p className="text-muted">{search ? '没有匹配的模型' : '获取模型列表，或手动添加模型 ID。'}</p>
       )}
-      <div className="flex items-center gap-[12px]">
+      <div className="flex items-center gap-3">
         <Input
           className="flex-1"
           aria-label="手动添加模型 ID"

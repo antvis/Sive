@@ -245,7 +245,7 @@ export function Modal({
               returnFocus.current.focus();
             }
           }}
-          className="fixed z-100 top-[50%] left-[50%] [transform:translate(-50%,_-50%)] w-[calc(100vw_-_40px)] max-h-[calc(100dvh_-_64px)] flex flex-col text-ink bg-surface border border-line rounded-dialog shadow-[0_20px_70px_#0003] outline-none [animation:ui-fade_150ms_ease-out]"
+          className="fixed z-100 top-[50%] left-[50%] [transform:translate(-50%,_-50%)] w-[calc(100vw_-_40px)] max-h-[calc(100dvh_-_64px)] flex flex-col text-ink bg-surface border border-line rounded-[calc(var(--radius)_+_12px)] shadow-[0_20px_70px_#0003] outline-none [animation:ui-fade_150ms_ease-out]"
           aria-describedby={undefined}
           style={{ maxWidth: width }}
           onPointerDownOutside={(e) => {
@@ -256,7 +256,7 @@ export function Modal({
           }}
         >
           <div className="flex items-center gap-4 justify-between pt-4.5 pr-5.5 pb-2.5 pl-5.5 shrink-0">
-            <Dialog.Title className="text-dialog-title font-semibold m-0">{title}</Dialog.Title>
+            <Dialog.Title className="text-section font-semibold m-0">{title}</Dialog.Title>
             <Button
               variant="ghost"
               size="small"
@@ -267,7 +267,7 @@ export function Modal({
             />
           </div>
           <div className="overflow-auto pt-2 pr-5.5 pb-4 pl-5.5">{children}</div>
-          <div className="flex justify-end gap-2 pt-3.5 pr-5.5 pb-4.5 pl-5.5 shrink-0 border-t border-t-[color-mix(in_srgb,_var(--border)_60%,_transparent)]">
+          <div className="flex justify-end gap-2 pt-3.5 pr-5.5 pb-4.5 pl-5.5 shrink-0 border-t border-t-line/60">
             {footer !== undefined ? (
               footer
             ) : (

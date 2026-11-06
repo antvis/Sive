@@ -4,28 +4,19 @@
 @source './';
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
-/* Pixel-based spacing preserves the desktop scale independently of the 13px root font. */
+/* Pixel-based spacing preserves the desktop scale independently of the root font size. */
 @custom-variant mac (&:where([data-platform='darwin'], [data-platform='darwin'] *));
 
 @theme {
   --spacing: 4px;
   --text-tiny: 10px;
-  --text-caption: 11px;
   --text-helper: 12px;
-  --text-body: 13px;
-  --text-label: 14px;
-  --text-subtitle: 15px;
+  --text-body: 14px;
   --text-title: 16px;
   --text-section: 18px;
   --text-headline: 20px;
-  --text-heading: 23px;
-  --text-welcome: 21px;
-  --text-dialog-title: 17px;
-  --radius-detail: 1px;
   --radius-mini: 2px;
   --radius-compact: 4px;
-  --radius-key: 5px;
-  --radius-bubble: 20px;
 }
 @theme inline {
   --color-surface: var(--surface);
@@ -38,13 +29,18 @@
   --color-danger: var(--danger);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-inset: color-mix(in srgb, var(--background) 55%, var(--surface));
+  --color-neutral-soft: color-mix(in srgb, var(--muted) 8%, var(--surface));
+  --color-accent-soft: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  --color-accent-line: color-mix(in srgb, var(--accent) 40%, var(--border));
+  --color-focus: color-mix(in srgb, var(--accent) 60%, var(--border));
+  --color-source: var(--source-color);
+  --color-source-soft: color-mix(in srgb, var(--source-color) 8%, var(--surface));
+  --color-source-hover: color-mix(in srgb, var(--source-color) 4%, var(--surface));
+  --color-source-line: color-mix(in srgb, var(--source-color) 45%, var(--border));
   --radius-control: var(--radius);
-  --radius-item: calc(var(--radius) + 1px);
   --radius-button: calc(var(--radius) + 2px);
   --radius-card: calc(var(--radius) + 4px);
   --radius-panel: calc(var(--radius) + 6px);
   --radius-source: calc(var(--radius) + 8px);
-  --radius-editor: calc(var(--radius) + 14px);
-  --radius-tabs: calc(var(--radius) + 5px);
-  --radius-dialog: calc(var(--radius) + 12px);
 }

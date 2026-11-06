@@ -61,7 +61,7 @@ export default function ConversationSearch({
           title={
             <span className="inline-flex items-center gap-2.5">
               搜索会话{' '}
-              <kbd className="font-[family-name:inherit] py-0.5 px-[5px] border border-current rounded-compact text-caption font-normal leading-[1.2] opacity-65">
+              <kbd className="font-[family-name:inherit] py-0.5 px-1 border border-current rounded-compact text-helper font-normal leading-[1.2] opacity-65">
                 {shortcut}
               </kbd>
             </span>
@@ -81,7 +81,7 @@ export default function ConversationSearch({
         title={
           <span className="inline-flex items-center gap-2.5">
             搜索会话{' '}
-            <kbd className="font-[family-name:inherit] py-0.5 px-[5px] border border-current rounded-compact text-caption font-normal leading-[1.2] opacity-65">
+            <kbd className="font-[family-name:inherit] py-0.5 px-1 border border-current rounded-compact text-helper font-normal leading-[1.2] opacity-65">
               {shortcut}
             </kbd>
           </span>
@@ -107,7 +107,7 @@ export default function ConversationSearch({
         <div className="max-h-90 overflow-y-auto mt-3">
           {results.map((conversation) => (
             <button
-              className="flex flex-col gap-[5px] w-full p-3 border-0 rounded-control text-left bg-transparent text-ink wrap-anywhere hover:bg-page focus-visible:bg-page"
+              className="flex flex-col gap-1 w-full p-3 border-0 rounded-control text-left bg-transparent text-ink wrap-anywhere hover:bg-page focus-visible:bg-page"
               key={conversation.id}
               disabled={disabled}
               onClick={() => select(conversation)}
