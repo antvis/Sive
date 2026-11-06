@@ -23,10 +23,7 @@ function Artifact({ title, content }: { title: string; content: () => string }) 
   const [open, setOpen] = useState(false);
   const { message } = useUI();
   return (
-    <details
-      className="mt-2 text-helper [&_>_.ui-button]:mt-2 [&_pre]:max-h-90 [&_pre]:overflow-auto [&_pre]:whitespace-pre-wrap [&_pre]:wrap-anywhere"
-      onToggle={(event) => setOpen(event.currentTarget.open)}
-    >
+    <details className="mt-1.5 text-helper" onToggle={(event) => setOpen(event.currentTarget.open)}>
       <summary>{title}</summary>
       {open && (
         <ArtifactContent
@@ -57,6 +54,7 @@ function ArtifactContent({
   return (
     <>
       <Button
+        className="mt-2"
         size="small"
         aria-label={`复制${title}`}
         onClick={async () => {
@@ -70,7 +68,7 @@ function ArtifactContent({
       >
         {copied ? '已复制' : '复制内容'}
       </Button>
-      <pre tabIndex={0} aria-label={title}>
+      <pre className="max-h-90 overflow-auto" tabIndex={0} aria-label={title}>
         {text}
       </pre>
     </>
@@ -80,14 +78,9 @@ function ArtifactContent({
 function Step({ step, now, children }: { step: ProgressStep; now: number; children?: ReactNode }) {
   const active = step.status === 'running';
   return (
-    <li
-      className={cx(
-        '[&.running_.task-step-icon]:text-accent [&.running_strong]:text-accent [&_details]:text-helper [&_details]:mt-1.5 [&_pre]:whitespace-pre-wrap [&_pre]:wrap-anywhere [&.error_strong]:font-bold [&.error_strong]:underline [&.error_strong]:[text-decoration-style:dotted] ',
-        step.status,
-      )}
-    >
+    <li className="grid grid-cols-[16px_minmax(0,_1fr)] gap-2 border-t border-t-line py-2.5">
       <span
-        className="task-step-icon text-muted text-body pt-0.5"
+        className={cx('text-body pt-0.5', active ? 'text-accent' : 'text-muted')}
         aria-label={
           { running: '进行中', done: '已完成', error: '失败', stopped: '已停止', skipped: '已跳过' }[
             step.status
@@ -108,7 +101,14 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
       </span>
       <div>
         <div className="flex flex-wrap [align-items:baseline] gap-y-1 gap-x-3 text-helper">
-          <strong>{step.label}</strong>
+          <strong
+            className={cx(
+              active && 'text-accent',
+              step.status === 'error' && 'font-bold underline [text-decoration-style:dotted]',
+            )}
+          >
+            {step.label}
+          </strong>
           {(active || step.durationMs !== undefined) && (
             <span className="text-muted">
               {active ? '进行中 · ' : ''}
@@ -118,23 +118,26 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
             </span>
           )}
         </div>
-        {step.detail && <p>{step.detail}</p>}
-        {step.recovery && <p className="text-muted">{step.recovery}</p>}
+        {step.detail && <p className="my-1 text-helper">{step.detail}</p>}
+        {step.recovery && <p className="my-1 text-helper text-muted">{step.recovery}</p>}
         {children}
         {step.sql && (
-          <details>
+          <details className="mt-1.5 text-helper">
             <summary>查看本次查询</summary>
             <pre>{step.sql}</pre>
           </details>
         )}
         {!!step.calls.length && (
-          <details className="text-muted">
+          <details className="mt-1.5 text-helper text-muted">
             <summary>
               模型调用 · {step.calls.filter((event) => event.stage === 'modelstart').length} 次
             </summary>
             {step.calls.map((call, index) => (
-              <p key={index}>
-                <time dateTime={call.at}>{new Date(call.at).toLocaleTimeString('zh-CN')}</time> · {call.label}
+              <p key={index} className="my-1 text-helper">
+                <time className="text-caption text-muted" dateTime={call.at}>
+                  {new Date(call.at).toLocaleTimeString('zh-CN')}
+                </time>{' '}
+                · {call.label}
                 {call.durationMs !== undefined && ` · ${progressDuration(call.durationMs)}`}
                 {call.detail && ` · ${call.detail}`}
               </p>
@@ -258,10 +261,7 @@ export default function AnalysisProgress({
                   {setup.length} 项
                 </span>
               </summary>
-              <ol
-                className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
-                aria-label="数据准备记录"
-              >
+              <ol aria-label="数据准备记录">
                 {setup.map((step, index) => (
                   <Step key={index} step={step} now={now} />
                 ))}
@@ -269,10 +269,7 @@ export default function AnalysisProgress({
             </details>
           ) : (
             !!setup.length && (
-              <ol
-                className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
-                aria-label="数据准备记录"
-              >
+              <ol aria-label="数据准备记录">
                 {setup.map((step, index) => (
                   <Step key={index} step={step} now={now} />
                 ))}
@@ -280,10 +277,7 @@ export default function AnalysisProgress({
             )
           )}
           {!!work.length && (
-            <ol
-              className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
-              aria-label="执行记录"
-            >
+            <ol aria-label="执行记录">
               {work.map((step, index) => (
                 <Step key={index} step={step} now={now}>
                   {step === summaryStep && conclusion}
