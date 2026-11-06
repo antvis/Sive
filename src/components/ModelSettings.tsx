@@ -89,13 +89,12 @@ export default function ModelSettings({ state }: { state: State }) {
         <div
           className={cx(
             'flex items-center gap-5 p-5.5 border border-line rounded-card mb-3.5 flex-wrap',
-            state.activeModelId === model.id &&
-              'border-[color-mix(in_srgb,_var(--accent)_40%,_var(--border))]',
+            state.activeModelId === model.id && 'border-accent-line',
           )}
           key={model.id}
         >
           <div className="flex-1 min-w-[min(240px,_100%)] wrap-anywhere">
-            <strong className="text-label">{model.name}</strong>
+            <strong className="text-body">{model.name}</strong>
             {state.activeModelId === model.id && (
               <Tag className="ml-2.5" color="success">
                 默认服务
@@ -105,7 +104,7 @@ export default function ModelSettings({ state }: { state: State }) {
               {model.modelIds.length} 个模型 · {model.baseURL}
             </p>
             <p className="text-muted my-2 mx-0 text-helper">{model.modelIds.join('、')}</p>
-            <small className="text-muted text-caption">
+            <small className="text-muted text-helper">
               {model.testedAt ? `最近测试：${new Date(model.testedAt).toLocaleString()}` : '尚未验证'}
             </small>
           </div>

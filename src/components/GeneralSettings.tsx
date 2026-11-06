@@ -18,9 +18,9 @@ function SettingRow({
   children: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-6 p-5 [&+&]:border-t [&+&]:border-t-[color-mix(in_srgb,_var(--border)_65%,_transparent)] max-[1101px]:gap-4 max-[1101px]:py-4.5 max-[1101px]:px-4 max-[541px]:items-start max-[541px]:flex-col">
+    <div className="flex items-center justify-between gap-6 p-5 [&+&]:border-t [&+&]:border-t-line/65 max-[1101px]:gap-4 max-[1101px]:py-4.5 max-[1101px]:px-4 max-[541px]:items-start max-[541px]:flex-col">
       <div className="flex-1 min-w-0">
-        <h3 className="mt-0 mr-0 mb-[5px] ml-0 text-body font-medium">{title}</h3>
+        <h3 className="mt-0 mr-0 mb-1 ml-0 text-body font-medium">{title}</h3>
         <p className="m-0 max-w-107.5 text-helper text-muted leading-[1.65]">{description}</p>
       </div>
       <div className="shrink-0 max-[541px]:w-full">{children}</div>
@@ -42,7 +42,7 @@ export default function GeneralSettings() {
       >
         <h3
           id="appearance-heading"
-          className="m-0 py-3 px-5 text-helper font-semibold bg-[color-mix(in_srgb,_var(--background)_55%,_var(--surface))] border-b border-b-line"
+          className="m-0 py-3 px-5 text-helper font-semibold bg-inset border-b border-b-line"
         >
           外观
         </h3>
@@ -57,7 +57,7 @@ export default function GeneralSettings() {
               <label
                 key={mode}
                 className={cx(
-                  'relative grid gap-[7px] w-20 p-1.5 border border-line rounded-button cursor-pointer [&:has(input:focus-visible)]:outline-2 [&:has(input:focus-visible)]:outline-solid [&:has(input:focus-visible)]:outline-accent [&:has(input:focus-visible)]:outline-offset-4 [&:has(input:disabled)]:opacity-60 [&:has(input:disabled)]:cursor-wait',
+                  'relative grid gap-2 w-20 p-1.5 border border-line rounded-button cursor-pointer [&:has(input:focus-visible)]:outline-2 [&:has(input:focus-visible)]:outline-solid [&:has(input:focus-visible)]:outline-accent [&:has(input:focus-visible)]:outline-offset-4 [&:has(input:disabled)]:opacity-60 [&:has(input:disabled)]:cursor-wait',
                   settings.mode === mode && 'border-accent shadow-[0_0_0_1px_var(--accent)]',
                 )}
               >
@@ -71,7 +71,7 @@ export default function GeneralSettings() {
                 />
                 <span
                   className={cx(
-                    'grid grid-cols-[15px_1fr] grid-rows-[1fr_1fr] gap-[5px] p-1.5 h-10.5 rounded-compact border',
+                    'grid grid-cols-[15px_1fr] grid-rows-[1fr_1fr] gap-1 p-1.5 h-10.5 rounded-compact border',
                     mode === 'dark' ? 'bg-[#20262d] border-[#38434e]' : 'bg-[#f1f3f5] border-[#dce1e5]',
                   )}
                   aria-hidden="true"
@@ -95,7 +95,7 @@ export default function GeneralSettings() {
                     )}
                   />
                 </span>
-                <span className="flex justify-center items-center gap-1 text-caption">
+                <span className="flex justify-center items-center gap-1 text-helper">
                   <Icon />
                   {label}
                 </span>
@@ -110,7 +110,7 @@ export default function GeneralSettings() {
       >
         <h3
           id="analysis-heading"
-          className="m-0 py-3 px-5 text-helper font-semibold bg-[color-mix(in_srgb,_var(--background)_55%,_var(--surface))] border-b border-b-line"
+          className="m-0 py-3 px-5 text-helper font-semibold bg-inset border-b border-b-line"
         >
           分析与输入
         </h3>
@@ -152,7 +152,7 @@ export default function GeneralSettings() {
       >
         <h3
           id="preview-heading"
-          className="m-0 py-3 px-5 text-helper font-semibold bg-[color-mix(in_srgb,_var(--background)_55%,_var(--surface))] border-b border-b-line"
+          className="m-0 py-3 px-5 text-helper font-semibold bg-inset border-b border-b-line"
         >
           数据预览
         </h3>
@@ -170,7 +170,7 @@ export default function GeneralSettings() {
         </SettingRow>
       </section>
       <section
-        className="p-5 border border-line rounded-card bg-[color-mix(in_srgb,_var(--background)_45%,_var(--surface))] text-helper"
+        className="p-5 border border-line rounded-card bg-inset text-helper"
         aria-labelledby="shortcuts-heading"
       >
         <h3
@@ -195,10 +195,10 @@ export default function GeneralSettings() {
           ].map(({ label, keys }) => (
             <div className="flex justify-between items-center gap-3 min-h-9" key={label}>
               <dt className="text-muted">{label}</dt>
-              <dd className="flex items-center gap-[5px] shrink-0 m-0" aria-label={keys.join(' + ')}>
+              <dd className="flex items-center gap-1 shrink-0 m-0" aria-label={keys.join(' + ')}>
                 {keys.map((key) => (
                   <kbd
-                    className="font-[family-name:inherit] inline-flex items-center justify-center min-w-7 h-7 px-[7px] border border-line rounded-key bg-surface shadow-[0_2px_0_var(--border)] text-caption font-medium whitespace-nowrap"
+                    className="font-[family-name:inherit] inline-flex items-center justify-center min-w-7 h-7 px-2 border border-line rounded-compact bg-surface shadow-[0_2px_0_var(--border)] text-helper font-medium whitespace-nowrap"
                     key={key}
                   >
                     {key}
@@ -209,7 +209,7 @@ export default function GeneralSettings() {
           ))}
         </dl>
       </section>
-      <footer className="flex justify-between items-center gap-3 flex-wrap text-muted text-caption mt-3">
+      <footer className="flex justify-between items-center gap-3 flex-wrap text-muted text-helper mt-3">
         <span>使用偏好保存在当前设备。</span>
         <Button
           size="small"

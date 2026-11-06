@@ -1,9 +1,7 @@
-import { cx } from '../shared/cx';
-import { dataSourceColors } from './ui/styles';
 import { useState } from 'react';
 import { PlusIcon } from '@phosphor-icons/react';
 import type { Dataset } from '../../shared/contracts';
-import { DATA_SOURCE_ICONS } from '../constants';
+import { getDataSource } from '../constants';
 import { Button, Modal, SearchInput } from './ui';
 
 export default function DatasetPickerDialog({
@@ -54,7 +52,7 @@ export default function DatasetPickerDialog({
           />
           <div className="mt-3 max-h-80 overflow-y-auto">
             {filtered.map((dataset) => {
-              const SourceIcon = DATA_SOURCE_ICONS[dataset.format];
+              const { icon: SourceIcon, color } = getDataSource(dataset.format);
               return (
                 <button
                   className="flex items-center gap-2.5 w-full py-3 px-2 border-0 rounded-control bg-transparent text-ink text-left hover:bg-page focus-visible:bg-page"
@@ -67,11 +65,8 @@ export default function DatasetPickerDialog({
                   }}
                 >
                   <SourceIcon
-                    className={cx(
-                      'inline-block shrink-0 align-middle text-[var(--source-color)]',
-                      dataSourceColors,
-                    )}
-                    data-source={dataset.format}
+                    className="inline-block shrink-0 align-middle"
+                    style={{ color }}
                     size={20}
                     weight="duotone"
                     aria-hidden="true"

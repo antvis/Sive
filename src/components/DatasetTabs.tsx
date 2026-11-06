@@ -44,7 +44,7 @@ export default function DatasetTabs({
       className="mac:min-h-9 mac:[-webkit-app-region:drag] mac:after:content-[''] mac:after:flex-[1_0_40px] mac:after:self-stretch mac:data-[sidebar-collapsed=true]:pl-21 flex items-end gap-1 pt-1 pr-2.5 pb-0 pl-2.5 min-w-0 shrink-0 [background-image:linear-gradient(var(--border),_var(--border))] bg-size-[100%_1px] bg-position-[bottom] bg-no-repeat bg-page"
     >
       <Button
-        className="mac:[-webkit-app-region:no-drag] shrink-0 self-center size-7 min-h-0 mb-0.5 p-[5px]"
+        className="mac:[-webkit-app-region:no-drag] shrink-0 self-center size-7 min-h-0 mb-0.5 p-1"
         variant="ghost"
         size="small"
         icon={<SidebarSimpleIcon />}
@@ -63,7 +63,7 @@ export default function DatasetTabs({
         {tabs.map((dataset, index) => (
           <div
             key={dataset.id}
-            className="flex items-center flex-none max-w-60 h-8 border border-transparent border-b-line rounded-t-button bg-transparent text-muted hover:text-ink hover:bg-[color-mix(in_srgb,_var(--accent)_4%,_transparent)] data-[selected=true]:text-ink data-[selected=true]:border-line data-[selected=true]:border-b-surface data-[selected=true]:bg-surface"
+            className="flex items-center flex-none max-w-60 h-8 border border-transparent border-b-line rounded-t-button bg-transparent text-muted hover:text-ink hover:bg-accent/4 data-[selected=true]:text-ink data-[selected=true]:border-line data-[selected=true]:border-b-surface data-[selected=true]:bg-surface"
             data-selected={selectedId === dataset.id}
           >
             <button
@@ -101,7 +101,7 @@ export default function DatasetTabs({
             </button>
             <button
               type="button"
-              className="mac:[-webkit-app-region:no-drag] grid place-items-center shrink-0 size-5 mr-1.5 p-[3px] border-0 rounded-compact bg-transparent text-muted hover:text-ink hover:bg-[color-mix(in_srgb,_var(--text)_8%,_transparent)] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-3"
+              className="mac:[-webkit-app-region:no-drag] grid place-items-center shrink-0 size-5 mr-1.5 p-1 border-0 rounded-compact bg-transparent text-muted hover:text-ink hover:bg-ink/8 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-3"
               aria-label={`关闭标签：${dataset.name}`}
               title="关闭标签"
               onClick={() => onClose(dataset.id)}
@@ -112,7 +112,7 @@ export default function DatasetTabs({
         ))}
       </div>
       <Button
-        className="mac:[-webkit-app-region:no-drag] shrink-0 self-center size-7 min-h-0 mb-0.5 p-[5px]"
+        className="mac:[-webkit-app-region:no-drag] shrink-0 self-center size-7 min-h-0 mb-0.5 p-1"
         variant="ghost"
         size="small"
         icon={<PlusIcon />}

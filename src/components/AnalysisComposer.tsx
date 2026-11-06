@@ -62,7 +62,7 @@ export default function AnalysisComposer({
     <div className={cx('pt-2 px-3 pb-1.5 bg-surface shrink-0', className)}>
       <div
         className={cx(
-          'border border-line rounded-panel bg-surface shadow-[0_2px_6px_color-mix(in_srgb,_var(--text)_4%,_transparent)] overflow-visible [transition:border-color_120ms] focus-within:border-accent',
+          'border border-line rounded-panel bg-surface shadow-[0_2px_6px] shadow-ink/4 overflow-visible [transition:border-color_120ms] focus-within:border-accent',
           locked && 'bg-page',
         )}
         onKeyDown={(event) => {
@@ -109,7 +109,7 @@ export default function AnalysisComposer({
             <Button
               variant="ghost"
               size="small"
-              className="min-w-0 max-w-45 flex-initial gap-[5px] hover:text-muted"
+              className="min-w-0 max-w-45 flex-initial gap-1 hover:text-muted"
               aria-label="选择模型"
               title={model ? `${model.name} · ${model.model}` : '选择模型'}
               disabled={locked || !models.length}
@@ -128,7 +128,7 @@ export default function AnalysisComposer({
               items: analysisModes.map((item) => ({
                 key: item.value,
                 label: (
-                  <div className="max-w-62.5 py-[3px] px-0">
+                  <div className="max-w-62.5 py-1 px-0">
                     <strong>{item.label}</strong>
                     <small className="block text-muted mt-1 leading-[1.5]">{item.description}</small>
                   </div>
@@ -140,7 +140,7 @@ export default function AnalysisComposer({
             <Button
               variant="ghost"
               size="small"
-              className="shrink-0 gap-[5px] hover:text-muted"
+              className="shrink-0 gap-1 hover:text-muted"
               aria-label="分析方式"
               disabled={locked}
             >
@@ -175,9 +175,9 @@ export default function AnalysisComposer({
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2 text-muted text-caption min-h-7.5 px-0.5">
+      <div className="flex items-center justify-between gap-2 text-muted text-helper min-h-7.5 px-0.5">
         {!model ? (
-          <Button variant="link" size="small" className="text-accent text-caption" onClick={onSettings}>
+          <Button variant="link" size="small" className="text-accent text-helper" onClick={onSettings}>
             添加模型后开始分析
           </Button>
         ) : !dataset ? (

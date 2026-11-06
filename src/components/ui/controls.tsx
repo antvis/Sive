@@ -34,11 +34,9 @@ import { cx } from '../../shared/cx';
 export { cx } from '../../shared/cx';
 const buttonVariants = {
   primary:
-    'font-medium text-white bg-accent shadow-[0_1px_2px_color-mix(in_srgb,_var(--text)_10%,_transparent)] hover:bg-[color-mix(in_srgb,_var(--accent)_87%,_black)]',
-  secondary:
-    'text-ink bg-[color-mix(in_srgb,_var(--muted)_8%,_var(--surface))] hover:bg-[color-mix(in_srgb,_var(--muted)_14%,_var(--surface))]',
-  ghost:
-    'text-muted bg-transparent hover:text-ink hover:bg-[color-mix(in_srgb,_var(--muted)_9%,_transparent)]',
+    'font-medium text-white bg-accent shadow-[0_1px_2px] shadow-ink/10 hover:bg-[color-mix(in_srgb,_var(--accent)_87%,_black)]',
+  secondary: 'text-ink bg-neutral-soft hover:bg-[color-mix(in_srgb,_var(--muted)_14%,_var(--surface))]',
+  ghost: 'text-muted bg-transparent hover:text-ink hover:bg-muted/9',
   link: 'bg-transparent text-accent-ink max-w-full h-auto whitespace-normal text-left px-0 hover:underline',
 };
 export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & {
@@ -65,9 +63,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         size === 'small' && 'h-7 px-2.5 text-helper',
         buttonVariants[variant],
         danger &&
-          (variant === 'primary'
-            ? 'bg-danger text-white hover:bg-danger'
-            : 'text-danger hover:bg-[color-mix(in_srgb,_var(--danger)_10%,_transparent)]'),
+          (variant === 'primary' ? 'bg-danger text-white hover:bg-danger' : 'text-danger hover:bg-danger/10'),
         !children && [size === 'small' ? 'w-7' : 'w-[var(--control-height)]', 'p-0'],
         className,
       )}
@@ -94,7 +90,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <span
       className={cx(
         controlSurface,
-        "min-h-[var(--control-height)] w-full py-0 px-[11px] min-w-0 focus-within:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&:has([aria-invalid='true'])]:border-danger flex items-center gap-2 transition-colors",
+        "min-h-[var(--control-height)] w-full py-0 px-3 min-w-0 focus-within:border-focus focus-within:ring-2 focus-within:ring-accent/8 [&:has([aria-invalid='true'])]:border-danger flex items-center gap-2 transition-colors",
         disabled && 'opacity-50 cursor-not-allowed',
         className,
       )}
@@ -103,7 +99,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {prefix && <span className="inline-flex text-muted shrink-0">{prefix}</span>}
       <input
         {...props}
-        className="w-full min-w-0 outline-none border-0 bg-transparent py-[7px] px-0 leading-[18px] text-inherit placeholder:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)]"
+        className="w-full min-w-0 outline-none border-0 bg-transparent py-1.5 px-0 leading-[18px] text-inherit placeholder:text-muted/80"
         disabled={disabled}
         value={value}
         onChange={onChange}
@@ -117,7 +113,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <button
           type="button"
           aria-label="清除搜索"
-          className="inline-flex text-muted shrink-0 border-0 p-[3px] bg-transparent rounded-compact hover:bg-[color-mix(in_srgb,_var(--muted)_12%,_transparent)]"
+          className="inline-flex text-muted shrink-0 border-0 p-1 bg-transparent rounded-compact hover:bg-muted/12"
           onClick={() => {
             const node = internal.current;
             if (!node) return;
@@ -208,8 +204,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
         rows={autoSize?.minRows || props.rows}
         className={cx(
           controlSurface,
-          "block w-full resize-y py-2.5 px-3 leading-[1.7] [&::placeholder]:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)] focus:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed",
-          variant === 'borderless' && 'border-0 bg-transparent resize-none focus:shadow-none',
+          "block w-full resize-y py-2.5 px-3 leading-[1.7] [&::placeholder]:text-muted/80 focus:border-focus focus:ring-2 focus:ring-accent/8 [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed",
+          variant === 'borderless' && 'border-0 bg-transparent resize-none focus:ring-0',
           className,
         )}
         ref={(node) => {
@@ -272,7 +268,7 @@ export function Select<T extends string | number>({
         style={style}
         className={cx(
           controlSurface,
-          "h-[var(--control-height)] py-0 px-[11px] cursor-pointer min-w-22.5 text-left focus-visible:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus-visible:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-between gap-2",
+          "h-[var(--control-height)] py-0 px-3 cursor-pointer min-w-22.5 text-left focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-accent/8 [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-between gap-2",
           size === 'small' && 'h-7 text-helper',
           className,
         )}
@@ -330,10 +326,10 @@ export function Tabs({
 }) {
   return (
     <TabsPrimitive.Root className="flex flex-col flex-1 min-h-0" value={activeKey} onValueChange={onChange}>
-      <TabsPrimitive.List className="flex gap-1 p-[3px] bg-[color-mix(in_srgb,_var(--muted)_6%,_transparent)] rounded-tabs w-fit max-w-full mb-4 shrink-0">
+      <TabsPrimitive.List className="flex gap-1 p-1 bg-muted/6 rounded-panel w-fit max-w-full mb-4 shrink-0">
         {items.map((item) => (
           <TabsPrimitive.Trigger
-            className="py-[5px] px-3.5 text-muted text-body rounded-button border-0 bg-transparent whitespace-nowrap data-[state=active]:text-ink data-[state=active]:bg-surface data-[state=active]:shadow-[0_1px_4px_#0000000d] data-[state=active]:font-medium"
+            className="py-1 px-3.5 text-muted text-body rounded-button border-0 bg-transparent whitespace-nowrap data-[state=active]:text-ink data-[state=active]:bg-surface data-[state=active]:shadow-[0_1px_4px_#0000000d] data-[state=active]:font-medium"
             value={item.key}
             key={item.key}
           >
@@ -369,16 +365,12 @@ export function Segmented({
 }) {
   const id = useId();
   return (
-    <div
-      className="flex p-[3px] rounded-card bg-[color-mix(in_srgb,_var(--muted)_7%,_transparent)] gap-0.5"
-      role="radiogroup"
-      {...props}
-    >
+    <div className="flex p-1 rounded-card bg-muted/7 gap-0.5" role="radiogroup" {...props}>
       {options.map((option) => (
         <label
           key={option}
           className={cx(
-            'flex-1 relative cursor-pointer text-center text-helper text-muted rounded-item py-[5px] px-3 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-solid has-[:focus-visible]:outline-accent has-[:focus-visible]:outline-offset-1',
+            'flex-1 relative cursor-pointer text-center text-helper text-muted rounded-button py-1 px-3 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-solid has-[:focus-visible]:outline-accent has-[:focus-visible]:outline-offset-1',
             value === option && 'bg-surface text-ink shadow-[0_1px_3px_#0000000d]',
           )}
         >
@@ -449,7 +441,7 @@ export function Tag({
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1 py-0.5 px-[7px] rounded-key bg-[color-mix(in_srgb,_var(--muted)_7%,_transparent)] text-muted text-caption whitespace-nowrap data-[tone=success]:text-success data-[tone=success]:bg-[color-mix(in_srgb,_var(--success)_8%,_transparent)] data-[tone=green]:text-success data-[tone=green]:bg-[color-mix(in_srgb,_var(--success)_8%,_transparent)] data-[tone=error]:text-danger data-[tone=error]:bg-[color-mix(in_srgb,_var(--danger)_8%,_transparent)] data-[tone=warning]:text-warning data-[tone=warning]:bg-[color-mix(in_srgb,_var(--warning)_8%,_transparent)] data-[tone=processing]:text-accent data-[tone=processing]:bg-[color-mix(in_srgb,_var(--accent)_8%,_transparent)]',
+        'inline-flex items-center gap-1 py-0.5 px-2 rounded-compact bg-muted/7 text-muted text-helper whitespace-nowrap data-[tone=success]:text-success data-[tone=success]:bg-success/8 data-[tone=green]:text-success data-[tone=green]:bg-success/8 data-[tone=error]:text-danger data-[tone=error]:bg-danger/8 data-[tone=warning]:text-warning data-[tone=warning]:bg-warning/8 data-[tone=processing]:text-accent data-[tone=processing]:bg-accent/8',
         className,
       )}
       data-tone={color}
@@ -498,7 +490,7 @@ export function Alert({
   return (
     <div
       className={cx(
-        'flex items-start gap-2.5 py-3 px-3.5 rounded-card bg-[color-mix(in_srgb,_var(--accent)_6%,_var(--surface))] text-ink my-2 mx-0 text-helper leading-[1.6] data-[tone=error]:bg-[color-mix(in_srgb,_var(--danger)_7%,_var(--surface))] data-[tone=warning]:bg-[color-mix(in_srgb,_var(--warning)_7%,_var(--surface))]',
+        'flex items-start gap-2.5 py-3 px-3.5 rounded-card bg-accent-soft text-ink my-2 mx-0 text-helper leading-[1.6] data-[tone=error]:bg-[color-mix(in_srgb,_var(--danger)_7%,_var(--surface))] data-[tone=warning]:bg-[color-mix(in_srgb,_var(--warning)_7%,_var(--surface))]',
         className,
       )}
       data-tone={type}
@@ -513,7 +505,7 @@ export function Alert({
       />
       <div className="min-w-0 flex-1">
         <div>{title}</div>
-        {description && <p className="mt-[3px] mr-0 mb-0 ml-0 text-muted">{description}</p>}
+        {description && <p className="mt-1 mr-0 mb-0 ml-0 text-muted">{description}</p>}
       </div>
       {action}
       {closable && (

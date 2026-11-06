@@ -71,17 +71,14 @@ export default function DeletedConversations({ state }: { state: State }) {
               <div className="px-4 border border-line rounded-source">
                 {conversations.map((conversation) => (
                   <div
-                    className="flex items-center gap-2.5 py-4 border-t border-t-[color-mix(in_srgb,_var(--border)_65%,_transparent)] first:border-t-0"
+                    className="flex items-center gap-2.5 py-4 border-t border-t-line/65 first:border-t-0"
                     key={conversation.id}
                   >
                     <div className="flex-1 min-w-0">
                       <strong className="block truncate text-body font-medium" title={conversation.title}>
                         {conversation.title}
                       </strong>
-                      <time
-                        className="block mt-[5px] text-helper text-muted"
-                        dateTime={conversation.deletedAt}
-                      >
+                      <time className="block mt-1 text-helper text-muted" dateTime={conversation.deletedAt}>
                         归档于{' '}
                         {new Date(conversation.deletedAt!).toLocaleString('zh-CN', {
                           year: 'numeric',

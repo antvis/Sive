@@ -50,11 +50,11 @@ export function Field({
       name={name}
       control={control}
       render={({ field, fieldState }) => (
-        <div className="flex flex-col gap-[7px] min-w-0">
+        <div className="flex flex-col gap-2 min-w-0">
           <label className="font-medium text-body" id={`${id}-label`} htmlFor={id}>
             {label}
             {required && (
-              <span aria-hidden className="text-muted ml-[5px]">
+              <span aria-hidden className="text-muted ml-1">
                 *
               </span>
             )}

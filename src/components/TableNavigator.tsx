@@ -70,7 +70,7 @@ export default function TableNavigator({
           onClick={onRefresh}
         />
       </div>
-      <div className="flex justify-between py-2 px-3 text-caption text-muted">
+      <div className="flex justify-between py-2 px-3 text-helper text-muted">
         {search ? `${tables.length} / ${dataset.schema.models.length}` : dataset.schema.models.length} 张表{' '}
         <span>括号内为字段数</span>
       </div>
@@ -85,8 +85,7 @@ export default function TableNavigator({
                 <div
                   className={cx(
                     'flex items-center rounded-control my-0.5 mx-0 hover:bg-page ',
-                    selected === model.name &&
-                      'bg-[color-mix(in_srgb,_var(--accent)_9%,_var(--surface))] text-accent',
+                    selected === model.name && 'bg-accent-soft text-accent',
                   )}
                 >
                   <button
@@ -98,7 +97,7 @@ export default function TableNavigator({
                     {isOpen ? <CaretDownIcon size={12} /> : <CaretRightIcon size={12} />}
                   </button>
                   <button
-                    className="flex items-center gap-[7px] min-w-0 flex-1 pt-2 pr-2 pb-2 pl-0 text-left text-inherit bg-transparent border-0 aria-[current=true]:font-semibold"
+                    className="flex items-center gap-2 min-w-0 flex-1 pt-2 pr-2 pb-2 pl-0 text-left text-inherit bg-transparent border-0 aria-[current=true]:font-semibold"
                     aria-label={'预览 ' + model.name}
                     aria-current={selected === model.name ? 'true' : undefined}
                     title={model.name}
@@ -173,7 +172,7 @@ export default function TableNavigator({
                                 <ListIcon />
                                 <div className="min-w-0">
                                   <span className="block truncate">{index.name}</span>
-                                  <small className="block truncate text-caption mt-[3px]">
+                                  <small className="block truncate text-helper mt-1">
                                     {index.columns.join(', ')}
                                     {index.unique ? ' · 唯一' : ''}
                                   </small>
