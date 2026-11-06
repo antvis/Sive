@@ -1,0 +1,14 @@
+AGENTS.md
+  h_63dffd5e80151f 2,4,6,8-10,12,14,16,18,20,22-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "be879603293e618c7af324aa40918d908cd48cd8",
+  "prompts": {},
+  "humans": {
+    "h_63dffd5e80151f": {
+      "author": "hustcc <i@hust.cc>"
+    }
+  }
+}
