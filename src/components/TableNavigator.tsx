@@ -52,7 +52,7 @@ export default function TableNavigator({
         };
   return (
     <div className="flex-1 flex flex-col h-full min-h-0 bg-surface">
-      <div className="flex items-center gap-1 pt-2 pr-2 pb-0 pl-2 [&_.ui-input-wrap]:min-w-0">
+      <div className="flex items-center gap-1 pt-2 pr-2 pb-0 pl-2">
         <Input
           aria-label="搜索数据表"
           prefix={<MagnifyingGlassIcon />}
@@ -84,20 +84,21 @@ export default function TableNavigator({
               <li key={model.name}>
                 <div
                   className={cx(
-                    'flex items-center rounded-control my-0.5 mx-0 hover:bg-page [&.selected]:bg-[color-mix(in_srgb,_var(--accent)_9%,_var(--surface))] [&.selected]:text-accent [&_button]:text-inherit [&_button]:bg-transparent [&_button]:border-0 [&.selected_.table-select]:font-semibold ',
-                    selected === model.name ? 'selected' : '',
+                    'flex items-center rounded-control my-0.5 mx-0 hover:bg-page ',
+                    selected === model.name &&
+                      'bg-[color-mix(in_srgb,_var(--accent)_9%,_var(--surface))] text-accent',
                   )}
                 >
                   <button
-                    className="w-6.5 h-8.5 shrink-0 [&_.ui-icon]:w-3 [&_.ui-icon]:h-3"
+                    className="w-6.5 h-8.5 shrink-0 text-inherit bg-transparent border-0"
                     aria-label={(isOpen ? '收起 ' : '展开 ') + model.name}
                     aria-expanded={isOpen}
                     onClick={() => setExpanded(isOpen ? null : model.name)}
                   >
-                    {isOpen ? <CaretDownIcon /> : <CaretRightIcon />}
+                    {isOpen ? <CaretDownIcon size={12} /> : <CaretRightIcon size={12} />}
                   </button>
                   <button
-                    className="table-select flex items-center gap-[7px] min-w-0 flex-1 pt-2 pr-2 pb-2 pl-0 text-left"
+                    className="flex items-center gap-[7px] min-w-0 flex-1 pt-2 pr-2 pb-2 pl-0 text-left text-inherit bg-transparent border-0 aria-[current=true]:font-semibold"
                     aria-label={'预览 ' + model.name}
                     aria-current={selected === model.name ? 'true' : undefined}
                     title={model.name}
@@ -107,15 +108,13 @@ export default function TableNavigator({
                     }}
                   >
                     <TableIcon />
-                    <span className="[&:not(.ui-icon)]:overflow-hidden [&:not(.ui-icon)]:text-ellipsis [&:not(.ui-icon)]:whitespace-nowrap">
-                      {model.name}
-                    </span>
+                    <span className="truncate">{model.name}</span>
                     <small className="shrink-0 ml-auto text-muted">({model.columns.length})</small>
                   </button>
                 </div>
                 {isOpen && (
                   <div className="mt-1 mr-2 mb-3 ml-7.5">
-                    <ul className="[&_.column-name]:min-w-0 [&_.column-name]:overflow-hidden [&_.column-name]:text-ellipsis [&_.column-name]:whitespace-nowrap list-none p-0 m-0">
+                    <ul className="list-none p-0 m-0">
                       {model.columns.map((column) => (
                         <li
                           className="flex items-center gap-2 py-1.5 px-0"
@@ -136,14 +135,14 @@ export default function TableNavigator({
                               <TextTIcon />
                             )}
                           </span>
-                          <span className="column-name">{column.name}</span>
-                          <small className="text-muted max-w-20 overflow-hidden text-ellipsis whitespace-nowrap ml-auto shrink-0">
+                          <span className="min-w-0 truncate">{column.name}</span>
+                          <small className="text-muted max-w-20 truncate ml-auto shrink-0">
                             {column.type}
                           </small>
                         </li>
                       ))}
                     </ul>
-                    <div className="border-t border-t-line mt-2.5 pt-2.5 [&_.ui-button]:mt-1.5">
+                    <div className="border-t border-t-line mt-2.5 pt-2.5">
                       <small className="block text-muted tracking-[0.06em] mb-1.5">索引</small>
                       {!details ? (
                         <div className="flex items-center gap-2 text-muted text-helper py-2 px-0">
@@ -153,7 +152,12 @@ export default function TableNavigator({
                       ) : details.error ? (
                         <div className="text-muted text-helper">
                           <span>{details.error}</span>
-                          <Button variant="link" size="small" onClick={() => query.refetch()}>
+                          <Button
+                            className="mt-1.5"
+                            variant="link"
+                            size="small"
+                            onClick={() => query.refetch()}
+                          >
                             重试
                           </Button>
                         </div>
@@ -168,10 +172,8 @@ export default function TableNavigator({
                               >
                                 <ListIcon />
                                 <div className="min-w-0">
-                                  <span className="[&:not(.ui-icon)]:block [&:not(.ui-icon)]:overflow-hidden [&:not(.ui-icon)]:text-ellipsis [&:not(.ui-icon)]:whitespace-nowrap">
-                                    {index.name}
-                                  </span>
-                                  <small className="block overflow-hidden text-ellipsis whitespace-nowrap text-caption mt-[3px]">
+                                  <span className="block truncate">{index.name}</span>
+                                  <small className="block truncate text-caption mt-[3px]">
                                     {index.columns.join(', ')}
                                     {index.unique ? ' · 唯一' : ''}
                                   </small>
@@ -184,6 +186,7 @@ export default function TableNavigator({
                           <Button
                             variant="ghost"
                             size="small"
+                            className="mt-1.5"
                             icon={<CodeIcon />}
                             disabled={!details.value!.ddl}
                             onClick={() => setDefinition({ table: model.name, ddl: details.value!.ddl! })}
@@ -230,7 +233,7 @@ export default function TableNavigator({
           </>
         }
       >
-        <p className="text-muted">数据库返回的实际定义，仅供查看，不会执行。</p>
+        <p className="mt-0 mb-4 text-muted">数据库返回的实际定义，仅供查看，不会执行。</p>
         <pre className="max-h-[55vh] overflow-auto leading-[1.7]">{definition?.ddl}</pre>
       </Modal>
     </div>

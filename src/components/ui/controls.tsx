@@ -1,7 +1,8 @@
-import { floatingSurface, menuItem } from './styles';
+import { controlSurface, floatingSurface, menuItem } from './styles';
 import {
   forwardRef,
   useId,
+  useContext,
   useLayoutEffect,
   useRef,
   useState,
@@ -13,6 +14,7 @@ import {
 } from 'react';
 import { Select as SelectPrimitive, Tabs as TabsPrimitive } from 'radix-ui';
 import {
+  IconContext,
   MagnifyingGlassIcon,
   XIcon,
   EyeIcon,
@@ -32,12 +34,12 @@ import { cx } from '../../shared/cx';
 export { cx } from '../../shared/cx';
 const buttonVariants = {
   primary:
-    'ui-button-primary font-medium text-white bg-accent shadow-[0_1px_2px_color-mix(in_srgb,_var(--text)_10%,_transparent)] hover:bg-[color-mix(in_srgb,_var(--accent)_87%,_black)] [&.ui-danger]:bg-danger [&.ui-danger]:text-white',
+    'font-medium text-white bg-accent shadow-[0_1px_2px_color-mix(in_srgb,_var(--text)_10%,_transparent)] hover:bg-[color-mix(in_srgb,_var(--accent)_87%,_black)]',
   secondary:
-    'ui-button-secondary text-ink bg-[color-mix(in_srgb,_var(--muted)_8%,_var(--surface))] hover:bg-[color-mix(in_srgb,_var(--muted)_14%,_var(--surface))]',
+    'text-ink bg-[color-mix(in_srgb,_var(--muted)_8%,_var(--surface))] hover:bg-[color-mix(in_srgb,_var(--muted)_14%,_var(--surface))]',
   ghost:
-    'ui-button-ghost text-muted bg-transparent hover:text-ink hover:bg-[color-mix(in_srgb,_var(--muted)_9%,_transparent)]',
-  link: 'ui-button-link bg-transparent text-accent-ink max-w-full h-auto whitespace-normal text-left px-0 hover:underline',
+    'text-muted bg-transparent hover:text-ink hover:bg-[color-mix(in_srgb,_var(--muted)_9%,_transparent)]',
+  link: 'bg-transparent text-accent-ink max-w-full h-auto whitespace-normal text-left px-0 hover:underline',
 };
 export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & {
   variant?: 'primary' | 'secondary' | 'ghost' | 'link';
@@ -50,6 +52,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   { variant = 'secondary', size = 'default', danger, loading, icon, children, className, disabled, ...props },
   ref,
 ) {
+  const iconContext = useContext(IconContext);
   return (
     <button
       {...props}
@@ -58,21 +61,21 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cx(
-        'ui-button h-[var(--control-height)] py-0 px-3.5 font-normal text-body border border-transparent rounded-button leading-none whitespace-nowrap outline-accent cursor-pointer [&.ui-danger:not(.ui-button-primary):hover]:bg-[color-mix(in_srgb,_var(--danger)_10%,_transparent)] inline-flex items-center justify-center gap-2 select-none transition-colors disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2',
-        size === 'small' &&
-          'h-7 px-2.5 text-helper rounded-button [&_>_.ui-icon]:w-3.5 [&_>_.ui-icon]:h-3.5 [&.ui-button-icon]:w-7',
+        'h-[var(--control-height)] py-0 px-3.5 font-normal text-body border border-transparent rounded-button leading-none whitespace-nowrap outline-accent cursor-pointer inline-flex items-center justify-center gap-2 select-none transition-colors disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2',
+        size === 'small' && 'h-7 px-2.5 text-helper',
         buttonVariants[variant],
-        danger && 'ui-danger text-danger',
-        !children && 'ui-button-icon w-[var(--control-height)] p-0',
+        danger &&
+          (variant === 'primary'
+            ? 'bg-danger text-white hover:bg-danger'
+            : 'text-danger hover:bg-[color-mix(in_srgb,_var(--danger)_10%,_transparent)]'),
+        !children && [size === 'small' ? 'w-7' : 'w-[var(--control-height)]', 'p-0'],
         className,
       )}
     >
-      {loading ? (
-        <CircleNotchIcon className="ui-icon inline-block shrink-0 align-middle animate-spin" />
-      ) : (
-        icon
-      )}
-      {children}
+      <IconContext.Provider value={{ ...iconContext, size: size === 'small' ? 14 : iconContext.size }}>
+        {loading ? <CircleNotchIcon className="inline-block shrink-0 align-middle animate-spin" /> : icon}
+        {children}
+      </IconContext.Provider>
     </button>
   );
 });
@@ -81,16 +84,18 @@ type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'prefix' | 'size'>
   prefix?: ReactNode;
   allowClear?: boolean;
   onClear?: () => void;
+  inputClassName?: string;
 };
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { prefix, allowClear, onClear, value, onChange, className, style, disabled, ...props },
+  { prefix, allowClear, onClear, value, onChange, className, inputClassName, style, disabled, ...props },
   ref,
 ) {
   const internal = useRef<HTMLInputElement | null>(null);
   return (
     <span
       className={cx(
-        "ui-input-wrap bg-[color-mix(in_srgb,_var(--background)_65%,_var(--surface))] text-ink border border-[color-mix(in_srgb,_var(--border)_65%,_transparent)] rounded-card outline-none text-body min-h-[var(--control-height)] w-full py-0 px-[11px] min-w-0 [&_input]:w-full [&_input]:min-w-0 [&_input]:outline-none [&_input]:border-0 [&_input]:bg-transparent [&_input]:py-[7px] [&_input]:px-0 [&_input]:leading-[18px] [&_input]:text-inherit [&_input::placeholder]:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&:has([aria-invalid='true'])]:border-danger flex items-center gap-2 transition-colors",
+        controlSurface,
+        "min-h-[var(--control-height)] w-full py-0 px-[11px] min-w-0 focus-within:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&:has([aria-invalid='true'])]:border-danger flex items-center gap-2 transition-colors",
         disabled && 'opacity-50 cursor-not-allowed',
         className,
       )}
@@ -99,6 +104,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {prefix && <span className="inline-flex text-muted shrink-0">{prefix}</span>}
       <input
         {...props}
+        className={cx(
+          'w-full min-w-0 outline-none border-0 bg-transparent py-[7px] px-0 leading-[18px] text-inherit placeholder:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)]',
+          inputClassName,
+        )}
         disabled={disabled}
         value={value}
         onChange={onChange}
@@ -112,7 +121,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <button
           type="button"
           aria-label="清除搜索"
-          className="inline-flex text-muted shrink-0 border-0 p-[3px] bg-transparent rounded-[4px] hover:bg-[color-mix(in_srgb,_var(--muted)_12%,_transparent)]"
+          className="inline-flex text-muted shrink-0 border-0 p-[3px] bg-transparent rounded-compact hover:bg-[color-mix(in_srgb,_var(--muted)_12%,_transparent)]"
           onClick={() => {
             const node = internal.current;
             if (!node) return;
@@ -140,10 +149,16 @@ export function SearchInput(props: InputProps) {
 export const PasswordInput = forwardRef<HTMLInputElement, InputProps>(function PasswordInput(props, ref) {
   const [visible, setVisible] = useState(false);
   return (
-    <div className="relative [&_.ui-input-wrap]:pr-10 [&_>_.ui-button]:absolute [&_>_.ui-button]:top-[1px] [&_>_.ui-button]:right-0.5">
-      <Input {...props} ref={ref} type={visible ? 'text' : 'password'} />
+    <div className="relative">
+      <Input
+        {...props}
+        className={cx(props.className, 'pr-10')}
+        ref={ref}
+        type={visible ? 'text' : 'password'}
+      />
       <Button
         variant="ghost"
+        className="absolute top-px right-0.5"
         aria-label={visible ? '隐藏密钥' : '显示密钥'}
         disabled={props.disabled}
         onClick={() => setVisible(!visible)}
@@ -173,9 +188,10 @@ export type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   autoSize?: { minRows: number; maxRows: number };
   showCount?: boolean;
   variant?: 'borderless';
+  textareaClassName?: string;
 };
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
-  { autoSize, showCount, className, variant, style, ...props },
+  { autoSize, showCount, className, textareaClassName, variant, style, ...props },
   ref,
 ) {
   const internal = useRef<HTMLTextAreaElement | null>(null);
@@ -196,8 +212,10 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
         style={style}
         rows={autoSize?.minRows || props.rows}
         className={cx(
-          "ui-textarea bg-[color-mix(in_srgb,_var(--background)_65%,_var(--surface))] text-ink border border-[color-mix(in_srgb,_var(--border)_65%,_transparent)] rounded-card outline-none text-body block w-full resize-y py-2.5 px-3 leading-[1.7] [&::placeholder]:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)] focus:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed",
-          variant === 'borderless' && 'border-0 bg-transparent resize-none shadow-none!',
+          controlSurface,
+          "block w-full resize-y py-2.5 px-3 leading-[1.7] [&::placeholder]:text-[color-mix(in_srgb,_var(--muted)_80%,_transparent)] focus:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed",
+          variant === 'borderless' && 'border-0 bg-transparent resize-none focus:shadow-none',
+          textareaClassName,
         )}
         ref={(node) => {
           internal.current = node;
@@ -258,13 +276,16 @@ export function Select<T extends string | number>({
         {...props}
         style={style}
         className={cx(
-          "ui-select bg-[color-mix(in_srgb,_var(--background)_65%,_var(--surface))] text-ink border border-[color-mix(in_srgb,_var(--border)_65%,_transparent)] rounded-card outline-none text-body h-[var(--control-height)] py-0 px-[11px] cursor-pointer min-w-22.5 text-left focus-visible:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus-visible:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&[aria-invalid='true']]:border-danger [&_>_span:first-child]:overflow-hidden [&_>_span:first-child]:text-ellipsis [&_>_span:first-child]:whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-between gap-2",
+          controlSurface,
+          "h-[var(--control-height)] py-0 px-[11px] cursor-pointer min-w-22.5 text-left focus-visible:border-[color-mix(in_srgb,_var(--accent)_60%,_var(--border))] focus-visible:shadow-[0_0_0_3px_color-mix(in_srgb,_var(--accent)_8%,_transparent)] [&[aria-invalid='true']]:border-danger disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-between gap-2",
           size === 'small' && 'h-7 text-helper',
           className,
         )}
       >
-        <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectPrimitive.Icon>
+        <span className="min-w-0 truncate">
+          <SelectPrimitive.Value placeholder={placeholder} />
+        </span>
+        <SelectPrimitive.Icon className="shrink-0">
           <CaretDownIcon size={12} />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
@@ -307,14 +328,22 @@ export function Tabs({
   activeKey,
   onChange,
   items,
+  className,
+  contentClassName,
 }: {
   activeKey: string;
   onChange: (key: string) => void;
-  items: { key: string; label: ReactNode; children: ReactNode }[];
+  items: { key: string; label: ReactNode; children: ReactNode; className?: string }[];
+  className?: string;
+  contentClassName?: string;
 }) {
   return (
-    <TabsPrimitive.Root className="ui-tabs flex flex-col min-h-0" value={activeKey} onValueChange={onChange}>
-      <TabsPrimitive.List className="flex gap-1 p-[3px] bg-[color-mix(in_srgb,_var(--muted)_6%,_transparent)] rounded-[calc(var(--radius)_+_5px)] w-fit max-w-full mb-4 shrink-0">
+    <TabsPrimitive.Root
+      className={cx('flex flex-col min-h-0', className)}
+      value={activeKey}
+      onValueChange={onChange}
+    >
+      <TabsPrimitive.List className="flex gap-1 p-[3px] bg-[color-mix(in_srgb,_var(--muted)_6%,_transparent)] rounded-tabs w-fit max-w-full mb-4 shrink-0">
         {items.map((item) => (
           <TabsPrimitive.Trigger
             className="py-[5px] px-3.5 text-muted text-body rounded-button border-0 bg-transparent whitespace-nowrap data-[state=active]:text-ink data-[state=active]:bg-surface data-[state=active]:shadow-[0_1px_4px_#0000000d] data-[state=active]:font-medium"
@@ -327,7 +356,11 @@ export function Tabs({
       </TabsPrimitive.List>
       {items.map((item) => (
         <TabsPrimitive.Content
-          className="ui-tab-content min-h-0 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-2 data-[state=inactive]:hidden"
+          className={cx(
+            'min-h-0 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:-outline-offset-2 data-[state=inactive]:hidden',
+            contentClassName,
+            item.className,
+          )}
           value={item.key}
           key={item.key}
         >
@@ -351,12 +384,18 @@ export function Segmented({
   const id = useId();
   return (
     <div
-      className="flex p-[3px] rounded-card bg-[color-mix(in_srgb,_var(--muted)_7%,_transparent)] gap-0.5 [&_label]:flex-1 [&_label]:relative [&_label]:cursor-pointer [&_label]:text-center [&_label]:text-helper [&_label]:text-muted [&_label]:rounded-item [&_label]:py-[5px] [&_label]:px-3 [&_.is-selected]:bg-surface [&_.is-selected]:text-ink [&_.is-selected]:shadow-[0_1px_3px_#0000000d] [&_label:has(input:focus-visible)]:outline-2 [&_label:has(input:focus-visible)]:outline-solid [&_label:has(input:focus-visible)]:outline-accent [&_label:has(input:focus-visible)]:outline-offset-1"
+      className="flex p-[3px] rounded-card bg-[color-mix(in_srgb,_var(--muted)_7%,_transparent)] gap-0.5"
       role="radiogroup"
       {...props}
     >
       {options.map((option) => (
-        <label key={option} className={cx(value === option && 'is-selected')}>
+        <label
+          key={option}
+          className={cx(
+            'flex-1 relative cursor-pointer text-center text-helper text-muted rounded-item py-[5px] px-3 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-solid has-[:focus-visible]:outline-accent has-[:focus-visible]:outline-offset-1',
+            value === option && 'bg-surface text-ink shadow-[0_1px_3px_#0000000d]',
+          )}
+        >
           <input
             className="absolute opacity-0 inset-0 w-full cursor-pointer"
             type="radio"
@@ -412,10 +451,21 @@ export function Pagination({
     </nav>
   );
 }
-export function Tag({ children, color }: { children: ReactNode; color?: string }) {
+export function Tag({
+  children,
+  color,
+  className,
+}: {
+  children: ReactNode;
+  color?: string;
+  className?: string;
+}) {
   return (
     <span
-      className="ui-badge inline-flex items-center gap-1 py-0.5 px-[7px] rounded-[5px] bg-[color-mix(in_srgb,_var(--muted)_7%,_transparent)] text-muted text-caption whitespace-nowrap data-[tone=success]:text-success data-[tone=success]:bg-[color-mix(in_srgb,_var(--success)_8%,_transparent)] data-[tone=green]:text-success data-[tone=green]:bg-[color-mix(in_srgb,_var(--success)_8%,_transparent)] data-[tone=error]:text-danger data-[tone=error]:bg-[color-mix(in_srgb,_var(--danger)_8%,_transparent)] data-[tone=warning]:text-warning data-[tone=warning]:bg-[color-mix(in_srgb,_var(--warning)_8%,_transparent)] data-[tone=processing]:text-accent data-[tone=processing]:bg-[color-mix(in_srgb,_var(--accent)_8%,_transparent)]"
+      className={cx(
+        'inline-flex items-center gap-1 py-0.5 px-[7px] rounded-key bg-[color-mix(in_srgb,_var(--muted)_7%,_transparent)] text-muted text-caption whitespace-nowrap data-[tone=success]:text-success data-[tone=success]:bg-[color-mix(in_srgb,_var(--success)_8%,_transparent)] data-[tone=green]:text-success data-[tone=green]:bg-[color-mix(in_srgb,_var(--success)_8%,_transparent)] data-[tone=error]:text-danger data-[tone=error]:bg-[color-mix(in_srgb,_var(--danger)_8%,_transparent)] data-[tone=warning]:text-warning data-[tone=warning]:bg-[color-mix(in_srgb,_var(--warning)_8%,_transparent)] data-[tone=processing]:text-accent data-[tone=processing]:bg-[color-mix(in_srgb,_var(--accent)_8%,_transparent)]',
+        className,
+      )}
       data-tone={color}
     >
       {children}
@@ -427,7 +477,7 @@ export function Spin({ size }: { size?: 'small' }) {
     <CircleNotchIcon
       aria-label="加载中"
       role="status"
-      className="ui-icon inline-block shrink-0 align-middle animate-spin"
+      className="inline-block shrink-0 align-middle animate-spin"
       size={size === 'small' ? 16 : 24}
     />
   );
@@ -448,22 +498,33 @@ export function Alert({
   action,
   closable,
   onClose,
+  className,
 }: {
   type?: 'info' | 'warning' | 'error' | 'success';
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
   closable?: boolean;
+  className?: string;
   onClose?: () => void;
 }) {
   const Icon = type === 'success' ? CheckCircleIcon : type === 'info' ? InfoIcon : WarningCircleIcon;
   return (
     <div
-      className="ui-alert flex items-start gap-2.5 py-3 px-3.5 rounded-card bg-[color-mix(in_srgb,_var(--accent)_6%,_var(--surface))] text-ink my-2 mx-0 text-helper leading-[1.6] [&_>_svg]:text-accent [&_>_svg]:mt-[1px] data-[tone=error]:bg-[color-mix(in_srgb,_var(--danger)_7%,_var(--surface))] [&[data-tone='error']_>_svg]:text-danger data-[tone=warning]:bg-[color-mix(in_srgb,_var(--warning)_7%,_var(--surface))] [&[data-tone='warning']_>_svg]:text-warning"
+      className={cx(
+        'flex items-start gap-2.5 py-3 px-3.5 rounded-card bg-[color-mix(in_srgb,_var(--accent)_6%,_var(--surface))] text-ink my-2 mx-0 text-helper leading-[1.6] data-[tone=error]:bg-[color-mix(in_srgb,_var(--danger)_7%,_var(--surface))] data-[tone=warning]:bg-[color-mix(in_srgb,_var(--warning)_7%,_var(--surface))]',
+        className,
+      )}
       data-tone={type}
       role={type === 'error' ? 'alert' : 'status'}
     >
-      <Icon size={16} />
+      <Icon
+        size={16}
+        className={cx(
+          'shrink-0 mt-px',
+          type === 'error' ? 'text-danger' : type === 'warning' ? 'text-warning' : 'text-accent',
+        )}
+      />
       <div className="min-w-0 flex-1">
         <div>{title}</div>
         {description && <p className="mt-[3px] mr-0 mb-0 ml-0 text-muted">{description}</p>}

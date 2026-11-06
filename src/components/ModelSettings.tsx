@@ -1,3 +1,4 @@
+import { cx } from '../shared/cx';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { modelInputSchema } from '../../shared/input-schemas';
@@ -86,12 +87,20 @@ export default function ModelSettings({ state }: { state: State }) {
       </div>
       {state.models.map((model) => (
         <div
-          className="flex items-center gap-5 p-5.5 border border-line rounded-card mb-3.5 flex-wrap [&:has(.ui-badge[data-tone='success'])]:border-[color-mix(in_srgb,_var(--accent)_40%,_var(--border))] [&_>_div_>_.ui-badge]:ml-2.5"
+          className={cx(
+            'flex items-center gap-5 p-5.5 border border-line rounded-card mb-3.5 flex-wrap',
+            state.activeModelId === model.id &&
+              'border-[color-mix(in_srgb,_var(--accent)_40%,_var(--border))]',
+          )}
           key={model.id}
         >
-          <div className="[&:first-child]:flex-1 [&:first-child]:min-w-[min(240px,_100%)] [&:first-child]:wrap-anywhere">
+          <div className="flex-1 min-w-[min(240px,_100%)] wrap-anywhere">
             <strong className="text-label">{model.name}</strong>
-            {state.activeModelId === model.id && <Tag color="success">默认服务</Tag>}
+            {state.activeModelId === model.id && (
+              <Tag className="ml-2.5" color="success">
+                默认服务
+              </Tag>
+            )}
             <p className="text-muted my-2 mx-0 text-helper">
               {model.modelIds.length} 个模型 · {model.baseURL}
             </p>
@@ -100,7 +109,7 @@ export default function ModelSettings({ state }: { state: State }) {
               {model.testedAt ? `最近测试：${new Date(model.testedAt).toLocaleString()}` : '尚未验证'}
             </small>
           </div>
-          <div className="flex items-center flex-wrap gap-2 [&:first-child]:flex-1 [&:first-child]:min-w-[min(240px,_100%)] [&:first-child]:wrap-anywhere">
+          <div className="flex items-center flex-wrap gap-2">
             {state.activeModelId !== model.id && (
               <Button disabled={busy} onClick={() => perform(() => api.activateModel(model.id))}>
                 设为默认
@@ -121,8 +130,8 @@ export default function ModelSettings({ state }: { state: State }) {
         </div>
       ))}
       {!state.models.length && (
-        <div className="grid justify-items-center text-center py-14 px-6 border border-dashed border-line rounded-[12px] [&_>_svg]:text-accent-ink">
-          <CpuIcon size={32} />
+        <div className="grid justify-items-center text-center py-14 px-6 border border-dashed border-line rounded-panel">
+          <CpuIcon className="text-accent-ink" size={32} />
           <h3 className="mt-4.5 mr-0 mb-2 ml-0 text-title font-medium">连接你的第一个模型服务</h3>
           <p className="mt-0 mr-0 mb-6 ml-0 text-muted leading-[1.8]">
             支持兼容 OpenAI 接口的云端或本地服务。
@@ -180,7 +189,7 @@ export default function ModelSettings({ state }: { state: State }) {
             <Button disabled={busy} loading={discovering} onClick={() => discover()}>
               {currentCatalog ? '刷新模型列表' : '获取可用模型'}
             </Button>
-            <span className="text-[12px] text-muted" role="status">
+            <span className="text-helper text-muted" role="status">
               {discovering
                 ? '正在获取…'
                 : currentCatalog
@@ -197,7 +206,7 @@ export default function ModelSettings({ state }: { state: State }) {
           <Field name="name" label="服务名称" required>
             <Input placeholder="例如：DeepSeek、公司模型服务" />
           </Field>
-          <p className="text-[12px] text-muted">
+          <p className="mt-0 mb-4 text-helper text-muted">
             最多同时测试 3 个模型，单个测试限时 30 秒。地址和密钥未变时，已验证模型无需重复测试。
           </p>
           {testProgress && (

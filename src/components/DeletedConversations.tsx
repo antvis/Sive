@@ -56,29 +56,26 @@ export default function DeletedConversations({ state }: { state: State }) {
             />
           </div>
           {groups.map(({ dataset, conversations }) => (
-            <section
-              className="mb-7 [&_>_header_strong]:flex-1 [&_>_header_strong]:min-w-0 [&_>_header_strong]:overflow-hidden [&_>_header_strong]:text-ellipsis [&_>_header_strong]:whitespace-nowrap [&_>_header_strong]:text-ink [&_>_header_strong]:text-body [&_>_header_strong]:font-medium [&_>_header_span]:text-helper [&_>_header_span]:whitespace-nowrap"
-              key={dataset.id}
-            >
+            <section className="mb-7" key={dataset.id}>
               <header className="flex items-center gap-2.5 mb-3 text-muted">
                 <DatabaseIcon />
-                <strong title={dataset.name}>
+                <strong
+                  className="flex-1 min-w-0 truncate text-ink text-body font-medium"
+                  title={dataset.name}
+                >
                   {dataset.name}
                   {dataset.deletedAt ? ' · 连接已删除' : ''}
                 </strong>
-                <span>{conversations.length} 个分析会话</span>
+                <span className="text-helper whitespace-nowrap">{conversations.length} 个分析会话</span>
               </header>
-              <div className="px-4 border border-line rounded-[14px]">
+              <div className="px-4 border border-line rounded-source">
                 {conversations.map((conversation) => (
                   <div
-                    className="deleted-row flex items-center gap-2.5 py-4 px-0 [&_+_.deleted-row]:border-t [&_+_.deleted-row]:border-t-[color-mix(in_srgb,_var(--border)_65%,_transparent)] [&_>_button]:shrink-0"
+                    className="flex items-center gap-2.5 py-4 border-t border-t-[color-mix(in_srgb,_var(--border)_65%,_transparent)] first:border-t-0"
                     key={conversation.id}
                   >
                     <div className="flex-1 min-w-0">
-                      <strong
-                        className="block overflow-hidden text-ellipsis whitespace-nowrap text-body font-medium"
-                        title={conversation.title}
-                      >
+                      <strong className="block truncate text-body font-medium" title={conversation.title}>
                         {conversation.title}
                       </strong>
                       <time
@@ -96,6 +93,7 @@ export default function DeletedConversations({ state }: { state: State }) {
                       </time>
                     </div>
                     <Button
+                      className="shrink-0"
                       variant="ghost"
                       size="small"
                       icon={<TrashIcon />}
@@ -105,6 +103,7 @@ export default function DeletedConversations({ state }: { state: State }) {
                       onClick={() => purge([conversation.id])}
                     />
                     <Button
+                      className="shrink-0"
                       size="small"
                       icon={<ArrowCounterClockwiseIcon />}
                       disabled={busy}

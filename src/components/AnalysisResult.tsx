@@ -77,7 +77,7 @@ function ResultContent({
         onResubmit={onResubmit}
       />
       <AssistantMessage time={run.createdAt} markdown={() => replyMarkdown(run)}>
-        <p className="text-muted">
+        <p className="text-muted text-helper">
           {run.sourceName} · {run.modelName}
         </p>
         <div
@@ -119,7 +119,7 @@ function ResultContent({
             />
           )}
         </details>
-        <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0">
+        <div className="flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0">
           <Tooltip open={!!saveFeedback} title={<span role="status">{saveFeedback?.text}</span>}>
             <Button
               size="small"
@@ -131,7 +131,7 @@ function ResultContent({
             >
               <span
                 key={saveLabel}
-                className="[animation:result-save-enter_180ms_ease-out] motion-reduce:[animation:none]"
+                className="[animation:result-save-enter_180ms_ease-out]"
                 aria-live="polite"
               >
                 {saveLabel}

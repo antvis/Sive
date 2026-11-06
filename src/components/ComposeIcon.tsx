@@ -1,7 +1,7 @@
 export default function ComposeIcon() {
   return (
     <svg
-      className="ui-icon inline-block shrink-0 align-middle"
+      className="inline-block shrink-0 align-middle"
       width="16"
       height="16"
       viewBox="0 0 24 24"

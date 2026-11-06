@@ -19,12 +19,20 @@ import {
   type ProgressStep,
 } from '../shared/progress';
 
-function Artifact({ title, content }: { title: string; content: () => string }) {
+function Artifact({
+  title,
+  content,
+  className,
+}: {
+  title: string;
+  content: () => string;
+  className?: string;
+}) {
   const [open, setOpen] = useState(false);
   const { message } = useUI();
   return (
     <details
-      className="mt-2 text-helper [&_>_.ui-button]:mt-2 [&_pre]:max-h-90 [&_pre]:overflow-auto [&_pre]:whitespace-pre-wrap [&_pre]:wrap-anywhere"
+      className={cx('mt-2 text-helper', className)}
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
       <summary>{title}</summary>
@@ -58,6 +66,7 @@ function ArtifactContent({
     <>
       <Button
         size="small"
+        className="mt-2"
         aria-label={`复制${title}`}
         onClick={async () => {
           try {
@@ -70,7 +79,11 @@ function ArtifactContent({
       >
         {copied ? '已复制' : '复制内容'}
       </Button>
-      <pre tabIndex={0} aria-label={title}>
+      <pre
+        className="max-h-90 overflow-auto whitespace-pre-wrap wrap-anywhere"
+        tabIndex={0}
+        aria-label={title}
+      >
         {text}
       </pre>
     </>
@@ -80,14 +93,9 @@ function ArtifactContent({
 function Step({ step, now, children }: { step: ProgressStep; now: number; children?: ReactNode }) {
   const active = step.status === 'running';
   return (
-    <li
-      className={cx(
-        '[&.running_.task-step-icon]:text-accent [&.running_strong]:text-accent [&_details]:text-helper [&_details]:mt-1.5 [&_pre]:whitespace-pre-wrap [&_pre]:wrap-anywhere [&.error_strong]:font-bold [&.error_strong]:underline [&.error_strong]:[text-decoration-style:dotted] ',
-        step.status,
-      )}
-    >
+    <li className="grid grid-cols-[16px_minmax(0,_1fr)] gap-2 py-2.5 border-t border-t-line">
       <span
-        className="task-step-icon text-muted text-body pt-0.5"
+        className={cx('text-body pt-0.5', active ? 'text-accent' : 'text-muted')}
         aria-label={
           { running: '进行中', done: '已完成', error: '失败', stopped: '已停止', skipped: '已跳过' }[
             step.status
@@ -95,7 +103,7 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
         }
       >
         {active ? (
-          <CircleNotchIcon className="ui-icon inline-block shrink-0 align-middle animate-spin" />
+          <CircleNotchIcon className="inline-block shrink-0 align-middle animate-spin" />
         ) : step.status === 'skipped' ? (
           <MinusCircleIcon />
         ) : step.status === 'done' ? (
@@ -108,7 +116,15 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
       </span>
       <div>
         <div className="flex flex-wrap [align-items:baseline] gap-y-1 gap-x-3 text-helper">
-          <strong>{step.label}</strong>
+          <strong
+            className={cx(
+              'text-helper',
+              active && 'text-accent',
+              step.status === 'error' && 'font-bold underline decoration-dotted',
+            )}
+          >
+            {step.label}
+          </strong>
           {(active || step.durationMs !== undefined) && (
             <span className="text-muted">
               {active ? '进行中 · ' : ''}
@@ -118,23 +134,26 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
             </span>
           )}
         </div>
-        {step.detail && <p>{step.detail}</p>}
-        {step.recovery && <p className="text-muted">{step.recovery}</p>}
+        {step.detail && <p className="my-1 mx-0 text-helper">{step.detail}</p>}
+        {step.recovery && <p className="my-1 mx-0 text-helper text-muted">{step.recovery}</p>}
         {children}
         {step.sql && (
-          <details>
+          <details className="text-helper mt-1.5">
             <summary>查看本次查询</summary>
-            <pre>{step.sql}</pre>
+            <pre className="whitespace-pre-wrap wrap-anywhere">{step.sql}</pre>
           </details>
         )}
         {!!step.calls.length && (
-          <details className="text-muted">
+          <details className="text-muted text-helper mt-1.5">
             <summary>
               模型调用 · {step.calls.filter((event) => event.stage === 'modelstart').length} 次
             </summary>
             {step.calls.map((call, index) => (
-              <p key={index}>
-                <time dateTime={call.at}>{new Date(call.at).toLocaleTimeString('zh-CN')}</time> · {call.label}
+              <p className="my-1 mx-0 text-helper" key={index}>
+                <time className="text-caption text-muted" dateTime={call.at}>
+                  {new Date(call.at).toLocaleTimeString('zh-CN')}
+                </time>{' '}
+                · {call.label}
                 {call.durationMs !== undefined && ` · ${progressDuration(call.durationMs)}`}
                 {call.detail && ` · ${call.detail}`}
               </p>
@@ -149,8 +168,10 @@ function Step({ step, now, children }: { step: ProgressStep; now: number; childr
 export default function AnalysisProgress({
   task,
   run,
+  className,
 }: {
   task: Task;
+  className?: string;
   run?: Pick<Run, 'result' | 'chart' | 'chartError'>;
 }) {
   const running = task.status === 'running' || task.status === 'cancelling';
@@ -171,10 +192,15 @@ export default function AnalysisProgress({
   const chartStep = completed.find((step) => step.stage === 'visualize');
   const result = run?.result || task.preview;
   const conclusion = result?.text ? (
-    <Artifact title={run ? '查看分析结论' : '查看已生成的结论（中间结果）'} content={() => result.text} />
+    <Artifact
+      className={summaryStep ? 'mt-1.5' : undefined}
+      title={run ? '查看分析结论' : '查看已生成的结论（中间结果）'}
+      content={() => result.text}
+    />
   ) : null;
   const chart = run?.chart ? (
     <Artifact
+      className={chartStep ? 'mt-1.5' : undefined}
       title={`查看最终图表配置 · ${run.chart.chartType}`}
       content={() => JSON.stringify(run.chart!.config, null, 2)}
     />
@@ -197,7 +223,7 @@ export default function AnalysisProgress({
   }[task.status];
   return (
     <section
-      className={cx('task my-3 mx-0 p-3 bg-page border border-line rounded-control ', task.status)}
+      className={cx('my-3 mx-0 p-3 bg-page border border-line rounded-control', className)}
       aria-label="实时执行过程"
     >
       {task.persistenceError && <Alert type="warning" title={task.persistenceError} />}
@@ -212,7 +238,7 @@ export default function AnalysisProgress({
           <XCircleIcon />
         )}
         <strong>{title}</strong>
-        <span className="[&:last-child]:ml-auto [&:last-child]:text-muted [&:last-child]:text-helper">
+        <span className="ml-auto text-muted text-helper">
           {running ? '已用时' : '耗时'} {elapsed}
         </span>
       </div>
@@ -258,10 +284,7 @@ export default function AnalysisProgress({
                   {setup.length} 项
                 </span>
               </summary>
-              <ol
-                className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
-                aria-label="数据准备记录"
-              >
+              <ol className="list-none p-0 m-0" aria-label="数据准备记录">
                 {setup.map((step, index) => (
                   <Step key={index} step={step} now={now} />
                 ))}
@@ -269,10 +292,7 @@ export default function AnalysisProgress({
             </details>
           ) : (
             !!setup.length && (
-              <ol
-                className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
-                aria-label="数据准备记录"
-              >
+              <ol className="list-none p-0 m-0" aria-label="数据准备记录">
                 {setup.map((step, index) => (
                   <Step key={index} step={step} now={now} />
                 ))}
@@ -280,10 +300,7 @@ export default function AnalysisProgress({
             )
           )}
           {!!work.length && (
-            <ol
-              className="list-none p-0 m-0 [&_li]:grid [&_li]:grid-cols-[16px_minmax(0,_1fr)] [&_li]:gap-2 [&_li]:py-2.5 [&_li]:px-0 [&_li]:border-t [&_li]:border-t-line [&_time]:text-caption [&_time]:text-muted [&_strong]:text-helper [&_p]:my-1 [&_p]:mx-0 [&_p]:text-helper"
-              aria-label="执行记录"
-            >
+            <ol className="list-none p-0 m-0" aria-label="执行记录">
               {work.map((step, index) => (
                 <Step key={index} step={step} now={now}>
                   {step === summaryStep && conclusion}

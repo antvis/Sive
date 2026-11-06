@@ -19,6 +19,13 @@
   --text-section: 18px;
   --text-headline: 20px;
   --text-heading: 23px;
+  --text-welcome: 21px;
+  --text-dialog-title: 17px;
+  --radius-detail: 1px;
+  --radius-mini: 2px;
+  --radius-compact: 4px;
+  --radius-key: 5px;
+  --radius-bubble: 20px;
 }
 @theme inline {
   --color-surface: var(--surface);
@@ -37,5 +44,7 @@
   --radius-card: calc(var(--radius) + 4px);
   --radius-panel: calc(var(--radius) + 6px);
   --radius-source: calc(var(--radius) + 8px);
+  --radius-editor: calc(var(--radius) + 14px);
+  --radius-tabs: calc(var(--radius) + 5px);
   --radius-dialog: calc(var(--radius) + 12px);
 }

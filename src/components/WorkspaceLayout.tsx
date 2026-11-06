@@ -81,12 +81,12 @@ export default function WorkspaceLayout({
       >
         <span
           aria-hidden="true"
-          className="flex h-6 w-3 shrink-0 pointer-events-none items-center justify-center rounded-sm text-muted opacity-0 transition-[color,opacity] group-hover/divider:text-accent group-hover/divider:opacity-100 group-focus-visible/divider:text-accent group-focus-visible/divider:opacity-100 group-focus-visible/divider:ring-2 group-focus-visible/divider:ring-accent/30 group-data-[separator=active]/divider:text-accent group-data-[separator=active]/divider:opacity-100 motion-reduce:transition-none"
+          className="flex h-6 w-3 shrink-0 pointer-events-none items-center justify-center rounded-compact text-muted opacity-0 transition-[color,opacity] group-hover/divider:text-accent group-hover/divider:opacity-100 group-focus-visible/divider:text-accent group-focus-visible/divider:opacity-100 group-focus-visible/divider:ring-2 group-focus-visible/divider:ring-accent/30 group-data-[separator=active]/divider:text-accent group-data-[separator=active]/divider:opacity-100"
         >
           <DotsSixVerticalIcon size={14} weight="bold" />
         </span>
       </Separator>
-      <Panel id="workspace-content" minSize="50%" className="min-h-0 min-w-0 h-full [&>main]:h-full">
+      <Panel id="workspace-content" minSize="50%" className="min-h-0 min-w-0 h-full">
         {children}
       </Panel>
     </Group>

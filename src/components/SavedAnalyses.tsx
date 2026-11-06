@@ -16,6 +16,9 @@ import { Chart } from './Results';
 import Grid from './DataGrid';
 import { cx } from '../shared/cx';
 
+const savedCardSurface =
+  'grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)]';
+
 function SavedCard({
   run,
   onOpen,
@@ -100,16 +103,9 @@ function SavedCard({
     }
   };
   return (
-    <article
-      className="grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)]"
-      ref={root}
-      aria-label={title}
-    >
+    <article className={savedCardSurface} ref={root} aria-label={title}>
       <header className="flex gap-2 items-start">
-        <h3
-          className="flex-1 min-w-0 m-0 text-label leading-[24px] wrap-anywhere [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden"
-          title={title}
-        >
+        <h3 className="flex-1 min-w-0 m-0 text-label leading-[24px] wrap-anywhere line-clamp-2" title={title}>
           {title}
         </h3>
         <Dropdown
@@ -150,10 +146,7 @@ function SavedCard({
       </header>
       <div className="items-center grid grid-cols-[auto_minmax(0,_1fr)] gap-y-1 gap-x-2 text-muted text-caption mt-2 mr-0 mb-3.5 ml-0">
         <DatabaseIcon />
-        <span
-          className="[&:not(.ui-icon)]:min-w-0 [&:not(.ui-icon)]:overflow-hidden [&:not(.ui-icon)]:text-ellipsis [&:not(.ui-icon)]:whitespace-nowrap"
-          title={sourceName}
-        >
+        <span className="min-w-0 truncate" title={sourceName}>
           {sourceName}
           {disconnected ? ' · 连接已删除' : ''}
         </span>
@@ -164,21 +157,19 @@ function SavedCard({
       <Segmented aria-label="分析内容" options={['数据', 'SQL', '图表']} value={tab} onChange={setTab} />
       <div
         className={cx(
-          'flex flex-col h-65 min-h-0 min-w-0 my-3 mx-0 [&_.chart-frame]:block [&_.chart-frame]:h-0 [&_.chart-frame]:flex-1 [&_.chart-frame]:min-h-0 [&_>_.data-grid]:shrink-0 [&_>_.ui-alert]:shrink-0 [&_>_.saved-card-feedback]:shrink-0 [&_.chart-render-status:has(span:empty)]:hidden',
+          'flex flex-col h-65 min-h-0 min-w-0 my-3 mx-0',
           tab === '图表' ? 'overflow-hidden' : 'overflow-auto',
         )}
       >
         {refreshing && (
-          <div
-            className="saved-card-feedback flex gap-2 items-center mt-3 text-helper text-accent"
-            role="status"
-          >
+          <div className="shrink-0 flex gap-2 items-center mt-3 text-helper text-accent" role="status">
             <Spin size="small" />
             正在重新查询{run.chart ? '并更新图表' : '数据'}，完成前保留上次结果…
           </div>
         )}
         {error && (
           <Alert
+            className="shrink-0"
             type="error"
             title="刷新失败，仍显示上次成功的数据"
             description={error}
@@ -206,6 +197,7 @@ function SavedCard({
           <pre className="m-0 h-full overflow-auto">{current.result.sql || '此分析没有 SQL'}</pre>
         ) : (
           <Grid
+            className="shrink-0"
             rows={current.result.data}
             columns={current.result.schema}
             resetKey={updatedAt}
@@ -279,13 +271,13 @@ function SavedCardLoader(props: {
   const detail = useRun(props.run);
   if (detail.error)
     return (
-      <article className="grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)]">
+      <article className={savedCardSurface}>
         <Alert type="error" title={detail.error} action={<Button onClick={detail.retry}>重试</Button>} />
       </article>
     );
   if (!detail.run)
     return (
-      <article className="grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] hover:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)] focus-within:border-[color-mix(in_srgb,_var(--accent)_45%,_var(--border))] focus-within:shadow-[0_4px_18px_color-mix(in_srgb,_var(--text)_4%,_transparent)]">
+      <article className={savedCardSurface}>
         <h3>{props.run.savedTitle || props.run.question}</h3>
         <Spin />
       </article>
@@ -325,7 +317,7 @@ export default function SavedAnalyses({
   const { count, hasMore, footer } = useScrollLoad(filtered.length, 6, keyword);
   return (
     <section aria-label="分析收藏卡片">
-      <div className="toolbar flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 [&_h2]:m-0 [&_h3]:m-0 pb-4 border-b border-b-line">
+      <div className="flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0 pb-4 border-b border-b-line">
         <SearchInput
           className="max-w-75"
           aria-label="搜索分析收藏"

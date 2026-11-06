@@ -31,7 +31,7 @@ export default function ConversationHistory({
               disabled={disabled}
               onClick={() => onSelect(c)}
             >
-              <span className="overflow-hidden text-ellipsis whitespace-nowrap text-helper" title={c.title}>
+              <span className="truncate text-helper" title={c.title}>
                 {c.title}
               </span>
               <time className="text-muted text-tiny" dateTime={c.updatedAt}>
@@ -41,10 +41,10 @@ export default function ConversationHistory({
             <div className="absolute right-1 top-2 opacity-0 pointer-events-none group-hover/history:opacity-100 group-hover/history:pointer-events-auto group-focus-within/history:opacity-100 group-focus-within/history:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
               <Tooltip title="归档会话">
                 <Button
-                  className={cx(navigationIconButton, 'size-7 p-[5px] [&>svg]:size-4.5')}
+                  className={cx(navigationIconButton, 'size-7 p-[5px]')}
                   variant="ghost"
                   size="small"
-                  icon={<ArchiveIcon />}
+                  icon={<ArchiveIcon size={18} />}
                   disabled={archiveDisabled(c)}
                   onClick={() => onArchive(c)}
                   aria-label={`归档会话：${c.title}`}
