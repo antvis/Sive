@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
+import { DotsSixVerticalIcon } from '@phosphor-icons/react';
 import { cx } from '../shared/cx';
 
 const widthKey = 'sive.sidebar-width.v1';
@@ -36,7 +37,7 @@ export default function WorkspaceLayout({
     <Group
       orientation="horizontal"
       // Group supplies inline height: 100%; the workspace must stay bounded to the viewport.
-      className="h-dvh! min-h-0 overflow-hidden [&:has(>_[data-separator=active])_iframe]:pointer-events-none"
+      className="h-dvh! min-h-0 overflow-hidden [&:has(>_[data-separator=active])]:cursor-col-resize [&:has(>_[data-separator=active])]:select-none [&:has(>_[data-separator=active])_iframe]:pointer-events-none"
       onLayoutChanged={() => {
         const width = panel.current?.getSize().inPixels;
         if (!sidebarOpen || !width || width < minWidth) return;
@@ -68,8 +69,8 @@ export default function WorkspaceLayout({
       </Panel>
       <Separator
         className={cx(
-          'w-1.5 cursor-col-resize touch-none bg-page border-r border-line hover:border-r-[color-mix(in_srgb,_var(--muted)_55%,_var(--border))] hover:outline-none focus-visible:border-r-[color-mix(in_srgb,_var(--muted)_55%,_var(--border))] focus-visible:outline-none data-[separator=active]:border-r-[color-mix(in_srgb,_var(--muted)_55%,_var(--border))] data-[separator=active]:outline-none',
-          !sidebarOpen && 'w-0 border-r-0 invisible',
+          'group/divider flex items-center justify-center w-2.5 cursor-col-resize touch-none outline-none',
+          !sidebarOpen && 'w-0 invisible',
         )}
         disabled={!sidebarOpen}
         inert={!sidebarOpen}
@@ -77,7 +78,14 @@ export default function WorkspaceLayout({
         aria-label="调整左侧菜单宽度"
         title="拖动调整菜单宽度，双击恢复默认"
         onDoubleClick={() => panel.current?.resize(defaultWidth)}
-      />
+      >
+        <span
+          aria-hidden="true"
+          className="flex h-6 w-3 shrink-0 pointer-events-none items-center justify-center rounded-sm text-muted opacity-0 transition-[color,opacity] group-hover/divider:text-accent group-hover/divider:opacity-100 group-focus-visible/divider:text-accent group-focus-visible/divider:opacity-100 group-focus-visible/divider:ring-2 group-focus-visible/divider:ring-accent/30 group-data-[separator=active]/divider:text-accent group-data-[separator=active]/divider:opacity-100 motion-reduce:transition-none"
+        >
+          <DotsSixVerticalIcon size={14} weight="bold" />
+        </span>
+      </Separator>
       <Panel id="workspace-content" minSize="50%" className="min-h-0 min-w-0 h-full [&>main]:h-full">
         {children}
       </Panel>
