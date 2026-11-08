@@ -12,4 +12,5 @@ release/
 *.duckdb
 *.key
 coverage/
+*.tsbuildinfo
 pnpm-lock.yaml
