@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, nativeTheme } from 'electron';
 import path from 'node:path';
 import { createDataServices, type DataServices } from '@main/data';
 import { ModelService } from '@main/services/settings/ModelService';
-import { WorkbenchService } from '@main/services/WorkbenchService';
+import { createWorkbenchServices } from '@main/services';
 import { ConnectionService } from '@main/services/data/ConnectionService';
 import { themePalette } from '@shared/theme';
 import { encrypt, decrypt } from '@main/utils/credentials';
@@ -41,13 +41,14 @@ app.whenReady().then(async () => {
   }
   const models = new ModelService(data.providers, encrypt, decrypt);
   let revision = 0;
-  const controller = new WorkbenchService(
+  const change = () => {
+    revision++;
+    if (win && !win.isDestroyed()) win.webContents.send('workbench:change');
+  };
+  const services = createWorkbenchServices(
     data,
     models,
-    () => {
-      revision++;
-      if (win && !win.isDestroyed()) win.webContents.send('workbench:change');
-    },
+    change,
     new ConnectionService(data.datasets, encrypt, decrypt),
     (task) => {
       revision++;
@@ -91,11 +92,11 @@ app.whenReady().then(async () => {
   win.webContents.session.setPermissionRequestHandler((_w, _p, callback) => callback(false));
   registerIPC(
     win,
-    createHandlers(win, data, controller, models, root, () => revision),
+    createHandlers(win, data, services, models, root, () => revision, change),
   );
   if (dev) win.loadURL(dev);
   else win.loadFile(path.join(__dirname, '../dist/index.html'));
-  app.on('before-quit', () => controller.analysis.cancel());
+  app.on('before-quit', () => services.analysis.cancel());
   app.on('will-quit', () => data.database.close());
 });
 app.on('window-all-closed', () => app.quit());

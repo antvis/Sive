@@ -5,7 +5,7 @@ import { WorkbenchError } from '@shared/errors';
 import { themePalette } from '@shared/theme';
 import type { DataServices } from '@main/data';
 import { workspaceState } from '@main/data/services/workspaceState';
-import type { WorkbenchService } from '@main/services/WorkbenchService';
+import type { WorkbenchServices } from '@main/services';
 import type { ModelService } from '@main/services/settings/ModelService';
 import { selectLocalFile } from '@main/services/data/selectLocalFile';
 import { exportAnalysis } from '@main/services/export/exportAnalysis';
@@ -13,79 +13,80 @@ import { exportAnalysis } from '@main/services/export/exportAnalysis';
 export function createHandlers(
   win: BrowserWindow,
   data: DataServices,
-  controller: WorkbenchService,
+  services: WorkbenchServices,
   models: ModelService,
   root: string,
   getRevision: () => number,
+  change: () => void,
 ): CommandHandlers {
   return {
     writeClipboard: (text) => clipboard.writeText(text),
     run: (id) => data.conversations.run(id),
     state: () => ({
-      ...workspaceState(data, controller.analysis.task),
-      refreshingSavedId: controller.snippets.refreshingId,
+      ...workspaceState(data, services.analysis.task),
+      refreshingSavedId: services.snippets.refreshingId,
       revision: getRevision(),
     }),
     saveTheme: (theme) => {
       data.settings.saveTheme(theme);
       nativeTheme.themeSource = data.settings.theme().mode;
       win.setBackgroundColor(themePalette(data.settings.theme()).background);
-      controller.change();
+      change();
     },
-    testMySQL: (input) => controller.datasets.testMySQL(input),
-    saveMySQL: (input) => controller.datasets.saveMySQL(input),
-    refreshMySQL: (id) => controller.datasets.refreshMySQL(id),
+    testMySQL: (input) => services.datasets.testMySQL(input),
+    saveMySQL: (input) => services.datasets.saveMySQL(input),
+    refreshMySQL: (id) => services.datasets.refreshMySQL(id),
     importData: async (format) => {
       const file = await selectLocalFile(win, data.settings, format);
-      return file ? controller.datasets.import(file) : null;
+      return file ? services.datasets.import(file) : null;
     },
-    renameData: (id, name) => controller.datasets.rename(id, name),
+    renameData: (id, name) => services.datasets.rename(id, name),
     relocateData: async (id) => {
       if (data.datasets.dataset(id).format === 'mysql')
         throw new WorkbenchError('INVALID_INPUT', '请选择本地文件连接');
       const file = await selectLocalFile(win, data.settings);
       if (!file) return false;
-      await controller.datasets.relocate(id, file);
+      await services.datasets.relocate(id, file);
       return true;
     },
     createConversation: (datasetId) => {
       const conversation = data.conversations.createConversation(datasetId);
-      controller.change();
+      change();
       return conversation;
     },
-    deleteData: (id) => controller.datasets.deleteData(id),
+    deleteData: (id) => services.datasets.deleteData(id),
     deleteConversation: (id) => {
-      const refreshing = controller.snippets.refreshingId;
+      const refreshing = services.snippets.refreshingId;
       if (refreshing && data.conversations.run(refreshing).conversationId === id)
         throw new WorkbenchError('CONFLICT', '请等待此会话的收藏刷新完成');
       data.conversations.deleteConversation(id);
-      if (controller.analysis.task?.conversationId === id) controller.analysis.task = null;
-      controller.change();
+      if (services.analysis.task?.conversationId === id) services.analysis.task = null;
+      change();
     },
     restoreConversation: (id) => {
       data.conversations.restoreConversation(id);
-      controller.change();
+      change();
     },
     purgeConversations: (ids) => {
-      const refreshing = controller.snippets.refreshingId;
+      const refreshing = services.snippets.refreshingId;
       if (refreshing && ids.includes(data.conversations.run(refreshing).conversationId))
         throw new WorkbenchError('CONFLICT', '请等待此会话的收藏刷新完成');
       data.conversations.purgeConversations(ids);
-      controller.change();
+      change();
     },
-    reparseData: (id) => controller.datasets.reparseData(id),
-    preview: (id, table, options) => controller.datasets.preview(id, table, options),
-    tableDetails: (id, table) => controller.datasets.tableDetails(id, table),
-    semantic: (id, text, metrics) => controller.datasets.semantic(id, text, metrics),
-    analyze: (...args: Parameters<API['analyze']>) => controller.analysis.analyze(...args),
-    cancel: () => controller.analysis.cancel(),
-    removeSavedAnalysis: (id) => controller.snippets.remove(id),
-    renameSavedAnalysis: (id, title) => controller.snippets.rename(id, title),
-    refreshSavedAnalysis: (id) => controller.snippets.refresh(id),
-    chartHTML: (id, theme, saved) => controller.snippets.chartHTML(id, theme, saved),
+    reparseData: (id) => services.datasets.reparseData(id),
+    preview: (id, table, options) => services.datasets.preview(id, table, options),
+    tableDetails: (id, table) => services.datasets.tableDetails(id, table),
+    semantic: (id, text, metrics) => services.datasets.semantic(id, text, metrics),
+    analyze: (...args: Parameters<API['analyze']>) => services.analysis.analyze(...args),
+    cancel: () => services.analysis.cancel(),
+    removeSavedAnalysis: (id) => services.snippets.remove(id),
+    renameSavedAnalysis: (id, title) => services.snippets.rename(id, title),
+    refreshSavedAnalysis: (id) => services.snippets.refresh(id),
+    chartHTML: (id, theme, saved) => services.snippets.chartHTML(id, theme, saved),
     saveAnalysis: (id) => {
       data.conversations.saveAnalysis(id);
-      controller.change();
+      change();
     },
     exportAnalysis: (id, format, saved) =>
       exportAnalysis(win, data.conversations, data.settings.theme(), root, id, format, saved),
@@ -94,15 +95,15 @@ export function createHandlers(
       await models.save(input, (progress) => {
         if (win && !win.isDestroyed()) win.webContents.send('workbench:model-test', progress);
       });
-      controller.change();
+      change();
     },
     activateModel: (id, model) => {
       models.activate(id, model);
-      controller.change();
+      change();
     },
     deleteModel: (id) => {
       models.delete(id);
-      controller.change();
+      change();
     },
   };
 }
