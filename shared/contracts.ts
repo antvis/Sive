@@ -19,10 +19,8 @@ type DatasetFields = {
   id: string;
   deletedAt?: string;
   name: string;
-  fingerprint: string;
-  schemaRevision?: string;
   createdAt: string;
-  lastUsedAt?: string;
+  updatedAt: string;
   schema: Schema;
   profile: Profile;
   semantic: string;
@@ -44,15 +42,14 @@ export type TableDetails = {
 export type BusinessMetric = z.infer<typeof businessMetricSchema>;
 export type Run = {
   id: string;
-  conversationId?: string;
+  conversationId: string;
   datasetId: string;
   sourceName: string;
-  fingerprint: string;
+  sequence: number;
   excelSheets?: ExcelSheet[];
   question: string;
   strategy: string;
   analysisOptions?: AnalysisOptions;
-  parentId?: string;
   createdAt: string;
   savedAt?: string; // Explicitly added to Saved Analyses by the user.
   savedTitle?: string;
@@ -76,7 +73,7 @@ export type ModelProfile = {
   modelIds: string[];
   baseURL: string;
   hasKey: boolean;
-  testedAt?: string;
+  updatedAt: string;
 };
 export type RunSummary = Pick<
   Run,
@@ -87,7 +84,7 @@ export type RunSummary = Pick<
   | 'question'
   | 'strategy'
   | 'analysisOptions'
-  | 'parentId'
+  | 'sequence'
   | 'createdAt'
   | 'savedAt'
   | 'savedTitle'
@@ -113,7 +110,7 @@ type TaskFields = {
   conversationId?: string;
   datasetId: string;
   question: string;
-  parentId?: string;
+  sequence?: number;
   strategy?: string;
   analysisOptions?: AnalysisOptions;
   modelName?: string;
@@ -165,7 +162,6 @@ export interface API {
   refreshMySQL(id: string): Promise<void>;
   exportAnalysis(id: string, format: 'html' | 'pdf' | 'png', saved?: boolean): Promise<boolean>;
   importData(format?: LocalDataset['format']): Promise<Dataset | null>;
-  touchData(id: string): Promise<void>;
   deleteData(id: string): Promise<void>;
   renameData(id: string, name: string): Promise<void>;
   relocateData(id: string): Promise<boolean>;
@@ -181,7 +177,6 @@ export interface API {
     id: string,
     question: string,
     strategy: AnalysisMode,
-    parentId?: string,
     options?: AnalysisOptions,
     conversationId?: string,
   ): Promise<string>;

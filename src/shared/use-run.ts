@@ -3,7 +3,7 @@ import type { RunSummary } from '../../shared/contracts';
 import { errorMessage } from './feedback';
 import { runQuery } from './queries';
 
-// Saving changes metadata only. Keep mounted charts and drafts intact until content changes.
+// Visibility and title always follow the latest workspace snapshot.
 export function useRun(summary: RunSummary) {
   const query = useQuery(runQuery(summary));
   return {

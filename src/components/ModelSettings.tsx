@@ -105,7 +105,7 @@ export default function ModelSettings({ state }: { state: State }) {
             </p>
             <p className="text-muted my-2 mx-0 text-helper">{model.modelIds.join('、')}</p>
             <small className="text-muted text-helper">
-              {model.testedAt ? `最近测试：${new Date(model.testedAt).toLocaleString()}` : '尚未验证'}
+              {`最近更新：${new Date(model.updatedAt).toLocaleString()}`}
             </small>
           </div>
           <div className="flex items-center flex-wrap gap-2">

@@ -20,7 +20,7 @@ export async function withAVA<T>(
   dataset:
     | (Pick<StoredDataset, 'file' | 'format' | 'semantic'> &
         Partial<
-          Pick<StoredDataset, 'profile' | 'metrics' | 'excelSheets' | 'connection' | 'encryptedPassword'>
+          Pick<StoredDataset, 'profile' | 'metrics' | 'excelSheets' | 'connection' | 'encryptedCredentials'>
         >)
     | undefined,
   models: Models | undefined,

@@ -8,7 +8,7 @@ import { refreshChart } from './refresh-chart';
 import { chartHTML } from './render';
 import { validateTheme, type ThemeSettings } from '../shared/theme';
 import type { DatasetService } from './datasets';
-export class SavedAnalysisService {
+export class SnippetService {
   refreshingId?: string;
   constructor(
     private store: Store,
@@ -33,12 +33,11 @@ export class SavedAnalysisService {
     this.change();
     try {
       const run = this.store.run(id);
-      if (this.store.view.conversations.some((c) => c.id === run.conversationId && c.deletedAt))
+      if (this.store.conversation(run.conversationId).deletedAt)
         throw new WorkbenchError('CONFLICT', '请先恢复此分析所属的会话');
       if (!run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从已保存列表移除');
       const source = await this.datasets.prepare(run.datasetId);
-      if (source.format === 'mysql' && source.fingerprint !== run.fingerprint)
-        throw new WorkbenchError('CONFLICT', '数据来源已变化，请重新分析后保存，不能沿用原收藏刷新');
+      if (source.format === 'mysql') this.store.assertRunSource(run.id, source);
       if (!run.result.sql?.trim()) throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
       const view = await withAVA(
         { ...source, semantic: run.semantic, metrics: run.metrics },
@@ -62,7 +61,7 @@ export class SavedAnalysisService {
             }
           }
           await this.datasets.assertFileUnchanged(source);
-          return { result, chart, updatedAt: new Date().toISOString() };
+          return { result, chart };
         },
         this.connections,
       );

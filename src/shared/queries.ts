@@ -10,7 +10,7 @@ export const queryClient = new QueryClient({
 
 export function previewQuery(dataset: Dataset, table: string, page: number, pageSize: number, active = true) {
   return queryOptions({
-    queryKey: ['preview', dataset.id, dataset.fingerprint, dataset.schemaRevision, table, page, pageSize],
+    queryKey: ['preview', dataset.id, dataset.updatedAt, table, page, pageSize],
     queryFn: () =>
       window.workbench.preview(dataset.id, table, {
         offset: (page - 1) * pageSize,
@@ -23,7 +23,7 @@ export function previewQuery(dataset: Dataset, table: string, page: number, page
 
 export function tableDetailsQuery(dataset: Dataset, table: string | null) {
   return queryOptions({
-    queryKey: ['tableDetails', dataset.id, dataset.fingerprint, dataset.schemaRevision, table],
+    queryKey: ['tableDetails', dataset.id, dataset.updatedAt, table],
     queryFn: () => window.workbench.tableDetails(dataset.id, table!),
     enabled: !!table && dataset.schema.models.some((model) => model.name === table),
   });
@@ -33,7 +33,7 @@ export function runQuery(summary: RunSummary) {
   return queryOptions({
     queryKey: ['run', summary.id, summary.viewUpdatedAt],
     queryFn: () => window.workbench.run(summary.id),
-    // Results are immutable; refreshed saved views have a new version in the key.
+    // Original messages are immutable; snippet changes invalidate via updated_at.
     staleTime: Infinity,
   });
 }

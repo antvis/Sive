@@ -1,30 +1,22 @@
 import type { RunSummary, Task } from '../../shared/contracts';
 
-export function conversationView<R extends RunSummary>(
-  runs: R[],
+export function conversationView(
+  runs: RunSummary[],
   tasks: Task[],
   activeTask: Task | null,
   conversationId: string,
-  selectedRunId = '',
 ) {
-  const latestTask = tasks.find((task) => task.conversationId === conversationId);
-  const latestRun = runs.find((run) => run.conversationId === conversationId);
-  const currentTask = selectedRunId
-    ? tasks.find((task) => task.conversationId === conversationId && task.runId === selectedRunId) || null
-    : conversationId
-      ? (activeTask?.conversationId === conversationId ? activeTask : latestTask) || null
-      : null;
-  const activeRunId =
-    selectedRunId || (currentTask ? currentTask.runId || currentTask.parentId || '' : latestRun?.id || '');
-  const byId = new Map(runs.map((run) => [run.id, run]));
-  const session: R[] = [];
-  const seen = new Set<string>();
-  let run = byId.get(activeRunId);
-  while (run && run.conversationId === conversationId && !seen.has(run.id)) {
-    session.push(run);
-    seen.add(run.id);
-    run = run.parentId ? byId.get(run.parentId) : undefined;
+  type Entry = { kind: 'run'; run: RunSummary } | { kind: 'task'; task: Task };
+  const entries = new Map<string, Entry>();
+  for (const task of tasks) {
+    if (task.conversationId === conversationId && task.status !== 'done')
+      entries.set(task.id, { kind: 'task', task });
   }
-  session.reverse();
-  return { activeRunId, currentTask, session };
+  if (activeTask?.conversationId === conversationId && activeTask.status !== 'done')
+    entries.set(activeTask.id, { kind: 'task', task: activeTask });
+  for (const run of runs) {
+    if (run.conversationId === conversationId) entries.set(run.id, { kind: 'run', run });
+  }
+  const sequence = (entry: Entry) => (entry.kind === 'run' ? entry.run.sequence : (entry.task.sequence ?? 0));
+  return [...entries.values()].sort((a, b) => sequence(a) - sequence(b));
 }

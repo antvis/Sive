@@ -1,11 +1,12 @@
 import { queryOptions } from './query-options';
 import { WorkbenchError } from '../shared/errors';
 import { randomUUID } from 'node:crypto';
-import type { Task, Run } from '../shared/contracts';
+import type { Task } from '../shared/contracts';
 import type { AnalysisMode, AnalysisOptions } from '../shared/analysis-options';
 import { resolveStrategy } from './analysis-strategy';
 import { businessSemantic } from './semantics';
 import { Store } from './store';
+import { sourceSnapshot } from './store-records';
 import { Models, ModelCredentialError } from './models';
 import { Connections } from './connections';
 import { withAVA } from './ava-service';
@@ -35,7 +36,6 @@ export class AnalysisRunner {
     id: string,
     question: string,
     strategy: AnalysisMode,
-    parentId?: string,
     options?: AnalysisOptions,
     conversationId?: string,
   ) {
@@ -46,28 +46,20 @@ export class AnalysisRunner {
       const analysisStrategy = resolveStrategy(strategy, options);
       const d = await this.datasets.prepare(id),
         model = this.models.active(),
-        modelName = `${model.name} · ${model.model}`,
-        parent = parentId ? this.store.run(parentId) : undefined;
-      if (parent && parent.datasetId !== id) throw new WorkbenchError('CONFLICT', '追问必须使用同一数据源');
-      if (parent && parent.fingerprint !== d.fingerprint)
-        throw new WorkbenchError('CONFLICT', '数据或连接已更新，请开始新的分析');
-      if (parent && JSON.stringify(parent.excelSheets) !== JSON.stringify(d.excelSheets))
-        throw new WorkbenchError('CONFLICT', 'Excel 读取区域已调整，请开始新的分析，不要沿用旧结果追问');
-      const chatId = conversationId || parent?.conversationId;
-      const conversation = chatId
-        ? this.store.view.conversations.find((item) => item.id === chatId)
+        modelName = `${model.name} · ${model.model}`;
+      const conversation = conversationId
+        ? this.store.conversation(conversationId)
         : this.store.createConversation(id);
-      if (!conversation || conversation.deletedAt || conversation.datasetId !== id)
+      if (conversation.deletedAt || conversation.datasetId !== id)
         throw new WorkbenchError('CONFLICT', '会话不存在或不属于当前数据源');
-      if (parent?.conversationId && parent.conversationId !== conversation.id)
-        throw new WorkbenchError('CONFLICT', '不能跨会话关联分析上下文');
+      const parent = this.store.latestRun(conversation.id);
+      if (parent) this.store.assertRunSource(parent.id, d);
       let task: Task = {
         id: randomUUID(),
         conversationId: conversation.id,
         datasetId: id,
         question,
         modelName,
-        parentId,
         strategy,
         analysisOptions: options,
         sourceName: d.name,
@@ -75,7 +67,14 @@ export class AnalysisRunner {
         startedAt: new Date().toISOString(),
         events: [],
       };
-      this.store.startTask(task, conversation);
+      task.sequence = this.store.startTask(task, conversation, {
+        model: { provider_id: model.id, provider_name: model.name, model_name: model.model },
+        source: sourceSnapshot(d),
+        semantic: businessSemantic(d.semantic, d.metrics).description || '',
+        metrics: d.metrics,
+        analyze: { strategy: analysisStrategy, includeSummary: true },
+        query: queryOptions,
+      });
       this.task = task;
       this.change();
       this.abort = new AbortController();
@@ -116,43 +115,24 @@ export class AnalysisRunner {
           signal.throwIfAborted();
           await this.datasets.assertFileUnchanged(d);
           signal.throwIfAborted();
-          const run: Run = {
-            id: randomUUID(),
-            conversationId: conversation.id,
-            datasetId: id,
-            sourceName: d.name,
-            fingerprint: d.fingerprint,
-            excelSheets: d.excelSheets,
-            question,
-            strategy,
-            analysisOptions:
-              analysisStrategy.type === 'direct'
-                ? { maxRetries: analysisStrategy.maxRetries }
-                : { maxSteps: analysisStrategy.maxSteps },
-            parentId,
-            createdAt: new Date().toISOString(),
-            semantic: businessSemantic(d.semantic, d.metrics).description || '',
-            metrics: d.metrics,
-            modelName,
+          return {
             result: { ...result, query: question },
             chart,
             chartError,
-            events: [...task.events],
           };
-          return run;
         },
         this.connections,
         model,
       )
-        .then((run) => {
+        .then((output) => {
           this.progress.cancelPending();
           signal.throwIfAborted();
-          task = { ...task, status: 'done', runId: run.id, finishedAt: new Date().toISOString() };
+          task = { ...task, status: 'done', runId: task.id, finishedAt: new Date().toISOString() };
           this.task = task;
-          delete task.preview;
           delete task.persistenceError;
           try {
-            this.store.finishTask(task, run);
+            this.store.finishTask(task, output);
+            delete task.preview;
           } catch (error) {
             task = { ...task, status: 'error', runId: undefined };
             this.task = task;
@@ -184,7 +164,6 @@ export class AnalysisRunner {
           delete task.persistenceError;
           try {
             if (task.status !== 'done') this.store.finishTask(task);
-            this.store.clearTaskProgress();
           } catch {
             task.persistenceError = '分析记录保存失败，请检查磁盘空间。';
           }

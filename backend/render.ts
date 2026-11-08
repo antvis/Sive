@@ -95,7 +95,7 @@ export async function analysisHTML(run: Run, settings: ThemeSettings = defaultTh
   @media print{body{font-size:11px}main{padding:0}iframe,tr{break-inside:avoid}h1,h2{break-after:avoid}}
   ${exportTableStyles}</style><script>window.chartStates=new Map();addEventListener('message',e=>{if(e.data?.type==='ava-chart'&&Array.from(document.querySelectorAll('iframe')).some(f=>f.contentWindow===e.source))window.chartStates.set(e.source,e.data.status)});window.analysisReady=()=>{const f=Array.from(document.querySelectorAll('iframe'));return f.some(x=>window.chartStates.get(x.contentWindow)==='error')?'error':f.every(x=>window.chartStates.get(x.contentWindow)==='ready')?'ready':'waiting'};</script></head>
   <body><main><small>Sive · ${saved ? '收藏快照' : '分析快照'} · ${escape(run.sourceName)} · ${escape(updatedAt)} · ${escape(run.modelName)}</small>
-  <h1>${escape(title)}</h1>${title !== run.question ? `<p>分析问题：${escape(run.question)}</p>` : ''}${exportMarkdown(result.text || (view ? '收藏已刷新，以下为最近一次刷新成功的数据与图表，未重新生成文字总结。' : '本次分析未生成文字总结。'))}
+  <h1>${escape(title)}</h1>${title !== run.question ? `<p>分析问题：${escape(run.question)}</p>` : ''}${exportMarkdown(result.text || (view ? '此收藏快照未包含文字总结，请查看保存的计算数据与图表。' : '本次分析未生成文字总结。'))}
   ${chart ? `<iframe sandbox="allow-scripts" title="分析图表" srcdoc="${escape(chart)}"></iframe>` : ''}
   <h2>计算依据</h2><p>业务口径：${escape(run.semantic || '未提供')}</p><pre>${escape(result.sql)}</pre>
   ${result.truncated ? '<p>以下数据为截断后的结果快照，并非完整数据。</p>' : ''}

@@ -6,7 +6,7 @@ function withTask(state: State, update: TaskUpdate): State {
     task: update.task,
     tasks: state.tasks.some((task) => task.id === update.task.id)
       ? state.tasks.map((task) => (task.id === update.task.id ? update.task : task))
-      : [update.task, ...state.tasks].slice(0, 300),
+      : [update.task, ...state.tasks],
   };
 }
 

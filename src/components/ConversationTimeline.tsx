@@ -6,33 +6,47 @@ import { ArrowDownIcon } from '@phosphor-icons/react';
 export default function ConversationTimeline({
   children,
   sessionKey,
+  targetMessageId,
   className,
 }: {
   children: ReactNode;
   sessionKey: string;
+  targetMessageId?: string;
   className?: string;
 }) {
   const scroll = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const follow = useRef(true);
+  const anchor = useRef<string | undefined>(undefined);
   const [away, setAway] = useState(false);
   const latest = () => {
+    anchor.current = undefined;
     follow.current = true;
     setAway(false);
     if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
   };
+  const alignTarget = () => {
+    const target = Array.from(content.current?.children || []).find(
+      (node) => node instanceof HTMLElement && node.dataset.messageId === anchor.current,
+    );
+    if (target && scroll.current)
+      scroll.current.scrollTop +=
+        target.getBoundingClientRect().top - scroll.current.getBoundingClientRect().top;
+  };
   useEffect(() => {
-    latest();
-  }, [sessionKey]);
+    if (targetMessageId) {
+      anchor.current = targetMessageId;
+      follow.current = false;
+      alignTarget();
+    } else latest();
+  }, [sessionKey, targetMessageId]);
   useEffect(() => {
     const observer = new ResizeObserver(() => {
-      const active = document.activeElement;
-      if (
-        active &&
-        content.current?.contains(active) &&
-        active.matches('textarea, input, [contenteditable="true"]')
-      )
+      // Keep a linked historical reply in view while earlier results load.
+      if (anchor.current) {
+        alignTarget();
         return;
+      }
       if (follow.current && scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
     });
     if (content.current) observer.observe(content.current);
@@ -46,6 +60,18 @@ export default function ConversationTimeline({
           className,
         )}
         ref={scroll}
+        onWheel={() => {
+          anchor.current = undefined;
+        }}
+        onTouchMove={() => {
+          anchor.current = undefined;
+        }}
+        onPointerDown={() => {
+          anchor.current = undefined;
+        }}
+        onKeyDown={() => {
+          anchor.current = undefined;
+        }}
         onScroll={(event) => {
           const node = event.currentTarget;
           follow.current = node.scrollHeight - node.scrollTop - node.clientHeight < 48;

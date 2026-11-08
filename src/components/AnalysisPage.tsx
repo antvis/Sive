@@ -1,9 +1,8 @@
 import { cx } from '../shared/cx';
-import { useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { Alert, Button, useUI } from './ui';
 import { CaretRightIcon } from '@phosphor-icons/react';
-import type { RunSummary, Task } from '../../shared/contracts';
 import { taskReplyMarkdown } from '../../shared/conversation-markdown';
 import { useWorkspace } from '../shared/workspace-context';
 import { datasetPath } from '../shared/routes';
@@ -50,14 +49,7 @@ export default function AnalysisPage() {
       mounted.current = false;
     };
   }, []);
-  const resubmitting = useRef(false);
-  const { currentTask, activeRunId, session } = conversationView(
-    state.runs,
-    state.tasks,
-    state.task,
-    conversationId,
-    runId,
-  );
+  const entries = conversationView(state.runs, state.tasks, state.task, conversationId);
   const perform = async (fn: () => Promise<unknown>) => {
     try {
       await fn();
@@ -87,7 +79,7 @@ export default function AnalysisPage() {
     const originKey = location.key;
     try {
       const selectedId = conversationId || (await api.createConversation(dataset.id)).id;
-      const id = await api.analyze(dataset.id, text, mode, activeRunId || undefined, undefined, selectedId);
+      const id = await api.analyze(dataset.id, text, mode, undefined, selectedId);
       await refresh();
       dispatchConversation({
         type: 'submitted',
@@ -105,44 +97,6 @@ export default function AnalysisPage() {
       setSubmitting(false);
     }
   };
-  const resubmitReason = (target: RunSummary | Task) => {
-    if (state.refreshingSavedId) return '请等待收藏的分析刷新完成';
-    if (busy || submitting) return '请等待当前操作结束，或先停止分析';
-    if (!state.datasets.some((source) => source.id === target.datasetId && !source.deletedAt))
-      return '连接已删除，历史分析仍可查看和导出';
-    if (!state.activeModelId) return '请先在设置中配置模型';
-    if (target.parentId && !state.runs.some((run) => run.id === target.parentId))
-      return '上一轮分析已删除，请开始新会话';
-    return undefined;
-  };
-  const resubmit = async (target: RunSummary | Task, text: string) => {
-    if (resubmitting.current || resubmitReason(target) || !text.trim()) return false;
-    resubmitting.current = true;
-    setSubmitting(true);
-    const originKey = location.key;
-    try {
-      const strategy = target.strategy === 'loop' ? 'loop' : 'direct';
-      await api.analyze(
-        target.datasetId,
-        text.trim(),
-        strategy,
-        target.parentId,
-        target.analysisOptions,
-        target.conversationId,
-      );
-      if (mounted.current && locationRef.current.key === originKey)
-        navigate(datasetPath(target.datasetId, target.conversationId), { replace: true });
-
-      return true;
-    } catch (error) {
-      message.error(errorMessage(error));
-      return false;
-    } finally {
-      resubmitting.current = false;
-      setSubmitting(false);
-    }
-  };
-
   // The layout synchronizes the route into the workspace before the first paint.
   if (!dataset || datasetId !== route.datasetId || conversationId !== (search.get('conversation') || ''))
     return null;
@@ -188,8 +142,12 @@ export default function AnalysisPage() {
         className="h-full flex flex-col min-h-0 min-w-0 bg-surface overflow-hidden"
         aria-label="分析会话"
       >
-        <ConversationTimeline className={conversationSpacing} sessionKey={datasetId + conversationId + runId}>
-          {!dataset.deletedAt && !session.length && !currentTask && (
+        <ConversationTimeline
+          className={conversationSpacing}
+          sessionKey={datasetId + conversationId + runId}
+          targetMessageId={search.get('run') || undefined}
+        >
+          {!dataset.deletedAt && !entries.length && (
             <div className="w-full max-w-85 mt-[clamp(20px,_8vh,_80px)] mr-auto mb-6 ml-auto text-center">
               <img className="mx-auto size-7 opacity-80 dark:[filter:invert(1)]" src={logo} alt="" />
               <h3 className="font-semibold text-headline tracking-[-0.4px] mt-4.5 mr-0 mb-2 ml-0">
@@ -223,46 +181,45 @@ export default function AnalysisPage() {
               </div>
             </div>
           )}
-          {session.map((run) => (
-            <Result
-              key={run.id}
-              run={run}
-              disabledReason={resubmitReason(run)}
-              onResubmit={(text) => resubmit(run, text)}
-            />
-          ))}
-          {currentTask && !session.some((r) => r.id === currentTask.runId) && (
-            <>
-              <UserMessage
-                key={currentTask.id}
-                question={currentTask.question}
-                time={currentTask.startedAt || currentTask.events[0]?.at}
-                disabledReason={resubmitReason(currentTask)}
-                onResubmit={(text) => resubmit(currentTask, text)}
-              />
-              <AssistantMessage
-                time={currentTask.finishedAt || currentTask.events.at(-1)?.at || currentTask.startedAt}
-                markdown={() => taskReplyMarkdown(currentTask)}
-              >
-                <AnalysisProgress className="mt-0" task={currentTask} />
-                {currentTask.preview && (
-                  <details open>
-                    <summary>
-                      {['running', 'cancelling'].includes(currentTask.status)
-                        ? '已得到计算结果，正在完成分析'
-                        : '本次分析中断前的计算结果'}
-                    </summary>
-                    <Grid rows={currentTask.preview.data} />
-                  </details>
-                )}
-                {!['running', 'cancelling', 'done'].includes(currentTask.status) && (
-                  <div className="flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0">
-                    <Button onClick={openModelSettings}>检查模型设置</Button>
-                  </div>
-                )}
-              </AssistantMessage>
-            </>
-          )}
+          {entries.map((entry) => {
+            if (entry.kind === 'run')
+              return (
+                <div key={entry.run.id} data-message-id={entry.run.id}>
+                  <Result run={entry.run} />
+                </div>
+              );
+            const currentTask = entry.task;
+            return (
+              <Fragment key={currentTask.id}>
+                <UserMessage
+                  key={currentTask.id}
+                  question={currentTask.question}
+                  time={currentTask.startedAt || currentTask.events[0]?.at}
+                />
+                <AssistantMessage
+                  time={currentTask.finishedAt || currentTask.events.at(-1)?.at || currentTask.startedAt}
+                  markdown={() => taskReplyMarkdown(currentTask)}
+                >
+                  <AnalysisProgress className="mt-0" task={currentTask} />
+                  {currentTask.preview && (
+                    <details open>
+                      <summary>
+                        {['running', 'cancelling'].includes(currentTask.status)
+                          ? '已得到计算结果，正在完成分析'
+                          : '本次分析中断前的计算结果'}
+                      </summary>
+                      <Grid rows={currentTask.preview.data} />
+                    </details>
+                  )}
+                  {!['running', 'cancelling', 'done'].includes(currentTask.status) && (
+                    <div className="flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0">
+                      <Button onClick={openModelSettings}>检查模型设置</Button>
+                    </div>
+                  )}
+                </AssistantMessage>
+              </Fragment>
+            );
+          })}
         </ConversationTimeline>
         {dataset.deletedAt ? (
           <Alert type="info" title="连接已删除，无法继续分析" />

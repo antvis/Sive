@@ -1,7 +1,7 @@
 import { cx } from '../shared/cx';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Button, TextArea, Tooltip } from './ui';
-import { PencilSimpleIcon, CopyIcon, CheckIcon } from '@phosphor-icons/react';
+import { Button, Tooltip } from './ui';
+import { CopyIcon, CheckIcon } from '@phosphor-icons/react';
 import logo from '../../assets/sive.svg';
 
 function MessageActions({
@@ -88,103 +88,16 @@ function MessageActions({
   );
 }
 
-export function UserMessage({
-  question,
-  time,
-  disabledReason,
-  onResubmit,
-}: {
-  question: string;
-  time?: string;
-  disabledReason?: string;
-  onResubmit: (question: string) => Promise<boolean>;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(question);
-  const [sending, setSending] = useState(false);
-  const submit = async (text: string) => {
-    if (sending || disabledReason || !text.trim()) return;
-    setSending(true);
-    try {
-      if (await onResubmit(text.trim())) setEditing(false);
-    } finally {
-      setSending(false);
-    }
-  };
+export function UserMessage({ question, time }: { question: string; time?: string }) {
   return (
     <section
       className="group/message flex flex-col items-end mt-1 mb-6 gap-1.5 min-w-0"
       aria-label="用户问题"
     >
-      <div
-        className={cx(
-          'max-w-[92%] min-w-0 text-ink bg-neutral-soft py-2.5 px-4 rounded-[20px]',
-          editing && 'w-full max-w-full pt-3.5 pb-3 border-0 rounded-[calc(var(--radius)_+_14px)]',
-        )}
-      >
-        {editing ? (
-          <>
-            <TextArea
-              aria-label="编辑已发送的问题"
-              autoFocus
-              autoSize={{ minRows: 3, maxRows: 8 }}
-
-              variant="borderless"
-              className="p-0 rounded-none"
-              value={draft}
-              disabled={sending}
-              onChange={(event) => setDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-                  event.preventDefault();
-                  if (!event.repeat) submit(draft);
-                }
-              }}
-            />
-            <div className="flex items-center justify-end flex-wrap mt-3 gap-2">
-              <Button
-                className="border-line bg-surface hover:bg-surface hover:brightness-95"
-                size="small"
-                disabled={sending}
-                onClick={() => setEditing(false)}
-              >
-                取消
-              </Button>
-              <Button
-                size="small"
-                variant="primary"
-                className="bg-ink text-surface hover:bg-ink hover:brightness-95"
-                loading={sending}
-                disabled={sending || !!disabledReason || !draft.trim()}
-                title={disabledReason || '使用当前模型重新分析，原结果仍保留在历史中'}
-                onClick={() => submit(draft)}
-              >
-                发送
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="font-normal whitespace-pre-wrap wrap-anywhere leading-[1.7]">{question}</div>
-        )}
+      <div className="max-w-[92%] min-w-0 text-ink bg-neutral-soft py-2.5 px-4 rounded-[20px]">
+        <div className="font-normal whitespace-pre-wrap wrap-anywhere leading-[1.7]">{question}</div>
       </div>
-      {!editing && (
-        <MessageActions className="pr-2 gap-1.5" time={time} text={question} compactTime>
-          <Tooltip title={disabledReason || '修改此问题后重新发送'}>
-            <Button
-              variant="ghost"
-              className="hover:text-muted"
-              size="small"
-              icon={<PencilSimpleIcon />}
-              aria-label="编辑问题"
-              disabled={!!disabledReason || sending}
-              onClick={() => {
-                setDraft(question);
-                setEditing(true);
-              }}
-            />
-          </Tooltip>
-        </MessageActions>
-      )}
+      <MessageActions className="pr-2 gap-1.5" time={time} text={question} compactTime />
     </section>
   );
 }

@@ -31,18 +31,13 @@ export class Connections {
     input = parseInput(mysqlInputSchema, input);
     const old = input.id ? this.store.dataset(input.id) : undefined;
     if (old && old.format !== 'mysql') throw new WorkbenchError('INVALID_INPUT', '只能编辑 MySQL 连接');
-    const sameSource =
-      old?.connection &&
-      (['host', 'port', 'database', 'user'] as const).every((key) => old.connection![key] === input[key]);
     return {
       id: old?.id || randomUUID(),
       name: input.name.trim(),
       format: 'mysql',
       file: '',
-      fingerprint: sameSource ? old.fingerprint : randomUUID(),
-      schemaRevision: randomUUID(),
+      updatedAt: old?.updatedAt || new Date().toISOString(),
       createdAt: old?.createdAt || new Date().toISOString(),
-      lastUsedAt: old?.lastUsedAt,
       semantic: old?.semantic || '',
       metrics: old?.metrics || [],
       schema: { models: [] },
@@ -52,21 +47,24 @@ export class Connections {
         port: input.port,
         database: input.database,
         user: input.user,
-        hasPassword: input.password !== undefined ? !!input.password : !!old?.encryptedPassword,
+        hasPassword: input.password !== undefined ? !!input.password : !!old?.encryptedCredentials,
         status: 'ready',
       },
-      encryptedPassword:
+      encryptedCredentials:
         input.password === undefined
-          ? old?.encryptedPassword
+          ? old?.encryptedCredentials
           : input.password
-            ? this.encrypt(input.password)
+            ? this.encrypt(JSON.stringify({ password: input.password }))
             : undefined,
     };
   }
   source(dataset: StoredDataset): DataSourceConfig {
     const c = dataset.connection;
     if (!c) throw new WorkbenchError('INVALID_INPUT', '缺少 MySQL 连接配置');
-    const password = dataset.encryptedPassword ? this.decrypt(dataset.encryptedPassword) : '';
+    const credentials = dataset.encryptedCredentials
+      ? JSON.parse(this.decrypt(dataset.encryptedCredentials))
+      : {};
+    const password = credentials.password ?? '';
     const input = {
       name: dataset.name,
       host: c.host,

@@ -20,7 +20,7 @@ export class Models {
   private encryptedKey(input: ModelConnectionInput) {
     if (input.apiKey) return this.encrypt(input.apiKey);
     if (!input.credentialSourceId) return undefined;
-    const source = this.store.view.models.find((m) => m.id === input.credentialSourceId);
+    const source = this.store.models().find((m) => m.id === input.credentialSourceId);
     if (!source) throw new WorkbenchError('CONFLICT', '原模型配置已移除，请重新打开设置');
     if (source.baseURL.replace(/\/+$/, '') !== input.baseURL.replace(/\/+$/, ''))
       throw new WorkbenchError('MODEL', '服务地址已变化，请重新填写密钥；无认证服务请新建配置');
@@ -146,7 +146,8 @@ export class Models {
     });
   }
   active() {
-    const { models, activeModelId } = this.store.view;
+    const models = this.store.models();
+    const activeModelId = this.store.activeModelId;
     const p = models.find((m) => m.id === activeModelId);
     if (!p) throw new WorkbenchError('MODEL', '请先在模型设置中新增并测试一个模型');
     if (!p.modelIds.includes(p.model))
@@ -155,12 +156,11 @@ export class Models {
   }
   async save(input: ModelInput, onProgress?: (progress: ModelTestProgress) => void) {
     input = parseInput(modelInputSchema, input);
-    const old = this.store.view.models.find((m) => m.id === input.id);
+    const old = this.store.models().find((m) => m.id === input.id);
     if (input.id && !old) throw new WorkbenchError('CONFLICT', '模型已移除，请重新打开设置');
     const modelIds = [...new Set(input.modelIds.map((id) => id.trim()))];
     const p: StoredModel = {
       id: old?.id || randomUUID(),
-      revision: (old?.revision || 0) + 1,
       name: input.name.trim(),
       model: old && modelIds.includes(old.model) ? old.model : modelIds[0],
       modelIds,
@@ -168,7 +168,7 @@ export class Models {
       encryptedKey: this.encryptedKey({ ...input, credentialSourceId: old?.id || input.credentialSourceId }),
     };
     // Reuse successful checks only when the service and saved credentials are unchanged.
-    const reusable = old?.testedAt && old.baseURL === p.baseURL && !input.apiKey;
+    const reusable = old && old.baseURL === p.baseURL && !input.apiKey;
     const pending = reusable ? modelIds.filter((id) => !old.modelIds.includes(id)) : modelIds;
     const abort = new AbortController();
     const active = new Set<string>();
@@ -213,29 +213,16 @@ export class Models {
     };
     await Promise.all(Array.from({ length: Math.min(3, pending.length) }, worker));
     if (failure) throw failure;
-    const { models, activeModelId } = this.store.view;
-    const current = old && models.find((model) => model.id === old.id);
-    if (old && (!current || current.revision !== old.revision))
-      throw new WorkbenchError('CONFLICT', '模型已被修改或移除，请重新打开设置');
-    p.testedAt = pending.length ? new Date().toISOString() : old!.testedAt;
-    this.store.saveModels(models.filter((m) => m.id !== p.id).concat(p), activeModelId || p.id);
+    this.store.saveModel(p, old);
   }
   activate(id: string, model?: string) {
-    const profiles = this.store.view.models;
+    const profiles = this.store.models();
     const profile = profiles.find((entry) => entry.id === id);
     if (!profile) throw new WorkbenchError('MODEL', '模型不存在');
     const selected = model ?? profile.model;
-    if (!profile.modelIds.includes(selected)) throw new WorkbenchError('MODEL', '此服务未配置所选模型');
-    this.store.saveModels(
-      profiles.map((entry) =>
-        entry.id === id ? { ...entry, model: selected, revision: (entry.revision || 0) + 1 } : entry,
-      ),
-      id,
-    );
+    this.store.activateModel(id, selected);
   }
   delete(id: string) {
-    const { models, activeModelId } = this.store.view;
-    const remaining = models.filter((model) => model.id !== id);
-    this.store.saveModels(remaining, activeModelId === id ? remaining[0]?.id || '' : activeModelId);
+    this.store.deleteModel(id);
   }
 }

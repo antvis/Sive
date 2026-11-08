@@ -101,7 +101,6 @@ export default function App() {
     const existing = navigation.getTab(source.id);
     const conversation = state.conversations.find((c) => c.datasetId === source.id && contentIds.has(c.id));
     navigate(datasetPath(source.id, existing?.conversationId ?? conversation?.id, existing?.runId));
-    api.touchData(source.id).catch((error) => message.error(errorMessage(error)));
   };
   const archiveConversation = async (id: string) => {
     if (archivingId) return;

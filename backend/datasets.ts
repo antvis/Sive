@@ -1,6 +1,6 @@
 import { queryOptions } from './query-options';
 import { WorkbenchError } from '../shared/errors';
-import { fingerprintFile } from './local-files';
+import { fileChecksum } from './file-checksum';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { Dataset, LocalDataset, BusinessMetric, MySQLInput, ExcelSheet } from '../shared/contracts';
@@ -12,6 +12,9 @@ import { inspectExcel } from './excel';
 import { mysqlTableDetails } from './mysql-table-details';
 export class DatasetService {
   private preparing = new Map<string, Promise<StoredDataset>>();
+  // File integrity checks are operation-local; no content versions are persisted.
+  private fileChecksums = new WeakMap<object, string>();
+  private inspectedFiles = new Map<string, { checksum: string; updatedAt: string }>();
   constructor(
     private store: Store,
     private change: () => void,
@@ -57,10 +60,9 @@ export class DatasetService {
     const original = input.id ? this.store.dataset(input.id) : undefined;
     const { dataset } = await this.inspectMySQL(input);
     if (this.isAnalyzing()) throw new WorkbenchError('INVALID_INPUT', '分析已开始，请结束后再保存连接');
-    this.store.putDataset(dataset, original);
+    const saved = this.store.putDataset(dataset, original);
     this.change();
-    const { file, encryptedPassword, revision, ...publicData } = dataset;
-    return publicData;
+    return this.store.publicDataset(saved);
   }
   async refreshMySQL(id: string) {
     const dataset = this.store.dataset(id);
@@ -71,10 +73,18 @@ export class DatasetService {
       await this.saveMySQL({ ...dataset.connection, id, name: dataset.name });
     } catch (error) {
       if (!(error instanceof WorkbenchError) || error.code !== 'CONNECTION') throw error;
-      dataset.connection.status = 'error';
-      dataset.connection.checkedAt = new Date().toISOString();
-      dataset.connection.error = error.message;
-      this.store.putDataset(dataset, dataset);
+      this.store.putDataset(
+        {
+          ...dataset,
+          connection: {
+            ...dataset.connection,
+            status: 'error',
+            checkedAt: new Date().toISOString(),
+            error: error.message,
+          },
+        },
+        dataset,
+      );
       this.change();
       throw error;
     }
@@ -108,7 +118,7 @@ export class DatasetService {
     if (original.format !== 'xlsx') throw new WorkbenchError('INVALID_INPUT', '仅 Excel 需要重新识别表头');
     const next = await this.readLocal(original.file);
     this.assertEditable();
-    this.store.putDataset({ ...original, ...next }, original);
+    this.store.putDataset({ ...original, ...next.data }, original);
     this.change();
   }
   private assertEditable() {
@@ -120,21 +130,24 @@ export class DatasetService {
     const format = path.extname(file).slice(1).toLowerCase() as LocalDataset['format'];
     if (!['csv', 'xlsx', 'json', 'parquet'].includes(format))
       throw new WorkbenchError('INVALID_INPUT', '请选择 CSV、XLSX、JSON 或 Parquet 文件');
-    const fingerprint = await fingerprintFile(file);
+    const checksum = await fileChecksum(file);
     try {
       const excelSheets = format === 'xlsx' ? inspectExcel(file) : undefined;
       const inspected = await this.inspect(file, format, excelSheets);
-      await this.assertFileUnchanged({ file, format, fingerprint });
-      return { file, format, fingerprint, schemaRevision: randomUUID(), excelSheets, ...inspected };
+      await this.assertFileUnchanged({ file, format }, checksum);
+      return { data: { file, format, excelSheets, ...inspected }, checksum };
     } catch (error) {
       if (error instanceof WorkbenchError) throw error;
       // Prefer an actionable missing/permission error if the file vanished during parsing.
-      await fingerprintFile(file);
+      await fileChecksum(file);
       throw new WorkbenchError('INVALID_INPUT', '无法解析源文件，请检查文件格式和内容后重试');
     }
   }
-  async assertFileUnchanged(source: Pick<StoredDataset, 'file' | 'format' | 'fingerprint'>) {
-    if (source.format !== 'mysql' && (await fingerprintFile(source.file)) !== source.fingerprint)
+  async assertFileUnchanged(
+    source: Pick<StoredDataset, 'file' | 'format'>,
+    checksum = this.fileChecksums.get(source),
+  ) {
+    if (source.format !== 'mysql' && (await fileChecksum(source.file)) !== checksum)
       throw new WorkbenchError(
         'CONFLICT',
         '读取期间源文件发生变化，本次结果未保存，请等待文件写入完成后重试',
@@ -150,27 +163,33 @@ export class DatasetService {
   private async prepareSource(id: string) {
     const original = this.store.dataset(id);
     if (original.format === 'mysql') return original;
-    const fingerprint = await fingerprintFile(original.file);
-    if (fingerprint !== original.fingerprint) {
+    let checksum = await fileChecksum(original.file);
+    const cached = this.inspectedFiles.get(id);
+    let prepared: StoredDataset = original;
+    if (checksum !== cached?.checksum || original.updatedAt !== cached.updatedAt) {
       const refreshed = await this.readLocal(original.file);
-      this.store.putDataset({ ...original, ...refreshed }, original);
+      checksum = refreshed.checksum;
+      prepared = this.store.putDataset({ ...original, ...refreshed.data }, original);
       this.change();
     } else this.store.assertDatasetCurrent(original);
-    return this.store.dataset(id);
+    this.fileChecksums.set(prepared, checksum);
+    this.inspectedFiles.set(id, { checksum, updatedAt: prepared.updatedAt });
+    return prepared;
   }
   async import(file: string): Promise<Dataset> {
     const inspected = await this.readLocal(file);
     const d = {
-      ...inspected,
+      ...inspected.data,
       id: randomUUID(),
       name: path.basename(file),
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       semantic: '',
     };
-    this.store.putDataset(d);
+    const saved = this.store.putDataset(d);
+    this.inspectedFiles.set(saved.id, { checksum: inspected.checksum, updatedAt: saved.updatedAt });
     this.change();
-    const { file: _, ...publicData } = d;
-    return publicData;
+    return this.store.publicDataset(saved);
   }
   rename(id: string, name: string) {
     this.assertEditable();
@@ -185,7 +204,7 @@ export class DatasetService {
     if (original.format === 'mysql') throw new WorkbenchError('INVALID_INPUT', '请选择本地文件连接');
     const inspected = await this.readLocal(file);
     this.assertEditable();
-    this.store.putDataset({ ...original, ...inspected }, original);
+    this.store.putDataset({ ...original, ...inspected.data }, original);
     this.change();
   }
   deleteData(id: string) {

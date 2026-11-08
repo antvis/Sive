@@ -20,15 +20,7 @@ function useResultActionFeedback() {
   }, [feedback]);
   return [feedback, setFeedback] as const;
 }
-function ResultContent({
-  run,
-  disabledReason,
-  onResubmit,
-}: {
-  run: Run;
-  disabledReason?: string;
-  onResubmit: (question: string) => Promise<boolean>;
-}) {
+function ResultContent({ run }: { run: Run }) {
   const [dataOpen, setDataOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -70,12 +62,7 @@ function ResultContent({
   };
   return (
     <article className="result pb-4.5 mb-4.5 min-w-0">
-      <UserMessage
-        question={run.question}
-        time={run.events[0]?.at || run.createdAt}
-        disabledReason={disabledReason}
-        onResubmit={onResubmit}
-      />
+      <UserMessage question={run.question} time={run.events[0]?.at || run.createdAt} />
       <AssistantMessage time={run.createdAt} markdown={() => replyMarkdown(run)}>
         <p className="text-muted text-helper">
           {run.sourceName} · {run.modelName}
@@ -174,11 +161,7 @@ function ResultContent({
   );
 }
 
-export default function AnalysisResult(props: {
-  run: RunSummary;
-  disabledReason?: string;
-  onResubmit: (question: string) => Promise<boolean>;
-}) {
+export default function AnalysisResult(props: { run: RunSummary }) {
   const detail = useRun(props.run);
   if (detail.error)
     return <Alert type="error" title={detail.error} action={<Button onClick={detail.retry}>重试</Button>} />;

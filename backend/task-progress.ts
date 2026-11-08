@@ -1,7 +1,7 @@
 import type { Task } from '../shared/contracts';
 import type { Store } from './store';
 
-// Progress is recoverable independently of the large workspace. Terminal commits stay synchronous.
+// Coalesce progress writes to the message row; terminal transactions stay synchronous.
 export class TaskProgress {
   private timer?: ReturnType<typeof setTimeout>;
   constructor(

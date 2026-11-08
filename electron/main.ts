@@ -6,7 +6,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { Store } from '../backend/store';
-import { WorkspaceLoadError, WorkspaceStorage } from '../backend/workspace-storage';
 import { Models } from '../backend/models';
 import { Workbench } from '../backend/workbench';
 import { Connections } from '../backend/connections';
@@ -31,32 +30,17 @@ app.whenReady().then(async () => {
   try {
     store = new Store(root);
   } catch (error) {
-    const recoverable = error instanceof WorkspaceLoadError && error.canRecover;
-    const { response } = await dialog.showMessageBox({
+    await dialog.showMessageBox({
       type: 'error',
       title: '无法打开工作区',
-      message: '工作区无法读取，原文件已保留。',
-      detail:
-        `${error instanceof Error ? error.message : '读取失败'}\n数据目录：${root}` +
-        (recoverable
-          ? '\n可以恢复到上一次成功保存的状态；最近一次修改可能需要重新操作。'
-          : '\n请检查目录权限或从备份恢复后重启应用。'),
-      buttons: recoverable ? ['退出', '恢复上次保存'] : ['退出'],
+      message: '工作区数据库无法读取，原文件已保留。',
+      detail: `${error instanceof Error ? error.message : '读取失败'}\n数据目录：${root}\n请检查目录权限或从备份恢复后重启应用。`,
+      buttons: ['退出'],
       defaultId: 0,
       cancelId: 0,
     });
-    if (!recoverable || response !== 1) {
-      app.quit();
-      return;
-    }
-    try {
-      new WorkspaceStorage(root).recover();
-      store = new Store(root);
-    } catch {
-      dialog.showErrorBox('恢复失败', `未能恢复工作区，请检查目录权限。原文件保留在：${root}`);
-      app.quit();
-      return;
-    }
+    app.quit();
+    return;
   }
   const encrypt = (s: string) => {
     if (
@@ -145,7 +129,7 @@ app.whenReady().then(async () => {
     run: (id) => store.run(id),
     state: () => ({
       ...store.publicState(controller.analysis.task),
-      refreshingSavedId: controller.saved.refreshingId,
+      refreshingSavedId: controller.snippets.refreshingId,
       revision,
     }),
     saveTheme: (theme) => {
@@ -177,7 +161,7 @@ app.whenReady().then(async () => {
     },
     deleteData: (id) => controller.datasets.deleteData(id),
     deleteConversation: (id) => {
-      const refreshing = controller.saved.refreshingId;
+      const refreshing = controller.snippets.refreshingId;
       if (refreshing && store.run(refreshing).conversationId === id)
         throw new WorkbenchError('CONFLICT', '请等待此会话的收藏刷新完成');
       store.deleteConversation(id);
@@ -189,26 +173,22 @@ app.whenReady().then(async () => {
       controller.change();
     },
     purgeConversations: (ids) => {
-      const refreshing = controller.saved.refreshingId;
-      if (refreshing && ids.includes(store.run(refreshing).conversationId || ''))
+      const refreshing = controller.snippets.refreshingId;
+      if (refreshing && ids.includes(store.run(refreshing).conversationId))
         throw new WorkbenchError('CONFLICT', '请等待此会话的收藏刷新完成');
       store.purgeConversations(ids);
       controller.change();
     },
     reparseData: (id) => controller.datasets.reparseData(id),
-    touchData: (id) => {
-      store.touchDataset(id);
-      controller.change();
-    },
     preview: (id, table, options) => controller.datasets.preview(id, table, options),
     tableDetails: (id, table) => controller.datasets.tableDetails(id, table),
     semantic: (id, text, metrics) => controller.datasets.semantic(id, text, metrics),
     analyze: (...args: Parameters<API['analyze']>) => controller.analysis.analyze(...args),
     cancel: () => controller.analysis.cancel(),
-    removeSavedAnalysis: (id) => controller.saved.remove(id),
-    renameSavedAnalysis: (id, title) => controller.saved.rename(id, title),
-    refreshSavedAnalysis: (id) => controller.saved.refresh(id),
-    chartHTML: (id, theme, saved) => controller.saved.chartHTML(id, theme, saved),
+    removeSavedAnalysis: (id) => controller.snippets.remove(id),
+    renameSavedAnalysis: (id, title) => controller.snippets.rename(id, title),
+    refreshSavedAnalysis: (id) => controller.snippets.refresh(id),
+    chartHTML: (id, theme, saved) => controller.snippets.chartHTML(id, theme, saved),
     saveAnalysis: (id) => {
       store.saveAnalysis(id);
       controller.change();
@@ -300,5 +280,6 @@ app.whenReady().then(async () => {
   if (dev) win.loadURL(dev);
   else win.loadFile(path.join(__dirname, '../dist/index.html'));
   app.on('before-quit', () => controller.analysis.cancel());
+  app.on('will-quit', () => store.close());
 });
 app.on('window-all-closed', () => app.quit());

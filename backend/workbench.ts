@@ -4,12 +4,12 @@ import { Models } from './models';
 import { Connections } from './connections';
 import { DatasetService } from './datasets';
 import { AnalysisRunner } from './analysis-runner';
-import { SavedAnalysisService } from './saved-analyses';
+import { SnippetService } from './snippets';
 // Composition root; each service owns its lifecycle.
 export class Workbench {
   readonly datasets: DatasetService;
   readonly analysis: AnalysisRunner;
-  readonly saved: SavedAnalysisService;
+  readonly snippets: SnippetService;
   constructor(
     store: Store,
     models: Models,
@@ -25,18 +25,18 @@ export class Workbench {
         if (this.analysis.task?.datasetId === id) this.analysis.task = null;
       },
       connections,
-      () => !!this.saved.refreshingId,
+      () => !!this.snippets.refreshingId,
     );
     this.analysis = new AnalysisRunner(
       store,
       models,
       this.datasets,
       change,
-      () => !!this.saved.refreshingId,
+      () => !!this.snippets.refreshingId,
       connections,
       taskChanged,
     );
-    this.saved = new SavedAnalysisService(
+    this.snippets = new SnippetService(
       store,
       models,
       this.datasets,

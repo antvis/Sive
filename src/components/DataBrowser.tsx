@@ -55,7 +55,7 @@ export default function DataBrowser({
   const showTableToolbar = mysql || dataset.schema.models.length > 1;
   const model = dataset.schema.models.find((m) => m.name === table) || dataset.schema.models[0];
   const activeTable = model?.name || '';
-  const tableKey = JSON.stringify([dataset.id, activeTable, dataset.fingerprint, dataset.schemaRevision]);
+  const tableKey = JSON.stringify([dataset.id, activeTable, dataset.updatedAt]);
   const page = pagination.key === tableKey ? pagination.page : 1;
   const pageSize = pagination.size;
   const requestKey = JSON.stringify([tableKey, page, pageSize]);

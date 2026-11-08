@@ -2,7 +2,7 @@ import { createReadStream } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { WorkbenchError } from '../shared/errors';
 
-export async function fingerprintFile(file: string) {
+export async function fileChecksum(file: string) {
   try {
     const hash = createHash('sha256');
     for await (const chunk of createReadStream(file)) hash.update(chunk);
