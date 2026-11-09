@@ -25,7 +25,7 @@ app.whenReady().then(async () => {
   const root = app.getPath('userData');
   let data: DataServices;
   try {
-    data = createDataServices(root);
+    data = await createDataServices(root);
   } catch (error) {
     await dialog.showMessageBox({
       type: 'error',

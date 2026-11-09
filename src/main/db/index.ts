@@ -9,8 +9,8 @@ import { ConversationService } from './repository/ConversationService';
  *
  * Use this function to create a single instance of the data services for the entire application.
  */
-export function createDataServices(root: string) {
-  const database = new DbService(root);
+export async function createDataServices(root: string) {
+  const database = await DbService.connect(root);
   try {
     const settings = new SettingsService(database);
     const providers = new ModelProviderService(database, settings);
@@ -23,4 +23,4 @@ export function createDataServices(root: string) {
     throw error;
   }
 }
-export type DataServices = ReturnType<typeof createDataServices>;
+export type DataServices = Awaited<ReturnType<typeof createDataServices>>;
