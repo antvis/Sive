@@ -14,7 +14,7 @@ import {
   themeSchema,
 } from '@shared/inputSchemas';
 
-type Commands = Omit<API, 'onChange' | 'onTaskChange' | 'onModelTest'>;
+type Commands = Omit<API, 'workspaceOnChange' | 'analysisOnTaskChange' | 'modelOnTestProgress'>;
 type Command = keyof Commands;
 export type CommandHandlers = {
   [K in Command]: (
@@ -24,43 +24,47 @@ export type CommandHandlers = {
 const none = z.tuple([]);
 const oneId = z.tuple([idSchema]);
 const commandSchemas = {
-  writeClipboard: z.tuple([z.string()]),
-  state: none,
-  run: oneId,
-  importData: z.tuple([localFormatSchema.optional()]),
-  cancel: oneId,
-  createConversation: oneId,
-  deleteConversation: oneId,
-  restoreConversation: oneId,
-  purgeConversations: z.tuple([z.array(idSchema).min(1)]),
-  deleteData: oneId,
-  renameData: z.tuple([idSchema, requiredText('请填写连接名称')]),
-  relocateData: oneId,
-  reparseData: oneId,
-  refreshMySQL: oneId,
-  saveAnalysis: oneId,
-  removeSavedAnalysis: oneId,
-  renameSavedAnalysis: z.tuple([idSchema, requiredText()]),
-  refreshSavedAnalysis: oneId,
-  activateModel: z.tuple([idSchema, requiredText().optional()]),
-  deleteModel: oneId,
-  testMySQL: z.tuple([mysqlInputSchema]),
-  saveMySQL: z.tuple([mysqlInputSchema]),
-  saveTheme: z.tuple([themeSchema]),
-  tableDetails: z.tuple([idSchema, requiredText()]),
-  preview: z.tuple([idSchema, requiredText(), z.object({ offset: z.int(), limit: z.int() }).optional()]),
-  semantic: z.tuple([idSchema, z.string(), z.array(businessMetricSchema).optional()]),
-  analyze: z.tuple([
+  clipboardWrite: z.tuple([z.string()]),
+  workspaceGetState: none,
+  analysisGetRun: oneId,
+  datasetImport: z.tuple([localFormatSchema.optional()]),
+  analysisCancel: oneId,
+  conversationCreate: oneId,
+  conversationArchive: oneId,
+  conversationRestore: oneId,
+  conversationPurge: z.tuple([z.array(idSchema).min(1)]),
+  datasetDelete: oneId,
+  datasetRename: z.tuple([idSchema, requiredText('请填写连接名称')]),
+  datasetRelocate: oneId,
+  datasetReparse: oneId,
+  datasetRefreshMySQL: oneId,
+  snippetSave: oneId,
+  snippetRemove: oneId,
+  snippetRename: z.tuple([idSchema, requiredText()]),
+  snippetRefresh: oneId,
+  modelActivate: z.tuple([idSchema, requiredText().optional()]),
+  modelDelete: oneId,
+  datasetTestMySQL: z.tuple([mysqlInputSchema]),
+  datasetSaveMySQL: z.tuple([mysqlInputSchema]),
+  settingsSaveTheme: z.tuple([themeSchema]),
+  datasetGetTableDetails: z.tuple([idSchema, requiredText()]),
+  datasetPreview: z.tuple([
+    idSchema,
+    requiredText(),
+    z.object({ offset: z.int(), limit: z.int() }).optional(),
+  ]),
+  datasetSaveSemantic: z.tuple([idSchema, z.string(), z.array(businessMetricSchema).optional()]),
+  analysisStart: z.tuple([
     idSchema,
     requiredText(),
     analysisModeSchema,
     analysisOptionsSchema.optional(),
     idSchema.optional(),
   ]),
-  chartHTML: z.tuple([idSchema, themeSchema.optional(), z.boolean().optional()]),
-  exportAnalysis: z.tuple([idSchema, z.enum(['html', 'pdf', 'png']), z.boolean().optional()]),
-  saveModel: z.tuple([modelInputSchema]),
-  listModels: z.tuple([modelConnectionSchema]),
+  analysisGetChartHTML: z.tuple([idSchema, themeSchema.optional(), z.boolean().optional()]),
+  analysisExport: z.tuple([idSchema, z.enum(['html', 'pdf', 'png']), z.boolean().optional()]),
+  modelSave: z.tuple([modelInputSchema]),
+  modelListAvailable: z.tuple([modelConnectionSchema]),
 } satisfies { [K in Command]: z.ZodType<Parameters<Commands[K]>> };
 export const commandNames = Object.keys(commandSchemas) as Command[];
 function commandArgs<K extends Command>(name: K, args: unknown[]): Parameters<Commands[K]> {

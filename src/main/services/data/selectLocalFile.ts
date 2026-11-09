@@ -7,7 +7,7 @@ import type { API } from '@shared/contracts';
 export async function selectLocalFile(
   win: BrowserWindow,
   settings: SettingsService,
-  format?: Parameters<API['importData']>[0],
+  format?: Parameters<API['datasetImport']>[0],
 ) {
   let defaultPath: string | undefined;
   try {

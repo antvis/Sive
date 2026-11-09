@@ -43,7 +43,7 @@ export default function DatasetName({
     pending.current = true;
     setSaving(true);
     try {
-      await window.workbench.renameData(dataset.id, name.trim());
+      await window.workbench.datasetRename(dataset.id, name.trim());
       finish();
       message.success('连接名称已修改');
     } catch (error) {

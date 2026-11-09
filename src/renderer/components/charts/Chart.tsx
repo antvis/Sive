@@ -67,7 +67,7 @@ export function Chart({ run, saved = false }: { run: Run; saved?: boolean }) {
     setHTML('');
     setError('');
     Promise.resolve()
-      .then(() => api.chartHTML(run.id, settings, saved))
+      .then(() => api.analysisGetChartHTML(run.id, settings, saved))
       .then((s) => live && setHTML(s))
       .catch(() => live && setError('图表加载失败，请重新分析或查看计算数据'));
     return () => {

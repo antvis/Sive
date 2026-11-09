@@ -71,7 +71,7 @@ function ArtifactContent({
         aria-label={`复制${title}`}
         onClick={async () => {
           try {
-            await window.workbench.writeClipboard(text);
+            await window.workbench.clipboardWrite(text);
             setCopied(true);
           } catch (error) {
             onError(error);

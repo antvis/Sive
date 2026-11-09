@@ -148,49 +148,49 @@ export type State = {
   theme: ThemeSettings;
 };
 export interface API {
-  writeClipboard(text: string): Promise<void>;
-  state(): Promise<State & { revision: number }>;
-  run(id: string): Promise<Run>;
-  createConversation(datasetId: string): Promise<Conversation>;
-  deleteConversation(id: string): Promise<void>;
-  restoreConversation(id: string): Promise<void>;
-  purgeConversations(ids: string[]): Promise<void>;
-  saveTheme(theme: ThemeSettings): Promise<void>;
-  testMySQL(input: MySQLInput): Promise<{ tables: number; rows: number }>;
-  saveMySQL(input: MySQLInput): Promise<Dataset>;
-  refreshMySQL(id: string): Promise<void>;
-  exportAnalysis(id: string, format: 'html' | 'pdf' | 'png', saved?: boolean): Promise<boolean>;
-  importData(format?: LocalDataset['format']): Promise<Dataset | null>;
-  deleteData(id: string): Promise<void>;
-  renameData(id: string, name: string): Promise<void>;
-  relocateData(id: string): Promise<boolean>;
-  reparseData(id: string): Promise<void>;
-  preview(
+  clipboardWrite(text: string): Promise<void>;
+  workspaceGetState(): Promise<State & { revision: number }>;
+  analysisGetRun(id: string): Promise<Run>;
+  conversationCreate(datasetId: string): Promise<Conversation>;
+  conversationArchive(id: string): Promise<void>;
+  conversationRestore(id: string): Promise<void>;
+  conversationPurge(ids: string[]): Promise<void>;
+  settingsSaveTheme(theme: ThemeSettings): Promise<void>;
+  datasetTestMySQL(input: MySQLInput): Promise<{ tables: number; rows: number }>;
+  datasetSaveMySQL(input: MySQLInput): Promise<Dataset>;
+  datasetRefreshMySQL(id: string): Promise<void>;
+  analysisExport(id: string, format: 'html' | 'pdf' | 'png', saved?: boolean): Promise<boolean>;
+  datasetImport(format?: LocalDataset['format']): Promise<Dataset | null>;
+  datasetDelete(id: string): Promise<void>;
+  datasetRename(id: string, name: string): Promise<void>;
+  datasetRelocate(id: string): Promise<boolean>;
+  datasetReparse(id: string): Promise<void>;
+  datasetPreview(
     id: string,
     table: string,
     options?: { offset: number; limit: number },
   ): Promise<Record<string, unknown>[]>;
-  tableDetails(id: string, table: string): Promise<TableDetails>;
-  semantic(id: string, text: string, metrics?: BusinessMetric[]): Promise<void>;
-  analyze(
+  datasetGetTableDetails(id: string, table: string): Promise<TableDetails>;
+  datasetSaveSemantic(id: string, text: string, metrics?: BusinessMetric[]): Promise<void>;
+  analysisStart(
     id: string,
     question: string,
     strategy: AnalysisMode,
     options?: AnalysisOptions,
     conversationId?: string,
   ): Promise<string>;
-  cancel(taskId: string): Promise<void>;
-  removeSavedAnalysis(id: string): Promise<void>;
-  renameSavedAnalysis(id: string, title: string): Promise<void>;
-  refreshSavedAnalysis(id: string): Promise<void>;
-  chartHTML(runId: string, theme?: ThemeSettings, saved?: boolean): Promise<string>;
-  saveAnalysis(runId: string): Promise<void>;
-  saveModel(input: ModelInput): Promise<void>;
-  listModels(input: ModelConnectionInput): Promise<string[]>;
-  activateModel(id: string, model?: string): Promise<void>;
-  deleteModel(id: string): Promise<void>;
-  onChange(callback: () => void): () => void;
-  onTaskChange(callback: (update: TaskUpdate) => void): () => void;
-  onModelTest(callback: (progress: ModelTestProgress) => void): () => void;
+  analysisCancel(taskId: string): Promise<void>;
+  snippetRemove(id: string): Promise<void>;
+  snippetRename(id: string, title: string): Promise<void>;
+  snippetRefresh(id: string): Promise<void>;
+  analysisGetChartHTML(runId: string, theme?: ThemeSettings, saved?: boolean): Promise<string>;
+  snippetSave(runId: string): Promise<void>;
+  modelSave(input: ModelInput): Promise<void>;
+  modelListAvailable(input: ModelConnectionInput): Promise<string[]>;
+  modelActivate(id: string, model?: string): Promise<void>;
+  modelDelete(id: string): Promise<void>;
+  workspaceOnChange(callback: () => void): () => void;
+  analysisOnTaskChange(callback: (update: TaskUpdate) => void): () => void;
+  modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;
 }
 export type TaskUpdate = { revision: number; task: Task };

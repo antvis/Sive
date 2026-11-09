@@ -54,7 +54,7 @@ export default function ModelSettings({ state }: { state: State }) {
     setCatalog(null);
     const input = form.getValues();
     try {
-      const ids = await api.listModels({
+      const ids = await api.modelListAvailable({
         baseURL: input.baseURL,
         apiKey: input.apiKey,
         credentialSourceId: input.credentialSourceId,
@@ -110,7 +110,7 @@ export default function ModelSettings({ state }: { state: State }) {
           </div>
           <div className="flex items-center flex-wrap gap-2">
             {state.activeModelId !== model.id && (
-              <Button disabled={busy} onClick={() => perform(() => api.activateModel(model.id))}>
+              <Button disabled={busy} onClick={() => perform(() => api.modelActivate(model.id))}>
                 设为默认
               </Button>
             )}
@@ -119,7 +119,7 @@ export default function ModelSettings({ state }: { state: State }) {
             </Button>
             <ConfirmAction
               title="删除此服务及其模型配置？"
-              onConfirm={() => perform(() => api.deleteModel(model.id))}
+              onConfirm={() => perform(() => api.modelDelete(model.id))}
             >
               <Button danger disabled={busy}>
                 删除
@@ -157,9 +157,9 @@ export default function ModelSettings({ state }: { state: State }) {
           const input = form.getValues();
           perform(async () => {
             setTestProgress({ completed: 0, total: input.modelIds.length, active: [] });
-            const unsubscribe = api.onModelTest(setTestProgress);
+            const unsubscribe = api.modelOnTestProgress(setTestProgress);
             try {
-              await api.saveModel({ ...input, id: edit && edit !== 'new' ? edit.id : undefined });
+              await api.modelSave({ ...input, id: edit && edit !== 'new' ? edit.id : undefined });
               setEdit(null);
               message.success('模型测试通过并已保存');
             } finally {

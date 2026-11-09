@@ -40,7 +40,7 @@ export default function DeletedConversations({ state }: { state: State }) {
       content: '会话的分析结果、执行记录和收藏将一并删除，此操作无法恢复。数据源不受影响。',
       okText: '永久删除',
       okButtonProps: { danger: true },
-      onOk: () => perform(() => window.workbench.purgeConversations(ids), '已永久删除'),
+      onOk: () => perform(() => window.workbench.conversationPurge(ids), '已永久删除'),
     });
   return (
     <section>
@@ -106,7 +106,7 @@ export default function DeletedConversations({ state }: { state: State }) {
                       icon={<ArrowCounterClockwiseIcon />}
                       disabled={busy}
                       onClick={() =>
-                        perform(() => window.workbench.restoreConversation(conversation.id), '会话已恢复')
+                        perform(() => window.workbench.conversationRestore(conversation.id), '会话已恢复')
                       }
                     >
                       恢复

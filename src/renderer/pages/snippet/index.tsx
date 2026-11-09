@@ -61,7 +61,7 @@ function SavedCard({
     if (renaming || !titleDraft?.trim()) return;
     setRenaming(true);
     try {
-      await window.workbench.renameSavedAnalysis(run.id, titleDraft.trim());
+      await window.workbench.snippetRename(run.id, titleDraft.trim());
       setTitleDraft(null);
       message.success('标题已修改');
     } catch (error) {
@@ -92,7 +92,7 @@ function SavedCard({
     if (format !== 'pdf' && format !== 'png' && format !== 'html') return;
     setExporting(true);
     try {
-      const exported = await window.workbench.exportAnalysis(run.id, format, true);
+      const exported = await window.workbench.analysisExport(run.id, format, true);
       if (exported) message.success('导出成功');
     } catch (error) {
       message.error(errorMessage(error));
@@ -105,7 +105,7 @@ function SavedCard({
     setPending(true);
     setError('');
     try {
-      await window.workbench.refreshSavedAnalysis(run.id);
+      await window.workbench.snippetRefresh(run.id);
       message.success('数据已刷新');
     } catch (error) {
       setError(errorMessage(error));

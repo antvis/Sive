@@ -15,7 +15,7 @@ export async function exportAnalysis(
   theme: ThemeSettings,
   root: string,
   id: string,
-  format: Parameters<API['exportAnalysis']>[1],
+  format: Parameters<API['analysisExport']>[1],
   saved = false,
 ) {
   const run = records.run(id);

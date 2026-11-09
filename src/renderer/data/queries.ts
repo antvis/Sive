@@ -12,7 +12,7 @@ export function previewQuery(dataset: Dataset, table: string, page: number, page
   return queryOptions({
     queryKey: ['preview', dataset.id, dataset.updatedAt, table, page, pageSize],
     queryFn: () =>
-      window.workbench.preview(dataset.id, table, {
+      window.workbench.datasetPreview(dataset.id, table, {
         offset: (page - 1) * pageSize,
         limit: pageSize + 1,
       }),
@@ -24,7 +24,7 @@ export function previewQuery(dataset: Dataset, table: string, page: number, page
 export function tableDetailsQuery(dataset: Dataset, table: string | null) {
   return queryOptions({
     queryKey: ['tableDetails', dataset.id, dataset.updatedAt, table],
-    queryFn: () => window.workbench.tableDetails(dataset.id, table!),
+    queryFn: () => window.workbench.datasetGetTableDetails(dataset.id, table!),
     enabled: !!table && dataset.schema.models.some((model) => model.name === table),
   });
 }
@@ -32,7 +32,7 @@ export function tableDetailsQuery(dataset: Dataset, table: string | null) {
 export function runQuery(summary: RunSummary) {
   return queryOptions({
     queryKey: ['run', summary.id, summary.viewUpdatedAt],
-    queryFn: () => window.workbench.run(summary.id),
+    queryFn: () => window.workbench.analysisGetRun(summary.id),
     // Original messages are immutable; snippet changes invalidate via updated_at.
     staleTime: Infinity,
   });

@@ -32,7 +32,7 @@ function MessageActions({
     setCopying(true);
     setFeedback('idle');
     try {
-      await window.workbench.writeClipboard(typeof text === 'function' ? text() : text);
+      await window.workbench.clipboardWrite(typeof text === 'function' ? text() : text);
       setFeedback('success');
     } catch {
       setFeedback('error');

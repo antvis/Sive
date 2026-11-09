@@ -4,7 +4,6 @@ import { createRepositories, type Repositories } from './db';
 import { createWorkbenchServices, type WorkbenchServices } from './services';
 import { themePalette } from '@shared/theme';
 import { encrypt, decrypt } from './utils/credentials';
-import { createHandlers } from './ipc/handlers';
 import { registerIPC } from './ipc';
 
 app.setName('Sive');
@@ -84,10 +83,7 @@ app.whenReady().then(async () => {
   });
   win.webContents.session.setPermissionRequestHandler((_w, _p, callback) => callback(false));
 
-  registerIPC(
-    win,
-    createHandlers(win, services, root, () => revision),
-  );
+  registerIPC(win, services, root, () => revision);
   if (dev) win.loadURL(dev);
   else win.loadFile(path.join(__dirname, '../dist/index.html'));
   app.on('before-quit', () => services.analysis.cancelAll());

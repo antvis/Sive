@@ -62,7 +62,7 @@ function SavedRoute() {
       }}
       refreshingId={state.refreshingSavedId}
       busy={busy}
-      onRemove={(id) => window.workbench.removeSavedAnalysis(id)}
+      onRemove={(id) => window.workbench.snippetRemove(id)}
     />
   );
 }
