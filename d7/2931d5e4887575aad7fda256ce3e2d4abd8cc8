@@ -1,0 +1,29 @@
+src/main/db/repository/DatasetRepo.ts
+  s_d422f47e776587::t_28f2a6b1388181 33-34,38,42-43
+src/main/db/repository/ModelProviderRepo.ts
+  s_d422f47e776587::t_d377a7aac4f08d 33-34,38,42-43
+src/main/db/repository/ConversationRepo.ts
+  s_d422f47e776587::t_a0c32bc7a0b954 42-43,47,51-52
+src/main/db/repository/SettingRepo.ts
+  s_d422f47e776587::t_fc39f1e149c932 28-29,33,37-38
+src/main/db/repository/MessageRepo.ts
+  s_d422f47e776587::t_a5650536f43d11 42-43,47,51-52
+src/main/db/repository/SnippetRepo.ts
+  s_d422f47e776587::t_98bd7bb337b840 41-42,46,50-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d72931d5e4887575aad7fda256ce3e2d4abd8cc8",
+  "prompts": {},
+  "sessions": {
+    "s_d422f47e776587": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "bb029dd8-4566-4ccb-809f-3a8f560c19b4",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
