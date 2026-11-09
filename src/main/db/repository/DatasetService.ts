@@ -10,7 +10,7 @@ import {
   type StoredDataset,
 } from '@main/db/mappers';
 import type { DbService } from '@main/db/DbService';
-import { conflict, timestamp } from './utils';
+import { conflict, timestamp } from '@main/utils/repository';
 
 export class DatasetService {
   constructor(private database: DbService) {}

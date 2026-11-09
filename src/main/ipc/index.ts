@@ -3,7 +3,7 @@ import { commandNames, invokeCommand, type CommandHandlers } from '@shared/comma
 import { failure, WorkbenchError } from '@shared/errors';
 
 export function registerIPC(win: BrowserWindow, methods: CommandHandlers) {
-  for (const name of commandNames)
+  for (const name of commandNames) {
     ipcMain.handle('workbench:' + name, async (event, ...args: unknown[]) => {
       try {
         if (event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame)
@@ -13,4 +13,5 @@ export function registerIPC(win: BrowserWindow, methods: CommandHandlers) {
         return failure(error);
       }
     });
+  }
 }

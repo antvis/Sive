@@ -3,7 +3,7 @@ import { settings } from '@main/db/schema';
 import { parseJSON } from '@main/db/mappers';
 import { defaultTheme, validateTheme, type ThemeSettings } from '@shared/theme';
 import type { DbService } from '@main/db/DbService';
-import { timestamp } from './utils';
+import { timestamp } from '@main/utils/repository';
 
 export class SettingsService {
   constructor(private database: DbService) {}

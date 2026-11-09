@@ -31,7 +31,7 @@ import {
 } from '@main/db/mappers';
 import type { DatasetService } from './DatasetService';
 import type { DbService } from '@main/db/DbService';
-import { conflict, timestamp } from './utils';
+import { conflict, timestamp } from '@main/utils/repository';
 const users = alias(messages, 'user_message');
 const question = sql<string>`json_extract(${users.content}, '$.text')`;
 const precedingUser = and(

@@ -4,7 +4,7 @@ import type { CommandHandlers } from '@shared/commands';
 import { WorkbenchError } from '@shared/errors';
 import { themePalette } from '@shared/theme';
 import type { DataServices } from '@main/db';
-import { workspaceState } from '@main/db/repository/workspaceState';
+import { buildWorkspaceState } from '@main/services/workspaceState';
 import type { WorkbenchServices } from '@main/services';
 import type { ModelService } from '@main/services/settings/ModelService';
 import { selectLocalFile } from '@main/services/data/selectLocalFile';
@@ -23,7 +23,7 @@ export function createHandlers(
     writeClipboard: (text) => clipboard.writeText(text),
     run: (id) => data.conversations.run(id),
     state: () => ({
-      ...workspaceState(data, services.analysis.task),
+      ...buildWorkspaceState(data, services.analysis.task),
       refreshingSavedId: services.snippets.refreshingId,
       revision: getRevision(),
     }),

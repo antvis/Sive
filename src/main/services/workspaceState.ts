@@ -2,7 +2,7 @@ import type { State, Task } from '@shared/contracts';
 import type { DataServices } from '@main/db';
 
 // Read-only composition; persistence and transactions stay with their domain service.
-export function workspaceState(data: DataServices, task: Task | null): State {
+export function buildWorkspaceState(data: DataServices, task: Task | null): State {
   const models = data.providers.models();
   const chats = data.conversations.listConversations();
   const runs = data.conversations.listRuns();
