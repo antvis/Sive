@@ -1,0 +1,59 @@
+src/main/db/schema/snippets.ts
+  s_889e7184f230a6::t_224aa795a85d9f 1
+  s_889e7184f230a6::t_b735b86af267cc 2
+  s_889e7184f230a6::t_22e0a1cd14cf8a 5-12,15-41
+  s_889e7184f230a6::t_71219cef631865 13
+  s_889e7184f230a6::t_bd2a8a4603be01 14
+src/main/db/schema/messages.ts
+  s_889e7184f230a6::t_939b62e420bde9 13,16
+  s_889e7184f230a6::t_365935dd082857 19
+  s_889e7184f230a6::t_bc0e13f6ff28b3 1
+  s_889e7184f230a6::t_22e0a1cd14cf8a 4-9,12,14-15,17-18,20-46
+  s_889e7184f230a6::t_5381f62e5e2e86 11
+  s_889e7184f230a6::t_4b4dd206db442a 10
+src/main/db/index.ts
+  s_889e7184f230a6::t_e7eb6e36c33694 26
+  s_889e7184f230a6::t_32a29c80f50076 12
+  s_889e7184f230a6::t_1dab30295d75ab 13
+package.json
+  s_889e7184f230a6::t_fc0a0715d6f1e3 35
+src/main/db/schema/datasets.ts
+  s_889e7184f230a6::t_ea72ceadfa9289 25-26
+  s_889e7184f230a6::t_056ca324502988 3
+src/main/db/schema/settings.ts
+  s_889e7184f230a6::t_ea72ceadfa9289 4,7
+src/main/index.ts
+  s_889e7184f230a6::t_deb1371a40c242 28
+src/main/db/DbService.ts
+  s_889e7184f230a6::t_dd9a057fd2ec78 28
+  s_889e7184f230a6::t_0c5aa0e1cc6e0e 15
+  s_889e7184f230a6::t_ef1a6e20974c13 6-7
+  s_889e7184f230a6::t_ccf4287600197a 20-23,25,36-38,45
+  s_889e7184f230a6::t_a229d134e4e8ba 46-49,60-61
+  s_889e7184f230a6::t_6efd542ed17812 50-59
+  s_889e7184f230a6::t_156ae19a4f551a 8-9
+  s_889e7184f230a6::t_19616e4c758f72 27
+src/main/db/schema/conversations.ts
+  s_889e7184f230a6::t_8a0f82c0e75008 1
+  s_889e7184f230a6::t_22e0a1cd14cf8a 3-7,12-13,15-16,18-19,21-25
+  s_889e7184f230a6::t_494fe9a1c1ffd5 10
+  s_889e7184f230a6::t_3337549e861bac 9
+src/main/utils/credentials.ts
+  s_889e7184f230a6::t_4d102676fa7de7 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "806a04511165b1c2e1151a892d1ecded47564f89",
+  "prompts": {},
+  "sessions": {
+    "s_889e7184f230a6": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "8bdb9a91-6113-4622-9ddb-92bbf7d959d8",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": null
+    }
+  }
+}
