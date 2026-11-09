@@ -129,7 +129,7 @@ export type Task = TaskFields &
     | { status: 'running' | 'cancelling' | 'error' | 'cancelled' | 'interrupted' }
   );
 export type Conversation = {
-  deletedAt?: string;
+  deletedAt?: string | null;
   id: string;
   datasetId: string;
   title: string;

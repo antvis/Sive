@@ -8,11 +8,11 @@ export const settings = sqliteTable('settings', {
   value: text('value').notNull(),
 
   // Creation timestamp.
-  created_at: text('created_at').notNull(),
+  createdAt: text('created_at').notNull(),
 
   // Last modification timestamp.
-  updated_at: text('updated_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
 
   // Soft deletion timestamp.
-  deleted_at: text('deleted_at'),
+  deletedAt: text('deleted_at'),
 });

@@ -79,7 +79,7 @@ export default function DeletedConversations({ state }: { state: State }) {
                       <strong className="block truncate text-body font-medium" title={conversation.title}>
                         {conversation.title}
                       </strong>
-                      <time className="block mt-1 text-helper text-muted" dateTime={conversation.deletedAt}>
+                      <time className="block mt-1 text-helper text-muted" dateTime={conversation.deletedAt!}>
                         归档于{' '}
                         {new Date(conversation.deletedAt!).toLocaleString('zh-CN', {
                           year: 'numeric',
