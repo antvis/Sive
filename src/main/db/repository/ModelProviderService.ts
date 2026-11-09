@@ -25,19 +25,19 @@ export class ModelProviderService {
     return this.db
       .select()
       .from(modelProviders)
-      .where(isNull(modelProviders.deleted_at))
-      .orderBy(modelProviders.created_at, modelProviders.id)
+      .where(isNull(modelProviders.deletedAt))
+      .orderBy(modelProviders.createdAt, modelProviders.id)
       .all()
       .map((row) => {
-        const modelIds = parseJSON<string[]>(row.model_names);
+        const modelIds = parseJSON<string[]>(row.modelNames);
         return {
           id: row.id,
           name: row.name,
-          baseURL: row.base_url,
+          baseURL: row.baseUrl,
           modelIds,
           model: selected?.provider_id === row.id ? selected.model_name : modelIds[0],
-          encryptedKey: row.encrypted_key ?? undefined,
-          updatedAt: row.updated_at,
+          encryptedKey: row.encryptedKey ?? undefined,
+          updatedAt: row.updatedAt,
         };
       });
   }
@@ -49,14 +49,14 @@ export class ModelProviderService {
       const now = timestamp(current?.updatedAt);
       const values = {
         name: model.name,
-        model_names: JSON.stringify(model.modelIds),
-        base_url: model.baseURL,
-        encrypted_key: model.encryptedKey ?? null,
-        updated_at: now,
+        modelNames: JSON.stringify(model.modelIds),
+        baseUrl: model.baseURL,
+        encryptedKey: model.encryptedKey ?? null,
+        updatedAt: now,
       };
       this.db
         .insert(modelProviders)
-        .values({ id: model.id, created_at: now, ...values })
+        .values({ id: model.id, createdAt: now, ...values })
         .onConflictDoUpdate({ target: modelProviders.id, set: values })
         .run();
       if (!this.activeModel || this.activeModel.provider_id === model.id)
@@ -79,8 +79,8 @@ export class ModelProviderService {
       const now = timestamp();
       this.db
         .update(modelProviders)
-        .set({ deleted_at: now, updated_at: now, encrypted_key: null })
-        .where(and(eq(modelProviders.id, id), isNull(modelProviders.deleted_at)))
+        .set({ deletedAt: now, updatedAt: now, encryptedKey: null })
+        .where(and(eq(modelProviders.id, id), isNull(modelProviders.deletedAt)))
         .run();
       if (this.activeModel?.provider_id === id) {
         const next = this.models()[0];

@@ -6,7 +6,7 @@ export const conversations = sqliteTable('conversations', {
   id: text('id').primaryKey(),
 
   // Identifier of the dataset that owns the conversation.
-  dataset_id: text('dataset_id')
+  datasetId: text('dataset_id')
     .notNull()
     .references(() => datasets.id, { onDelete: 'restrict' }),
 
@@ -14,11 +14,11 @@ export const conversations = sqliteTable('conversations', {
   title: text('title').notNull(),
 
   // Creation timestamp.
-  created_at: text('created_at').notNull(),
+  createdAt: text('created_at').notNull(),
 
   // Timestamp of the last message addition or conversation update.
-  updated_at: text('updated_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
 
   // Archive or soft deletion timestamp.
-  deleted_at: text('deleted_at'),
+  deletedAt: text('deleted_at'),
 });

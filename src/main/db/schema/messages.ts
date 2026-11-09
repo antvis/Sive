@@ -6,7 +6,7 @@ export const messages = sqliteTable('messages', {
   id: text('id').primaryKey(),
 
   // Identifier of the conversation that owns the message.
-  conversation_id: text('conversation_id')
+  conversationId: text('conversation_id')
     .notNull()
     .references(() => conversations.id, { onDelete: 'cascade' }),
 
@@ -25,14 +25,14 @@ export const messages = sqliteTable('messages', {
   content: text('content').notNull(),
 
   // JSON object containing the AVA options snapshot without credentials.
-  analysis_options: text('analysis_options').notNull().default('{}'),
+  analysisOptions: text('analysis_options').notNull().default('{}'),
 
   // Creation timestamp.
-  created_at: text('created_at').notNull(),
+  createdAt: text('created_at').notNull(),
 
   // Timestamp of the last progress, terminal-state, or soft deletion update.
-  updated_at: text('updated_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
 
   // Soft deletion timestamp.
-  deleted_at: text('deleted_at'),
+  deletedAt: text('deleted_at'),
 });

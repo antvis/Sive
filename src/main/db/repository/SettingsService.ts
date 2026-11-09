@@ -14,7 +14,7 @@ export class SettingsService {
     const row = this.db
       .select({ value: settings.value })
       .from(settings)
-      .where(and(eq(settings.key, key), isNull(settings.deleted_at)))
+      .where(and(eq(settings.key, key), isNull(settings.deletedAt)))
       .get();
     return row ? parseJSON<T>(row.value) : undefined;
   }
@@ -24,10 +24,10 @@ export class SettingsService {
       const encoded = JSON.stringify(value);
       this.db
         .insert(settings)
-        .values({ key, value: encoded, created_at: now, updated_at: now })
+        .values({ key, value: encoded, createdAt: now, updatedAt: now })
         .onConflictDoUpdate({
           target: settings.key,
-          set: { value: encoded, updated_at: now, deleted_at: null },
+          set: { value: encoded, updatedAt: now, deletedAt: null },
         })
         .run();
     });

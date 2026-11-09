@@ -19,7 +19,6 @@ import type { Conversation, Run, RunSummary, Task } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
 import {
   parseJSON,
-  conversationRecord,
   taskRecord,
   sourceSnapshot,
   analysisOptions,
@@ -35,11 +34,11 @@ import { conflict, timestamp } from '@main/utils/repository';
 const users = alias(messages, 'user_message');
 const question = sql<string>`json_extract(${users.content}, '$.text')`;
 const precedingUser = and(
-  eq(users.conversation_id, messages.conversation_id),
+  eq(users.conversationId, messages.conversationId),
   eq(users.sequence, sql`${messages.sequence} - 1`),
   eq(users.role, 'user'),
 );
-const assistant = and(eq(messages.role, 'assistant'), isNull(messages.deleted_at));
+const assistant = and(eq(messages.role, 'assistant'), isNull(messages.deletedAt));
 const running = inArray(messages.status, ['running', 'cancelling']);
 const active = (status: Task['status']) => status === 'running' || status === 'cancelling';
 
@@ -53,9 +52,9 @@ export class ConversationService {
   }
   private messageQuery(filter?: SQL) {
     return this.db
-      .select({ ...getTableColumns(messages), dataset_id: conversations.dataset_id, question })
+      .select({ ...getTableColumns(messages), datasetId: conversations.datasetId, question })
       .from(messages)
-      .innerJoin(conversations, eq(conversations.id, messages.conversation_id))
+      .innerJoin(conversations, eq(conversations.id, messages.conversationId))
       .innerJoin(users, precedingUser)
       .where(and(assistant, filter));
   }
@@ -64,7 +63,7 @@ export class ConversationService {
   }
   conversation(id: string) {
     const row = this.db.select().from(conversations).where(eq(conversations.id, id)).get();
-    return row ? conversationRecord(row) : conflict('会话不存在');
+    return row ?? conflict('会话不存在');
   }
   createConversation(datasetId: string) {
     return this.database.write(() => {
@@ -74,34 +73,32 @@ export class ConversationService {
         .from(conversations)
         .where(
           and(
-            eq(conversations.dataset_id, datasetId),
-            isNull(conversations.deleted_at),
+            eq(conversations.datasetId, datasetId),
+            isNull(conversations.deletedAt),
             notExists(
               this.db
                 .select({ id: messages.id })
                 .from(messages)
-                .where(eq(messages.conversation_id, conversations.id)),
+                .where(eq(messages.conversationId, conversations.id)),
             ),
           ),
         )
-        .orderBy(desc(conversations.created_at))
+        .orderBy(desc(conversations.createdAt))
         .limit(1)
         .get();
-      if (empty) return conversationRecord(empty);
+      if (empty) return empty;
       const now = timestamp();
-      return conversationRecord(
-        this.db
-          .insert(conversations)
-          .values({
-            id: randomUUID(),
-            dataset_id: datasetId,
-            title: '新会话',
-            created_at: now,
-            updated_at: now,
-          })
-          .returning()
-          .get(),
-      );
+      return this.db
+        .insert(conversations)
+        .values({
+          id: randomUUID(),
+          datasetId: datasetId,
+          title: '新会话',
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning()
+        .get();
     });
   }
   deleteConversation(id: string) {
@@ -111,14 +108,14 @@ export class ConversationService {
         this.db
           .select({ id: messages.id })
           .from(messages)
-          .where(and(eq(messages.conversation_id, id), running))
+          .where(and(eq(messages.conversationId, id), running))
           .get()
       )
         conflict('请先停止此会话的分析');
       const now = timestamp();
       this.db
         .update(conversations)
-        .set({ deleted_at: now, updated_at: now })
+        .set({ deletedAt: now, updatedAt: now })
         .where(eq(conversations.id, id))
         .run();
     });
@@ -128,8 +125,8 @@ export class ConversationService {
       if (
         !this.db
           .update(conversations)
-          .set({ deleted_at: null, updated_at: timestamp() })
-          .where(and(eq(conversations.id, id), isNotNull(conversations.deleted_at)))
+          .set({ deletedAt: null, updatedAt: timestamp() })
+          .where(and(eq(conversations.id, id), isNotNull(conversations.deletedAt)))
           .run().changes
       )
         conflict('已归档会话不存在');
@@ -155,14 +152,14 @@ export class ConversationService {
         this.db
           .select({ id: messages.id })
           .from(messages)
-          .where(and(running, isNull(messages.deleted_at)))
+          .where(and(running, isNull(messages.deletedAt)))
           .get()
       )
         conflict('已有分析正在进行');
       const sequence = this.db
         .select({ next: sql<number>`coalesce(max(${messages.sequence}) + 1, 0)` })
         .from(messages)
-        .where(eq(messages.conversation_id, conversation.id))
+        .where(eq(messages.conversationId, conversation.id))
         .get()!.next;
       const now = task.startedAt || timestamp();
       this.db
@@ -170,30 +167,30 @@ export class ConversationService {
         .values([
           {
             id: randomUUID(),
-            conversation_id: conversation.id,
+            conversationId: conversation.id,
             sequence,
             role: 'user',
             status: 'done',
             content: JSON.stringify({ text: task.question }),
-            created_at: now,
-            updated_at: now,
+            createdAt: now,
+            updatedAt: now,
           },
           {
             id: task.id,
-            conversation_id: conversation.id,
+            conversationId: conversation.id,
             sequence: sequence + 1,
             role: 'assistant',
             status: 'running',
             content: JSON.stringify({ events: [] }),
-            analysis_options: JSON.stringify(options),
-            created_at: now,
-            updated_at: now,
+            analysisOptions: JSON.stringify(options),
+            createdAt: now,
+            updatedAt: now,
           },
         ])
         .run();
       this.db
         .update(conversations)
-        .set({ title: sequence === 0 ? task.question.trim().slice(0, 60) : current.title, updated_at: now })
+        .set({ title: sequence === 0 ? task.question.trim().slice(0, 60) : current.title, updatedAt: now })
         .where(eq(conversations.id, conversation.id))
         .run();
       return sequence + 1;
@@ -209,7 +206,7 @@ export class ConversationService {
         .update(messages)
         .set({
           status,
-          updated_at: timestamp(row.updated_at),
+          updatedAt: timestamp(row.updatedAt),
           content: JSON.stringify({
             events: task.events,
             preview: task.preview,
@@ -232,22 +229,22 @@ export class ConversationService {
     const content: MessageContent = output
       ? { result: output.result, chart: output.chart, chart_error: output.chartError, events: task.events }
       : { events: task.events, preview: task.preview, error: task.error };
-    const now = timestamp(row.updated_at);
+    const now = timestamp(row.updatedAt);
     this.db
       .update(messages)
-      .set({ status: task.status, content: JSON.stringify(content), updated_at: now })
+      .set({ status: task.status, content: JSON.stringify(content), updatedAt: now })
       .where(eq(messages.id, task.id))
       .run();
     this.db
       .update(conversations)
-      .set({ updated_at: now })
-      .where(eq(conversations.id, row.conversation_id))
+      .set({ updatedAt: now })
+      .where(eq(conversations.id, row.conversationId))
       .run();
     this.db
       .insert(snippets)
       .values({
         id: randomUUID(),
-        message_id: task.id,
+        messageId: task.id,
         title: row.question,
         content: JSON.stringify({
           result: content.result ?? content.preview,
@@ -255,8 +252,8 @@ export class ConversationService {
           chart_error: content.chart_error,
           error: content.error,
         }),
-        created_at: now,
-        updated_at: now,
+        createdAt: now,
+        updatedAt: now,
       })
       .run();
   }
@@ -268,7 +265,7 @@ export class ConversationService {
       this.db
         .select()
         .from(snippets)
-        .where(and(eq(snippets.message_id, id), isNull(snippets.deleted_at)))
+        .where(and(eq(snippets.messageId, id), isNull(snippets.deletedAt)))
         .get() ?? conflict('分析片段不存在')
     );
   }
@@ -276,14 +273,14 @@ export class ConversationService {
     const row = this.db
       .select({ id: messages.id })
       .from(messages)
-      .where(and(assistant, eq(messages.conversation_id, conversationId), eq(messages.status, 'done')))
+      .where(and(assistant, eq(messages.conversationId, conversationId), eq(messages.status, 'done')))
       .orderBy(desc(messages.sequence))
       .limit(1)
       .get();
     return row ? this.run(row.id) : undefined;
   }
   assertRunSource(id: string, source: StoredDataset) {
-    const old = parseJSON<MessageOptions>(this.message(id).analysis_options).source;
+    const old = parseJSON<MessageOptions>(this.message(id).analysisOptions).source;
     const identity = (snapshot: typeof old) =>
       snapshot.format === 'mysql'
         ? {
@@ -301,20 +298,20 @@ export class ConversationService {
     const row = this.message(id);
     const content = parseJSON<MessageContent>(row.content);
     if (row.status !== 'done' || !content.result) return conflict('分析尚未成功完成');
-    const options = parseJSON<MessageOptions>(row.analysis_options);
+    const options = parseJSON<MessageOptions>(row.analysisOptions);
     const snippet = this.snippet(id);
     const view = parseJSON<SnippetContent>(snippet.content);
     return {
       id,
-      conversationId: row.conversation_id,
-      datasetId: row.dataset_id,
+      conversationId: row.conversationId,
+      datasetId: row.datasetId,
       sequence: row.sequence,
       question: row.question,
       sourceName: options.source.name,
       excelSheets: options.source.config.excelSheets,
       strategy: options.analyze.strategy.type,
       analysisOptions: analysisOptions(options),
-      createdAt: row.updated_at,
+      createdAt: row.updatedAt,
       semantic: options.semantic,
       metrics: options.metrics,
       modelName: `${options.model.provider_name} · ${options.model.model_name}`,
@@ -322,12 +319,12 @@ export class ConversationService {
       chart: content.chart,
       chartError: content.chart_error,
       events: content.events,
-      ...(snippet.is_visible
+      ...(snippet.isVisible
         ? {
-            savedAt: snippet.updated_at,
+            savedAt: snippet.updatedAt,
             savedTitle: snippet.title,
             savedView: view.result
-              ? { result: view.result, chart: view.chart ?? undefined, updatedAt: snippet.updated_at }
+              ? { result: view.result, chart: view.chart ?? undefined, updatedAt: snippet.updatedAt }
               : undefined,
           }
         : {}),
@@ -337,10 +334,10 @@ export class ConversationService {
     this.database.write(() => {
       if (this.message(id).status !== 'done') conflict('只能保存已完成的分析');
       const snippet = this.snippet(id);
-      if (!snippet.is_visible)
+      if (!snippet.isVisible)
         this.db
           .update(snippets)
-          .set({ is_visible: 1, updated_at: timestamp(snippet.updated_at) })
+          .set({ isVisible: 1, updatedAt: timestamp(snippet.updatedAt) })
           .where(eq(snippets.id, snippet.id))
           .run();
     });
@@ -350,7 +347,7 @@ export class ConversationService {
       const snippet = this.snippet(id);
       this.db
         .update(snippets)
-        .set({ is_visible: 0, updated_at: timestamp(snippet.updated_at) })
+        .set({ isVisible: 0, updatedAt: timestamp(snippet.updatedAt) })
         .where(eq(snippets.id, snippet.id))
         .run();
     });
@@ -358,11 +355,11 @@ export class ConversationService {
   renameSavedAnalysis(id: string, title: string) {
     this.database.write(() => {
       const snippet = this.snippet(id);
-      if (!snippet.is_visible) conflict('此分析已从收藏移除');
+      if (!snippet.isVisible) conflict('此分析已从收藏移除');
       if (!title.trim()) throw new WorkbenchError('INVALID_INPUT', '请输入收藏标题');
       this.db
         .update(snippets)
-        .set({ title: title.trim(), updated_at: timestamp(snippet.updated_at) })
+        .set({ title: title.trim(), updatedAt: timestamp(snippet.updatedAt) })
         .where(eq(snippets.id, snippet.id))
         .run();
     });
@@ -371,14 +368,13 @@ export class ConversationService {
     this.database.write(() => {
       this.datasets.assertDatasetCurrent(source);
       const snippet = this.snippet(id);
-      if (!snippet.is_visible || snippet.updated_at !== savedAt)
-        conflict('收藏已发生变化，本次刷新结果未写入');
-      if (this.conversation(this.message(id).conversation_id).deletedAt) conflict('请先恢复此分析所属的会话');
+      if (!snippet.isVisible || snippet.updatedAt !== savedAt) conflict('收藏已发生变化，本次刷新结果未写入');
+      if (this.conversation(this.message(id).conversationId).deletedAt) conflict('请先恢复此分析所属的会话');
       this.db
         .update(snippets)
         .set({
           content: JSON.stringify({ result: view.result, chart: view.chart ?? null }),
-          updated_at: timestamp(snippet.updated_at),
+          updatedAt: timestamp(snippet.updatedAt),
         })
         .where(eq(snippets.id, snippet.id))
         .run();
@@ -400,55 +396,54 @@ export class ConversationService {
     return this.db
       .select()
       .from(conversations)
-      .orderBy(desc(conversations.created_at), desc(conversations.id))
-      .all()
-      .map(conversationRecord);
+      .orderBy(desc(conversations.createdAt), desc(conversations.id))
+      .all();
   }
   listRuns() {
     return this.db
       .select({
         id: messages.id,
-        conversation_id: messages.conversation_id,
-        dataset_id: conversations.dataset_id,
+        conversationId: messages.conversationId,
+        datasetId: conversations.datasetId,
         sequence: messages.sequence,
-        analysis_options: messages.analysis_options,
-        updated_at: messages.updated_at,
+        analysisOptions: messages.analysisOptions,
+        updatedAt: messages.updatedAt,
         question,
-        saved_at: snippets.updated_at,
-        saved_title: snippets.title,
+        savedAt: snippets.updatedAt,
+        savedTitle: snippets.title,
       })
       .from(messages)
-      .innerJoin(conversations, eq(conversations.id, messages.conversation_id))
+      .innerJoin(conversations, eq(conversations.id, messages.conversationId))
       .innerJoin(users, precedingUser)
       .leftJoin(
         snippets,
-        and(eq(snippets.message_id, messages.id), eq(snippets.is_visible, 1), isNull(snippets.deleted_at)),
+        and(eq(snippets.messageId, messages.id), eq(snippets.isVisible, 1), isNull(snippets.deletedAt)),
       )
-      .where(and(assistant, eq(messages.status, 'done'), isNull(conversations.deleted_at)))
-      .orderBy(desc(messages.created_at), desc(messages.sequence))
+      .where(and(assistant, eq(messages.status, 'done'), isNull(conversations.deletedAt)))
+      .orderBy(desc(messages.createdAt), desc(messages.sequence))
       .all()
       .map((row): RunSummary => {
-        const options = parseJSON<MessageOptions>(row.analysis_options);
+        const options = parseJSON<MessageOptions>(row.analysisOptions);
         return {
           id: row.id,
-          conversationId: row.conversation_id,
-          datasetId: row.dataset_id,
+          conversationId: row.conversationId,
+          datasetId: row.datasetId,
           sequence: row.sequence,
           question: row.question,
           sourceName: options.source.name,
           strategy: options.analyze.strategy.type,
           analysisOptions: analysisOptions(options),
-          createdAt: row.updated_at,
+          createdAt: row.updatedAt,
           modelName: `${options.model.provider_name} · ${options.model.model_name}`,
-          savedAt: row.saved_at ?? undefined,
-          savedTitle: row.saved_title ?? undefined,
-          viewUpdatedAt: row.saved_at ?? undefined,
+          savedAt: row.savedAt ?? undefined,
+          savedTitle: row.savedTitle ?? undefined,
+          viewUpdatedAt: row.savedAt ?? undefined,
         };
       });
   }
   listTasks() {
-    return this.messageQuery(and(ne(messages.status, 'done'), isNull(conversations.deleted_at)))
-      .orderBy(desc(messages.created_at), desc(messages.sequence))
+    return this.messageQuery(and(ne(messages.status, 'done'), isNull(conversations.deletedAt)))
+      .orderBy(desc(messages.createdAt), desc(messages.sequence))
       .all()
       .map(taskRecord);
   }
