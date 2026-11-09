@@ -1,5 +1,5 @@
-import type { ModelProviderService } from '@main/data/services/ModelProviderService';
-import type { StoredModel } from '@main/data/mappers';
+import type { ModelProviderService } from '@main/db/repository/ModelProviderService';
+import type { StoredModel } from '@main/db/mappers';
 import { modelConnectionSchema, modelInputSchema, parseInput } from '@shared/inputSchemas';
 import { WorkbenchError } from '@shared/errors';
 import { createModel } from '@main/ai/provider';

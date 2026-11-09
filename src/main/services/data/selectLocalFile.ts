@@ -1,4 +1,4 @@
-import type { SettingsService } from '@main/data/services/SettingsService';
+import type { SettingsService } from '@main/db/repository/SettingsService';
 import { dialog, type BrowserWindow } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';

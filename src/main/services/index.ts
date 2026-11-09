@@ -1,5 +1,5 @@
 import type { Task } from '@shared/contracts';
-import type { DataServices } from '@main/data';
+import type { DataServices } from '@main/db';
 import { ModelService } from '@main/services/settings/ModelService';
 import { ConnectionService } from '@main/services/data/ConnectionService';
 import { DatasetService } from '@main/services/data/DatasetService';

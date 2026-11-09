@@ -1,9 +1,9 @@
 import { and, eq, isNull } from 'drizzle-orm';
-import { settings } from '@main/data/db/schema';
-import { parseJSON } from '@main/data/mappers';
+import { settings } from '@main/db/schema';
+import { parseJSON } from '@main/db/mappers';
 import { defaultTheme, validateTheme, type ThemeSettings } from '@shared/theme';
-import type { DbService } from '@main/data/db/DbService';
-import { timestamp } from './utils';
+import type { DbService } from '@main/db/DbService';
+import { timestamp } from '@main/utils/repository';
 
 export class SettingsService {
   constructor(private database: DbService) {}

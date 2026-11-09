@@ -4,7 +4,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { API } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
-import type { ConversationService } from '@main/data/services/ConversationService';
+import type { ConversationService } from '@main/db/repository/ConversationService';
 import type { ThemeSettings } from '@shared/theme';
 import { analysisHTML } from './analysisHtml';
 import { exportFilename } from './exportFilename';
