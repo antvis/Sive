@@ -1,0 +1,73 @@
+src/main/db/schema/settings.ts
+  s_d4d04c6e005575::t_57fcde82b55f8b 1-8
+src/main/services/data/selectLocalFile.ts
+  s_d4d04c6e005575::t_29e991fbf39613 1
+src/main/services/settings/ModelService.ts
+  s_d4d04c6e005575::t_5056b0b61e2f9a 1-2
+src/main/services/index.ts
+  s_d4d04c6e005575::t_8f3808067c852f 2
+src/main/services/data/DatasetService.ts
+  s_d4d04c6e005575::t_c6422d21d79a02 1-2
+src/main/db/repository/DatasetService.ts
+  s_d4d04c6e005575::t_66f5e2be8c220a 11
+  s_d4d04c6e005575::t_5a081ab31bf205 2,12
+src/main/db/mappers.ts
+  s_d4d04c6e005575::t_564db434ad96aa 1
+src/main/services/analysis/AnalysisService.ts
+  s_d4d04c6e005575::t_5d8c77f36f098c 1,9
+src/main/db/repository/workspaceState.ts
+  s_d4d04c6e005575::t_575a560fa13a8b 2
+src/main/db/repository/ModelProviderService.ts
+  s_d4d04c6e005575::t_7878874e8d38bc 3-6
+src/main/services/data/ConnectionService.ts
+  s_d4d04c6e005575::t_646f3b0d29b81e 1-2
+src/main/db/schema/timestamps.ts
+  s_d4d04c6e005575::t_57fcde82b55f8b 1-7
+src/main/services/export/exportAnalysis.ts
+  s_d4d04c6e005575::t_ea06a7b22175fd 7
+src/main/ai/ava.ts
+  s_d4d04c6e005575::t_a21f141db18664 3,10
+src/main/index.ts
+  s_d4d04c6e005575::t_0a755b6d93cd14 3
+src/main/db/schema/datasets.ts
+  s_d4d04c6e005575::t_57fcde82b55f8b 1-15
+src/main/db/index.ts
+  s_d4d04c6e005575::t_1ac235d6d94453 1-5
+src/main/db/schema/snippets.ts
+  s_d4d04c6e005575::t_57fcde82b55f8b 1-15
+src/main/db/repository/SettingsService.ts
+  s_d4d04c6e005575::t_de3f5c9acde9e3 2-5
+src/main/services/snippet/SnippetService.ts
+  s_d4d04c6e005575::t_f0578889d368dc 1-2
+src/main/ipc/handlers.ts
+  s_d4d04c6e005575::t_ae2f58154b42a6 6-7
+src/main/db/schema/modelProviders.ts
+  s_d4d04c6e005575::t_57fcde82b55f8b 1-11
+src/main/db/schema/index.ts
+  s_d4d04c6e005575::t_57fcde82b55f8b 1-8
+src/main/db/repository/ConversationService.ts
+  s_d4d04c6e005575::t_a07713c53b37a0 31
+  s_d4d04c6e005575::t_e286f979e62333 17,33
+src/main/db/schema/conversations.ts
+  s_d4d04c6e005575::t_57fcde82b55f8b 1-12
+src/main/db/schema/messages.ts
+  s_d4d04c6e005575::t_57fcde82b55f8b 1-18
+src/main/services/analysis/TaskProgress.ts
+  s_d4d04c6e005575::t_fbb846b204cae7 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1667bd8cd15f9967092b3ca93f8510545e74fc4d",
+  "prompts": {},
+  "sessions": {
+    "s_d4d04c6e005575": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "ccd9e214-1af3-48c1-b715-bfa0311cd2da",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
