@@ -1,0 +1,21 @@
+AGENTS.md
+  s_f706b3d8f08ffb::t_0da73b60cd36d1 8-11
+  s_f706b3d8f08ffb::t_f9bb90aa09cedd 5-7
+  s_f706b3d8f08ffb::t_7b0deba9e9caf5 12-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5706281cbae7d2b92e4160e1366e28355a8b669e",
+  "prompts": {},
+  "sessions": {
+    "s_f706b3d8f08ffb": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "65391fb1-937e-4a12-bb3d-4d196f4adce9",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
