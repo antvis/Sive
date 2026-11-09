@@ -1,0 +1,50 @@
+src/main/db/schema/datasets.ts
+  s_d4d04c6e005575::t_aca2636b15eafd 4,6-7,9-10,12-13,15-16,18-19,21-22,24-25,27-28,30-38
+src/main/ipc/handlers.ts
+  s_72f15335366f0c::t_271cbf5252932a 26
+  s_72f15335366f0c::t_6a495559af6024 7
+src/main/db/schema/conversations.ts
+  s_d4d04c6e005575::t_69c429965ccf76 5,7-8,12-13,15-23
+src/main/db/repository/ConversationService.ts
+  s_d4d04c6e005575::t_cb1b808b584baa 34
+src/main/db/repository/SettingsService.ts
+  s_d4d04c6e005575::t_03cd7f7aa75464 6
+src/main/db/repository/DatasetService.ts
+  s_d4d04c6e005575::t_f3c0151f833734 13
+src/main/db/schema/settings.ts
+  s_d4d04c6e005575::t_731109f6ab03a1 4,6-7,9-17
+src/main/db/schema/modelProviders.ts
+  s_d4d04c6e005575::t_a13f183c143c53 4,6-7,9-10,12-13,15-16,18-26
+src/main/services/workspaceState.ts
+  s_72f15335366f0c::t_f77cfffef41636 5
+src/main/db/repository/ModelProviderService.ts
+  s_d4d04c6e005575::t_65adcbf30dd8c8 7
+src/main/db/schema/snippets.ts
+  s_d4d04c6e005575::t_15a09252bfa4f6 5,7-9,14-15,17-18,20-21,23-31
+src/main/db/schema/messages.ts
+  s_d4d04c6e005575::t_395be48294ed32 5,7-8,12-13,15-16,18-19,23-24,26-27,29-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "98d0fb4bb34a65c334d8265c10dc32aef6609fcb",
+  "prompts": {},
+  "sessions": {
+    "s_72f15335366f0c": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "5e3e3bbd-5c4e-4958-ae65-7a175cfa6def",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_d4d04c6e005575": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "ccd9e214-1af3-48c1-b715-bfa0311cd2da",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
