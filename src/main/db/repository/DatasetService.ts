@@ -1,5 +1,5 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
-import { datasets } from '@main/data/db/schema';
+import { datasets } from '@main/db/schema';
 import type { Dataset } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
 import {
@@ -8,8 +8,8 @@ import {
   type DatasetRow,
   type SourceConfig,
   type StoredDataset,
-} from '@main/data/mappers';
-import type { DbService } from '@main/data/db/DbService';
+} from '@main/db/mappers';
+import type { DbService } from '@main/db/DbService';
 import { conflict, timestamp } from './utils';
 
 export class DatasetService {

@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, nativeTheme } from 'electron';
 import path from 'node:path';
-import { createDataServices, type DataServices } from '@main/data';
+import { createDataServices, type DataServices } from '@main/db';
 import { ModelService } from '@main/services/settings/ModelService';
 import { createWorkbenchServices } from '@main/services';
 import { ConnectionService } from '@main/services/data/ConnectionService';

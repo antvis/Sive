@@ -1,4 +1,4 @@
-import type { ConversationService } from '@main/data/services/ConversationService';
+import type { ConversationService } from '@main/db/repository/ConversationService';
 import { queryOptions } from '@main/ai/queryOptions';
 import { WorkbenchError } from '@shared/errors';
 import { randomUUID } from 'node:crypto';
@@ -6,7 +6,7 @@ import type { Task } from '@shared/contracts';
 import type { AnalysisMode, AnalysisOptions } from '@shared/analysisOptions';
 import { resolveStrategy } from '@main/ai/analysisStrategy';
 import { businessSemantic } from '@main/ai/semantics';
-import { sourceSnapshot } from '@main/data/mappers';
+import { sourceSnapshot } from '@main/db/mappers';
 import { ModelService, ModelCredentialError } from '@main/services/settings/ModelService';
 import { ConnectionService } from '@main/services/data/ConnectionService';
 import { withAVA } from '@main/ai/ava';

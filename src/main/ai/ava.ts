@@ -1,13 +1,13 @@
 import { WorkbenchError } from '@shared/errors';
 import { AVA, type DataSourceConfig } from '@antv/ava';
-import type { StoredDataset } from '@main/data/mappers';
+import type { StoredDataset } from '@main/db/mappers';
 import type { Progress, ExcelSheet } from '@shared/contracts';
 import type { ModelService } from '@main/services/settings/ModelService';
 import { analysisProgress, progressLabels } from '@main/ai/progress';
 import { businessSemantic } from '@main/ai/semantics';
 import type { ConnectionService } from '@main/services/data/ConnectionService';
 import { connectionFailure } from '@main/services/data/ConnectionService';
-import type { StoredModel } from '@main/data/mappers';
+import type { StoredModel } from '@main/db/mappers';
 import { mysqlSchema } from '@main/services/data/mysqlSchema';
 function source(file: string, format: string, sheets?: ExcelSheet[]): DataSourceConfig {
   if (format === 'csv') return { type: 'csv-file', options: { path: file, options: { header: true } } };

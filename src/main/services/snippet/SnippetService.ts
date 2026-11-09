@@ -1,5 +1,5 @@
-import type { SettingsService } from '@main/data/services/SettingsService';
-import type { ConversationService } from '@main/data/services/ConversationService';
+import type { SettingsService } from '@main/db/repository/SettingsService';
+import type { ConversationService } from '@main/db/repository/ConversationService';
 import { queryOptions } from '@main/ai/queryOptions';
 import { WorkbenchError } from '@shared/errors';
 import { ModelService } from '@main/services/settings/ModelService';

@@ -1,8 +1,8 @@
-import { DbService } from './db/DbService';
-import { SettingsService } from './services/SettingsService';
-import { ModelProviderService } from './services/ModelProviderService';
-import { DatasetService } from './services/DatasetService';
-import { ConversationService } from './services/ConversationService';
+import { DbService } from './DbService';
+import { SettingsService } from './repository/SettingsService';
+import { ModelProviderService } from './repository/ModelProviderService';
+import { DatasetService } from './repository/DatasetService';
+import { ConversationService } from './repository/ConversationService';
 
 // Construct one connection and inject only the data services each consumer needs.
 export function createDataServices(root: string) {

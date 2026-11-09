@@ -1,4 +1,4 @@
-import type { ConversationService } from '@main/data/services/ConversationService';
+import type { ConversationService } from '@main/db/repository/ConversationService';
 import type { Task } from '@shared/contracts';
 
 // Coalesce progress writes to the message row; terminal transactions stay synchronous.

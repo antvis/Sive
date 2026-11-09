@@ -1,5 +1,5 @@
-import type { DatasetService as DatasetDataService } from '@main/data/services/DatasetService';
-import type { StoredDataset } from '@main/data/mappers';
+import type { DatasetService as DatasetDataService } from '@main/db/repository/DatasetService';
+import type { StoredDataset } from '@main/db/mappers';
 import { mysqlInputSchema, parseInput } from '@shared/inputSchemas';
 import { WorkbenchError } from '@shared/errors';
 import { randomUUID } from 'node:crypto';

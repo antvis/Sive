@@ -14,7 +14,7 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
-import { conversations, messages, snippets } from '@main/data/db/schema';
+import { conversations, messages, snippets } from '@main/db/schema';
 import type { Conversation, Run, RunSummary, Task } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
 import {
@@ -28,9 +28,9 @@ import {
   type MessageContent,
   type AnalysisOutput,
   type SnippetContent,
-} from '@main/data/mappers';
+} from '@main/db/mappers';
 import type { DatasetService } from './DatasetService';
-import type { DbService } from '@main/data/db/DbService';
+import type { DbService } from '@main/db/DbService';
 import { conflict, timestamp } from './utils';
 const users = alias(messages, 'user_message');
 const question = sql<string>`json_extract(${users.content}, '$.text')`;

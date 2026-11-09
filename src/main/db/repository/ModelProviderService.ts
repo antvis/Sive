@@ -1,9 +1,9 @@
 import { isDeepStrictEqual } from 'node:util';
 import { and, eq, isNull } from 'drizzle-orm';
-import { modelProviders } from '@main/data/db/schema';
-import { parseJSON, type StoredModel } from '@main/data/mappers';
+import { modelProviders } from '@main/db/schema';
+import { parseJSON, type StoredModel } from '@main/db/mappers';
 import type { SettingsService } from './SettingsService';
-import type { DbService } from '@main/data/db/DbService';
+import type { DbService } from '@main/db/DbService';
 import { conflict, timestamp } from './utils';
 
 export class ModelProviderService {

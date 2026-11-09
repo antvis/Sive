@@ -1,4 +1,4 @@
-import type { datasets, conversations, messages } from './db/schema';
+import type { datasets, conversations, messages } from './schema';
 import type { AnalysisOptions } from '@shared/analysisOptions';
 import type { Conversation, Dataset, ModelProfile, Progress, Run, Task } from '@shared/contracts';
 
