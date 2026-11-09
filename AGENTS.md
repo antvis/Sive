@@ -12,6 +12,10 @@ Sive is a desktop data analysis workbench based on AntV AVA, built with Electron
 
 MUST USE THE BESE PRACTICES OF ELECTRON APPLICATION.
 
+## Code Style
+
+- Add blank lines between methods and properties to keep the code visually loose.
+- Use relative paths for imports instead of `@` aliases, except for top-level modules such as `shared`.
 
 # Karpathy Guidelines
 
