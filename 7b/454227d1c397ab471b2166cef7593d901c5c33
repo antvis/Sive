@@ -1,0 +1,70 @@
+src/main/db/repository/DatasetService.ts
+  s_a224847773dc82::t_7d7daf4218cb43 5
+  s_a224847773dc82::t_2749f010d4c057 83,102
+  s_a224847773dc82::t_7c8fcbe3f3f45b 84-85,87
+  s_a224847773dc82::t_f765ae00496d30 15,22-23,25,41-42,55
+src/main/db/mappers.ts
+  s_a224847773dc82::t_6ade1415aa88c8 3-19
+  s_a224847773dc82::t_765c929f735ead 34-35
+src/main/index.ts
+  s_a224847773dc82::t_b0e4ba9a953720 52
+src/main/ai/ava.ts
+  s_a224847773dc82::t_2749f010d4c057 22
+src/main/db/schema/settings.ts
+  s_a224847773dc82::t_ad5a8db527647c 8
+src/main/db/schema/messages.ts
+  s_a224847773dc82::t_219e6e7adfb243 26,29-32
+  s_a224847773dc82::t_80cb0d7331601e 3
+src/main/db/repository/SettingsService.ts
+  s_a224847773dc82::t_525a93392dc08d 18
+  s_a224847773dc82::t_dfb7de3719461b 25,28
+src/main/services/data/ConnectionService.ts
+  s_a224847773dc82::t_3c3270a21e7c23 62
+  s_a224847773dc82::t_2749f010d4c057 32-36
+  s_a224847773dc82::t_41839ebea11307 26
+  s_a224847773dc82::t_fdb6dcf2e51eb6 31,53,56
+src/main/db/schema/modelProviders.ts
+  s_a224847773dc82::t_44eb5fef227037 11
+src/main/db/types.ts
+  s_a224847773dc82::t_e5961fd43eae04 1-48
+src/main/db/schema/snippets.ts
+  s_a224847773dc82::t_57aefc5adbae22 20
+  s_a224847773dc82::t_325e27439ea347 3
+src/main/db/schema/datasets.ts
+  s_a224847773dc82::t_d692a12448465f 28-29,32,35,41
+  s_a224847773dc82::t_54d6e3c6ce44a2 1-16
+src/main/db/repository/ConversationService.ts
+  s_a224847773dc82::t_636d44c77e4249 208,212
+  s_a224847773dc82::t_1b2e2c9cf4d81c 26
+  s_a224847773dc82::t_2fdf87d3729d47 227,233,247,252
+  s_a224847773dc82::t_243d0c74c6869c 172,182-183
+  s_a224847773dc82::t_b26fc98874e532 374
+  s_a224847773dc82::t_976bf6407a2027 297,299,301
+  s_a224847773dc82::t_4b4b976c4f0358 424
+  s_a224847773dc82::t_9d1d42a2e58c47 281
+src/main/db/bootstrap.ts
+  s_a224847773dc82::t_cb37498f1871e4 27
+src/main/db/repository/ModelProviderService.ts
+  s_a224847773dc82::t_fdb258c9d51c5f 32
+  s_a224847773dc82::t_be7cd76577fd5f 52
+  s_a224847773dc82::t_ee174c46e7c5d3 4
+electron.vite.config.ts
+  s_a224847773dc82::t_fa683eff40ca96 19-20
+  s_a224847773dc82::t_21828d90960eef 32-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7b454227d1c397ab471b2166cef7593d901c5c33",
+  "prompts": {},
+  "sessions": {
+    "s_a224847773dc82": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "21b42c99-63bf-4a1c-8102-194cfaecc28f",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
