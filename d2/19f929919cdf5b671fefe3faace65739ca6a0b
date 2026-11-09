@@ -1,0 +1,20 @@
+src/main/db/DbService.ts
+  s_cccebd94947d98::t_6ede931e580460 8-15
+  s_cccebd94947d98::t_a80a0d04423e11 17-18,20,22-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d219f929919cdf5b671fefe3faace65739ca6a0b",
+  "prompts": {},
+  "sessions": {
+    "s_cccebd94947d98": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "bfadef04-2571-49e4-b236-4320d434ce6b",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
