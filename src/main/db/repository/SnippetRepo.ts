@@ -38,19 +38,17 @@ export class SnippetRepo {
       .all();
   }
 
-  insert(values: SnippetInsert | SnippetInsert[]) {
-    this.db
-      .insert(snippets)
-      .values(Array.isArray(values) ? values : [values])
-      .run();
+  insert(values: SnippetInsert) {
+    return this.db.insert(snippets).values(values).returning().get();
   }
 
   update(id: string, values: SnippetUpdate) {
-    this.db
+    return this.db
       .update(snippets)
       .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
       .where(and(eq(snippets.id, id), isNull(snippets.deletedAt)))
-      .run();
+      .returning()
+      .get();
   }
 
   remove(id: string) {

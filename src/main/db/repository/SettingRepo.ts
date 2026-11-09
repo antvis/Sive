@@ -25,19 +25,17 @@ export class SettingRepo {
     return this.db.select().from(settings).where(isNull(settings.deletedAt)).orderBy(settings.key).all();
   }
 
-  insert(values: SettingInsert | SettingInsert[]) {
-    this.db
-      .insert(settings)
-      .values(Array.isArray(values) ? values : [values])
-      .run();
+  insert(values: SettingInsert) {
+    return this.db.insert(settings).values(values).returning().get();
   }
 
   update(key: string, values: SettingUpdate) {
-    this.db
+    return this.db
       .update(settings)
       .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
       .where(and(eq(settings.key, key), isNull(settings.deletedAt)))
-      .run();
+      .returning()
+      .get();
   }
 
   remove(key: string) {

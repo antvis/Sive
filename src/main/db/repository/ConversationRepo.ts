@@ -39,19 +39,17 @@ export class ConversationRepo {
       .all();
   }
 
-  insert(values: ConversationInsert | ConversationInsert[]) {
-    this.db
-      .insert(conversations)
-      .values(Array.isArray(values) ? values : [values])
-      .run();
+  insert(values: ConversationInsert) {
+    return this.db.insert(conversations).values(values).returning().get();
   }
 
   update(id: string, values: ConversationUpdate) {
-    this.db
+    return this.db
       .update(conversations)
       .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
       .where(and(eq(conversations.id, id), isNull(conversations.deletedAt)))
-      .run();
+      .returning()
+      .get();
   }
 
   remove(id: string) {

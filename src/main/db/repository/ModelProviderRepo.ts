@@ -30,19 +30,17 @@ export class ModelProviderRepo {
       .all();
   }
 
-  insert(values: ModelProviderInsert | ModelProviderInsert[]) {
-    this.db
-      .insert(modelProviders)
-      .values(Array.isArray(values) ? values : [values])
-      .run();
+  insert(values: ModelProviderInsert) {
+    return this.db.insert(modelProviders).values(values).returning().get();
   }
 
   update(id: string, values: ModelProviderUpdate) {
-    this.db
+    return this.db
       .update(modelProviders)
       .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
       .where(and(eq(modelProviders.id, id), isNull(modelProviders.deletedAt)))
-      .run();
+      .returning()
+      .get();
   }
 
   remove(id: string) {

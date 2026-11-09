@@ -30,19 +30,17 @@ export class DatasetRepo {
       .all();
   }
 
-  insert(values: DatasetInsert | DatasetInsert[]) {
-    this.db
-      .insert(datasets)
-      .values(Array.isArray(values) ? values : [values])
-      .run();
+  insert(values: DatasetInsert) {
+    return this.db.insert(datasets).values(values).returning().get();
   }
 
   update(id: string, values: DatasetUpdate) {
-    this.db
+    return this.db
       .update(datasets)
       .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
       .where(and(eq(datasets.id, id), isNull(datasets.deletedAt)))
-      .run();
+      .returning()
+      .get();
   }
 
   remove(id: string) {

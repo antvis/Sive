@@ -39,19 +39,17 @@ export class MessageRepo {
       .all();
   }
 
-  insert(values: MessageInsert | MessageInsert[]) {
-    this.db
-      .insert(messages)
-      .values(Array.isArray(values) ? values : [values])
-      .run();
+  insert(values: MessageInsert) {
+    return this.db.insert(messages).values(values).returning().get();
   }
 
   update(id: string, values: MessageUpdate) {
-    this.db
+    return this.db
       .update(messages)
       .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
       .where(and(eq(messages.id, id), isNull(messages.deletedAt)))
-      .run();
+      .returning()
+      .get();
   }
 
   remove(id: string) {
