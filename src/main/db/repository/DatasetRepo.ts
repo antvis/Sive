@@ -1,7 +1,7 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { datasets } from '../schema';
 import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/repository';
+import { timestamp } from '../../utils/time';
 
 type DatasetInsert = typeof datasets.$inferInsert;
 type DatasetUpdate = Partial<Omit<DatasetInsert, 'id' | 'createdAt'>>;
@@ -28,6 +28,15 @@ export class DatasetRepo {
       .where(isNull(datasets.deletedAt))
       .orderBy(desc(datasets.updatedAt), desc(datasets.id))
       .all();
+  }
+
+  exists(id: string) {
+    return !!this.db.select({ id: datasets.id }).from(datasets).where(eq(datasets.id, id)).get();
+  }
+
+  // Historical screens retain deleted sources' metadata; their connection config is cleared on deletion.
+  listAll() {
+    return this.db.select().from(datasets).orderBy(desc(datasets.updatedAt), desc(datasets.id)).all();
   }
 
   insert(values: DatasetInsert) {

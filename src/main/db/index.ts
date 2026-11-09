@@ -1,26 +1,22 @@
 import { DbService } from './DbService';
-import { SettingsService } from './repository/SettingsService';
-import { ModelProviderService } from './repository/ModelProviderService';
-import { DatasetService } from './repository/DatasetService';
-import { ConversationService } from './repository/ConversationService';
+import { ConversationRepo } from './repository/ConversationRepo';
+import { DatasetRepo } from './repository/DatasetRepo';
+import { MessageRepo } from './repository/MessageRepo';
+import { ModelProviderRepo } from './repository/ModelProviderRepo';
+import { SettingRepo } from './repository/SettingRepo';
+import { SnippetRepo } from './repository/SnippetRepo';
 
-/**
- * Construct one connection and inject only the data services each consumer needs.
- *
- * Use this function to create a single instance of the data services for the entire application.
- */
-export async function createDataServices(root: string) {
+export async function createRepositories(root: string) {
   const database = await DbService.connect(root);
-  try {
-    const settings = new SettingsService(database);
-    const providers = new ModelProviderService(database, settings);
-    const datasets = new DatasetService(database);
-    const conversations = new ConversationService(database, datasets);
-    conversations.recoverInterrupted();
-    return { database, settings, providers, datasets, conversations };
-  } catch (error) {
-    database.close();
-    throw error;
-  }
+  return {
+    database,
+    conversations: new ConversationRepo(database),
+    datasets: new DatasetRepo(database),
+    messages: new MessageRepo(database),
+    providers: new ModelProviderRepo(database),
+    settings: new SettingRepo(database),
+    snippets: new SnippetRepo(database),
+  };
 }
-export type DataServices = Awaited<ReturnType<typeof createDataServices>>;
+
+export type Repositories = Awaited<ReturnType<typeof createRepositories>>;

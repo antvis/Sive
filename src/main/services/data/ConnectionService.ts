@@ -1,5 +1,4 @@
-import type { DatasetService as DatasetDataService } from '@main/db/repository/DatasetService';
-import type { StoredDataset } from '@main/db/mappers';
+import type { StoredDataset } from '../../db/mappers';
 import { mysqlInputSchema, parseInput } from '@shared/inputSchemas';
 import { WorkbenchError } from '@shared/errors';
 import { randomUUID } from 'node:crypto';
@@ -22,11 +21,12 @@ export function connectionFailure(error: unknown) {
     return '连接未建立，请检查主机、端口、网络及 MySQL 服务状态。';
   return 'MySQL 读取失败，请检查数据库名称、表权限和服务状态后重新验证。';
 }
+
 export class ConnectionService {
-  constructor(private datasetRecords: DatasetDataService) {}
+  constructor(private getDataset: (id: string) => StoredDataset) {}
   prepare(input: MySQLInput): StoredDataset {
     input = parseInput(mysqlInputSchema, input);
-    const old = input.id ? this.datasetRecords.dataset(input.id) : undefined;
+    const old = input.id ? this.getDataset(input.id) : undefined;
     if (old && old.format !== 'mysql') throw new WorkbenchError('INVALID_INPUT', '只能编辑 MySQL 连接');
     const credentials =
       input.password === undefined
@@ -56,6 +56,7 @@ export class ConnectionService {
       credentials,
     };
   }
+
   source(dataset: StoredDataset): Extract<DataSourceConfig, { type: 'mysql' }> {
     const c = dataset.connection;
     if (!c) throw new WorkbenchError('INVALID_INPUT', '缺少 MySQL 连接配置');

@@ -1,7 +1,7 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { modelProviders } from '../schema';
 import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/repository';
+import { timestamp } from '../../utils/time';
 
 type ModelProviderInsert = typeof modelProviders.$inferInsert;
 type ModelProviderUpdate = Partial<Omit<ModelProviderInsert, 'id' | 'createdAt'>>;
