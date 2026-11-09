@@ -5,32 +5,40 @@ import SQLite from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { sqliteSchema } from './bootstrap';
 
-function openDatabase(root: string) {
-  fs.mkdirSync(root, { recursive: true, mode: 0o700 });
-  const file = path.join(root, 'workspace.sqlite');
-  fs.closeSync(fs.openSync(file, 'a', 0o600));
-  const client = new SQLite(file);
-  try {
-    client.pragma('foreign_keys = ON');
-    client.pragma('busy_timeout = 5000');
-    client.pragma('journal_mode = WAL');
-    client.pragma('synchronous = FULL');
-    if (!client.prepare("SELECT name FROM sqlite_master WHERE type = 'table' LIMIT 1").get())
-      client.transaction(() => client.exec(sqliteSchema)).immediate();
-    return drizzle(client);
-  } catch (error) {
-    client.close();
-    throw error;
-  }
-}
-
-type WorkspaceDatabase = ReturnType<typeof openDatabase>;
-
+/**
+ * Owns the workspace SQLite connection and provides transactional writes.
+ *
+ * @example
+ * const database = new DbService(root);
+ * database.write(() => database.connection.insert(table).values(data).run());
+ * database.close();
+ */
 export class DbService {
-  readonly connection: WorkspaceDatabase;
+  readonly connection: ReturnType<typeof drizzle>;
+
   constructor(root: string) {
-    this.connection = openDatabase(root);
+    this.connection = this.connect(root);
   }
+
+  private connect(root: string) {
+    fs.mkdirSync(root, { recursive: true, mode: 0o700 });
+    const file = path.join(root, 'workspace.sqlite');
+    fs.closeSync(fs.openSync(file, 'a', 0o600));
+    const client = new SQLite(file);
+    try {
+      client.pragma('foreign_keys = ON');
+      client.pragma('busy_timeout = 5000');
+      client.pragma('journal_mode = WAL');
+      client.pragma('synchronous = FULL');
+      if (!client.prepare("SELECT name FROM sqlite_master WHERE type = 'table' LIMIT 1").get())
+        client.transaction(() => client.exec(sqliteSchema)).immediate();
+      return drizzle(client);
+    } catch (error) {
+      client.close();
+      throw error;
+    }
+  }
+
   close() {
     this.connection.$client.close();
   }

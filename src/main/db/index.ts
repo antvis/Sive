@@ -4,7 +4,11 @@ import { ModelProviderService } from './repository/ModelProviderService';
 import { DatasetService } from './repository/DatasetService';
 import { ConversationService } from './repository/ConversationService';
 
-// Construct one connection and inject only the data services each consumer needs.
+/**
+ * Construct one connection and inject only the data services each consumer needs.
+ *
+ * Use this function to create a single instance of the data services for the entire application.
+ */
 export function createDataServices(root: string) {
   const database = new DbService(root);
   try {
