@@ -1,13 +1,10 @@
 import { app, BrowserWindow, dialog, nativeTheme } from 'electron';
 import path from 'node:path';
-import { createDataServices, type DataServices } from '@main/db';
-import { ModelService } from '@main/services/settings/ModelService';
-import { createWorkbenchServices } from '@main/services';
-import { ConnectionService } from '@main/services/data/ConnectionService';
+import { createRepositories, type Repositories } from './db';
+import { createWorkbenchServices, type WorkbenchServices } from './services';
 import { themePalette } from '@shared/theme';
-import { encrypt, decrypt } from '@main/utils/credentials';
-import { createHandlers } from '@main/ipc/handlers';
-import { registerIPC } from '@main/ipc';
+import { encrypt, decrypt } from './utils/credentials';
+import { registerIPC } from './ipc';
 
 app.setName('Sive');
 app.setPath('userData', process.env.SIVE_DATA || path.join(app.getPath('appData'), 'sive'));
@@ -23,10 +20,21 @@ app.whenReady().then(async () => {
   const icon = path.join(app.getAppPath(), 'assets', process.platform === 'win32' ? 'sive.ico' : 'sive.png');
   if (process.platform === 'darwin') app.dock?.setIcon(icon);
   const root = app.getPath('userData');
-  let data: DataServices;
+  let revision = 0;
+  const change = () => {
+    revision++;
+    if (win && !win.isDestroyed()) win.webContents.send('workbench:change');
+  };
+  let data: Repositories | undefined;
+  let services: WorkbenchServices;
   try {
-    data = await createDataServices(root);
+    data = await createRepositories(root);
+    services = createWorkbenchServices(data, encrypt, decrypt, change, (task) => {
+      revision++;
+      if (win && !win.isDestroyed()) win.webContents.send('workbench:task', { revision, task });
+    });
   } catch (error) {
+    data?.database.close();
     await dialog.showMessageBox({
       type: 'error',
       title: '无法打开工作区',
@@ -39,23 +47,7 @@ app.whenReady().then(async () => {
     app.quit();
     return;
   }
-  const models = new ModelService(data.providers, encrypt, decrypt);
-  let revision = 0;
-  const change = () => {
-    revision++;
-    if (win && !win.isDestroyed()) win.webContents.send('workbench:change');
-  };
-  const services = createWorkbenchServices(
-    data,
-    models,
-    change,
-    new ConnectionService(data.datasets),
-    (task) => {
-      revision++;
-      if (win && !win.isDestroyed()) win.webContents.send('workbench:task', { revision, task });
-    },
-  );
-  nativeTheme.themeSource = data.settings.theme().mode;
+  nativeTheme.themeSource = services.settings.theme().mode;
   win = new BrowserWindow({
     width: 1440,
     height: 960,
@@ -66,7 +58,7 @@ app.whenReady().then(async () => {
       ? { titleBarStyle: 'hidden' as const, trafficLightPosition: { x: 14, y: 10 } }
       : {}),
     icon,
-    backgroundColor: themePalette(data.settings.theme()).background,
+    backgroundColor: themePalette(services.settings.theme()).background,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -90,13 +82,11 @@ app.whenReady().then(async () => {
     if (choice === 1) event.preventDefault();
   });
   win.webContents.session.setPermissionRequestHandler((_w, _p, callback) => callback(false));
-  registerIPC(
-    win,
-    createHandlers(win, data, services, models, root, () => revision, change),
-  );
+
+  registerIPC(win, services, root, () => revision);
   if (dev) win.loadURL(dev);
   else win.loadFile(path.join(__dirname, '../dist/index.html'));
   app.on('before-quit', () => services.analysis.cancelAll());
-  app.on('will-quit', () => data.database.close());
+  app.on('will-quit', () => data?.database.close());
 });
 app.on('window-all-closed', () => app.quit());

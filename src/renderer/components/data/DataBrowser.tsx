@@ -91,7 +91,7 @@ export default function DataBrowser({
     if (refreshing) return;
     setRefreshing(true);
     try {
-      await api.refreshMySQL(dataset.id);
+      await api.datasetRefreshMySQL(dataset.id);
       message.success('表结构已刷新');
     } catch (error) {
       message.error(String(error));
@@ -326,7 +326,7 @@ export default function DataBrowser({
                     onClick={async () => {
                       setSaving(true);
                       try {
-                        await api.semantic(dataset.id, semantic, metrics);
+                        await api.datasetSaveSemantic(dataset.id, semantic, metrics);
                         message.success('数据语义已保存');
                       } catch (e) {
                         message.error(String(e));
@@ -346,7 +346,7 @@ export default function DataBrowser({
                         if (refreshing) return;
                         setRefreshing(true);
                         try {
-                          await api.reparseData(dataset.id);
+                          await api.datasetReparse(dataset.id);
                           message.success('表头已重新识别');
                         } catch (e) {
                           message.error(String(e));

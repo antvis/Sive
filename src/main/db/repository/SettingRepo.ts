@@ -1,7 +1,7 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { settings } from '../schema';
 import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/repository';
+import { timestamp } from '../../utils/time';
 
 type SettingInsert = typeof settings.$inferInsert;
 type SettingUpdate = Partial<Omit<SettingInsert, 'key' | 'createdAt'>>;

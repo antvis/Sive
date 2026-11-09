@@ -1,3 +1,4 @@
+import { WorkbenchError } from '@shared/errors';
 import type { datasets, messages } from './schema';
 import type { AnalysisOptions } from '@shared/analysisOptions';
 import type { Task } from '@shared/contracts';
@@ -63,5 +64,46 @@ export function analysisOptions(options: MessageOptions): AnalysisOptions {
   return {
     ...(maxRetries !== undefined ? { maxRetries } : {}),
     ...(maxSteps !== undefined ? { maxSteps } : {}),
+  };
+}
+
+export function datasetRecord(row: DatasetRow): StoredDataset {
+  const source = row.sourceConfig;
+  const fields = {
+    id: row.id,
+    name: row.name,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deletedAt: row.deletedAt ?? undefined,
+    schema: row.schema,
+    profile: row.profile,
+    semantic: row.semantic,
+    metrics: row.metrics ?? undefined,
+  };
+  if (row.sourceType === 'mysql') {
+    // Deleted sources retain their display identity after their connection config is cleared.
+    const connection = source.connection ?? {
+      host: '',
+      port: 3306,
+      database: '',
+      user: '',
+      status: 'error' as const,
+      hasPassword: false,
+    };
+    return {
+      ...fields,
+      format: 'mysql',
+      file: '',
+      connection: { ...connection, hasPassword: !!source.credentials?.password },
+      credentials: source.credentials,
+    };
+  }
+  if (!['csv', 'json', 'xlsx', 'parquet'].includes(row.sourceType))
+    throw new WorkbenchError('CONNECTION', `当前应用尚不支持此数据源类型：${row.sourceType}`);
+  return {
+    ...fields,
+    format: row.sourceType as 'csv' | 'json' | 'xlsx' | 'parquet',
+    file: source.path || '',
+    excelSheets: source.excelSheets,
   };
 }

@@ -37,7 +37,7 @@ export function useDataSourceActions({
   };
   const importData = (format: LocalDataset['format']) =>
     perform('import', async () => {
-      const d = await api.importData(format);
+      const d = await api.datasetImport(format);
       if (d) {
         onImported(d);
       }
@@ -50,12 +50,12 @@ export function useDataSourceActions({
     try {
       const input = { ...values, id: editing && editing !== 'new' ? editing.id : undefined };
       if (save) {
-        const d = await api.saveMySQL(input);
+        const d = await api.datasetSaveMySQL(input);
         setEditing(null);
         message.success(`连接已验证：${d.schema.models.length} 张表`);
         onConnected(d);
       } else {
-        const result = await api.testMySQL(input);
+        const result = await api.datasetTestMySQL(input);
         setFeedback({
           type: 'success',
           text: `已连接并验证读取权限：发现 ${result.tables} 张表，首表读取 ${result.rows} 行。尚未保存。`,

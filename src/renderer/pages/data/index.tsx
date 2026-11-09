@@ -201,7 +201,7 @@ export default function DataPage({
                             loading={busy === d.id}
                             onClick={() =>
                               perform(d.id, async () => {
-                                await api.refreshMySQL(d.id);
+                                await api.datasetRefreshMySQL(d.id);
                                 message.success('连接和结构已更新');
                               })
                             }
@@ -213,7 +213,7 @@ export default function DataPage({
                       <ConfirmAction
                         title="删除连接？"
                         description="仅解除连接，不删除原始文件或数据库。历史会话和分析收藏仍可查看和导出，但不能继续分析或刷新。"
-                        onConfirm={() => perform('delete', () => api.deleteData(d.id))}
+                        onConfirm={() => perform('delete', () => api.datasetDelete(d.id))}
                       >
                         <Button
                           variant="ghost"
@@ -237,7 +237,7 @@ export default function DataPage({
                           loading={busy === d.id}
                           onClick={() =>
                             perform(d.id, async () => {
-                              if (await api.relocateData(d.id)) {
+                              if (await api.datasetRelocate(d.id)) {
                                 await queryClient.invalidateQueries({ queryKey: ['preview', d.id] });
                                 message.success('源文件已重新连接');
                               }

@@ -9,10 +9,10 @@ function withTask(state: State, update: TaskUpdate): State {
   };
 }
 
-// Full snapshots and task-only updates share a revision, so a slow state() response
+// Full snapshots and task-only updates share a revision, so a slow workspaceGetState() response
 // cannot overwrite newer progress, and a delayed progress event cannot revive a finished task.
 export function observeWorkspace(
-  api: Pick<API, 'state' | 'onChange' | 'onTaskChange'>,
+  api: Pick<API, 'workspaceGetState' | 'workspaceOnChange' | 'analysisOnTaskChange'>,
   receive: (state: State) => void,
   fail: (error: unknown) => void,
 ) {
@@ -24,7 +24,7 @@ export function observeWorkspace(
   const refresh = async () => {
     const request = ++sequence;
     try {
-      const snapshot = await api.state();
+      const snapshot = await api.workspaceGetState();
       if (!live || snapshot.revision < snapshotRevision) return;
       snapshotRevision = snapshot.revision;
       current = snapshot;
@@ -39,8 +39,8 @@ export function observeWorkspace(
     }
   };
   const backgroundRefresh = () => void refresh().catch(() => {});
-  const off = api.onChange(backgroundRefresh);
-  const offTask = api.onTaskChange((update) => {
+  const off = api.workspaceOnChange(backgroundRefresh);
+  const offTask = api.analysisOnTaskChange((update) => {
     const previous = progress.get(update.task.id);
     if (!live || update.revision <= snapshotRevision || (previous && update.revision <= previous.revision))
       return;

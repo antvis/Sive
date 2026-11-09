@@ -1,7 +1,7 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { datasets } from '../schema';
 import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/repository';
+import { timestamp } from '../../utils/time';
 
 type DatasetInsert = typeof datasets.$inferInsert;
 type DatasetUpdate = Partial<Omit<DatasetInsert, 'id' | 'createdAt'>>;

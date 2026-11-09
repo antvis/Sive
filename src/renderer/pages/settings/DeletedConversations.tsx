@@ -20,7 +20,7 @@ export default function DeletedConversations({ state }: { state: State }) {
           (c) =>
             c.datasetId === dataset.id && `${c.title} ${dataset.name}`.toLocaleLowerCase().includes(needle),
         )
-        .sort((a, b) => b.deletedAt!.localeCompare(a.deletedAt!)),
+        .sort((a, b) => b.archivedAt!.localeCompare(a.archivedAt!)),
     }))
     .filter((group) => group.conversations.length);
   const perform = async (action: () => Promise<void>, success: string) => {
@@ -40,7 +40,7 @@ export default function DeletedConversations({ state }: { state: State }) {
       content: '会话的分析结果、执行记录和收藏将一并删除，此操作无法恢复。数据源不受影响。',
       okText: '永久删除',
       okButtonProps: { danger: true },
-      onOk: () => perform(() => window.workbench.purgeConversations(ids), '已永久删除'),
+      onOk: () => perform(() => window.workbench.conversationPurge(ids), '已永久删除'),
     });
   return (
     <section>
@@ -79,9 +79,9 @@ export default function DeletedConversations({ state }: { state: State }) {
                       <strong className="block truncate text-body font-medium" title={conversation.title}>
                         {conversation.title}
                       </strong>
-                      <time className="block mt-1 text-helper text-muted" dateTime={conversation.deletedAt!}>
+                      <time className="block mt-1 text-helper text-muted" dateTime={conversation.archivedAt!}>
                         归档于{' '}
-                        {new Date(conversation.deletedAt!).toLocaleString('zh-CN', {
+                        {new Date(conversation.archivedAt!).toLocaleString('zh-CN', {
                           year: 'numeric',
                           month: '2-digit',
                           day: '2-digit',
@@ -106,7 +106,7 @@ export default function DeletedConversations({ state }: { state: State }) {
                       icon={<ArrowCounterClockwiseIcon />}
                       disabled={busy}
                       onClick={() =>
-                        perform(() => window.workbench.restoreConversation(conversation.id), '会话已恢复')
+                        perform(() => window.workbench.conversationRestore(conversation.id), '会话已恢复')
                       }
                     >
                       恢复

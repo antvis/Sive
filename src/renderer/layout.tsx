@@ -116,7 +116,7 @@ export default function Layout() {
     if (archivingId) return;
     setArchivingId(id);
     try {
-      await api.deleteConversation(id);
+      await api.conversationArchive(id);
       message.success('会话已归档，可在设置中恢复');
     } catch (error) {
       message.error(errorMessage(error));

@@ -1,24 +1,24 @@
-import type { State, Task } from '@shared/contracts';
-import type { DataServices } from '@main/db';
+import type { State } from '@shared/contracts';
+import type { WorkbenchServices } from './index';
 
 // Read-only composition; persistence and transactions stay with their domain service.
-export function buildWorkspaceState(data: DataServices, liveTasks: Iterable<Task>): State {
-  const models = data.providers.models();
-  const chats = data.conversations.listConversations();
-  const runs = data.conversations.listRuns();
-  const tasks = data.conversations.listTasks();
-  for (const task of liveTasks) {
+export function buildWorkspaceState(services: WorkbenchServices): State {
+  const models = services.models.profiles();
+  const chats = services.conversations.list();
+  const runs = services.records.listRuns();
+  const tasks = services.records.listTasks();
+  for (const task of services.analysis.tasks.values()) {
     const index = tasks.findIndex((entry) => entry.id === task.id);
     if (index >= 0) tasks[index] = task;
   }
   return {
-    conversations: chats.filter((c) => !c.deletedAt),
-    deletedConversations: chats.filter((c) => c.deletedAt),
-    datasets: data.datasets.list(),
+    conversations: chats.filter((c) => !c.archivedAt),
+    deletedConversations: chats.filter((c) => c.archivedAt),
+    datasets: services.datasets.list(),
     runs,
     tasks,
-    activeModelId: data.providers.activeModelId,
-    theme: data.settings.theme(),
+    activeModelId: services.models.activeModelId,
+    theme: services.settings.theme(),
     models: models.map(({ encryptedKey, ...model }) => ({ ...model, hasKey: !!encryptedKey })),
   };
 }

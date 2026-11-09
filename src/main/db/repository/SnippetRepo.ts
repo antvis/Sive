@@ -1,7 +1,7 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { snippets } from '../schema';
 import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/repository';
+import { timestamp } from '../../utils/time';
 
 type SnippetInsert = typeof snippets.$inferInsert;
 type SnippetUpdate = Partial<Omit<SnippetInsert, 'id' | 'createdAt'>>;

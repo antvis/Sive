@@ -11,17 +11,17 @@ const api: Record<string, unknown> = Object.fromEntries(
     (...args: unknown[]) => ipcRenderer.invoke('workbench:' + name, ...args).then(unwrap),
   ]),
 );
-api.onChange = (callback: () => void) => {
+api.workspaceOnChange = (callback: () => void) => {
   const listener = () => callback();
   ipcRenderer.on('workbench:change', listener);
   return () => ipcRenderer.removeListener('workbench:change', listener);
 };
-api.onTaskChange = (callback: (update: TaskUpdate) => void) => {
+api.analysisOnTaskChange = (callback: (update: TaskUpdate) => void) => {
   const listener = (_event: Electron.IpcRendererEvent, update: TaskUpdate) => callback(update);
   ipcRenderer.on('workbench:task', listener);
   return () => ipcRenderer.removeListener('workbench:task', listener);
 };
-api.onModelTest = (callback: (progress: ModelTestProgress) => void) => {
+api.modelOnTestProgress = (callback: (progress: ModelTestProgress) => void) => {
   const listener = (_event: Electron.IpcRendererEvent, progress: ModelTestProgress) => callback(progress);
   ipcRenderer.on('workbench:model-test', listener);
   return () => ipcRenderer.removeListener('workbench:model-test', listener);

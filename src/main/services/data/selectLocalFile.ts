@@ -1,4 +1,4 @@
-import type { SettingsService } from '@main/db/repository/SettingsService';
+import type { SettingsService } from '../settings/SettingsService';
 import { dialog, type BrowserWindow } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,7 +7,7 @@ import type { API } from '@shared/contracts';
 export async function selectLocalFile(
   win: BrowserWindow,
   settings: SettingsService,
-  format?: Parameters<API['importData']>[0],
+  format?: Parameters<API['datasetImport']>[0],
 ) {
   let defaultPath: string | undefined;
   try {

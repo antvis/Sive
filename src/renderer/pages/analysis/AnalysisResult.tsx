@@ -36,10 +36,7 @@ function ResultContent({ run }: { run: Run }) {
     setSaving(true);
     try {
       // Keep fast local saves visible long enough to avoid a loading flash.
-      await Promise.all([
-        api.saveAnalysis(run.id),
-        new Promise((resolve) => window.setTimeout(resolve, 350)),
-      ]);
+      await Promise.all([api.snippetSave(run.id), new Promise((resolve) => window.setTimeout(resolve, 350))]);
       setSaveFeedback({ text: '保存成功', error: false });
     } catch (error) {
       setSaveFeedback({ text: errorMessage(error), error: true });
@@ -52,7 +49,7 @@ function ResultContent({ run }: { run: Run }) {
     setExportFeedback(undefined);
     setExporting(true);
     try {
-      const result = await api.exportAnalysis(run.id, format as 'pdf' | 'png' | 'html');
+      const result = await api.analysisExport(run.id, format as 'pdf' | 'png' | 'html');
       if (result) setExportFeedback({ text: '导出成功', error: false });
     } catch (e) {
       setExportFeedback({ text: errorMessage(e), error: true });

@@ -4,21 +4,21 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { API } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
-import type { ConversationService } from '@main/db/repository/ConversationService';
+import type { AnalysisRecordService } from '../analysis/AnalysisRecordService';
 import type { ThemeSettings } from '@shared/theme';
 import { analysisHTML } from './analysisHtml';
 import { exportFilename } from './exportFilename';
 
 export async function exportAnalysis(
   win: BrowserWindow,
-  conversations: ConversationService,
+  records: AnalysisRecordService,
   theme: ThemeSettings,
   root: string,
   id: string,
-  format: Parameters<API['exportAnalysis']>[1],
+  format: Parameters<API['analysisExport']>[1],
   saved = false,
 ) {
-  const run = conversations.run(id);
+  const run = records.run(id);
   if (saved && !run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从收藏中移除');
   const html = await analysisHTML(run, theme, saved);
   const dest = await dialog.showSaveDialog(win, {

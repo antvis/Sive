@@ -1,7 +1,7 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { conversations } from '../schema';
 import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/repository';
+import { timestamp } from '../../utils/time';
 
 type ConversationInsert = typeof conversations.$inferInsert;
 type ConversationUpdate = Partial<Omit<ConversationInsert, 'id' | 'createdAt'>>;

@@ -222,7 +222,7 @@ export default function TableNavigator({
             <Button
               onClick={() =>
                 window.workbench
-                  .writeClipboard(definition?.ddl || '')
+                  .clipboardWrite(definition?.ddl || '')
                   .then(() => message.success('已复制建表语句'))
                   .catch(() => message.error('复制失败，请选择文本手动复制'))
               }

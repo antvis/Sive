@@ -82,8 +82,8 @@ export default function AnalysisPage() {
     setSubmitting(true);
     const originKey = location.key;
     try {
-      const selectedId = conversationId || (await api.createConversation(dataset.id)).id;
-      await api.analyze(dataset.id, text, mode, undefined, selectedId);
+      const selectedId = conversationId || (await api.conversationCreate(dataset.id)).id;
+      await api.analysisStart(dataset.id, text, mode, undefined, selectedId);
       await refresh();
       dispatchConversation({
         type: 'submitted',
@@ -234,7 +234,7 @@ export default function AnalysisPage() {
             dataset={dataset}
             models={state.models}
             modelId={state.activeModelId}
-            onModel={(id, model) => perform(() => api.activateModel(id, model))}
+            onModel={(id, model) => perform(() => api.modelActivate(id, model))}
             mode={mode}
             onMode={setMode}
             busy={!!activeTask}
@@ -242,7 +242,7 @@ export default function AnalysisPage() {
             cancelling={activeTask?.status === 'cancelling'}
             submitting={submitting}
             onSubmit={() => start()}
-            onCancel={() => activeTask && perform(() => api.cancel(activeTask.id))}
+            onCancel={() => activeTask && perform(() => api.analysisCancel(activeTask.id))}
             onSettings={openModelSettings}
           />
         )}
