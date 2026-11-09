@@ -29,6 +29,7 @@ import { datasetPath, datasetRedirect, paths } from '@renderer/utils/routes';
 import type { WorkspaceContext } from '@renderer/hooks/useWorkspace';
 import { pruneWorkspaceQueries } from '@renderer/data/queries';
 import { usePreferences } from '@renderer/hooks/usePreferences';
+import { useConversationRead } from '@renderer/hooks/useConversationRead';
 
 const api = window.workbench;
 export default function Layout() {
@@ -73,6 +74,14 @@ export default function Layout() {
     };
   }, []);
   const refresh = async () => subscription.current?.refresh();
+  const selectedConversation = state?.conversations.find(
+    (conversation) => conversation.id === conversationId && conversation.datasetId === datasetId,
+  );
+  const readPositions = useConversationRead(
+    state,
+    selectedConversation && !redirect ? conversationId : '',
+    message.error,
+  );
   if (!state)
     return (
       <div className="grid place-content-center min-h-50">
@@ -80,7 +89,7 @@ export default function Layout() {
       </div>
     );
   if (redirect) return <Navigate to={redirect} replace />;
-  const busy = state.task?.status === 'running' || state.task?.status === 'cancelling';
+  const busy = state.tasks.some((task) => ['running', 'cancelling'].includes(task.status));
   const dataset = state.datasets.find((d) => d.id === datasetId);
   const contentIds = conversationIdsWithContent(state);
   const conversations = state.conversations
@@ -172,13 +181,20 @@ export default function Layout() {
             <ConversationHistory
               key={dataset.id}
               conversations={conversations}
+              runs={state.runs}
+              tasks={state.tasks}
+              readPositions={readPositions}
               currentId={conversationId}
               disabled={submitting}
               onSelect={selectConversation}
               archiveDisabled={(conversation) =>
                 !!archivingId ||
                 submitting ||
-                (busy && state.task?.conversationId === conversation.id) ||
+                state.tasks.some(
+                  (task) =>
+                    task.conversationId === conversation.id &&
+                    ['running', 'cancelling'].includes(task.status),
+                ) ||
                 state.runs.some(
                   (run) => run.id === state.refreshingSavedId && run.conversationId === conversation.id,
                 )
@@ -201,6 +217,13 @@ export default function Layout() {
           tabs={workspaceTabs.map((tab) => ({
             id: tab.id,
             name: state.datasets.find((d) => d.id === tab.datasetId)?.name || '数据源',
+            running: state.tasks.some(
+              (task) => task.datasetId === tab.datasetId && ['running', 'cancelling'].includes(task.status),
+            ),
+            unread: state.runs.some(
+              (run) =>
+                run.datasetId === tab.datasetId && run.sequence > (readPositions[run.conversationId] ?? -1),
+            ),
           }))}
           selectedId={datasetId}
           onSelect={(id) => {

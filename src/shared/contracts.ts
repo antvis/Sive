@@ -144,7 +144,6 @@ export type State = {
   runs: RunSummary[];
   models: ModelProfile[];
   activeModelId: string;
-  task: Task | null;
   tasks: Task[];
   theme: ThemeSettings;
 };
@@ -180,7 +179,7 @@ export interface API {
     options?: AnalysisOptions,
     conversationId?: string,
   ): Promise<string>;
-  cancel(): Promise<void>;
+  cancel(taskId: string): Promise<void>;
   removeSavedAnalysis(id: string): Promise<void>;
   renameSavedAnalysis(id: string, title: string): Promise<void>;
   refreshSavedAnalysis(id: string): Promise<void>;

@@ -6,7 +6,7 @@ import { useWorkspace } from '@renderer/hooks/useWorkspace';
 import { dataListReturnTo } from '@renderer/utils/routes';
 
 export default function NewDataSourcePage() {
-  const { open, busy: analyzing, state } = useWorkspace();
+  const { open } = useWorkspace();
   const navigate = useNavigate();
   const location = useLocation();
   const back = () => navigate(dataListReturnTo(location.state?.returnTo));
@@ -16,7 +16,7 @@ export default function NewDataSourcePage() {
       <section className="w-full mt-1 max-[481px]:p-0 max-[481px]:mt-3">
         <DataSourcePicker
           importing={actions.busy === 'import'}
-          disabled={!!actions.busy || analyzing || !!state.refreshingSavedId}
+          disabled={!!actions.busy}
           onImport={actions.importData}
           onConnect={() => actions.connection()}
         />

@@ -150,10 +150,10 @@ export class ConversationService {
         this.db
           .select({ id: messages.id })
           .from(messages)
-          .where(and(running, isNull(messages.deletedAt)))
+          .where(and(eq(messages.conversationId, conversation.id), running, isNull(messages.deletedAt)))
           .get()
       )
-        conflict('已有分析正在进行');
+        conflict('此会话已有分析正在进行');
       const sequence = this.db
         .select({ next: sql<number>`coalesce(max(${messages.sequence}) + 1, 0)` })
         .from(messages)

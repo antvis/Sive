@@ -40,11 +40,9 @@ function reducer(state: Navigation, action: Action): Navigation {
               ...next,
               conversationId: '',
               runId: '',
-              observedTask: '',
               question: drafts[`new:${tab.datasetId}`] || '',
             };
-          const task = action.snapshot.tasks.find((t) => t.id === next.observedTask);
-          return task ? { ...next, ...conversationReducer(next, { type: 'settled', task }) } : next;
+          return next;
         });
       return {
         ready: true,

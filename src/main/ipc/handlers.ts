@@ -23,7 +23,7 @@ export function createHandlers(
     writeClipboard: (text) => clipboard.writeText(text),
     run: (id) => data.conversations.run(id),
     state: () => ({
-      ...buildWorkspaceState(data, services.analysis.task),
+      ...buildWorkspaceState(data, services.analysis.tasks.values()),
       refreshingSavedId: services.snippets.refreshingId,
       revision: getRevision(),
     }),
@@ -56,11 +56,13 @@ export function createHandlers(
     },
     deleteData: (id) => services.datasets.deleteData(id),
     deleteConversation: (id) => {
+      if (services.analysis.isRunning(id)) throw new WorkbenchError('CONFLICT', '请先停止此会话的分析');
       const refreshing = services.snippets.refreshingId;
       if (refreshing && data.conversations.run(refreshing).conversationId === id)
         throw new WorkbenchError('CONFLICT', '请等待此会话的收藏刷新完成');
       data.conversations.deleteConversation(id);
-      if (services.analysis.task?.conversationId === id) services.analysis.task = null;
+      for (const [taskId, task] of services.analysis.tasks)
+        if (task.conversationId === id) services.analysis.tasks.delete(taskId);
       change();
     },
     restoreConversation: (id) => {
@@ -79,7 +81,7 @@ export function createHandlers(
     tableDetails: (id, table) => services.datasets.tableDetails(id, table),
     semantic: (id, text, metrics) => services.datasets.semantic(id, text, metrics),
     analyze: (...args: Parameters<API['analyze']>) => services.analysis.analyze(...args),
-    cancel: () => services.analysis.cancel(),
+    cancel: (id) => services.analysis.cancel(id),
     removeSavedAnalysis: (id) => services.snippets.remove(id),
     renameSavedAnalysis: (id, title) => services.snippets.rename(id, title),
     refreshSavedAnalysis: (id) => services.snippets.refresh(id),

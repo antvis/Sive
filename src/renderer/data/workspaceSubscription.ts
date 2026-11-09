@@ -3,7 +3,6 @@ import type { API, State, TaskUpdate } from '@shared/contracts';
 function withTask(state: State, update: TaskUpdate): State {
   return {
     ...state,
-    task: update.task,
     tasks: state.tasks.some((task) => task.id === update.task.id)
       ? state.tasks.map((task) => (task.id === update.task.id ? update.task : task))
       : [update.task, ...state.tasks],
@@ -21,15 +20,18 @@ export function observeWorkspace(
   let sequence = 0;
   let snapshotRevision = -1;
   let current: State | null = null;
-  let progress: TaskUpdate | undefined;
+  const progress = new Map<string, TaskUpdate>();
   const refresh = async () => {
     const request = ++sequence;
     try {
       const snapshot = await api.state();
       if (!live || snapshot.revision < snapshotRevision) return;
       snapshotRevision = snapshot.revision;
-      if (progress && progress.revision <= snapshotRevision) progress = undefined;
-      current = progress ? withTask(snapshot, progress) : snapshot;
+      current = snapshot;
+      for (const [id, update] of progress) {
+        if (update.revision <= snapshotRevision) progress.delete(id);
+        else current = withTask(current, update);
+      }
       receive(current);
     } catch (error) {
       if (live && request === sequence) fail(error);
@@ -39,9 +41,10 @@ export function observeWorkspace(
   const backgroundRefresh = () => void refresh().catch(() => {});
   const off = api.onChange(backgroundRefresh);
   const offTask = api.onTaskChange((update) => {
-    if (!live || update.revision <= snapshotRevision || (progress && update.revision <= progress.revision))
+    const previous = progress.get(update.task.id);
+    if (!live || update.revision <= snapshotRevision || (previous && update.revision <= previous.revision))
       return;
-    progress = update;
+    progress.set(update.task.id, update);
     if (current) {
       current = withTask(current, update);
       receive(current);

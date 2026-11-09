@@ -18,7 +18,7 @@ export function createWorkbenchServices(
     change,
     () => analysis.busy,
     (id) => {
-      if (analysis.task?.datasetId === id) analysis.task = null;
+      for (const [taskId, task] of analysis.tasks) if (task.datasetId === id) analysis.tasks.delete(taskId);
     },
     connections,
     () => !!snippets.refreshingId,

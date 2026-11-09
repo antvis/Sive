@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { DatabaseIcon, PlusIcon, XIcon, SidebarSimpleIcon } from '@phosphor-icons/react';
+import { CircleNotchIcon, DatabaseIcon, PlusIcon, XIcon, SidebarSimpleIcon } from '@phosphor-icons/react';
 import type { Dataset } from '@shared/contracts';
 import { Button } from '@renderer/components/ui/index';
 import DatasetPickerDialog from '@renderer/components/data/DatasetPickerDialog';
@@ -18,7 +18,7 @@ export default function DatasetTabs({
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
   datasets: Dataset[];
-  tabs: { id: string; name: string }[];
+  tabs: { id: string; name: string; running: boolean; unread: boolean }[];
   selectedId: string;
   onSelect: (id: string) => void;
   onOpenData: (dataset: Dataset) => void;
@@ -77,7 +77,13 @@ export default function DatasetTabs({
                   ? 0
                   : -1
               }
-              title={dataset.name}
+              title={[
+                dataset.name,
+                dataset.running && selectedId !== dataset.id ? '后台分析中' : undefined,
+                dataset.unread ? '有未读分析结果' : undefined,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
               onClick={() => onSelect(dataset.id)}
               onKeyDown={(event) => {
                 if (event.key === 'Delete') {
@@ -96,8 +102,27 @@ export default function DatasetTabs({
                 onSelect(tabs[next].id);
               }}
             >
-              <DatabaseIcon className="shrink-0 size-3.5" />
+              {dataset.running && selectedId !== dataset.id ? (
+                <>
+                  <CircleNotchIcon
+                    className="shrink-0 size-3.5 text-accent-ink motion-safe:animate-spin"
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only">后台分析中：</span>
+                </>
+              ) : (
+                <DatabaseIcon className="shrink-0 size-3.5" />
+              )}
               <span className="truncate">{dataset.name}</span>
+              {dataset.unread && (
+                <>
+                  <span className="relative shrink-0 size-1.5" aria-hidden="true">
+                    <span className="absolute inset-0 rounded-full bg-accent/40 motion-safe:animate-ping motion-reduce:hidden" />
+                    <span className="absolute inset-0 rounded-full bg-accent/55" />
+                  </span>
+                  <span className="sr-only">（有未读分析结果）</span>
+                </>
+              )}
             </button>
             <button
               type="button"

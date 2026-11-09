@@ -96,7 +96,7 @@ app.whenReady().then(async () => {
   );
   if (dev) win.loadURL(dev);
   else win.loadFile(path.join(__dirname, '../dist/index.html'));
-  app.on('before-quit', () => services.analysis.cancel());
+  app.on('before-quit', () => services.analysis.cancelAll());
   app.on('will-quit', () => data.database.close());
 });
 app.on('window-all-closed', () => app.quit());
