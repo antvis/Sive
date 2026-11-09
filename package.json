@@ -14,11 +14,11 @@
   "scripts": {
     "electron:install": "install-electron",
     "dev": "electron-vite dev --watch",
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "build": "electron-vite build",
     "start": "electron .",
-    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=^/(src|backend|electron|docs|samples|.git|.github)$",
-    "format": "prettier --write src backend electron electron.vite.config.ts"
+    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=^/(src|docs|samples|.git|.github)$",
+    "format": "prettier --write src electron.vite.config.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.98",
@@ -29,7 +29,9 @@
     "@tanstack/react-table": "^8.21.3",
     "adm-zip": "^0.6.1",
     "ai": "^7.0.146",
+    "better-sqlite3": "13.0.3",
     "clsx": "^2.1.1",
+    "drizzle-orm": "0.45.4",
     "markdown-it": "^14.1.0",
     "mysql2": "^3.24.6",
     "react-resizable-panels": "^4.18.1",
@@ -43,6 +45,7 @@
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/vite": "^4.3.4",
     "@types/adm-zip": "^0.5.8",
+    "@types/better-sqlite3": "9.6.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
