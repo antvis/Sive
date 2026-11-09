@@ -1,43 +1,27 @@
 import type { datasets, messages } from './schema';
 import type { AnalysisOptions } from '@shared/analysisOptions';
-import type { Dataset, ModelProfile, Progress, Run, Task } from '@shared/contracts';
+import type { Task } from '@shared/contracts';
+import type { AssistantMessageContent, MessageOptions, SourceSnapshot, StoredDataset } from './types';
 
-export type StoredModel = Omit<ModelProfile, 'hasKey' | 'updatedAt'> & {
-  encryptedKey?: string;
-  updatedAt?: string;
-};
-export type StoredDataset = Dataset & { file: string; encryptedCredentials?: string };
-export type SourceConfig = {
-  path?: string;
-  excelSheets?: Dataset['excelSheets'];
-  connection?: Dataset['connection'];
-};
-type SourceSnapshot = { name: string; format: Dataset['format']; config: SourceConfig };
-export type MessageOptions = {
-  model: { provider_id: string; provider_name: string; model_name: string };
-  source: SourceSnapshot;
-  semantic: string;
-  metrics?: Dataset['metrics'];
-  analyze: { strategy: { type: string } & AnalysisOptions; includeSummary: boolean };
-  query: { maxRows: number; maxResultBytes: number };
-};
-export type MessageContent = {
-  result?: Run['result'];
-  chart?: Run['chart'];
-  chart_error?: string;
-  events: Progress[];
-  preview?: Task['preview'];
-  error?: string;
-  persistence_error?: string;
-};
-export type AnalysisOutput = Pick<Run, 'result' | 'chart' | 'chartError'>;
-export type SnippetContent = Pick<MessageContent, 'result' | 'chart_error' | 'error'> & {
-  chart?: Run['chart'] | null;
-};
+export type {
+  AnalysisOutput,
+  AssistantMessageContent,
+  MessageContent,
+  MessageOptions,
+  SnippetContent,
+  SourceConfig,
+  SourceCredentials,
+  SourceSnapshot,
+  StoredAnalysisOptions,
+  StoredDataset,
+  StoredModel,
+  UserMessageContent,
+} from './types';
+
 export type DatasetRow = typeof datasets.$inferSelect;
+
 type MessageRow = typeof messages.$inferSelect & { datasetId: string; question: string };
 
-export const parseJSON = <T>(value: string): T => JSON.parse(value) as T;
 export const sourceSnapshot = (dataset: StoredDataset): SourceSnapshot => ({
   name: dataset.name,
   format: dataset.format,
@@ -47,8 +31,8 @@ export const sourceSnapshot = (dataset: StoredDataset): SourceSnapshot => ({
       : { path: dataset.file, excelSheets: dataset.excelSheets },
 });
 export function taskRecord(row: MessageRow): Task {
-  const options = parseJSON<MessageOptions>(row.analysisOptions);
-  const content = parseJSON<MessageContent>(row.content);
+  const options = row.analysisOptions as MessageOptions;
+  const content = row.content as AssistantMessageContent;
   const task = {
     id: row.id,
     datasetId: row.datasetId,
@@ -73,6 +57,7 @@ export function taskRecord(row: MessageRow): Task {
         finishedAt: ['running', 'cancelling'].includes(row.status) ? undefined : row.updatedAt,
       };
 }
+
 export function analysisOptions(options: MessageOptions): AnalysisOptions {
   const { maxRetries, maxSteps } = options.analyze.strategy;
   return {

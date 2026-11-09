@@ -2,13 +2,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import { datasets } from '@main/db/schema';
 import type { Dataset } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
-import {
-  parseJSON,
-  sourceSnapshot,
-  type DatasetRow,
-  type SourceConfig,
-  type StoredDataset,
-} from '@main/db/mappers';
+import { sourceSnapshot, type DatasetRow, type StoredDataset } from '@main/db/mappers';
 import type { DbService } from '@main/db/DbService';
 import { conflict, timestamp } from '@main/utils/repository';
 
@@ -18,17 +12,17 @@ export class DatasetService {
     return this.database.connection;
   }
   private datasetRecord(row: DatasetRow): StoredDataset {
-    const source = parseJSON<SourceConfig>(row.sourceConfig);
+    const source = row.sourceConfig;
     const fields = {
       id: row.id,
       name: row.name,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       deletedAt: row.deletedAt ?? undefined,
-      schema: parseJSON<Dataset['schema']>(row.schema),
-      profile: parseJSON<Dataset['profile']>(row.profile),
+      schema: row.schema,
+      profile: row.profile,
       semantic: row.semantic,
-      metrics: row.metrics ? parseJSON<Dataset['metrics']>(row.metrics) : undefined,
+      metrics: row.metrics ?? undefined,
     };
     if (row.sourceType === 'mysql') {
       // Deleted sources retain their display identity after their connection config is cleared.
@@ -44,8 +38,8 @@ export class DatasetService {
         ...fields,
         format: 'mysql',
         file: '',
-        connection: { ...connection, hasPassword: !!row.encryptedCredentials },
-        encryptedCredentials: row.encryptedCredentials ?? undefined,
+        connection: { ...connection, hasPassword: !!source.credentials?.password },
+        credentials: source.credentials,
       };
     }
     if (!['csv', 'json', 'xlsx', 'parquet'].includes(row.sourceType))
@@ -58,7 +52,7 @@ export class DatasetService {
     };
   }
   publicDataset(dataset: StoredDataset): Dataset {
-    const { file, encryptedCredentials, ...result } = dataset;
+    const { file, credentials, ...result } = dataset;
     return result;
   }
   dataset(id: string) {
@@ -86,12 +80,11 @@ export class DatasetService {
       const values = {
         name: next.name,
         sourceType: next.format,
-        sourceConfig: JSON.stringify(next.deletedAt ? {} : sourceSnapshot(next).config),
-        schema: JSON.stringify(next.schema),
-        profile: JSON.stringify(next.profile),
+        sourceConfig: next.deletedAt ? {} : { ...sourceSnapshot(next).config, credentials: next.credentials },
+        schema: next.schema,
+        profile: next.profile,
         semantic: next.semantic,
-        metrics: next.metrics ? JSON.stringify(next.metrics) : null,
-        encryptedCredentials: next.deletedAt ? null : (next.encryptedCredentials ?? null),
+        metrics: next.metrics ?? null,
         updatedAt: now,
         deletedAt: next.deletedAt ?? null,
       };
@@ -106,10 +99,7 @@ export class DatasetService {
   }
   deleteDataset(id: string) {
     const original = this.dataset(id);
-    this.putDataset(
-      { ...original, file: '', encryptedCredentials: undefined, deletedAt: timestamp() },
-      original,
-    );
+    this.putDataset({ ...original, file: '', credentials: undefined, deletedAt: timestamp() }, original);
   }
   list() {
     return this.db

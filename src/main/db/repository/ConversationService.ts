@@ -18,15 +18,13 @@ import { conversations, messages, snippets } from '@main/db/schema';
 import type { Conversation, Run, RunSummary, Task } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
 import {
-  parseJSON,
   taskRecord,
   sourceSnapshot,
   analysisOptions,
   type StoredDataset,
   type MessageOptions,
-  type MessageContent,
+  type AssistantMessageContent,
   type AnalysisOutput,
-  type SnippetContent,
 } from '@main/db/mappers';
 import type { DatasetService } from './DatasetService';
 import type { DbService } from '@main/db/DbService';
@@ -171,7 +169,7 @@ export class ConversationService {
             sequence,
             role: 'user',
             status: 'done',
-            content: JSON.stringify({ text: task.question }),
+            content: { text: task.question },
             createdAt: now,
             updatedAt: now,
           },
@@ -181,8 +179,8 @@ export class ConversationService {
             sequence: sequence + 1,
             role: 'assistant',
             status: 'running',
-            content: JSON.stringify({ events: [] }),
-            analysisOptions: JSON.stringify(options),
+            content: { events: [] },
+            analysisOptions: options,
             createdAt: now,
             updatedAt: now,
           },
@@ -207,11 +205,11 @@ export class ConversationService {
         .set({
           status,
           updatedAt: timestamp(row.updatedAt),
-          content: JSON.stringify({
+          content: {
             events: task.events,
             preview: task.preview,
             persistence_error: task.persistenceError,
-          }),
+          },
         })
         .where(eq(messages.id, task.id))
         .run();
@@ -226,13 +224,13 @@ export class ConversationService {
       (task.status === 'done' && row.status !== 'running')
     )
       conflict('分析结束状态与结果不匹配');
-    const content: MessageContent = output
+    const content: AssistantMessageContent = output
       ? { result: output.result, chart: output.chart, chart_error: output.chartError, events: task.events }
       : { events: task.events, preview: task.preview, error: task.error };
     const now = timestamp(row.updatedAt);
     this.db
       .update(messages)
-      .set({ status: task.status, content: JSON.stringify(content), updatedAt: now })
+      .set({ status: task.status, content, updatedAt: now })
       .where(eq(messages.id, task.id))
       .run();
     this.db
@@ -246,12 +244,12 @@ export class ConversationService {
         id: randomUUID(),
         messageId: task.id,
         title: row.question,
-        content: JSON.stringify({
+        content: {
           result: content.result ?? content.preview,
           chart: content.chart,
           chart_error: content.chart_error,
           error: content.error,
-        }),
+        },
         createdAt: now,
         updatedAt: now,
       })
@@ -280,7 +278,7 @@ export class ConversationService {
     return row ? this.run(row.id) : undefined;
   }
   assertRunSource(id: string, source: StoredDataset) {
-    const old = parseJSON<MessageOptions>(this.message(id).analysisOptions).source;
+    const old = (this.message(id).analysisOptions as MessageOptions).source;
     const identity = (snapshot: typeof old) =>
       snapshot.format === 'mysql'
         ? {
@@ -296,11 +294,11 @@ export class ConversationService {
   }
   run(id: string): Run {
     const row = this.message(id);
-    const content = parseJSON<MessageContent>(row.content);
+    const content = row.content as AssistantMessageContent;
     if (row.status !== 'done' || !content.result) return conflict('分析尚未成功完成');
-    const options = parseJSON<MessageOptions>(row.analysisOptions);
+    const options = row.analysisOptions as MessageOptions;
     const snippet = this.snippet(id);
-    const view = parseJSON<SnippetContent>(snippet.content);
+    const view = snippet.content;
     return {
       id,
       conversationId: row.conversationId,
@@ -373,7 +371,7 @@ export class ConversationService {
       this.db
         .update(snippets)
         .set({
-          content: JSON.stringify({ result: view.result, chart: view.chart ?? null }),
+          content: { result: view.result, chart: view.chart ?? null },
           updatedAt: timestamp(snippet.updatedAt),
         })
         .where(eq(snippets.id, snippet.id))
@@ -423,7 +421,7 @@ export class ConversationService {
       .orderBy(desc(messages.createdAt), desc(messages.sequence))
       .all()
       .map((row): RunSummary => {
-        const options = parseJSON<MessageOptions>(row.analysisOptions);
+        const options = row.analysisOptions as MessageOptions;
         return {
           id: row.id,
           conversationId: row.conversationId,

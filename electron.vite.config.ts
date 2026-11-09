@@ -16,7 +16,8 @@ export default defineConfig(({ command }) => ({
       emptyOutDir: command === 'build',
       target: 'node22',
       sourcemap: true,
-      lib: { entry: 'src/main/index.ts', formats: ['cjs'], fileName: () => 'main.cjs' },
+      lib: { entry: 'src/main/index.ts', formats: ['cjs'] },
+      rolldownOptions: { output: { entryFileNames: 'main.cjs' } },
     },
   },
   preload: {
@@ -28,7 +29,8 @@ export default defineConfig(({ command }) => ({
       externalizeDeps: false,
       target: 'node22',
       sourcemap: true,
-      lib: { entry: 'src/preload/index.ts', formats: ['cjs'], fileName: () => 'preload.cjs' },
+      lib: { entry: 'src/preload/index.ts', formats: ['cjs'] },
+      rolldownOptions: { output: { entryFileNames: 'preload.cjs' } },
     },
   },
   renderer: {

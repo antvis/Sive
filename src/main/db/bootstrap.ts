@@ -24,12 +24,11 @@ CREATE TABLE datasets (
   id TEXT PRIMARY KEY NOT NULL, -- 数据源 ID
   name TEXT NOT NULL, -- 数据源显示名称
   source_type TEXT NOT NULL CHECK (source_type IN ('csv', 'json', 'xlsx', 'parquet', 'text', 'mysql', 'postgresql', 'sqlite', 'mongodb', 'clickhouse', 'http_file', 'supabase', 'feishu_bitable')), -- 来源类型
-  source_config TEXT NOT NULL CHECK (json_valid(source_config) AND json_type(source_config) = 'object'), -- 非敏感来源配置对象（JSON），包含路径、连接参数、读取选项等
+  source_config TEXT NOT NULL, -- 整份来源配置（含凭据）经 safeStorage 加密后的 Base64 文本
   schema TEXT NOT NULL CHECK (json_valid(schema) AND json_type(schema) = 'object'), -- AVA 数据结构对象（JSON）
   profile TEXT NOT NULL CHECK (json_valid(profile) AND json_type(profile) = 'object'), -- AVA 数据概况对象（JSON）
   semantic TEXT NOT NULL DEFAULT '', -- 业务语义说明
   metrics TEXT CHECK (metrics IS NULL OR (json_valid(metrics) AND json_type(metrics) = 'array')), -- 业务指标定义数组（JSON）
-  encrypted_credentials TEXT, -- 整份凭据对象经 safeStorage 加密后的 Base64 文本
   created_at TEXT NOT NULL, -- 创建时间
   updated_at TEXT NOT NULL, -- 最近修改时间
   deleted_at TEXT -- 软删除时间

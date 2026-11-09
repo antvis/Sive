@@ -19,9 +19,7 @@ function source(file: string, format: string, sheets?: ExcelSheet[]): DataSource
 export async function withAVA<T>(
   dataset:
     | (Pick<StoredDataset, 'file' | 'format' | 'semantic'> &
-        Partial<
-          Pick<StoredDataset, 'profile' | 'metrics' | 'excelSheets' | 'connection' | 'encryptedCredentials'>
-        >)
+        Partial<Pick<StoredDataset, 'profile' | 'metrics' | 'excelSheets' | 'connection' | 'credentials'>>)
     | undefined,
   models: ModelService | undefined,
   signal: AbortSignal | undefined,

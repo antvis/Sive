@@ -49,7 +49,7 @@ app.whenReady().then(async () => {
     data,
     models,
     change,
-    new ConnectionService(data.datasets, encrypt, decrypt),
+    new ConnectionService(data.datasets),
     (task) => {
       revision++;
       if (win && !win.isDestroyed()) win.webContents.send('workbench:task', { revision, task });
