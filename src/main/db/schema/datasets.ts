@@ -1,4 +1,19 @@
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { customType, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import type { Dataset } from '@shared/contracts';
+import { decrypt, encrypt } from '@main/utils/credentials';
+import type { SourceConfig } from '../types';
+
+const encryptedSourceConfig = customType<{ data: SourceConfig; driverData: string }>({
+  dataType() {
+    return 'text';
+  },
+  toDriver(value) {
+    return encrypt(JSON.stringify(value));
+  },
+  fromDriver(value) {
+    return JSON.parse(decrypt(value)) as SourceConfig;
+  },
+});
 
 export const datasets = sqliteTable('datasets', {
   // Unique identifier of the dataset.
@@ -10,23 +25,20 @@ export const datasets = sqliteTable('datasets', {
   // Type of the data source.
   sourceType: text('source_type').notNull(),
 
-  // JSON object containing non-sensitive source configuration.
-  sourceConfig: text('source_config').notNull(),
+  // Encrypted JSON object containing source configuration and credentials.
+  sourceConfig: encryptedSourceConfig('source_config').notNull(),
 
   // JSON object containing the AVA data schema.
-  schema: text('schema').notNull(),
+  schema: text('schema', { mode: 'json' }).$type<Dataset['schema']>().notNull(),
 
   // JSON object containing the AVA data profile.
-  profile: text('profile').notNull(),
+  profile: text('profile', { mode: 'json' }).$type<Dataset['profile']>().notNull(),
 
   // Business semantic description of the dataset.
   semantic: text('semantic').notNull().default(''),
 
   // Optional JSON array of business metric definitions.
-  metrics: text('metrics'),
-
-  // Optional Base64-encoded credentials object encrypted with safeStorage.
-  encryptedCredentials: text('encrypted_credentials'),
+  metrics: text('metrics', { mode: 'json' }).$type<NonNullable<Dataset['metrics']>>(),
 
   // Creation timestamp.
   createdAt: text('created_at').notNull(),

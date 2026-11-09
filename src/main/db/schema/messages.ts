@@ -1,5 +1,6 @@
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { conversations } from './conversations';
+import type { MessageContent, StoredAnalysisOptions } from '../types';
 
 export const messages = sqliteTable('messages', {
   // Unique identifier of the message.
@@ -22,10 +23,13 @@ export const messages = sqliteTable('messages', {
   }).notNull(),
 
   // JSON object containing the message body, analysis results, and process information.
-  content: text('content').notNull(),
+  content: text('content', { mode: 'json' }).$type<MessageContent>().notNull(),
 
   // JSON object containing the AVA options snapshot without credentials.
-  analysisOptions: text('analysis_options').notNull().default('{}'),
+  analysisOptions: text('analysis_options', { mode: 'json' })
+    .$type<StoredAnalysisOptions>()
+    .notNull()
+    .default({}),
 
   // Creation timestamp.
   createdAt: text('created_at').notNull(),

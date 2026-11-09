@@ -23,15 +23,17 @@ export function connectionFailure(error: unknown) {
   return 'MySQL 读取失败，请检查数据库名称、表权限和服务状态后重新验证。';
 }
 export class ConnectionService {
-  constructor(
-    private datasetRecords: DatasetDataService,
-    private encrypt: (s: string) => string,
-    private decrypt: (s: string) => string,
-  ) {}
+  constructor(private datasetRecords: DatasetDataService) {}
   prepare(input: MySQLInput): StoredDataset {
     input = parseInput(mysqlInputSchema, input);
     const old = input.id ? this.datasetRecords.dataset(input.id) : undefined;
     if (old && old.format !== 'mysql') throw new WorkbenchError('INVALID_INPUT', '只能编辑 MySQL 连接');
+    const credentials =
+      input.password === undefined
+        ? old?.credentials
+        : input.password
+          ? { password: input.password }
+          : undefined;
     return {
       id: old?.id || randomUUID(),
       name: input.name.trim(),
@@ -48,24 +50,16 @@ export class ConnectionService {
         port: input.port,
         database: input.database,
         user: input.user,
-        hasPassword: input.password !== undefined ? !!input.password : !!old?.encryptedCredentials,
+        hasPassword: !!credentials?.password,
         status: 'ready',
       },
-      encryptedCredentials:
-        input.password === undefined
-          ? old?.encryptedCredentials
-          : input.password
-            ? this.encrypt(JSON.stringify({ password: input.password }))
-            : undefined,
+      credentials,
     };
   }
   source(dataset: StoredDataset): Extract<DataSourceConfig, { type: 'mysql' }> {
     const c = dataset.connection;
     if (!c) throw new WorkbenchError('INVALID_INPUT', '缺少 MySQL 连接配置');
-    const credentials = dataset.encryptedCredentials
-      ? JSON.parse(this.decrypt(dataset.encryptedCredentials))
-      : {};
-    const password = credentials.password ?? '';
+    const password = dataset.credentials?.password ?? '';
     const input = {
       name: dataset.name,
       host: c.host,

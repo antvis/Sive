@@ -1,7 +1,7 @@
 import { isDeepStrictEqual } from 'node:util';
 import { and, eq, isNull } from 'drizzle-orm';
 import { modelProviders } from '@main/db/schema';
-import { parseJSON, type StoredModel } from '@main/db/mappers';
+import type { StoredModel } from '@main/db/mappers';
 import type { SettingsService } from './SettingsService';
 import type { DbService } from '@main/db/DbService';
 import { conflict, timestamp } from '@main/utils/repository';
@@ -29,7 +29,7 @@ export class ModelProviderService {
       .orderBy(modelProviders.createdAt, modelProviders.id)
       .all()
       .map((row) => {
-        const modelIds = parseJSON<string[]>(row.modelNames);
+        const modelIds = row.modelNames;
         return {
           id: row.id,
           name: row.name,
@@ -49,7 +49,7 @@ export class ModelProviderService {
       const now = timestamp(current?.updatedAt);
       const values = {
         name: model.name,
-        modelNames: JSON.stringify(model.modelIds),
+        modelNames: model.modelIds,
         baseUrl: model.baseURL,
         encryptedKey: model.encryptedKey ?? null,
         updatedAt: now,

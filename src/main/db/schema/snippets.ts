@@ -1,5 +1,6 @@
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { messages } from './messages';
+import type { SnippetContent } from '../types';
 
 export const snippets = sqliteTable('snippets', {
   // Unique identifier of the snippet.
@@ -16,7 +17,7 @@ export const snippets = sqliteTable('snippets', {
   title: text('title').notNull(),
 
   // JSON object containing the presentation snapshot.
-  content: text('content').notNull(),
+  content: text('content', { mode: 'json' }).$type<SnippetContent>().notNull(),
 
   // Whether the snippet is visible in the saved list, stored as 0 or 1.
   isVisible: integer('is_visible').notNull().default(0),

@@ -8,7 +8,7 @@ export const modelProviders = sqliteTable('model_providers', {
   name: text('name').notNull(),
 
   // JSON array of available model names or invocation identifiers.
-  modelNames: text('model_names').notNull(),
+  modelNames: text('model_names', { mode: 'json' }).$type<string[]>().notNull(),
 
   // Base URL of the model provider API.
   baseUrl: text('base_url').notNull(),

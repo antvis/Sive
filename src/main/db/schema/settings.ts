@@ -5,7 +5,7 @@ export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),
 
   // JSON-encoded setting value.
-  value: text('value').notNull(),
+  value: text('value', { mode: 'json' }).notNull(),
 
   // Creation timestamp.
   createdAt: text('created_at').notNull(),
