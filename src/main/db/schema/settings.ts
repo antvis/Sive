@@ -1,10 +1,10 @@
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const settings = sqliteTable('settings', {
-  // Unique name of the setting.
+  // Unique, non-blank name of the setting.
   key: text('key').primaryKey(),
 
-  // JSON-encoded setting value.
+  // Valid JSON-encoded setting value.
   value: text('value', { mode: 'json' }).notNull(),
 
   // Creation timestamp.

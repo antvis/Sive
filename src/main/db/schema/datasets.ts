@@ -1,6 +1,6 @@
 import { customType, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import type { Dataset } from '@shared/contracts';
-import { decrypt, encrypt } from '@main/utils/credentials';
+import { decrypt, encrypt } from '../../utils/credentials';
 import type { SourceConfig } from '../types';
 
 const encryptedSourceConfig = customType<{ data: SourceConfig; driverData: string }>({
@@ -22,7 +22,8 @@ export const datasets = sqliteTable('datasets', {
   // Display name of the dataset.
   name: text('name').notNull(),
 
-  // Type of the data source.
+  // Must be one of: csv, json, xlsx, parquet, text, mysql, postgresql, sqlite,
+  // mongodb, clickhouse, http_file, supabase, feishu_bitable.
   sourceType: text('source_type').notNull(),
 
   // Encrypted JSON object containing source configuration and credentials.

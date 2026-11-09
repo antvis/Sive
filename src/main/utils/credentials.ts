@@ -1,5 +1,5 @@
 import { safeStorage } from 'electron';
-import { WorkbenchError } from '@shared/errors';
+import { WorkbenchError } from '../../shared/errors';
 
 export const encrypt = (s: string) => {
   if (
