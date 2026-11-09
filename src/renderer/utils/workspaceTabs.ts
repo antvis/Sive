@@ -6,10 +6,8 @@ export type WorkspaceTab = ConversationState & { id: string; open: boolean; data
 export function dataTab(datasetId: string): WorkspaceTab {
   return { ...initialConversationState, id: datasetId, datasetId, open: true, dataOpen: true };
 }
-export function conversationIdsWithContent(state: Pick<State, 'runs' | 'tasks' | 'task'>) {
-  return new Set(
-    [...state.runs, ...state.tasks, ...(state.task ? [state.task] : [])].map((item) => item.conversationId),
-  );
+export function conversationIdsWithContent(state: Pick<State, 'runs' | 'tasks'>) {
+  return new Set([...state.runs, ...state.tasks].map((item) => item.conversationId));
 }
 // Persist drafts and navigation only; task snapshots and query data remain in the workspace.
 export function serializeWorkspaceTabs(tabs: WorkspaceTab[]) {
@@ -48,7 +46,6 @@ export function restoreWorkspaceTabs(serialized: string | null, state: State): W
         state.runs.find(
           (r) => r.id === entry.runId && r.conversationId === conversationId && r.datasetId === base.id,
         )?.id || '',
-      observedTask: state.tasks.find((t) => t.id === entry.observedTask && t.datasetId === base.id)?.id || '',
       open: entry.open === true,
     });
   }

@@ -68,7 +68,7 @@ export default function DataPage({
         <Button
           variant="primary"
           icon={<PlusIcon />}
-          disabled={!!busy || analyzing}
+          disabled={!!busy}
           onClick={() =>
             navigate(paths.newData, { state: { returnTo: location.pathname + location.search } })
           }

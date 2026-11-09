@@ -16,8 +16,7 @@ export default function AnalysisComposer({
   mode,
   onMode,
   busy,
-  busyElsewhere = false,
-  busyElsewhereLabel = '其他会话正在分析，结束后可发送',
+  refreshing,
   cancelling,
   submitting,
   onSubmit,
@@ -34,8 +33,7 @@ export default function AnalysisComposer({
   mode: AnalysisMode;
   onMode: (mode: AnalysisMode) => void;
   busy: boolean;
-  busyElsewhere?: boolean;
-  busyElsewhereLabel?: string;
+  refreshing: boolean;
   cancelling: boolean;
   submitting: boolean;
   onSubmit: () => void;
@@ -46,11 +44,11 @@ export default function AnalysisComposer({
   const { preferences } = usePreferences();
   const mac = navigator.platform.includes('Mac');
   const sendKey = preferences.sendShortcut === 'enter' ? 'Enter' : mac ? '⌘ + Enter' : 'Ctrl + Enter';
-  const locked = (busy && !busyElsewhere) || submitting;
+  const locked = submitting;
   const model = models.find((item) => item.id === modelId && item.modelIds.includes(item.model));
-  const canSend = !!dataset && !!model && !!question.trim() && !locked && !busy;
-  const sendHint = busyElsewhere
-    ? busyElsewhereLabel
+  const canSend = !!dataset && !!model && !!question.trim() && !locked && !busy && !refreshing;
+  const sendHint = refreshing
+    ? '收藏的分析正在刷新，完成后可发送'
     : !dataset
       ? '请先打开数据源'
       : !model
@@ -149,7 +147,7 @@ export default function AnalysisComposer({
             </Button>
           </Dropdown>
           <span className="min-w-[4px] flex-1" />
-          {busy && !busyElsewhere ? (
+          {busy ? (
             <Tooltip title={cancelling ? '正在停止' : '停止分析'}>
               <Button
                 className="size-7.5 shrink-0 rounded-control text-title"
@@ -184,12 +182,12 @@ export default function AnalysisComposer({
           <span>请先打开数据源</span>
         ) : (
           <span>
-            {busyElsewhere
-              ? busyElsewhereLabel
+            {refreshing
+              ? '收藏的分析正在刷新，完成后可发送'
               : busy
                 ? cancelling
                   ? '正在结束本次分析…'
-                  : '正在分析，可随时停止'
+                  : '正在分析，可编辑下一条问题或切换会话'
                 : `${sendKey} 发送 · ${preferences.sendShortcut === 'enter' ? 'Shift + Enter' : 'Enter'} 换行`}
           </span>
         )}

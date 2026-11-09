@@ -56,10 +56,12 @@ export class DatasetService {
     return { tables: dataset.schema.models.length, rows };
   }
   async saveMySQL(input: MySQLInput) {
-    if (this.isAnalyzing()) throw new WorkbenchError('INVALID_INPUT', '请等待当前分析结束后修改连接');
+    if (input.id && this.isAnalyzing())
+      throw new WorkbenchError('INVALID_INPUT', '请等待当前分析结束后修改连接');
     const original = input.id ? this.records.dataset(input.id) : undefined;
     const { dataset } = await this.inspectMySQL(input);
-    if (this.isAnalyzing()) throw new WorkbenchError('INVALID_INPUT', '分析已开始，请结束后再保存连接');
+    if (original && this.isAnalyzing())
+      throw new WorkbenchError('INVALID_INPUT', '分析已开始，请结束后再保存连接');
     const saved = this.records.putDataset(dataset, original);
     this.change();
     return this.records.publicDataset(saved);

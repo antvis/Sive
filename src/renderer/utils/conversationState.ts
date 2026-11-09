@@ -1,11 +1,8 @@
-import type { Task } from '@shared/contracts';
-
 export type ConversationState = {
   datasetId: string;
   conversationId: string;
   runId: string;
   question: string;
-  observedTask: string;
   drafts: Record<string, string>;
 };
 export const initialConversationState: ConversationState = {
@@ -13,7 +10,6 @@ export const initialConversationState: ConversationState = {
   conversationId: '',
   runId: '',
   question: '',
-  observedTask: '',
   drafts: {},
 };
 export const draftKey = (state: Pick<ConversationState, 'conversationId' | 'datasetId'>) =>
@@ -25,7 +21,6 @@ export type ConversationAction =
       conversationId?: string;
       runId?: string;
       question?: string;
-      observedTask?: string;
     }
   | { type: 'edit'; question: string }
   | {
@@ -33,10 +28,8 @@ export type ConversationAction =
       originKey: string;
       datasetId: string;
       conversationId: string;
-      taskId: string;
       sentQuestion: string;
-    }
-  | { type: 'settled'; task: Task };
+    };
 export function conversationReducer(state: ConversationState, action: ConversationAction): ConversationState {
   switch (action.type) {
     case 'navigate': {
@@ -48,7 +41,6 @@ export function conversationReducer(state: ConversationState, action: Conversati
         drafts,
         runId: action.runId || '',
         question: action.question ?? drafts[draftKey(next)] ?? '',
-        observedTask: action.observedTask || '',
       };
     }
     case 'edit':
@@ -71,20 +63,9 @@ export function conversationReducer(state: ConversationState, action: Conversati
         datasetId: action.datasetId,
         conversationId: action.conversationId,
         runId: '',
-        observedTask: action.taskId,
         drafts: { ...state.drafts, [action.originKey]: '' },
         question: state.question === action.sentQuestion ? '' : state.question,
       };
     }
-    case 'settled':
-      if (action.task.id !== state.observedTask || action.task.status !== 'done') return state;
-      return {
-        ...state,
-        observedTask: '',
-        runId:
-          action.task.conversationId === state.conversationId && action.task.datasetId === state.datasetId
-            ? action.task.runId || state.runId
-            : state.runId,
-      };
   }
 }

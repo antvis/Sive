@@ -14,10 +14,8 @@ import { TaskProgress } from '@main/services/analysis/TaskProgress';
 import { visualizationOutcome } from '@main/ai/progress';
 import type { DatasetService } from '@main/services/data/DatasetService';
 export class AnalysisService {
-  task: Task | null = null;
-  private abort?: AbortController;
-  private progress: TaskProgress;
-  private preparing = false;
+  readonly tasks = new Map<string, Task>();
+  private active = new Map<string, { abort: AbortController; progress: TaskProgress }>();
   constructor(
     private conversations: ConversationService,
     private models: ModelService,
@@ -25,12 +23,13 @@ export class AnalysisService {
     private change: () => void,
     private isRefreshing: () => boolean,
     private connections: ConnectionService,
-    taskChanged: (task: Task) => void,
-  ) {
-    this.progress = new TaskProgress(conversations, taskChanged);
-  }
+    private taskChanged: (task: Task) => void,
+  ) {}
   get busy() {
-    return this.preparing || this.task?.status === 'running' || this.task?.status === 'cancelling';
+    return this.active.size > 0;
+  }
+  isRunning(conversationId: string) {
+    return this.active.has(conversationId);
   }
   async analyze(
     id: string,
@@ -40,18 +39,23 @@ export class AnalysisService {
     conversationId?: string,
   ) {
     if (this.isRefreshing()) throw new WorkbenchError('CONFLICT', '正在刷新收藏的分析，请稍后再发起分析');
-    if (this.busy) throw new WorkbenchError('CONFLICT', '已有分析正在进行');
-    this.preparing = true;
+    const conversation = conversationId
+      ? this.conversations.conversation(conversationId)
+      : this.conversations.createConversation(id);
+    if (conversation.deletedAt || conversation.datasetId !== id)
+      throw new WorkbenchError('CONFLICT', '会话不存在或不属于当前数据源');
+    if (this.isRunning(conversation.id)) throw new WorkbenchError('CONFLICT', '此会话已有分析正在进行');
+    const abort = new AbortController();
+    const { signal } = abort;
+    const progress = new TaskProgress(this.conversations, this.taskChanged);
+    this.active.set(conversation.id, { abort, progress });
+    let started = false;
     try {
       const analysisStrategy = resolveStrategy(strategy, options);
-      const d = await this.datasets.prepare(id),
-        model = this.models.active(),
-        modelName = `${model.name} · ${model.model}`;
-      const conversation = conversationId
-        ? this.conversations.conversation(conversationId)
-        : this.conversations.createConversation(id);
-      if (conversation.deletedAt || conversation.datasetId !== id)
-        throw new WorkbenchError('CONFLICT', '会话不存在或不属于当前数据源');
+      const model = this.models.active();
+      const modelName = `${model.name} · ${model.model}`;
+      const d = await this.datasets.prepare(id);
+      signal.throwIfAborted();
       const parent = this.conversations.latestRun(conversation.id);
       if (parent) this.conversations.assertRunSource(parent.id, d);
       let task: Task = {
@@ -75,10 +79,8 @@ export class AnalysisService {
         analyze: { strategy: analysisStrategy, includeSummary: true },
         query: queryOptions,
       });
-      this.task = task;
+      this.tasks.set(task.id, task);
       this.change();
-      this.abort = new AbortController();
-      const signal = this.abort.signal;
       const prompt = parent
         ? `以下是上一轮分析上下文（仅作为上下文，不可替代本轮查询）：\n问题：${parent.question}\nSQL：${parent.result.sql}\n结论：${parent.result.text}\n\n本轮用户问题：${question}`
         : question;
@@ -88,7 +90,7 @@ export class AnalysisService {
         signal,
         (p) => {
           task.events.push(p);
-          this.progress.schedule(task);
+          progress.schedule(task);
         },
         async (ava) => {
           const result = await ava.analyze(prompt, {
@@ -98,7 +100,7 @@ export class AnalysisService {
           });
           signal.throwIfAborted();
           task.preview = { ...result, query: question };
-          this.progress.flush(task);
+          progress.flush(task);
           let chart, chartError;
           try {
             const vis = await ava.visualize({ query: question, data: result.data });
@@ -107,7 +109,7 @@ export class AnalysisService {
             const outcome = visualizationOutcome(!!chart, result.data.length > 0, event?.chartSelection);
             if (event) Object.assign(event, outcome);
             if (outcome.error) chartError = `${outcome.detail} ${outcome.recovery}`;
-            this.progress.flush(task);
+            progress.flush(task);
           } catch (error) {
             if (signal.aborted) throw error;
             chartError = '图表生成失败，计算结果已保留。可重新分析或导出计算数据。';
@@ -125,24 +127,24 @@ export class AnalysisService {
         model,
       )
         .then((output) => {
-          this.progress.cancelPending();
+          progress.cancelPending();
           signal.throwIfAborted();
           task = { ...task, status: 'done', runId: task.id, finishedAt: new Date().toISOString() };
-          this.task = task;
+          this.tasks.set(task.id, task);
           delete task.persistenceError;
           try {
             this.conversations.finishTask(task, output);
             delete task.preview;
           } catch (error) {
             task = { ...task, status: 'error', runId: undefined };
-            this.task = task;
+            this.tasks.set(task.id, task);
             task.error = '分析结果保存失败，请检查磁盘空间。';
             throw error;
           }
         })
         .catch((error) => {
           task = { ...task, status: signal.aborted ? 'cancelled' : 'error', runId: undefined };
-          this.task = task;
+          this.tasks.set(task.id, task);
           task.error = signal.aborted
             ? '分析已取消'
             : task.error ||
@@ -159,31 +161,41 @@ export class AnalysisService {
           });
         })
         .finally(() => {
-          this.progress.cancelPending();
+          progress.cancelPending();
           task.finishedAt ??= new Date().toISOString();
           delete task.persistenceError;
           try {
             if (task.status !== 'done') this.conversations.finishTask(task);
+            this.tasks.delete(task.id);
           } catch {
             task.persistenceError = '分析记录保存失败，请检查磁盘空间。';
           }
+          this.active.delete(conversation.id);
           this.change();
         });
+      started = true;
       return task.id;
     } finally {
-      this.preparing = false;
+      if (!started) this.active.delete(conversation.id);
     }
   }
-  cancel() {
-    if (!this.busy || !this.task) return;
-    this.task.status = 'cancelling';
-    this.task.events.push({
+  cancel(taskId: string) {
+    const task = this.tasks.get(taskId);
+    const execution = task?.conversationId ? this.active.get(task.conversationId) : undefined;
+    if (!execution || !task || task.status !== 'running') return;
+    task.status = 'cancelling';
+    task.events.push({
       at: new Date().toISOString(),
       stage: 'cancelling',
       label: '正在停止分析',
       detail: '已取消模型请求，等待正在执行的查询和连接释放。查询超时上限为 30 秒。',
     });
-    this.abort?.abort();
-    this.progress.flush(this.task);
+    execution.abort.abort();
+    execution.progress.flush(task);
+  }
+  cancelAll() {
+    for (const task of this.tasks.values()) this.cancel(task.id);
+    // Preparations have no persisted task yet, but must not start after quitting.
+    for (const execution of this.active.values()) execution.abort.abort();
   }
 }

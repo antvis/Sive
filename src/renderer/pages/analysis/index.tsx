@@ -50,7 +50,10 @@ export default function AnalysisPage() {
       mounted.current = false;
     };
   }, []);
-  const entries = conversationView(state.runs, state.tasks, state.task, conversationId);
+  const entries = conversationView(state.runs, state.tasks, conversationId);
+  const activeTask = state.tasks.find(
+    (task) => task.conversationId === conversationId && ['running', 'cancelling'].includes(task.status),
+  );
   const perform = async (fn: () => Promise<unknown>) => {
     try {
       await fn();
@@ -69,7 +72,7 @@ export default function AnalysisPage() {
     if (
       !dataset ||
       dataset.deletedAt ||
-      busy ||
+      !!activeTask ||
       !!state.refreshingSavedId ||
       submitting ||
       !text ||
@@ -80,14 +83,13 @@ export default function AnalysisPage() {
     const originKey = location.key;
     try {
       const selectedId = conversationId || (await api.createConversation(dataset.id)).id;
-      const id = await api.analyze(dataset.id, text, mode, undefined, selectedId);
+      await api.analyze(dataset.id, text, mode, undefined, selectedId);
       await refresh();
       dispatchConversation({
         type: 'submitted',
         originKey: draftKey(conversationState),
         datasetId: dataset.id,
         conversationId: selectedId,
-        taskId: id,
         sentQuestion: question,
       });
       if (mounted.current && locationRef.current.key === originKey)
@@ -164,7 +166,7 @@ export default function AnalysisPage() {
                     className="group/suggestion flex items-center relative justify-center py-4 px-0 text-ink bg-transparent border-0 border-b border-b-line/65 text-center leading-[1.6] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:outline-offset-4 disabled:opacity-50"
                     key={title}
                     title="填入问题"
-                    disabled={!dataset || busy}
+                    disabled={!dataset || submitting}
                     onClick={() => ask(description)}
                   >
                     <span className="grid gap-1">
@@ -235,15 +237,12 @@ export default function AnalysisPage() {
             onModel={(id, model) => perform(() => api.activateModel(id, model))}
             mode={mode}
             onMode={setMode}
-            busy={busy || !!state.refreshingSavedId}
-            busyElsewhere={
-              !!state.refreshingSavedId || (busy && state.task?.conversationId !== conversationId)
-            }
-            busyElsewhereLabel={state.refreshingSavedId ? '收藏的分析正在刷新，完成后可发送' : undefined}
-            cancelling={state.task?.status === 'cancelling'}
+            busy={!!activeTask}
+            refreshing={!!state.refreshingSavedId}
+            cancelling={activeTask?.status === 'cancelling'}
             submitting={submitting}
             onSubmit={() => start()}
-            onCancel={() => perform(() => api.cancel())}
+            onCancel={() => activeTask && perform(() => api.cancel(activeTask.id))}
             onSettings={openModelSettings}
           />
         )}

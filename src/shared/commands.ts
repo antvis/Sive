@@ -28,7 +28,7 @@ const commandSchemas = {
   state: none,
   run: oneId,
   importData: z.tuple([localFormatSchema.optional()]),
-  cancel: none,
+  cancel: oneId,
   createConversation: oneId,
   deleteConversation: oneId,
   restoreConversation: oneId,
