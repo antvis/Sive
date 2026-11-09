@@ -15,19 +15,19 @@ export class ConversationService {
   ) {}
 
   get(id: string) {
-    const conversation = this.data.conversations.get(id, { includeDeleted: true });
+    const conversation = this.data.conversations.get(id);
     if (!conversation) throw new WorkbenchError('CONFLICT', '会话不存在');
     return conversation;
   }
 
   list() {
-    return this.data.conversations.list({ includeDeleted: true });
+    return this.data.conversations.list();
   }
 
   create(datasetId: string) {
     const conversation = this.data.database.write(() => {
       this.datasets.dataset(datasetId);
-      const candidates = this.data.conversations.listByDatasetId(datasetId);
+      const candidates = this.data.conversations.listByDatasetId(datasetId).filter((row) => !row.archivedAt);
       const occupied = new Set(this.data.messages.listConversationIds(candidates.map((row) => row.id)));
       const empty = candidates.find((row) => !occupied.has(row.id));
       if (empty) return empty;
@@ -52,7 +52,7 @@ export class ConversationService {
       if (this.data.messages.hasStatus(id, ['running', 'cancelling']))
         throw new WorkbenchError('CONFLICT', '请先停止此会话的分析');
       const now = timestamp();
-      this.data.conversations.update(id, { deletedAt: now, updatedAt: now }, { includeDeleted: true });
+      this.data.conversations.update(id, { archivedAt: now, updatedAt: now });
     });
     this.afterArchive(id);
     this.change();
@@ -60,13 +60,9 @@ export class ConversationService {
 
   restore(id: string) {
     this.data.database.write(() => {
-      const conversation = this.data.conversations.get(id, { includeDeleted: true });
-      if (!conversation?.deletedAt) throw new WorkbenchError('CONFLICT', '已归档会话不存在');
-      this.data.conversations.update(
-        id,
-        { deletedAt: null, updatedAt: timestamp() },
-        { includeDeleted: true },
-      );
+      const conversation = this.data.conversations.get(id);
+      if (!conversation?.archivedAt) throw new WorkbenchError('CONFLICT', '已归档会话不存在');
+      this.data.conversations.update(id, { archivedAt: null, updatedAt: timestamp() });
     });
     this.change();
   }
@@ -75,8 +71,15 @@ export class ConversationService {
     this.assertNotRefreshing(ids);
     this.data.database.write(() => {
       for (const id of ids)
-        if (!this.get(id).deletedAt) throw new WorkbenchError('CONFLICT', '只能永久删除已归档的会话');
-      this.data.conversations.delete(ids);
+        if (!this.get(id).archivedAt) throw new WorkbenchError('CONFLICT', '只能永久删除已归档的会话');
+      for (const id of ids) {
+        for (const message of this.data.messages.listByConversationId(id)) {
+          const snippet = this.data.snippets.getByMessageId(message.id);
+          if (snippet) this.data.snippets.remove(snippet.id);
+          this.data.messages.remove(message.id);
+        }
+        this.data.conversations.remove(id);
+      }
     });
     this.change();
   }

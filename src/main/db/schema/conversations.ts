@@ -18,7 +18,10 @@ export const conversations = sqliteTable(
     // Timestamp of the last message addition or conversation update.
     updatedAt: text('updated_at').notNull(),
 
-    // Archive or soft deletion timestamp.
+    // Timestamp when the conversation was archived; cleared on restore.
+    archivedAt: text('archived_at'),
+
+    // Irreversible soft deletion timestamp.
     deletedAt: text('deleted_at'),
   },
   (table) => [index('idx_conversations_dataset').on(table.datasetId, table.createdAt, table.id)],

@@ -80,7 +80,7 @@ export class SnippetService {
       const snippet = this.snippet(id);
       if (!snippet.isVisible || snippet.updatedAt !== savedAt)
         throw new WorkbenchError('CONFLICT', '收藏已发生变化，本次刷新结果未写入');
-      if (this.conversations.get(this.records.message(id).conversationId).deletedAt)
+      if (this.conversations.get(this.records.message(id).conversationId).archivedAt)
         throw new WorkbenchError('CONFLICT', '请先恢复此分析所属的会话');
       this.data.snippets.update(snippet.id, {
         content: { result: view.result, chart: view.chart ?? null },
@@ -96,7 +96,7 @@ export class SnippetService {
     this.change();
     try {
       const run = this.records.run(id);
-      if (this.conversations.get(run.conversationId).deletedAt)
+      if (this.conversations.get(run.conversationId).archivedAt)
         throw new WorkbenchError('CONFLICT', '请先恢复此分析所属的会话');
       if (!run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从已保存列表移除');
       const source = await this.datasets.prepare(run.datasetId);

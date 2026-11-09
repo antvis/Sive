@@ -35,16 +35,12 @@ export class DatasetService {
 
   dataset(id: string) {
     const row = this.records.get(id);
-    if (!row)
-      throw new WorkbenchError(
-        'CONFLICT',
-        this.records.exists(id) ? '连接已删除，历史分析仍可查看和导出' : '数据不存在',
-      );
+    if (!row) throw new WorkbenchError('CONFLICT', '数据不存在');
     return datasetRecord(row);
   }
 
   list() {
-    return this.records.listAll().map((row) => this.publicDataset(datasetRecord(row)));
+    return this.records.list().map((row) => this.publicDataset(datasetRecord(row)));
   }
 
   private publicDataset(dataset: StoredDataset): Dataset {
@@ -60,7 +56,7 @@ export class DatasetService {
   private putDataset(next: StoredDataset, expected?: StoredDataset) {
     return this.database.write(() => {
       if (expected) this.assertDatasetCurrent(expected);
-      else if (this.records.exists(next.id)) throw new WorkbenchError('CONFLICT', '数据源已存在');
+      else if (this.records.get(next.id)) throw new WorkbenchError('CONFLICT', '数据源已存在');
       if (!next.deletedAt && next.format !== 'mysql' && !next.file.trim())
         throw new WorkbenchError('CONFLICT', '请选择源文件');
       if (!next.deletedAt && next.format === 'xlsx' && !next.excelSheets)

@@ -75,7 +75,7 @@ export class MessageRepo {
       .from(messages)
       .innerJoin(conversations, eq(conversations.id, messages.conversationId))
       .innerJoin(users, precedingUser)
-      .where(and(assistant, filter));
+      .where(and(assistant, isNull(conversations.deletedAt), filter));
   }
 
   getAnalysis(id: string) {
@@ -87,7 +87,7 @@ export class MessageRepo {
   }
 
   listTasks() {
-    return this.analysisQuery(and(ne(messages.status, 'done'), isNull(conversations.deletedAt)))
+    return this.analysisQuery(and(ne(messages.status, 'done'), isNull(conversations.archivedAt)))
       .orderBy(desc(messages.createdAt), desc(messages.sequence))
       .all();
   }
@@ -112,7 +112,14 @@ export class MessageRepo {
         snippets,
         and(eq(snippets.messageId, messages.id), eq(snippets.isVisible, 1), isNull(snippets.deletedAt)),
       )
-      .where(and(assistant, eq(messages.status, 'done'), isNull(conversations.deletedAt)))
+      .where(
+        and(
+          assistant,
+          eq(messages.status, 'done'),
+          isNull(conversations.archivedAt),
+          isNull(conversations.deletedAt),
+        ),
+      )
       .orderBy(desc(messages.createdAt), desc(messages.sequence))
       .all();
   }

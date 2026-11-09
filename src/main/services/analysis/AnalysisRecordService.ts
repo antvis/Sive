@@ -31,10 +31,10 @@ export class AnalysisRecordService {
 
   startTask(task: Task, conversation: Conversation, options: MessageOptions) {
     return this.data.database.write(() => {
-      const current = this.data.conversations.get(conversation.id, { includeDeleted: true });
+      const current = this.data.conversations.get(conversation.id);
       if (!current) throw new WorkbenchError('CONFLICT', '会话不存在');
       if (
-        current.deletedAt ||
+        current.archivedAt ||
         current.datasetId !== task.datasetId ||
         task.conversationId !== conversation.id
       )
@@ -108,7 +108,7 @@ export class AnalysisRecordService {
       : { events: task.events, preview: task.preview, error: task.error };
     const now = timestamp(row.updatedAt);
     this.data.messages.update(task.id, { status: task.status, content, updatedAt: now });
-    this.data.conversations.update(row.conversationId, { updatedAt: now }, { includeDeleted: true });
+    this.data.conversations.update(row.conversationId, { updatedAt: now });
     this.data.snippets.insert({
       id: randomUUID(),
       messageId: task.id,

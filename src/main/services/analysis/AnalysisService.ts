@@ -58,7 +58,7 @@ export class AnalysisService {
     const conversation = conversationId
       ? this.conversations.get(conversationId)
       : this.conversations.create(id);
-    if (conversation.deletedAt || conversation.datasetId !== id)
+    if (conversation.archivedAt || conversation.datasetId !== id)
       throw new WorkbenchError('CONFLICT', '会话不存在或不属于当前数据源');
     if (this.isRunning(conversation.id)) throw new WorkbenchError('CONFLICT', '此会话已有分析正在进行');
     const abort = new AbortController();

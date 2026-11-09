@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { conversations } from '../schema';
 import type { DbService } from '../DbService';
 import { timestamp } from '../../utils/time';
@@ -13,21 +13,19 @@ export class ConversationRepo {
     return this.database.connection;
   }
 
-  get(id: string, options: { includeDeleted?: boolean } = {}) {
+  get(id: string) {
     return this.db
       .select()
       .from(conversations)
-      .where(
-        and(eq(conversations.id, id), options.includeDeleted ? undefined : isNull(conversations.deletedAt)),
-      )
+      .where(and(eq(conversations.id, id), isNull(conversations.deletedAt)))
       .get();
   }
 
-  list(options: { includeDeleted?: boolean } = {}) {
+  list() {
     return this.db
       .select()
       .from(conversations)
-      .where(options.includeDeleted ? undefined : isNull(conversations.deletedAt))
+      .where(isNull(conversations.deletedAt))
       .orderBy(desc(conversations.createdAt), desc(conversations.id))
       .all();
   }
@@ -45,13 +43,11 @@ export class ConversationRepo {
     return this.db.insert(conversations).values(values).returning().get();
   }
 
-  update(id: string, values: ConversationUpdate, options: { includeDeleted?: boolean } = {}) {
+  update(id: string, values: ConversationUpdate) {
     return this.db
       .update(conversations)
       .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
-      .where(
-        and(eq(conversations.id, id), options.includeDeleted ? undefined : isNull(conversations.deletedAt)),
-      )
+      .where(and(eq(conversations.id, id), isNull(conversations.deletedAt)))
       .returning()
       .get();
   }
@@ -61,9 +57,5 @@ export class ConversationRepo {
     if (!row) return;
     const now = timestamp(row.updatedAt);
     this.update(id, { deletedAt: now, updatedAt: now });
-  }
-
-  delete(ids: string[]) {
-    return this.db.delete(conversations).where(inArray(conversations.id, ids)).run().changes;
   }
 }

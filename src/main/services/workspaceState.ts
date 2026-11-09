@@ -12,8 +12,8 @@ export function buildWorkspaceState(services: WorkbenchServices): State {
     if (index >= 0) tasks[index] = task;
   }
   return {
-    conversations: chats.filter((c) => !c.deletedAt),
-    deletedConversations: chats.filter((c) => c.deletedAt),
+    conversations: chats.filter((c) => !c.archivedAt),
+    deletedConversations: chats.filter((c) => c.archivedAt),
     datasets: services.datasets.list(),
     runs,
     tasks,
