@@ -1,0 +1,81 @@
+src/main/db/schema/messages.ts
+  s_44137115b7fd60::t_7d7ae2f45280bf 28
+  s_44137115b7fd60::t_e1dcd960e11aa6 31,34,37
+  s_44137115b7fd60::t_c493e5e19f44e4 9
+src/main/db/schema/settings.ts
+  s_44137115b7fd60::t_435968aa61bad1 11,14,17
+src/main/db/schema/datasets.ts
+  s_44137115b7fd60::t_583263f412e712 11,14
+  s_44137115b7fd60::t_82e44f0ac690bb 29
+  s_44137115b7fd60::t_81ff322f79c830 32,35,38
+src/main/db/schema/snippets.ts
+  s_44137115b7fd60::t_1a670b2b522bfe 25,28,31
+  s_44137115b7fd60::t_95fb4760d21674 10
+  s_44137115b7fd60::t_3fbf7011664458 22
+src/main/db/repository/ConversationService.ts
+  s_44137115b7fd60::t_b4d007edad77cd 412,438,440
+  s_44137115b7fd60::t_70a6e1aec7f422 413,439
+  s_44137115b7fd60::t_a40bd70a1cc6ea 400
+  s_44137115b7fd60::t_e64115692e589d 89,91-101
+  s_44137115b7fd60::t_948dc4c2b46822 55,76,307,407,430
+  s_44137115b7fd60::t_ba773a55063e5e 176,187,193,209,232,235,240,256,314,324,327,362,377,410,436
+  s_44137115b7fd60::t_f7390371cac2ef 86,175,186,255,399,423,446
+  s_44137115b7fd60::t_f051c56cf9103f 66
+  s_44137115b7fd60::t_d3b4405b4917ad 247,268
+  s_44137115b7fd60::t_370b3db7da2b8c 322,337,340,350,358,420
+  s_44137115b7fd60::t_a0f6b007369c65 37,57,82,111,162,170,180,241,276,306,372,406,416,429
+  s_44137115b7fd60::t_71201b00dc0c51 41,77,118,128-129,155,422,445
+  s_44137115b7fd60::t_fdfcf58180e914 185,283,301,409,426
+  s_44137115b7fd60::t_2caae69c35f4b8 371
+src/main/db/repository/SettingsService.ts
+  s_44137115b7fd60::t_36cd9c3969d163 27
+  s_44137115b7fd60::t_3875c6e008e66c 17,30
+src/main/db/repository/ModelProviderService.ts
+  s_44137115b7fd60::t_39e3f04031769a 39,54,82
+  s_44137115b7fd60::t_1a563cd47e57c6 40,55
+  s_44137115b7fd60::t_3ba18763d029d1 36,53
+  s_44137115b7fd60::t_cfc4a070d24a4a 28,83
+  s_44137115b7fd60::t_b9a61ac0889f8b 29,59
+  s_44137115b7fd60::t_70e0a84e26e5d2 32,52
+src/main/db/repository/DatasetService.ts
+  s_44137115b7fd60::t_fa33a259948a66 47-48,94
+  s_44137115b7fd60::t_581ccdcdefb3e5 25,100
+  s_44137115b7fd60::t_5a4c6c994ef2c4 33,51-52,55,88
+  s_44137115b7fd60::t_f4ec0b3ada358f 21,89
+  s_44137115b7fd60::t_b77020425388a4 27,67,74,96
+  s_44137115b7fd60::t_015fe740466c4a 26,72,76,95,118
+src/main/db/schema/modelProviders.ts
+  s_44137115b7fd60::t_722541acffeb8f 11,14,17
+  s_44137115b7fd60::t_1a86afea56c66c 20,23,26
+src/main/db/schema/conversations.ts
+  s_44137115b7fd60::t_579a8504a74bbe 17,20,23
+  s_44137115b7fd60::t_3ec314170870d5 9
+src/shared/contracts.ts
+  s_44137115b7fd60::t_378bb60b453402 132
+src/renderer/pages/settings/DeletedConversations.tsx
+  s_44137115b7fd60::t_7c74eb4561aa7f 82
+src/main/db/mappers.ts
+  s_44137115b7fd60::t_e7711a9448152e 38,54
+  s_44137115b7fd60::t_d15ecc1531d7d5 55
+  s_44137115b7fd60::t_e28c73fe78b28f 1
+  s_44137115b7fd60::t_63b3b54fd91cfe 69,73
+  s_44137115b7fd60::t_a29d458736519a 50
+  s_44137115b7fd60::t_28cad2b7d5f1f9 62
+  s_44137115b7fd60::t_5285278c90bc20 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0d8c2467cfe6bbe1422496feebb7c591b4a33c21",
+  "prompts": {},
+  "sessions": {
+    "s_44137115b7fd60": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "d877fdb6-d6ed-4378-a5f9-563b5a4e134f",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
