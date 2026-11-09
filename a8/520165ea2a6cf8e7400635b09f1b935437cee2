@@ -1,0 +1,47 @@
+AGENTS.md
+  s_88402cf4dd9787::t_94aff8056729c9 15-18
+src/main/db/repository/ConversationRepo.ts
+  s_d422f47e776587::t_b5d60df755cc98 1-32,42-63
+  s_d422f47e776587::t_1df3143097f759 33-41
+src/main/db/repository/MessageRepo.ts
+  s_d422f47e776587::t_5e71d75654023b 33-41
+  s_d422f47e776587::t_f8cd8d92f24f30 15,23,32,48,56
+  s_d422f47e776587::t_0fcdba84a732ab 11
+  s_d422f47e776587::t_fe352c77845c48 1,5-10,12-14,16-22,24-31,42-47,49-55,57-63
+  s_d422f47e776587::t_75cf4673c046a1 2-4
+src/main/db/repository/ModelProviderRepo.ts
+  s_d422f47e776587::t_febcf7f6e2b024 1-54
+src/main/db/repository/DatasetRepo.ts
+  s_d422f47e776587::t_9b1afa5901ec7b 1-54
+src/main/db/repository/SettingRepo.ts
+  s_d422f47e776587::t_ab10b1ff63e229 1-49
+src/main/db/repository/SnippetRepo.ts
+  s_d422f47e776587::t_a91d23334e21a9 1,5-10,12-14,16-22,24-30,32-39,41-46,48-54,56-62
+  s_d422f47e776587::t_d56008f7820c07 11
+  s_d422f47e776587::t_eb9a91889ca8a9 2-4
+  s_d422f47e776587::t_328e1cebbd269d 15,23,31,40,47,55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a8520165ea2a6cf8e7400635b09f1b935437cee2",
+  "prompts": {},
+  "sessions": {
+    "s_88402cf4dd9787": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "52003ee6-21a0-4a8a-a78f-5107ac04b146",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_d422f47e776587": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "bb029dd8-4566-4ccb-809f-3a8f560c19b4",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
