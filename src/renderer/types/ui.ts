@@ -7,6 +7,7 @@ export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> 
   loading?: boolean;
   icon?: ReactNode;
 };
+
 export type ConfirmOptions = {
   title: ReactNode;
   content?: ReactNode;

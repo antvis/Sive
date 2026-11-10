@@ -1,6 +1,7 @@
 import type { API } from './contracts';
 
 export type Commands = Omit<API, 'workspaceOnChange' | 'analysisOnTaskChange' | 'modelOnTestProgress'>;
+
 export type Command = keyof Commands;
 
 export const commandNames = Object.values({

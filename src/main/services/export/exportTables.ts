@@ -8,6 +8,7 @@ const htmlEntities: Record<string, string> = {
   '"': '&quot;',
   "'": '&#39;',
 };
+
 export const escape = (value: unknown) =>
   String(value ?? '').replace(/[&<>"']/g, (character) => htmlEntities[character]);
 

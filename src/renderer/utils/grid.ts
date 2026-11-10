@@ -21,7 +21,9 @@ function compareNumeric(a: unknown, b: unknown, descending: boolean) {
 }
 
 export const MIN_COLUMN_WIDTH = 80;
+
 export const MAX_COLUMN_WIDTH = 1000;
+
 export const clampColumnWidth = (width: number) =>
   Math.round(Math.max(MIN_COLUMN_WIDTH, Math.min(MAX_COLUMN_WIDTH, width)));
 

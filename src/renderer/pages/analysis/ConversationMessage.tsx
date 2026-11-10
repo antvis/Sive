@@ -29,6 +29,7 @@ function MessageActions({
   const date = time ? new Date(time) : undefined;
   const copyLabel = markdown ? '复制回复（Markdown）' : '复制问题';
   const feedbackLabel = feedback === 'success' ? '复制成功' : '复制失败，请重试';
+
   const copy = async () => {
     if (copying) return;
     setCopying(true);

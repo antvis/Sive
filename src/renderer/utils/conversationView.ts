@@ -10,6 +10,7 @@ export function conversationView(runs: RunSummary[], tasks: Task[], conversation
   for (const run of runs) {
     if (run.conversationId === conversationId) entries.set(run.id, { kind: 'run', run });
   }
+
   const sequence = (entry: Entry) => (entry.kind === 'run' ? entry.run.sequence : (entry.task.sequence ?? 0));
   return [...entries.values()].sort((a, b) => sequence(a) - sequence(b));
 }

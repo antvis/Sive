@@ -7,6 +7,7 @@ import type { ExcelSheet } from '@shared/contracts';
 // Read only workbook structure. DuckDB remains responsible for values and types.
 export function inspectExcel(file: string): ExcelSheet[] {
   const zip = new AdmZip(file);
+
   function xml(name: string, visit: (parser: SaxesParser) => void) {
     const entry = zip.getEntry(name);
     if (!entry) throw new WorkbenchError('INVALID_INPUT', `Excel 缺少工作表结构：${name}`);

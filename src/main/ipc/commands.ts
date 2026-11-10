@@ -69,12 +69,14 @@ const commandSchemas: { [K in Command]: z.ZodType<Parameters<Commands[K]>> } = {
   modelSave: z.tuple([modelInputSchema]),
   modelListAvailable: z.tuple([modelConnectionSchema]),
 };
+
 function commandArgs<K extends Command>(name: K, args: unknown[]): Parameters<Commands[K]> {
   const schema: z.ZodType<Parameters<Commands[K]>> = commandSchemas[name];
   const result = schema.safeParse(args);
   if (!result.success) throw new WorkbenchError('INVALID_INPUT', '请求参数无效，请检查输入后重试。');
   return result.data;
 }
+
 export function invokeCommand<K extends Command>(handlers: CommandHandlers, name: K, args: unknown[]) {
   return handlers[name](...commandArgs(name, args));
 }

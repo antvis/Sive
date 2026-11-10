@@ -10,4 +10,5 @@ const merge = extendTailwindMerge({
     },
   },
 });
+
 export const cx = (...values: ClassValue[]) => merge(clsx(values));

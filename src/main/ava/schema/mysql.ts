@@ -4,6 +4,7 @@ import type { AVA, Schema, PrimaryKey } from '@antv/ava';
 import { identifier } from '../../utils/sql';
 
 const literal = (value: string) => "'" + value.replaceAll("'", "''") + "'";
+
 const key = (value: string[]): PrimaryKey => (value.length === 1 ? value[0] : [value[0], ...value.slice(1)]);
 
 // AVA 4 beta's MySQL metadata UNION can return JSON as binary-escaped text

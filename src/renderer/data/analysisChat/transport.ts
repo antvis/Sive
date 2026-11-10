@@ -8,6 +8,7 @@ import { errorMessage } from '../../utils/feedback';
 export type ChatStarted = { taskId: string; conversationId: string };
 
 type Chunk = InferUIMessageChunk<AnalysisMessage>;
+
 const running = (task: Task) => task.status === 'running' || task.status === 'cancelling';
 
 export class AnalysisChatTransport implements ChatTransport<AnalysisMessage> {
@@ -63,17 +64,20 @@ export class AnalysisChatTransport implements ChatTransport<AnalysisMessage> {
     let detached = false;
     let finish: (() => void) | undefined;
     let receive: ((state: State) => void) | undefined;
+
     const cleanup = () => {
       detached = true;
       if (this.receive === receive) this.receive = undefined;
       signal?.removeEventListener('abort', abort);
       if (this.detach === detach) this.detach = undefined;
     };
+
     const detach = () => {
       if (detached) return;
       cleanup();
       finish?.();
     };
+
     const abort = () => {
       cancelled = true;
       if (taskId && cancelOnAbort) void this.cancel(taskId).catch(() => {});

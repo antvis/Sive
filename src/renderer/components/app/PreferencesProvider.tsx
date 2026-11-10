@@ -19,6 +19,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     }
   });
   const current = useRef(preferences);
+
   const updatePreferences = (patch: Partial<Preferences>) => {
     try {
       const next = savePreferences(localStorage, { ...current.current, ...patch });

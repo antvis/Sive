@@ -4,6 +4,7 @@ import type { ChartSpec, Run } from '@shared/contracts';
 import { defaultTheme, themeConfig, themePalette, type ThemeSettings } from '@shared/theme';
 import { chartRuntime } from '../../utils/gptVis';
 import { analysisTools, isAnalysisEvent } from '@shared/analysis';
+
 export async function chartHTML(
   spec: ChartSpec,
   settings: ThemeSettings = defaultTheme,
@@ -63,6 +64,7 @@ export async function chartHTML(
       document.fonts.ready.then(draw).catch(fail);
     </script></body></html>`;
 }
+
 export async function analysisHTML(run: Run, settings: ThemeSettings = defaultTheme, saved = false) {
   const p = themePalette(settings);
   const savedOutput = saved ? run.snippet?.output : undefined;

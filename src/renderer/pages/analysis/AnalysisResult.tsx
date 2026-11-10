@@ -12,6 +12,7 @@ import ConversationChart from '@renderer/pages/analysis/ConversationChart';
 import Grid from '@renderer/components/data/DataGrid';
 const api = window.workbench;
 const exportFormats: Parameters<typeof api.analysisExport>[1][] = ['pdf', 'png', 'html'];
+
 function useResultActionFeedback() {
   const [feedback, setFeedback] = useState<{ text: string; error: boolean }>();
   useEffect(() => {
@@ -21,6 +22,7 @@ function useResultActionFeedback() {
   }, [feedback]);
   return [feedback, setFeedback] as const;
 }
+
 function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: boolean }) {
   const [dataOpen, setDataOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -31,6 +33,7 @@ function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: 
   const saved = !!run.snippet || saveFeedback?.error === false;
   let saveLabel = saved ? '已保存' : '保存分析';
   if (saving) saveLabel = '保存中';
+
   const save = async () => {
     if (saving || saved) return;
     setSaveFeedback(undefined);
@@ -45,6 +48,7 @@ function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: 
       setSaving(false);
     }
   };
+
   const performExport = async (format: Parameters<typeof api.analysisExport>[1]) => {
     if (exporting) return;
     setExportFeedback(undefined);

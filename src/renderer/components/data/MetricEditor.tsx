@@ -38,6 +38,7 @@ export default function MetricEditor({
   const sources = datasets.flatMap((item) =>
     item.id !== dataset.id && item.metrics?.length ? [{ ...item, metrics: item.metrics }] : [],
   );
+
   function edit(position: number) {
     form.reset(
       metrics[position] ?? {

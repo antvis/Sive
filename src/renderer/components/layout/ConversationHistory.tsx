@@ -51,6 +51,7 @@ export default function ConversationHistory({
       input.current?.select();
     }
   }, [editingId]);
+
   const rename = async (conversation: Conversation) => {
     if (saving || disabled) return;
     const title = titleDraft.trim();

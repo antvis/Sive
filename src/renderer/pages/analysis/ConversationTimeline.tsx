@@ -19,12 +19,14 @@ export default function ConversationTimeline({
   const follow = useRef(true);
   const anchor = useRef<string | undefined>(undefined);
   const [away, setAway] = useState(false);
+
   const latest = () => {
     anchor.current = undefined;
     follow.current = true;
     setAway(false);
     if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
   };
+
   const alignTarget = () => {
     const target = Array.from(content.current?.children || []).find(
       (node) => node instanceof HTMLElement && node.dataset.messageId === anchor.current,

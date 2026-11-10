@@ -43,6 +43,7 @@ type MenuItem<K extends string> = {
   danger?: boolean;
   children?: MenuItem<K>[];
 };
+
 export function Dropdown<K extends string>({
   children,
   menu,
@@ -70,6 +71,7 @@ export function Dropdown<K extends string>({
   const side = placement.startsWith('top') ? 'top' : 'bottom';
   const align = placement.endsWith('Left') ? 'start' : 'end';
   const [internalOpen, setInternalOpen] = useState(false);
+
   const change = (value: boolean) => {
     setInternalOpen(value);
     onOpenChange?.(value);
@@ -201,6 +203,7 @@ type ModalProps = {
   okButtonProps?: ButtonProps;
   cancelButtonProps?: ButtonProps;
 };
+
 export function Modal({
   title,
   children,
@@ -297,6 +300,7 @@ export function Modal({
     </Dialog.Root>
   );
 }
+
 export function ConfirmAction({
   title,
   description,

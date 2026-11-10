@@ -14,10 +14,12 @@ function HomeRoute() {
   const { state } = useWorkspace();
   return <Navigate to={state.datasets.some((d) => !d.deletedAt) ? paths.data : paths.welcome} replace />;
 }
+
 function WelcomeRoute() {
   const { open, busy, state } = useWorkspace();
   return <WelcomePage open={open} busy={busy || !!state.refreshingSavedId} />;
 }
+
 function DataRoute() {
   const { open, busy, state } = useWorkspace();
   return (
@@ -28,6 +30,7 @@ function DataRoute() {
     />
   );
 }
+
 function SettingsRoute() {
   const { state } = useWorkspace();
   const { tab = 'general' } = useParams();
@@ -44,6 +47,7 @@ function SettingsRoute() {
     />
   );
 }
+
 function SavedRoute() {
   const { state, busy } = useWorkspace();
   const navigate = useNavigate();

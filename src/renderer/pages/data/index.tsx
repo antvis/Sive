@@ -21,6 +21,7 @@ import DatasetName from '@renderer/components/data/DatasetName';
 import { queryClient } from '@renderer/data/queries';
 import { useDataSourceActions } from '@renderer/hooks/useDataSourceActions';
 const api = window.workbench;
+
 export default function DataPage({
   datasets,
   open,

@@ -5,6 +5,7 @@ import * as schema from './schema';
 
 const dialect = new SQLiteSyncDialect();
 const tables = Object.values(schema).map(getTableConfig);
+
 const quote = (name: string) => `"${name.replaceAll('"', '""')}"`;
 
 function definition(value: unknown) {

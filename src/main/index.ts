@@ -23,6 +23,7 @@ app.whenReady().then(async () => {
   if (process.platform === 'darwin') app.dock?.setIcon(icon);
   const root = app.getPath('userData');
   let revision = 0;
+
   const change = (task?: Task) => {
     revision++;
     try {

@@ -2,17 +2,22 @@ import type { State } from '@shared/contracts';
 import { initialConversationState, type ConversationState } from '@renderer/utils/conversationState';
 
 export const workspaceTabsStorageKey = 'sive.dataset-workspace';
+
 export type WorkspaceTab = ConversationState & { id: string; open: boolean; dataOpen: boolean };
+
 export function dataTab(datasetId: string): WorkspaceTab {
   return { ...initialConversationState, id: datasetId, datasetId, open: true, dataOpen: true };
 }
+
 export function conversationIdsWithContent(state: Pick<State, 'runs' | 'tasks'>) {
   return new Set([...state.runs, ...state.tasks].map((item) => item.conversationId));
 }
+
 // Persist drafts and navigation only; task snapshots and query data remain in the workspace.
 export function serializeWorkspaceTabs(tabs: WorkspaceTab[]) {
   return JSON.stringify(tabs.map(({ dataOpen, ...tab }) => tab));
 }
+
 export function restoreWorkspaceTabs(serialized: string | null, state: State): WorkspaceTab[] {
   let entries: unknown;
   try {

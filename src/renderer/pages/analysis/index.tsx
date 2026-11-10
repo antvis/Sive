@@ -21,6 +21,7 @@ import Grid from '@renderer/components/data/DataGrid';
 import logo from '@assets/sive.svg';
 
 const api = window.workbench;
+
 export default function AnalysisPage() {
   const {
     state,
@@ -57,6 +58,7 @@ export default function AnalysisPage() {
       task.conversationId === session.transport.conversationId &&
       ['running', 'cancelling'].includes(task.status),
   );
+
   const perform = async (fn: () => Promise<unknown>) => {
     try {
       await fn();
@@ -64,12 +66,14 @@ export default function AnalysisPage() {
       message.error(errorMessage(error));
     }
   };
+
   const ask = (q: string) => {
     dispatchConversation({
       type: 'edit',
       question: q,
     });
   };
+
   const start = async () => {
     const text = question.trim();
     if (

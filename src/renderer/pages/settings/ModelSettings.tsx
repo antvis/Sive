@@ -20,6 +20,7 @@ import { errorMessage } from '@renderer/utils/feedback';
 import ModelPicker from '@renderer/components/models/ModelPicker';
 import { CpuIcon, PlusIcon } from '@phosphor-icons/react';
 const api = window.workbench;
+
 export default function ModelSettings({ state }: { state: State }) {
   const { message } = useUI();
   const [edit, setEdit] = useState<ModelProfile | 'new' | null>(null);
@@ -38,6 +39,7 @@ export default function ModelSettings({ state }: { state: State }) {
       ? `获取到 ${currentCatalog.ids.length} 个模型`
       : '未返回模型，请手动填写名称';
   if (discovering) catalogHint = '正在获取…';
+
   const startEdit = (model?: ModelProfile) => {
     form.reset(
       model
@@ -52,6 +54,7 @@ export default function ModelSettings({ state }: { state: State }) {
     setCatalogError('');
     setEdit(model || 'new');
   };
+
   const discover = async () => {
     if (!(await form.trigger('baseURL', { shouldFocus: true }))) return;
     setDiscovering(true);
@@ -73,6 +76,7 @@ export default function ModelSettings({ state }: { state: State }) {
       setDiscovering(false);
     }
   };
+
   const perform = async (fn: () => Promise<unknown>) => {
     setBusy(true);
     try {

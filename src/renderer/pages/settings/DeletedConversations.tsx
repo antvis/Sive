@@ -25,6 +25,7 @@ export default function DeletedConversations({ state }: { state: State }) {
         .sort((a, b) => b.archivedAt.localeCompare(a.archivedAt)),
     }))
     .filter((group) => group.conversations.length);
+
   const perform = async (action: () => Promise<void>, success: string) => {
     setBusy(true);
     try {
@@ -36,6 +37,7 @@ export default function DeletedConversations({ state }: { state: State }) {
       setBusy(false);
     }
   };
+
   const purge = (ids: string[]) =>
     confirm({
       title: ids.length === 1 ? '永久删除这个会话？' : `永久删除全部 ${ids.length} 个分析会话？`,

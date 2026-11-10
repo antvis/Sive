@@ -43,6 +43,7 @@ export class AnalysisChat {
     // The page needs the persisted conversation before generation finishes.
     return new Promise<ChatStarted>((resolve, reject) => {
       this.accepted = resolve;
+
       const fail = (error: unknown) => {
         this.accepted = undefined;
         this.chat.messages = analysisMessages(this.transport.state, this.transport.conversationId);

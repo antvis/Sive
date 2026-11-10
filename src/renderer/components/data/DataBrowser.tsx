@@ -26,6 +26,7 @@ import TableNavigator from '@renderer/components/data/TableNavigator';
 import Grid from '@renderer/components/data/DataGrid';
 import { errorMessage } from '@renderer/utils/feedback';
 const api = window.workbench;
+
 export default function DataBrowser({
   dataset,
   datasets,
@@ -54,6 +55,7 @@ export default function DataBrowser({
   const [compact, setCompact] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const treeToggle = useRef<HTMLButtonElement>(null);
+
   const closeTree = () => {
     setTreeOpen(false);
     requestAnimationFrame(() => treeToggle.current?.focus());
@@ -66,6 +68,7 @@ export default function DataBrowser({
   const page = pagination.key === tableKey ? pagination.page : 1;
   const pageSize = pagination.size;
   const requestKey = JSON.stringify([tableKey, page, pageSize]);
+
   const changePage = (next: number, size = pageSize) => setPagination({ key: tableKey, page: next, size });
   const [tab, setTab] = useState('rows');
   useEffect(() => {
@@ -92,6 +95,7 @@ export default function DataBrowser({
     pageSummary = `第 ${(page - 1) * pageSize + 1}–${(page - 1) * pageSize + rows.length} 行${hasMore ? ' · 后续还有数据' : ' · 已到末页'}`;
   if (error) pageSummary = '读取失败';
   if (pending) pageSummary = '正在读取…';
+
   const refresh = async () => {
     if (refreshing) return;
     setRefreshing(true);

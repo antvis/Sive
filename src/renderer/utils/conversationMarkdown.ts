@@ -16,6 +16,7 @@ function fenced(text: string, language: string) {
   const fence = '`'.repeat(length);
   return `${fence}${language}\n${text}\n${fence}`;
 }
+
 function eventsMarkdown(events: Progress[]) {
   return events
     .filter(isAnalysisEvent)
@@ -25,6 +26,7 @@ function eventsMarkdown(events: Progress[]) {
     )
     .join('\n');
 }
+
 export function replyMarkdown(run: Run) {
   const sections = [
     `数据：${run.sourceName} · 模型：${run.modelName} · ${run.createdAt}`,

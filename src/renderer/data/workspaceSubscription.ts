@@ -21,6 +21,7 @@ export function observeWorkspace(
   let snapshotRevision = -1;
   let current: State | null = null;
   const progress = new Map<string, TaskUpdate>();
+
   const refresh = async () => {
     const request = ++sequence;
     try {
@@ -38,6 +39,7 @@ export function observeWorkspace(
       throw error;
     }
   };
+
   const backgroundRefresh = () => void refresh().catch(() => {});
   const off = api.workspaceOnChange(backgroundRefresh);
   const offTask = api.analysisOnTaskChange((update) => {

@@ -60,6 +60,7 @@ function SavedCard({
   const title = run.snippet?.title || run.question;
   const disconnected = !source || !!source.deletedAt;
   const sourceName = source?.name || run.sourceName;
+
   const rename = async () => {
     if (renaming || !titleDraft?.trim()) return;
     setRenaming(true);
@@ -93,6 +94,7 @@ function SavedCard({
   const result =
     output.results[tab === '图表' ? chartResultIndex : resultIndex]?.result || output.results[0]?.result;
   const updatedAt = run.snippet?.updatedAt || run.createdAt;
+
   const exportCard = async (format: string) => {
     if (exporting || refreshing) return;
     if (format !== 'pdf' && format !== 'png' && format !== 'html') return;
@@ -106,6 +108,7 @@ function SavedCard({
       setExporting(false);
     }
   };
+
   const refresh = async () => {
     if (disconnected || refreshing || busy || refreshingId) return;
     setPending(true);
@@ -119,6 +122,7 @@ function SavedCard({
       setPending(false);
     }
   };
+
   const renderContent = () => {
     if (tab === 'SQL')
       return <pre className="m-0 h-full overflow-auto">{result?.sql || '此分析没有 SQL'}</pre>;

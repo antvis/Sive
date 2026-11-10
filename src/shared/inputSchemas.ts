@@ -2,13 +2,18 @@ import { z } from 'zod';
 
 export const requiredText = (message = '请填写有效文本') =>
   z.string({ error: message }).refine((value) => value.trim().length > 0, message);
+
 export const idSchema = requiredText('标识不能为空');
+
 export const localFormatSchema = z.enum(['csv', 'json', 'xlsx', 'parquet']);
+
 export const analysisModeSchema = z.enum(['direct', 'loop']);
+
 export const analysisOptionsSchema = z.object({
   maxRetries: z.int().optional(),
   maxSteps: z.int().optional(),
 });
+
 export const themeSchema = z.object({ mode: z.enum(['light', 'dark']) });
 
 // These restrictions match the current AVA MySQL connection-string adapter.
@@ -17,6 +22,7 @@ const connectionText = (label: string) =>
     /^[^\s'"\\\x00-\x1f\x7f]+$/u,
     '当前 MySQL 驱动暂不支持连接字段含空白、引号、反斜杠或控制字符',
   );
+
 export const mysqlInputSchema = z.object({
   id: idSchema.optional(),
   name: requiredText('请填写连接名称'),
@@ -54,11 +60,13 @@ const modelURLSchema = requiredText('请填写服务地址').superRefine((value,
     context.addIssue({ code: 'custom', message: '服务地址需使用 HTTPS，或本机 HTTP 地址' });
   }
 });
+
 export const modelConnectionSchema = z.object({
   baseURL: modelURLSchema,
   apiKey: z.string().optional(),
   credentialSourceId: idSchema.optional(),
 });
+
 export const modelInputSchema = modelConnectionSchema.extend({
   id: idSchema.optional(),
   name: requiredText('请填写服务名称'),
@@ -66,6 +74,7 @@ export const modelInputSchema = modelConnectionSchema.extend({
     .array(requiredText('模型名称不能为空'), { error: '请至少选择一个模型' })
     .min(1, '请至少选择一个模型'),
 });
+
 export const businessMetricSchema = z.object({
   name: z.string(),
   table: z.string(),

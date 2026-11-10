@@ -25,7 +25,7 @@ export function isNumericColumn(field: TableField, rows: Record<string, unknown>
     return (
       /^(?:(?:U)?(?:TINY|SMALL|MEDIUM|BIG|HUGE)?INT(?:EGER)?|INT\d+|UINT\d+|DECIMAL|NUMERIC|NUMBER|FLOAT\d*|DOUBLE(?: PRECISION)?|REAL)(?:\b|\()/i.test(
         field.type.trim(),
-      ) && !/[\[\]<>]/.test(field.type)
+      ) && !/[[\]<>]/.test(field.type)
     );
   }
   let hasValue = false;

@@ -9,6 +9,7 @@ const chartStatusText: Record<string, string> = {
   error: '图表绘制失败，请查看计算数据或重新加载。',
   timeout: '图表加载较慢，可尝试重新加载。',
 };
+
 function ChartFrame({ html, title, saved }: { html: string; title: string; saved: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [attempt, setAttempt] = useState(0);
@@ -16,6 +17,7 @@ function ChartFrame({ html, title, saved }: { html: string; title: string; saved
   useEffect(() => {
     setStatus('loading');
     const timer = setTimeout(() => setStatus((s) => (s === 'loading' ? 'timeout' : s)), 15000);
+
     const receive = (event: MessageEvent) => {
       if (event.source !== frame.current?.contentWindow || event.data?.type !== 'ava-chart') return;
       if (['ready', 'error'].includes(event.data.status)) {
@@ -54,6 +56,7 @@ function ChartFrame({ html, title, saved }: { html: string; title: string; saved
     </>
   );
 }
+
 export function Chart({ run, saved = false, index = 0 }: { run: Run; saved?: boolean; index?: number }) {
   const { settings } = useTheme();
   const [html, setHTML] = useState('');

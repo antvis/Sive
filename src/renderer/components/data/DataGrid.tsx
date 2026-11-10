@@ -44,6 +44,7 @@ function ResizeHeader({
   const size = column.getSize();
   const sorted = column.getIsSorted() || 'none';
   const sortLabels = { asc: 'ascending', desc: 'descending', none: 'none' } as const;
+
   const freezeWidths = () =>
     table.setColumnSizing(
       Object.fromEntries(table.getAllLeafColumns().map((item) => [item.id, item.getSize()])),
@@ -106,6 +107,7 @@ function ResizeHeader({
     </th>
   );
 }
+
 export default function Grid({
   rows,
   columns,

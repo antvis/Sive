@@ -30,6 +30,7 @@ export const sourceSnapshot = (dataset: StoredDataset): SourceSnapshot => ({
       ? { connection: dataset.connection }
       : { path: dataset.file, excelSheets: dataset.excelSheets },
 });
+
 export function taskRecord(row: MessageRow): Task {
   const options = row.analysisOptions;
   const content = row.content;

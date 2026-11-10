@@ -53,6 +53,7 @@ export async function runAgent(
       .flatMap((turn) => turn.output.results)
       .map((result) => [result.id, result]),
   );
+
   const getEvidence = (resultId: string) => {
     const evidence = results.get(resultId);
     if (!evidence) throw new WorkbenchError('INVALID_INPUT', '结果编号不存在或已失效，请先 analyze。');

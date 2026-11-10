@@ -1,4 +1,5 @@
 export const conversationReadStorageKey = 'sive.conversation-read.v1';
+
 export type ConversationReadPositions = Record<string, number>;
 
 export function restoreConversationRead(serialized: string | null): ConversationReadPositions {

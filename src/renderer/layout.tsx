@@ -33,6 +33,7 @@ import { useConversationRead } from '@renderer/hooks/useConversationRead';
 import { AnalysisChat } from './data/analysisChat';
 
 const api = window.workbench;
+
 export default function Layout() {
   const { message } = useUI();
   const [state, setState] = useState<State | null>(null);
@@ -40,6 +41,7 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { preferences, updatePreferences } = usePreferences();
   const analysisMode = preferences.analysisMode;
+
   const setAnalysisMode = (mode: AnalysisMode) => {
     updatePreferences({ analysisMode: mode });
   };
@@ -68,6 +70,7 @@ export default function Layout() {
     location.key,
   );
   const { workspaceTabs } = navigation;
+
   const receive = (snapshot: State) => {
     pruneWorkspaceQueries(snapshot);
     setState(snapshot);
@@ -83,6 +86,7 @@ export default function Layout() {
       subscription.current = null;
     };
   }, []);
+
   const refresh = async () => subscription.current?.refresh();
   const selectedConversation = state?.conversations.find(
     (conversation) => conversation.id === conversationId && conversation.datasetId === datasetId,
@@ -105,12 +109,16 @@ export default function Layout() {
   const conversations = state.conversations
     .filter((item) => item.datasetId === datasetId && contentIds.has(item.id))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
   const selectConversation = (conversation: Conversation) =>
     navigate(datasetPath(conversation.datasetId, conversation.id));
+
   const openModelSettings = () =>
     navigate('/settings/models', { state: { returnTo: location.pathname + location.search } });
+
   const activateTab = (tab: WorkspaceTab) =>
     navigate(datasetPath(tab.datasetId, tab.conversationId, tab.runId));
+
   const open = (source: Dataset) => {
     // Import returns the dataset before the change subscription necessarily catches up.
     setState((previous) =>
@@ -122,6 +130,7 @@ export default function Layout() {
     const conversation = state.conversations.find((c) => c.datasetId === source.id && contentIds.has(c.id));
     navigate(datasetPath(source.id, existing?.conversationId ?? conversation?.id, existing?.runId));
   };
+
   const archiveConversation = async (id: string) => {
     if (archivingId) return;
     setArchivingId(id);

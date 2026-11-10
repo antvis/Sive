@@ -18,4 +18,5 @@ export type WorkspaceContext = {
   refresh: () => Promise<void>;
   openModelSettings: () => void;
 };
+
 export const useWorkspace = () => useOutletContext<WorkspaceContext>();

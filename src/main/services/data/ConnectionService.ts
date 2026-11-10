@@ -21,6 +21,7 @@ export function connectionFailure(error: unknown) {
 
 export class ConnectionService {
   constructor(private getDataset: (id: string) => StoredDataset) {}
+
   prepare(input: MySQLInput): Extract<StoredDataset, { format: 'mysql' }> {
     input = parseInput(mysqlInputSchema, input);
     const old = input.id ? this.getDataset(input.id) : undefined;

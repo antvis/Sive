@@ -1,18 +1,23 @@
 import type { Dataset } from '@shared/contracts';
 type QuickQuestion = { id: string; label: string; question: string };
+
 export function quickQuestions(dataset: Dataset, tableName?: string): QuickQuestion[] {
   const model = tableName
     ? dataset.schema.models.find((model) => model.name === tableName)
     : dataset.schema.models[0];
   if (!model) return [];
+
   const quote = (name: string) => JSON.stringify(name);
   const table = quote(model.name);
   const definedMetric = dataset.metrics?.find((metric) => metric.table === model.name);
   const profile = dataset.profile.models.find((m) => m.name === model.name);
   const columns = new Map(profile?.columns.map((column) => [column.name, column]));
+
   const logical = (name: string) => columns.get(name)?.properties.logicalType;
+
   const stats = (name: string) => columns.get(name)?.metrics;
   const count = Number(profile?.metrics.row_count);
+
   const varying = (name: string) => Number(stats(name)?.distinct_count ?? 2) > 1;
   const date = model.columns.find((c) => logical(c.name) === 'date' || /DATE|TIMESTAMP/i.test(c.type));
   const numeric = model.columns.filter(

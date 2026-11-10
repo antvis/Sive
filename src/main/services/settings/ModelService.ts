@@ -139,8 +139,10 @@ export class ModelService {
     let next = 0;
     let completed = modelIds.length - pending.length;
     let failure: unknown;
+
     const report = () => onProgress?.({ completed, total: modelIds.length, active: [...active] });
     report();
+
     const worker = async () => {
       while (!abort.signal.aborted && next < pending.length) {
         const model = pending[next++];
