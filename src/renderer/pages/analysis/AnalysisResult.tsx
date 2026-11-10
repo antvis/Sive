@@ -7,7 +7,7 @@ import { renderMarkdown } from '@shared/markdown';
 import { errorMessage } from '@renderer/utils/feedback';
 import { UserMessage, AssistantMessage } from '@renderer/pages/analysis/ConversationMessage';
 import { replyMarkdown } from '@shared/conversationMarkdown';
-import AnalysisProgress from '@renderer/pages/analysis/AnalysisProgress';
+import AnalysisProgress from './AnalysisProgress';
 import ConversationChart from '@renderer/pages/analysis/ConversationChart';
 import Grid from '@renderer/components/data/DataGrid';
 const api = window.workbench;
@@ -22,13 +22,12 @@ function useResultActionFeedback() {
 }
 function ResultContent({ run }: { run: Run }) {
   const [dataOpen, setDataOpen] = useState(false);
-  const [progressOpen, setProgressOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [exportFeedback, setExportFeedback] = useResultActionFeedback();
   const [saveFeedback, setSaveFeedback] = useResultActionFeedback();
   const [saving, setSaving] = useState(false);
-  const saved = !!run.savedAt || saveFeedback?.error === false;
+  const saved = !!run.snippet || saveFeedback?.error === false;
   const saveLabel = saving ? '保存中' : saved ? '已保存' : '保存分析';
   const save = async () => {
     if (saving || saved) return;
@@ -64,43 +63,56 @@ function ResultContent({ run }: { run: Run }) {
         <p className="text-muted text-helper">
           {run.sourceName} · {run.modelName}
         </p>
+        <AnalysisProgress
+          hasAnswer={!!run.output.text.trim()}
+          task={{
+            id: run.id,
+            datasetId: run.datasetId,
+            sourceName: run.sourceName,
+            modelName: run.modelName,
+            question: run.question,
+            strategy: run.strategy,
+            status: 'done',
+            runId: run.id,
+            startedAt: run.events[0]?.at,
+            finishedAt: run.createdAt,
+            events: run.events,
+          }}
+        />
         <div
           className="markdown"
           dangerouslySetInnerHTML={{
-            __html: renderMarkdown(run.result.text || '没有文字总结，请查看计算结果。', true),
+            __html: renderMarkdown(run.output.text || '没有文字总结，请查看计算结果。', true),
           }}
         />
-        {run.chart && <ConversationChart run={run} />}
-        {run.chartError && <Alert type="warning" title={run.chartError} />}
-        {run.result.truncated && <Alert type="warning" title="当前结果已截断；请结合查询范围判断结论。" />}
+        {run.output.charts.map((chart, index) => (
+          <ConversationChart key={`${chart.resultId}:${index}`} run={run} index={index} />
+        ))}
+        {run.output.warning && <Alert type="warning" title={run.output.warning} />}
         <details onToggle={(event) => setDataOpen(event.currentTarget.open)}>
-          <summary>计算依据 · {run.result.data.length} 行</summary>
+          <summary>计算依据 · {run.output.results.length} 个结果</summary>
           {dataOpen && (
             <>
-              <pre className="mb-3">{run.result.sql}</pre>
-              <Grid rows={run.result.data} />
+              {run.output.results.map(({ id, result }) => (
+                <section key={id} className="mb-3">
+                  <p>{result.query}</p>
+                  <p className="text-muted text-helper">结果编号：{id}</p>
+                  {result.truncated && <Alert type="warning" title="此结果已截断，请核对查询范围。" />}
+                  <pre className="mb-3">{result.sql}</pre>
+                  <Grid rows={result.data} columns={result.schema} />
+                </section>
+              ))}
+              {run.output.actions?.length ? (
+                <ul className="text-helper">
+                  {run.output.actions.map((action, index) => (
+                    <li key={index}>
+                      {action.tool === 'analyze' ? '查询' : '绘图'}：{action.query}
+                      {action.error && <span className="text-muted"> · {action.error}</span>}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </>
-          )}
-        </details>
-        <details onToggle={(event) => setProgressOpen(event.currentTarget.open)}>
-          <summary>查看本次执行过程</summary>
-          {progressOpen && (
-            <AnalysisProgress
-              run={run}
-              task={{
-                id: run.id,
-                datasetId: run.datasetId,
-                sourceName: run.sourceName,
-                modelName: run.modelName,
-                question: run.question,
-                strategy: run.strategy,
-                status: 'done',
-                runId: run.id,
-                startedAt: run.events[0]?.at,
-                finishedAt: run.createdAt,
-                events: run.events,
-              }}
-            />
           )}
         </details>
         <div className="flex items-center gap-2 flex-wrap mt-1 mr-0 mb-3 ml-0">

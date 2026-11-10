@@ -203,7 +203,7 @@ export default function ModelSettings({ state }: { state: State }) {
             <ModelPicker options={currentCatalog?.ids || []} />
           </Field>
           <Field name="name" label="服务名称" required>
-            <Input placeholder="例如：DeepSeek、公司模型服务" />
+            <Input placeholder="例如：云端模型服务、本地模型服务" />
           </Field>
           <p className="mt-0 mb-4 text-helper text-muted">
             最多同时测试 3 个模型，单个测试限时 30 秒。地址和密钥未变时，已验证模型无需重复测试。

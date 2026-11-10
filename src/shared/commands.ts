@@ -61,7 +61,12 @@ const commandSchemas = {
     analysisOptionsSchema.optional(),
     idSchema.optional(),
   ]),
-  analysisGetChartHTML: z.tuple([idSchema, themeSchema.optional(), z.boolean().optional()]),
+  analysisGetChartHTML: z.tuple([
+    idSchema,
+    themeSchema.optional(),
+    z.boolean().optional(),
+    z.int().min(0).optional(),
+  ]),
   analysisExport: z.tuple([idSchema, z.enum(['html', 'pdf', 'png']), z.boolean().optional()]),
   modelSave: z.tuple([modelInputSchema]),
   modelListAvailable: z.tuple([modelConnectionSchema]),

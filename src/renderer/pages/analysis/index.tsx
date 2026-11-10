@@ -5,6 +5,7 @@ import { Alert, Button } from '@renderer/components/ui/index';
 import { useUI } from '@renderer/hooks/useUI';
 import { CaretRightIcon } from '@phosphor-icons/react';
 import { taskReplyMarkdown } from '@shared/conversationMarkdown';
+import { renderMarkdown } from '@shared/markdown';
 import { useWorkspace } from '@renderer/hooks/useWorkspace';
 import { datasetPath } from '@renderer/utils/routes';
 import { errorMessage } from '@renderer/utils/feedback';
@@ -203,7 +204,19 @@ export default function AnalysisPage() {
                   time={currentTask.finishedAt || currentTask.events.at(-1)?.at || currentTask.startedAt}
                   markdown={() => taskReplyMarkdown(currentTask)}
                 >
-                  <AnalysisProgress className="mt-0" task={currentTask} />
+                  <p className="text-muted text-helper">
+                    {currentTask.sourceName} · {currentTask.modelName}
+                  </p>
+                  <AnalysisProgress task={currentTask} />
+                  {currentTask.preview?.text && (
+                    <div
+                      className="markdown"
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(currentTask.preview.text, true) }}
+                    />
+                  )}
+                  {currentTask.preview?.warning && (
+                    <Alert type="warning" title={currentTask.preview.warning} />
+                  )}
                   {currentTask.preview && (
                     <details open>
                       <summary>
@@ -211,7 +224,15 @@ export default function AnalysisPage() {
                           ? '已得到计算结果，正在完成分析'
                           : '本次分析中断前的计算结果'}
                       </summary>
-                      <Grid rows={currentTask.preview.data} />
+                      {currentTask.preview.results.map(({ id, result }) => (
+                        <section key={id}>
+                          <p>{result.query}</p>
+                          {result.truncated && (
+                            <Alert type="warning" title="此结果已截断，请核对查询范围。" />
+                          )}
+                          <Grid rows={result.data} columns={result.schema} />
+                        </section>
+                      ))}
                     </details>
                   )}
                   {!['running', 'cancelling', 'done'].includes(currentTask.status) && (

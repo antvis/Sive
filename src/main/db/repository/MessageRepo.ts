@@ -31,24 +31,6 @@ export class MessageRepo {
       .get();
   }
 
-  list() {
-    return this.db
-      .select()
-      .from(messages)
-      .where(isNull(messages.deletedAt))
-      .orderBy(desc(messages.createdAt), desc(messages.id))
-      .all();
-  }
-
-  listByConversationId(conversationId: string) {
-    return this.db
-      .select()
-      .from(messages)
-      .where(and(eq(messages.conversationId, conversationId), isNull(messages.deletedAt)))
-      .orderBy(messages.sequence)
-      .all();
-  }
-
   insert(values: MessageInsert) {
     return this.db.insert(messages).values(values).returning().get();
   }
@@ -62,11 +44,8 @@ export class MessageRepo {
       .get();
   }
 
-  remove(id: string) {
-    const row = this.get(id);
-    if (!row) return;
-    const now = timestamp(row.updatedAt);
-    this.update(id, { deletedAt: now, updatedAt: now });
+  purgeConversation(conversationId: string) {
+    this.db.delete(messages).where(eq(messages.conversationId, conversationId)).run();
   }
 
   private analysisQuery(filter?: SQL) {
@@ -80,6 +59,39 @@ export class MessageRepo {
 
   getAnalysis(id: string) {
     return this.analysisQuery(eq(messages.id, id)).get();
+  }
+
+  recentAnalyses(conversationId: string, limit: number) {
+    return this.analysisQuery(and(eq(messages.conversationId, conversationId), eq(messages.status, 'done')))
+      .orderBy(desc(messages.sequence))
+      .limit(limit)
+      .all()
+      .reverse();
+  }
+
+  recentAnalysisExcerpts(conversationId: string, offset: number, limit: number) {
+    return this.db
+      .select({
+        question,
+        text: sql<string>`coalesce(json_extract(${messages.content}, '$.output.text'), '')`,
+        warning: sql<string>`coalesce(json_extract(${messages.content}, '$.output.warning'), '')`,
+      })
+      .from(messages)
+      .innerJoin(conversations, eq(conversations.id, messages.conversationId))
+      .innerJoin(users, precedingUser)
+      .where(
+        and(
+          assistant,
+          isNull(conversations.deletedAt),
+          eq(messages.conversationId, conversationId),
+          eq(messages.status, 'done'),
+        ),
+      )
+      .orderBy(desc(messages.sequence))
+      .limit(limit)
+      .offset(offset)
+      .all()
+      .reverse();
   }
 
   listAnalysesByStatus(statuses: MessageInsert['status'][]) {
@@ -102,8 +114,8 @@ export class MessageRepo {
         analysisOptions: messages.analysisOptions,
         updatedAt: messages.updatedAt,
         question,
-        savedAt: snippets.updatedAt,
-        savedTitle: snippets.title,
+        snippetUpdatedAt: snippets.updatedAt,
+        snippetTitle: snippets.title,
       })
       .from(messages)
       .innerJoin(conversations, eq(conversations.id, messages.conversationId))
@@ -122,16 +134,6 @@ export class MessageRepo {
       )
       .orderBy(desc(messages.createdAt), desc(messages.sequence))
       .all();
-  }
-
-  latestAnalysisId(conversationId: string, status: MessageInsert['status']) {
-    return this.db
-      .select({ id: messages.id })
-      .from(messages)
-      .where(and(assistant, eq(messages.conversationId, conversationId), eq(messages.status, status)))
-      .orderBy(desc(messages.sequence))
-      .limit(1)
-      .get()?.id;
   }
 
   hasStatus(conversationId: string, statuses: MessageInsert['status'][]) {
@@ -163,9 +165,5 @@ export class MessageRepo {
       .where(inArray(messages.conversationId, conversationIds))
       .all()
       .map((row) => row.id);
-  }
-
-  insertMany(values: MessageInsert[]) {
-    return this.db.insert(messages).values(values).returning().all();
   }
 }

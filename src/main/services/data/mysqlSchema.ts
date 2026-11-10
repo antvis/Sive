@@ -1,4 +1,4 @@
-import { queryOptions } from '@main/ai/queryOptions';
+import { QUERY_OPTIONS } from '../../ai/queryOptions';
 import { WorkbenchError } from '@shared/errors';
 import type { AVA, Schema, PrimaryKey } from '@antv/ava';
 
@@ -13,7 +13,7 @@ export async function mysqlSchema(ava: AVA, database: string): Promise<Schema> {
   const read = async (sql: string) => {
     const result = await ava.query(
       `SELECT * FROM mysql_query('mysql_source', ${literal(sql)})`,
-      queryOptions,
+      QUERY_OPTIONS,
     );
     if (result.truncated) throw new WorkbenchError('CONNECTION', 'AVA 返回的数据库结构不完整，无法加载');
     return result.data;

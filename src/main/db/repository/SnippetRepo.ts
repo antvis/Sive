@@ -1,5 +1,5 @@
-import { and, desc, eq, isNull } from 'drizzle-orm';
-import { snippets } from '../schema';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { messages, snippets } from '../schema';
 import type { DbService } from '../DbService';
 import { timestamp } from '../../utils/time';
 
@@ -13,29 +13,12 @@ export class SnippetRepo {
     return this.database.connection;
   }
 
-  get(id: string) {
-    return this.db
-      .select()
-      .from(snippets)
-      .where(and(eq(snippets.id, id), isNull(snippets.deletedAt)))
-      .get();
-  }
-
   getByMessageId(messageId: string) {
     return this.db
       .select()
       .from(snippets)
       .where(and(eq(snippets.messageId, messageId), isNull(snippets.deletedAt)))
       .get();
-  }
-
-  list() {
-    return this.db
-      .select()
-      .from(snippets)
-      .where(isNull(snippets.deletedAt))
-      .orderBy(desc(snippets.updatedAt), desc(snippets.id))
-      .all();
   }
 
   insert(values: SnippetInsert) {
@@ -51,10 +34,18 @@ export class SnippetRepo {
       .get();
   }
 
-  remove(id: string) {
-    const row = this.get(id);
-    if (!row) return;
-    const now = timestamp(row.updatedAt);
-    this.update(id, { deletedAt: now, updatedAt: now });
+  purgeConversation(conversationId: string) {
+    this.db
+      .delete(snippets)
+      .where(
+        inArray(
+          snippets.messageId,
+          this.db
+            .select({ id: messages.id })
+            .from(messages)
+            .where(eq(messages.conversationId, conversationId)),
+        ),
+      )
+      .run();
   }
 }

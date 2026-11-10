@@ -15,6 +15,7 @@ export function registerIPC(
   services: WorkbenchServices,
   root: string,
   getRevision: () => number,
+  rendererURL: URL,
 ) {
   const handlers: CommandHandlers = {
     ...createWorkspaceHandlers(services, getRevision),
@@ -29,7 +30,15 @@ export function registerIPC(
   for (const name of commandNames) {
     ipcMain.handle('workbench:' + name, async (event, ...args: unknown[]) => {
       try {
-        if (event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame)
+        const frame = event.senderFrame;
+        const page = frame?.url ? new URL(frame.url) : undefined;
+        const allowed =
+          page?.protocol === rendererURL.protocol &&
+          page.pathname === rendererURL.pathname &&
+          (rendererURL.protocol === 'file:'
+            ? page.host === rendererURL.host
+            : page.origin === rendererURL.origin);
+        if (event.sender !== win.webContents || frame !== win.webContents.mainFrame || !allowed)
           throw new WorkbenchError('INVALID_INPUT', '不允许的调用');
         return { ok: true, value: await invokeCommand(handlers, name, args) };
       } catch (error) {

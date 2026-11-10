@@ -3,7 +3,7 @@ import type { DbService } from '../../db/DbService';
 import { datasetRecord, sourceSnapshot } from '../../db/mappers';
 import { timestamp } from '../../utils/time';
 import type { StoredDataset } from '../../db/mappers';
-import { queryOptions } from '../../ai/queryOptions';
+import { QUERY_OPTIONS } from '../../ai/queryOptions';
 import { WorkbenchError } from '@shared/errors';
 import { fileChecksum } from '../../utils/fileChecksum';
 import path from 'node:path';
@@ -18,7 +18,7 @@ import { mysqlTableDetails } from './mysqlTableDetails';
 export class DatasetService {
   private preparing = new Map<string, Promise<StoredDataset>>();
 
-  // File integrity checks are operation-local; no content versions are persisted.
+  // Prepared local sources carry a checksum for integrity checks and result reuse.
   private fileChecksums = new WeakMap<object, string>();
 
   private inspectedFiles = new Map<string, { checksum: string; updatedAt: string }>();
@@ -37,6 +37,10 @@ export class DatasetService {
     const row = this.records.get(id);
     if (!row) throw new WorkbenchError('CONFLICT', '数据不存在');
     return datasetRecord(row);
+  }
+
+  dataVersion(dataset: StoredDataset) {
+    return this.fileChecksums.get(dataset);
   }
 
   list() {
@@ -94,7 +98,7 @@ export class DatasetService {
           if (!schema.models.length) throw new WorkbenchError('INVALID_INPUT', '数据库没有可读取的表');
           const result = await ava.query(
             `SELECT * FROM ${identifier(schema.models[0].name)} LIMIT 30`,
-            queryOptions,
+            QUERY_OPTIONS,
           );
           return { schema, rows: result.data.length };
         },
@@ -310,7 +314,7 @@ export class DatasetService {
       async (ava) => {
         const result = await ava.query(
           `SELECT * FROM ${identifier(table)}${order} LIMIT ${limit} OFFSET ${offset}`,
-          queryOptions,
+          QUERY_OPTIONS,
         );
         await this.assertFileUnchanged(d);
         this.assertDatasetCurrent(d);
@@ -358,7 +362,7 @@ export class DatasetService {
           try {
             const result = await ava.query(
               `SELECT (${metric.expression}) AS metric_value FROM ${identifier(metric.table)} WHERE FALSE`,
-              queryOptions,
+              QUERY_OPTIONS,
             );
             if (result.data.length !== 1)
               throw new WorkbenchError('INVALID_INPUT', '请使用 SUM、AVG、COUNT 等聚合公式');

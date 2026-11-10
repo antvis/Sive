@@ -31,7 +31,7 @@ export function tableDetailsQuery(dataset: Dataset, table: string | null) {
 
 export function runQuery(summary: RunSummary) {
   return queryOptions({
-    queryKey: ['run', summary.id, summary.viewUpdatedAt],
+    queryKey: ['run', summary.id, summary.snippet?.updatedAt],
     queryFn: () => window.workbench.analysisGetRun(summary.id),
     // Original messages are immutable; snippet changes invalidate via updated_at.
     staleTime: Infinity,

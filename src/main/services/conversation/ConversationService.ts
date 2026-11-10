@@ -73,15 +73,16 @@ export class ConversationService {
       for (const id of ids)
         if (!this.get(id).archivedAt) throw new WorkbenchError('CONFLICT', '只能永久删除已归档的会话');
       for (const id of ids) {
-        for (const message of this.data.messages.listByConversationId(id)) {
-          const snippet = this.data.snippets.getByMessageId(message.id);
-          if (snippet) this.data.snippets.remove(snippet.id);
-          this.data.messages.remove(message.id);
-        }
-        this.data.conversations.remove(id);
+        this.data.snippets.purgeConversation(id);
+        this.data.messages.purgeConversation(id);
+        this.data.conversations.purge(id);
       }
     });
-    this.change();
+    try {
+      this.data.database.checkpointDeletedContent();
+    } finally {
+      this.change();
+    }
   }
 
   private assertNotRefreshing(ids: string[]) {

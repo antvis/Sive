@@ -11,11 +11,26 @@ import {
   type MessageOptions,
   type AssistantMessageContent,
   type AnalysisOutput,
+  type SourceSnapshot,
 } from '../../db/mappers';
 import type { DatasetService } from '../data/DatasetService';
 import { timestamp } from '../../utils/time';
+import { businessSemantic } from '../../ai/semantics';
+import type { AnalysisHistory } from '../../ai/context';
 
 const active = (status: Task['status']) => status === 'running' || status === 'cancelling';
+
+function sourceIdentity(snapshot: SourceSnapshot) {
+  return snapshot.format === 'mysql'
+    ? {
+        format: snapshot.format,
+        host: snapshot.config.connection?.host,
+        port: snapshot.config.connection?.port,
+        database: snapshot.config.connection?.database,
+        user: snapshot.config.connection?.user,
+      }
+    : { format: snapshot.format, path: snapshot.config.path, excelSheets: snapshot.config.excelSheets };
+}
 
 export class AnalysisRecordService {
   constructor(
@@ -29,49 +44,47 @@ export class AnalysisRecordService {
     return message;
   }
 
-  startTask(task: Task, conversation: Conversation, options: MessageOptions) {
+  startTask(task: Task, conversation: Conversation, messageOptions: MessageOptions) {
     return this.data.database.write(() => {
-      const current = this.data.conversations.get(conversation.id);
-      if (!current) throw new WorkbenchError('CONFLICT', '会话不存在');
+      const currentConversation = this.data.conversations.get(conversation.id);
+      if (!currentConversation) throw new WorkbenchError('CONFLICT', '会话不存在');
       if (
-        current.archivedAt ||
-        current.datasetId !== task.datasetId ||
+        currentConversation.archivedAt ||
+        currentConversation.datasetId !== task.datasetId ||
         task.conversationId !== conversation.id
       )
         throw new WorkbenchError('CONFLICT', '会话不存在或不属于当前数据源');
       this.datasets.dataset(task.datasetId);
       if (this.data.messages.hasStatus(conversation.id, ['running', 'cancelling']))
         throw new WorkbenchError('CONFLICT', '此会话已有分析正在进行');
-      const sequence = this.data.messages.nextSequence(conversation.id);
-      const now = task.startedAt || timestamp();
-      this.data.messages.insertMany([
-        {
-          id: randomUUID(),
-          conversationId: conversation.id,
-          sequence,
-          role: 'user',
-          status: 'done',
-          content: { text: task.question },
-          createdAt: now,
-          updatedAt: now,
-        },
-        {
-          id: task.id,
-          conversationId: conversation.id,
-          sequence: sequence + 1,
-          role: 'assistant',
-          status: 'running',
-          content: { events: [] },
-          analysisOptions: options,
-          createdAt: now,
-          updatedAt: now,
-        },
-      ]);
-      this.data.conversations.update(conversation.id, {
-        title: sequence === 0 ? task.question.trim().slice(0, 60) : current.title,
-        updatedAt: now,
+      const userSequence = this.data.messages.nextSequence(conversation.id);
+      const startedAt = task.startedAt || timestamp();
+      this.data.messages.insert({
+        id: randomUUID(),
+        conversationId: conversation.id,
+        sequence: userSequence,
+        role: 'user',
+        status: 'done',
+        content: { text: task.question },
+        createdAt: startedAt,
+        updatedAt: startedAt,
       });
-      return sequence + 1;
+      this.data.messages.insert({
+        id: task.id,
+        conversationId: conversation.id,
+        sequence: userSequence + 1,
+        role: 'assistant',
+        status: 'running',
+        content: { events: [] },
+        analysisOptions: messageOptions,
+        createdAt: startedAt,
+        updatedAt: startedAt,
+      });
+      this.data.conversations.update(conversation.id, {
+        title: userSequence === 0 ? task.question.trim().slice(0, 60) : currentConversation.title,
+        updatedAt: startedAt,
+      });
+      return userSequence + 1;
     });
   }
 
@@ -104,7 +117,7 @@ export class AnalysisRecordService {
     )
       throw new WorkbenchError('CONFLICT', '分析结束状态与结果不匹配');
     const content: AssistantMessageContent = output
-      ? { result: output.result, chart: output.chart, chart_error: output.chartError, events: task.events }
+      ? { output, events: task.events }
       : { events: task.events, preview: task.preview, error: task.error };
     const now = timestamp(row.updatedAt);
     this.data.messages.update(task.id, { status: task.status, content, updatedAt: now });
@@ -114,9 +127,7 @@ export class AnalysisRecordService {
       messageId: task.id,
       title: row.question,
       content: {
-        result: content.result ?? content.preview,
-        chart: content.chart,
-        chart_error: content.chart_error,
+        output,
         error: content.error,
       },
       createdAt: now,
@@ -128,35 +139,44 @@ export class AnalysisRecordService {
     this.data.database.write(() => this.finishMessage(task, output));
   }
 
-  latestRun(conversationId: string) {
-    const id = this.data.messages.latestAnalysisId(conversationId, 'done');
-    return id ? this.run(id) : undefined;
+  history(conversationId: string, source: StoredDataset): AnalysisHistory {
+    const rows = this.data.messages.recentAnalyses(conversationId, 4);
+    if (rows.length) this.assertRunSource(rows[rows.length - 1].id, source);
+    const older = this.data.messages.recentAnalysisExcerpts(conversationId, 4, 4).map((row) => ({
+      question: row.question,
+      output: { text: row.text, results: [], charts: [], warning: row.warning || undefined },
+      reusable: false,
+    }));
+    const recent = rows.flatMap((row) => {
+      const output = (row.content as AssistantMessageContent).output;
+      if (!output) return [];
+      const options = row.analysisOptions as MessageOptions;
+      const reusable =
+        isDeepStrictEqual(sourceIdentity(options.source), sourceIdentity(sourceSnapshot(source))) &&
+        options.semantic === (businessSemantic(source.semantic, source.metrics).description || '') &&
+        isDeepStrictEqual(options.metrics || [], source.metrics || []) &&
+        (source.format === 'mysql' ||
+          (!!options.dataVersion && options.dataVersion === this.datasets.dataVersion(source)));
+      return [{ question: row.question, output, reusable }];
+    });
+    return [...older, ...recent];
   }
 
   assertRunSource(id: string, source: StoredDataset) {
     const old = (this.message(id).analysisOptions as MessageOptions).source;
-    const identity = (snapshot: typeof old) =>
-      snapshot.format === 'mysql'
-        ? {
-            format: snapshot.format,
-            host: snapshot.config.connection?.host,
-            port: snapshot.config.connection?.port,
-            database: snapshot.config.connection?.database,
-            user: snapshot.config.connection?.user,
-          }
-        : { format: snapshot.format, path: snapshot.config.path, excelSheets: snapshot.config.excelSheets };
-    if (!isDeepStrictEqual(identity(old), identity(sourceSnapshot(source))))
+    if (!isDeepStrictEqual(sourceIdentity(old), sourceIdentity(sourceSnapshot(source))))
       throw new WorkbenchError('CONFLICT', '数据来源或读取配置已变化，请开始新的分析');
   }
 
   run(id: string): Run {
     const row = this.message(id);
     const content = row.content as AssistantMessageContent;
-    if (row.status !== 'done' || !content.result) throw new WorkbenchError('CONFLICT', '分析尚未成功完成');
+    const output = content.output;
+    if (row.status !== 'done' || !output) throw new WorkbenchError('CONFLICT', '分析尚未成功完成');
     const options = row.analysisOptions as MessageOptions;
     const snippet = this.data.snippets.getByMessageId(id);
     if (!snippet) throw new WorkbenchError('CONFLICT', '分析片段不存在');
-    const view = snippet.content;
+    const view = snippet.content.output;
     return {
       id,
       conversationId: row.conversationId,
@@ -171,17 +191,15 @@ export class AnalysisRecordService {
       semantic: options.semantic,
       metrics: options.metrics,
       modelName: `${options.model.provider_name} · ${options.model.model_name}`,
-      result: content.result,
-      chart: content.chart,
-      chartError: content.chart_error,
+      output,
       events: content.events,
       ...(snippet.isVisible
         ? {
-            savedAt: snippet.updatedAt,
-            savedTitle: snippet.title,
-            savedView: view.result
-              ? { result: view.result, chart: view.chart ?? undefined, updatedAt: snippet.updatedAt }
-              : undefined,
+            snippet: {
+              title: snippet.title,
+              updatedAt: snippet.updatedAt,
+              ...(view ? { output: view } : {}),
+            },
           }
         : {}),
     };
@@ -210,13 +228,11 @@ export class AnalysisRecordService {
         sequence: row.sequence,
         question: row.question,
         sourceName: options.source.name,
-        strategy: options.analyze.strategy.type,
-        analysisOptions: analysisOptions(options),
         createdAt: row.updatedAt,
         modelName: `${options.model.provider_name} · ${options.model.model_name}`,
-        savedAt: row.savedAt ?? undefined,
-        savedTitle: row.savedTitle ?? undefined,
-        viewUpdatedAt: row.savedAt ?? undefined,
+        ...(row.snippetUpdatedAt !== null && row.snippetTitle !== null
+          ? { snippet: { title: row.snippetTitle, updatedAt: row.snippetUpdatedAt } }
+          : {}),
       };
     });
   }

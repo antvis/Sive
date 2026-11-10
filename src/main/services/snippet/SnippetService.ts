@@ -3,14 +3,14 @@ import type { ConversationService } from '../conversation/ConversationService';
 import type { AnalysisRecordService } from '../analysis/AnalysisRecordService';
 import type { Repositories } from '../../db';
 import type { StoredDataset } from '../../db/types';
-import type { Run } from '@shared/contracts';
+import type { AnalysisOutput } from '@shared/contracts';
 import { timestamp } from '../../utils/time';
-import { queryOptions } from '../../ai/queryOptions';
+import { QUERY_OPTIONS } from '../../ai/queryOptions';
 import { WorkbenchError } from '@shared/errors';
 import { ModelService } from '../settings/ModelService';
 import { ConnectionService } from '../data/ConnectionService';
 import { withAVA } from '../../ai/ava';
-import { refreshChart } from '../../ai/refreshChart';
+import { createChart } from '../../ai/charts';
 import { chartHTML } from '../export/analysisHtml';
 import { validateTheme, type ThemeSettings } from '@shared/theme';
 import type { DatasetService } from '../data/DatasetService';
@@ -74,16 +74,16 @@ export class SnippetService {
     this.change();
   }
 
-  private saveView(id: string, savedAt: string, source: StoredDataset, view: Pick<Run, 'result' | 'chart'>) {
+  private saveView(id: string, snippetUpdatedAt: string, source: StoredDataset, output: AnalysisOutput) {
     this.data.database.write(() => {
       this.datasets.assertDatasetCurrent(source);
       const snippet = this.snippet(id);
-      if (!snippet.isVisible || snippet.updatedAt !== savedAt)
+      if (!snippet.isVisible || snippet.updatedAt !== snippetUpdatedAt)
         throw new WorkbenchError('CONFLICT', '收藏已发生变化，本次刷新结果未写入');
       if (this.conversations.get(this.records.message(id).conversationId).archivedAt)
         throw new WorkbenchError('CONFLICT', '请先恢复此分析所属的会话');
       this.data.snippets.update(snippet.id, {
-        content: { result: view.result, chart: view.chart ?? null },
+        content: { output },
         updatedAt: timestamp(snippet.updatedAt),
       });
     });
@@ -98,37 +98,60 @@ export class SnippetService {
       const run = this.records.run(id);
       if (this.conversations.get(run.conversationId).archivedAt)
         throw new WorkbenchError('CONFLICT', '请先恢复此分析所属的会话');
-      if (!run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从已保存列表移除');
+      if (!run.snippet) throw new WorkbenchError('CONFLICT', '此分析已从已保存列表移除');
+      const saved = run.snippet.output || run.output;
       const source = await this.datasets.prepare(run.datasetId);
       if (source.format === 'mysql') this.records.assertRunSource(run.id, source);
-      if (!run.result.sql?.trim()) throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
+      if (!saved.results.length || saved.results.some(({ result }) => !result.sql?.trim()))
+        throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
+      const signal = AbortSignal.timeout(300000);
       const view = await withAVA(
         { ...source, semantic: run.semantic, metrics: run.metrics },
         undefined,
-        undefined,
+        signal,
         undefined,
         async (ava) => {
-          const queried = await ava.query(run.result.sql!, queryOptions);
-          const result = { ...queried, query: run.question, sql: run.result.sql, text: '' };
-          let chart;
-          if (run.chart && queried.data.length) {
-            try {
-              chart = await refreshChart(
-                run.chart,
-                queried.data,
-                run.question,
-                run.chart.chartType !== 'table' ? this.models.model(this.models.active()) : undefined,
+          const output: AnalysisOutput = { text: '', results: [], charts: [] };
+          let model: ReturnType<ModelService['model']> | undefined;
+          for (const { id: resultId, result } of saved.results) {
+            signal.throwIfAborted();
+            const queried = await ava.query(result.sql!, QUERY_OPTIONS);
+            output.results.push({
+              id: resultId,
+              result: { ...queried, query: result.query, sql: result.sql, text: '' },
+            });
+          }
+          for (const chart of saved.charts) {
+            signal.throwIfAborted();
+            const evidence = output.results.find(({ id }) => id === chart.resultId);
+            if (!evidence) throw new WorkbenchError('CONFLICT', '图表引用的计算结果不存在');
+            if (chart.spec.chartType === 'table' && typeof chart.spec.config !== 'string') {
+              output.charts.push({
+                resultId: chart.resultId,
+                spec: { ...chart.spec, config: { ...chart.spec.config, data: evidence.result.data } },
+              });
+            } else {
+              const next = await createChart(
+                evidence,
+                `保持原图类型 ${chart.spec.chartType}。${run.question}`,
+                (model ||= this.models.model(this.models.active(), signal)),
+                signal,
+                () => {},
+                chart.spec,
               );
-            } catch {
-              throw new WorkbenchError('CONFLICT', '图表更新失败，本次刷新未保存。请检查当前模型后重试。');
+              if (!next || next.spec.chartType !== chart.spec.chartType)
+                throw new WorkbenchError('CONFLICT', '无法保留原图类型，本次刷新未保存。');
+              output.charts.push(next);
             }
           }
+          if (output.results.some(({ result }) => result.truncated)) output.warning = '部分查询结果已截断。';
           await this.datasets.assertFileUnchanged(source);
-          return { result, chart };
+          signal.throwIfAborted();
+          return output;
         },
         this.connections,
       );
-      this.saveView(id, run.savedAt!, source, view);
+      this.saveView(id, run.snippet.updatedAt, source, view);
     } catch (error) {
       if (error instanceof WorkbenchError) throw error;
       throw new WorkbenchError(
@@ -141,9 +164,9 @@ export class SnippetService {
     }
   }
 
-  chartHTML(id: string, theme?: ThemeSettings, saved = false) {
+  chartHTML(id: string, theme?: ThemeSettings, saved = false, index = 0) {
     const run = this.records.run(id);
-    const chart = saved && run.savedView ? run.savedView.chart : run.chart;
+    const chart = (saved && run.snippet?.output ? run.snippet.output : run.output).charts[index]?.spec;
     if (!chart) throw new WorkbenchError('CONFLICT', '尚无图表');
     return chartHTML(chart, theme ? validateTheme(theme) : this.settings.theme());
   }

@@ -1,6 +1,6 @@
 // Leave room below common 255-byte filename limits, including the extension.
 // Count UTF-8 bytes: 100 Chinese characters can already exceed that limit.
-export function exportFilename(title: string, format: 'html' | 'md' | 'pdf' | 'png') {
+export function exportFilename(title: string, format: 'html' | 'pdf' | 'png') {
   const extension = `.${format}`;
   const cleaned = title
     .normalize('NFC')

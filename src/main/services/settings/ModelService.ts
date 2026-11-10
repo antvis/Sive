@@ -101,10 +101,9 @@ export class ModelService {
     profile: StoredModel,
     signal?: AbortSignal,
     progress?: (event: Progress) => void,
-    onResponse?: (text: string) => void,
   ): ReturnType<typeof createModel> {
     const key = this.decryptKey(profile.encryptedKey);
-    return createModel(profile.baseURL, key, profile.model, signal, progress, onResponse);
+    return createModel(profile.baseURL, key, profile.model, signal, progress);
   }
 
   active() {
@@ -164,7 +163,7 @@ export class ModelService {
                       ? `模型「${model}」测试超时（30 秒），配置未保存。服务繁忙或模型响应较慢均可能导致超时，不代表模型不可用，请稍后重试。`
                       : APICallError.isInstance(error) && [429, 503].includes(error.statusCode ?? 0)
                         ? `模型「${model}」服务繁忙或请求被限流（HTTP ${error.statusCode}），配置未保存，请稍后重试。`
-                        : `模型「${model}」测试失败，整个服务配置未保存。请检查该模型权限、密钥及服务支持的输出预算。`,
+                        : `模型「${model}」测试失败，整个服务配置未保存。请检查模型权限、密钥及接口兼容性。`,
                   );
             abort.abort();
           }

@@ -9,6 +9,11 @@ export const analysisModes = [
     label: '多步探索',
     description: '适合需要逐步排查的问题：先探索数据，再调整查询与核对结果。通常更慢、调用更多。',
   },
+  {
+    value: 'agent' as const,
+    label: '智能分析',
+    description: '按需补查、核对和绘图，支持引用历史结果；需要模型支持工具调用。',
+  },
 ];
 export function analysisLabel(mode: string) {
   return (

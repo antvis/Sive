@@ -1,6 +1,5 @@
-import { renderMarkdown } from '@shared/markdown';
 import { isNumericColumn } from '@shared/tableValues';
-import type { Run } from '@shared/contracts';
+import type { AnalysisResponse } from '@antv/ava';
 
 export const escape = (value: unknown) =>
   String(value ?? '').replace(
@@ -8,7 +7,7 @@ export const escape = (value: unknown) =>
     (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!,
   );
 
-export function dataTable(result: Run['result']) {
+export function dataTable(result: AnalysisResponse) {
   const fields = new Map(result.schema.map((field) => [field.name, field]));
   for (const row of result.data)
     for (const name of Object.keys(row)) if (!fields.has(name)) fields.set(name, { name });
@@ -40,10 +39,3 @@ export const exportTableStyles = `
 .table-scroll th,.table-scroll td{overflow-wrap:anywhere}
 .table-scroll .numeric,.table-scroll [style*="text-align:right"]{width:1%;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 `;
-
-export function exportMarkdown(text: string) {
-  // The renderer escapes raw HTML, so these are only renderer-generated table tags.
-  return renderMarkdown(text)
-    .replace(/<table>/g, '<div class="table-scroll"><table>')
-    .replace(/<\/table>/g, '</table></div>');
-}

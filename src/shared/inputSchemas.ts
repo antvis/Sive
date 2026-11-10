@@ -5,7 +5,7 @@ export const requiredText = (message = '请填写有效文本') =>
   z.string({ error: message }).refine((value) => value.trim().length > 0, message);
 export const idSchema = requiredText('标识不能为空');
 export const localFormatSchema = z.enum(['csv', 'json', 'xlsx', 'parquet']);
-export const analysisModeSchema = z.enum(['direct', 'loop']);
+export const analysisModeSchema = z.enum(['direct', 'loop', 'agent']);
 export const analysisOptionsSchema = z.object({
   maxRetries: z.int().optional(),
   maxSteps: z.int().optional(),
@@ -44,12 +44,7 @@ const modelURLSchema = requiredText('请填写服务地址').superRefine((value,
     context.addIssue({ code: 'custom', message: '模型服务地址无效' });
     return;
   }
-  if (url.hostname === 'platform.deepseek.com') {
-    context.addIssue({
-      code: 'custom',
-      message: '这是 DeepSeek 管理控制台地址，请将服务地址改为 https://api.deepseek.com。',
-    });
-  } else if (
+  if (
     url.username ||
     url.password ||
     url.search ||
