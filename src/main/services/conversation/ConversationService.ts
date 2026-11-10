@@ -44,6 +44,21 @@ export class ConversationService {
     return conversation;
   }
 
+  rename(id: string, title: string) {
+    const nextTitle = title.trim();
+    if (!nextTitle) throw new WorkbenchError('INVALID_INPUT', '请输入任务标题');
+    const changed = this.data.database.write(() => {
+      const conversation = this.get(id);
+      if (conversation.title === nextTitle) return false;
+      this.data.conversations.update(id, {
+        title: nextTitle,
+        updatedAt: timestamp(conversation.updatedAt),
+      });
+      return true;
+    });
+    if (changed) this.change();
+  }
+
   archive(id: string) {
     if (this.isRunning(id)) throw new WorkbenchError('CONFLICT', '请先停止此会话的分析');
     this.assertNotRefreshing([id]);

@@ -153,6 +153,7 @@ export interface API {
   workspaceGetState(): Promise<State & { revision: number }>;
   analysisGetRun(id: string): Promise<Run>;
   conversationCreate(datasetId: string): Promise<Conversation>;
+  conversationRename(id: string, title: string): Promise<void>;
   conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;
   conversationPurge(ids: string[]): Promise<void>;

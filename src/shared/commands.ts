@@ -30,6 +30,7 @@ const commandSchemas = {
   datasetImport: z.tuple([localFormatSchema.optional()]),
   analysisCancel: oneId,
   conversationCreate: oneId,
+  conversationRename: z.tuple([idSchema, requiredText('请输入任务标题')]),
   conversationArchive: oneId,
   conversationRestore: oneId,
   conversationPurge: z.tuple([z.array(idSchema).min(1)]),
