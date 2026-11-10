@@ -35,15 +35,15 @@ export function Tooltip({
     </TooltipPrimitive.Root>
   );
 }
-type MenuItem = {
-  key: string;
+type MenuItem<K extends string> = {
+  key: K;
   label: ReactNode;
   icon?: ReactNode;
   disabled?: boolean;
   danger?: boolean;
-  children?: MenuItem[];
+  children?: MenuItem<K>[];
 };
-export function Dropdown({
+export function Dropdown<K extends string>({
   children,
   menu,
   placement = 'bottomRight',
@@ -55,9 +55,9 @@ export function Dropdown({
 }: {
   children: ReactElement;
   menu: {
-    items: MenuItem[];
+    items: MenuItem<K>[];
     selectedKeys?: string[];
-    onClick: (info: { key: string }) => void;
+    onClick: (info: { key: K }) => void;
     className?: string;
   };
   placement?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
@@ -308,16 +308,16 @@ export function ConfirmAction({
   title: ReactNode;
   description?: ReactNode;
   onConfirm: () => unknown | Promise<unknown>;
-  children: ReactElement;
+  children: ReactElement<ButtonProps>;
   okText?: string;
   cancelText?: string;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      {cloneElement(children as ReactElement<ButtonProps>, {
+      {cloneElement(children, {
         onClick: (event) => {
-          (children.props as ButtonProps).onClick?.(event);
+          children.props.onClick?.(event);
           if (!event.defaultPrevented) setOpen(true);
         },
       })}

@@ -1,5 +1,11 @@
-import type { AnalysisOptions } from '@shared/analysisOptions';
-import type { AnalysisOutput, Dataset, ModelProfile, Progress, Task } from '@shared/contracts';
+import type {
+  AnalysisOptions,
+  AnalysisOutput,
+  Dataset,
+  ModelProfile,
+  Progress,
+  Task,
+} from '@shared/contracts';
 export type { AnalysisOutput } from '@shared/contracts';
 
 export type StoredModel = Omit<ModelProfile, 'hasKey' | 'updatedAt'> & {

@@ -1,7 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { ModelTestProgress, TaskUpdate } from '@shared/contracts';
 import { commandNames } from '@shared/commands';
-import { unwrap } from '@shared/errors';
+import { WorkbenchError, type Reply } from '@shared/errors';
+
+function unwrap<T>(reply: Reply<T>): T {
+  if (!reply.ok) throw new WorkbenchError(reply.error.code, reply.error.message);
+  return reply.value;
+}
 window.addEventListener('DOMContentLoaded', () => {
   document.documentElement.dataset.platform = process.platform;
 });

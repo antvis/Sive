@@ -1,6 +1,8 @@
 import type { DbService } from '../../db/DbService';
 import type { SettingRepo } from '../../db/repository/SettingRepo';
-import { defaultTheme, validateTheme, type ThemeSettings } from '@shared/theme';
+import { defaultTheme, type ThemeSettings } from '@shared/theme';
+import { themeSchema } from '@shared/inputSchemas';
+import { parseInput } from '../../utils/input';
 import { timestamp } from '../../utils/time';
 
 export class SettingsService {
@@ -10,8 +12,8 @@ export class SettingsService {
     private change: () => void,
   ) {}
 
-  private get<T>(key: string): T | undefined {
-    return this.records.get(key)?.value as T | undefined;
+  private get(key: string) {
+    return this.records.get(key)?.value;
   }
 
   private set(key: string, value: unknown) {
@@ -23,15 +25,16 @@ export class SettingsService {
   }
 
   get lastImportDirectory() {
-    return this.get<string>('last_import_directory');
+    const value = this.get('last_import_directory');
+    return typeof value === 'string' ? value : undefined;
   }
 
   theme() {
-    return validateTheme(this.get<ThemeSettings>('theme') ?? defaultTheme);
+    return parseInput(themeSchema, this.get('theme') ?? defaultTheme);
   }
 
   saveTheme(theme: ThemeSettings) {
-    this.set('theme', validateTheme(theme));
+    this.set('theme', parseInput(themeSchema, theme));
     this.change();
   }
 

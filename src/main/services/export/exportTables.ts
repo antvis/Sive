@@ -1,11 +1,15 @@
 import { isNumericColumn } from '@shared/tableValues';
 import type { AnalysisResponse } from '@antv/ava';
 
+const htmlEntities: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
 export const escape = (value: unknown) =>
-  String(value ?? '').replace(
-    /[&<>"']/g,
-    (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!,
-  );
+  String(value ?? '').replace(/[&<>"']/g, (character) => htmlEntities[character]);
 
 export function dataTable(result: AnalysisResponse) {
   const fields = new Map(result.schema.map((field) => [field.name, field]));

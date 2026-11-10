@@ -359,17 +359,16 @@ export default function SnippetPage({
   const [search, setSearch] = useState('');
   const keyword = search.trim().toLocaleLowerCase();
   const filtered = runs
-    .filter(
-      (run) =>
-        !!run.snippet &&
-        [
-          run.snippet.title,
-          run.question,
-          datasets.find((d) => d.id === run.datasetId)?.name || run.sourceName,
-          run.modelName,
-        ].some((text) => text.toLocaleLowerCase().includes(keyword)),
+    .flatMap((run) => (run.snippet ? [{ ...run, snippet: run.snippet }] : []))
+    .filter((run) =>
+      [
+        run.snippet.title,
+        run.question,
+        datasets.find((d) => d.id === run.datasetId)?.name || run.sourceName,
+        run.modelName,
+      ].some((text) => text.toLocaleLowerCase().includes(keyword)),
     )
-    .sort((a, b) => b.snippet!.updatedAt.localeCompare(a.snippet!.updatedAt));
+    .sort((a, b) => b.snippet.updatedAt.localeCompare(a.snippet.updatedAt));
   const { count, hasMore, footer } = useScrollLoad(filtered.length, 6, keyword);
   return (
     <section aria-label="分析收藏卡片">

@@ -1,5 +1,5 @@
 import type { BrowserWindow } from 'electron';
-import type { CommandHandlers } from '@shared/commands';
+import type { CommandHandlers } from '../commands';
 import type { WorkbenchServices } from '../../services';
 
 export function createModelHandlers(

@@ -2,6 +2,7 @@ import type { AnalysisResponse } from '@antv/ava';
 import type { ModelMessage } from 'ai';
 import type { AnalysisOutput } from '@shared/contracts';
 
+// 把完整 AVA 结果裁剪成有界样本，供 analyze 和 inspect 返回给模型
 export function resultContext(result: AnalysisResponse, maxRows = 50, maxBytes = 12000) {
   const rows: Record<string, unknown>[] = [];
   let bytes = 0;
@@ -43,6 +44,7 @@ function answerContext(turn: AnalysisHistory[number]) {
   return `${answer}${warning}${results ? `\n历史结果：${results}` : ''}`;
 }
 
+// 将数据库历史整理成角色消息、较早摘要和有限预算
 export function conversationMessages(history: AnalysisHistory): ModelMessage[] {
   const recent = history.slice(-RECENT_TURN_COUNT);
   const summary = history

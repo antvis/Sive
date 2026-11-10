@@ -1,15 +1,16 @@
+import { parseInput } from '../../utils/input';
 import type { ModelProviderRepo } from '../../db/repository/ModelProviderRepo';
 import type { DbService } from '../../db/DbService';
 import type { SettingRepo } from '../../db/repository/SettingRepo';
 import { isDeepStrictEqual } from 'node:util';
 import { timestamp } from '../../utils/time';
 import type { StoredModel } from '../../db/mappers';
-import { modelConnectionSchema, modelInputSchema, parseInput } from '@shared/inputSchemas';
+import { modelConnectionSchema, modelInputSchema } from '@shared/inputSchemas';
 import { WorkbenchError } from '@shared/errors';
 import { createModel } from '../../ai/provider';
 import { APICallError, generateText } from 'ai';
 import { randomUUID } from 'node:crypto';
-import type { ModelConnectionInput, ModelInput, ModelTestProgress, Progress } from '@shared/contracts';
+import type { ModelConnectionInput, ModelInput, ModelTestProgress } from '@shared/contracts';
 
 export class ModelCredentialError extends WorkbenchError {
   constructor() {
@@ -97,13 +98,9 @@ export class ModelService {
     }
   }
 
-  model(
-    profile: StoredModel,
-    signal?: AbortSignal,
-    progress?: (event: Progress) => void,
-  ): ReturnType<typeof createModel> {
+  model(profile: StoredModel, signal?: AbortSignal): ReturnType<typeof createModel> {
     const key = this.decryptKey(profile.encryptedKey);
-    return createModel(profile.baseURL, key, profile.model, signal, progress);
+    return createModel(profile.baseURL, key, profile.model, signal);
   }
 
   active() {
@@ -142,14 +139,15 @@ export class ModelService {
     const worker = async () => {
       while (!abort.signal.aborted && next < pending.length) {
         const model = pending[next++];
-        const timeout = AbortSignal.timeout(30000);
         active.add(model);
         report();
         try {
           await generateText({
-            model: this.model({ ...p, model }, AbortSignal.any([abort.signal, timeout])),
+            model: this.model({ ...p, model }),
             prompt: 'Reply with OK.',
             maxRetries: 0,
+            abortSignal: abort.signal,
+            timeout: 30000,
           });
           completed++;
         } catch (error) {
@@ -159,7 +157,7 @@ export class ModelService {
                 ? error
                 : new WorkbenchError(
                     'MODEL',
-                    timeout.aborted
+                    error instanceof Error && error.name === 'TimeoutError'
                       ? `模型「${model}」测试超时（30 秒），配置未保存。服务繁忙或模型响应较慢均可能导致超时，不代表模型不可用，请稍后重试。`
                       : APICallError.isInstance(error) && [429, 503].includes(error.statusCode ?? 0)
                         ? `模型「${model}」服务繁忙或请求被限流（HTTP ${error.statusCode}），配置未保存，请稍后重试。`

@@ -1,13 +1,17 @@
-import type { AnalysisMode, AnalysisOptions } from '@shared/analysisOptions';
 import type { Schema, Profile, AnalysisResponse } from '@antv/ava';
 import type { ThemeSettings } from '@shared/theme';
 import type { z } from 'zod';
+import type { ToolUIPart } from 'ai';
 import type {
   mysqlInputSchema,
   modelConnectionSchema,
   modelInputSchema,
   businessMetricSchema,
+  analysisModeSchema,
+  analysisOptionsSchema,
 } from '@shared/inputSchemas';
+export type AnalysisMode = z.infer<typeof analysisModeSchema>;
+export type AnalysisOptions = z.infer<typeof analysisOptionsSchema>;
 export type MySQLInput = z.infer<typeof mysqlInputSchema>;
 export type ConnectionInfo = Omit<MySQLInput, 'id' | 'name' | 'password'> & {
   hasPassword: boolean;
@@ -46,11 +50,22 @@ export type AnalysisChart = {
   resultId: string;
   spec: ChartSpec;
 };
+export type AnalysisTools = {
+  inspect: { input: { resultId: string }; output: { resultId: string } };
+  analyze: { input: { query: string }; output: { resultId: string } };
+  visualize: {
+    input: { resultId: string; query: string };
+    output: { resultId: string; chartType?: string | null };
+  };
+};
+export type AnalysisToolPart = ToolUIPart<AnalysisTools>;
 export type AnalysisOutput = {
   text: string;
   results: AnalysisEvidence[];
   charts: AnalysisChart[];
   warning?: string;
+  tools?: AnalysisToolPart[];
+  // Read compatibility for analyses saved before native SDK tool parts were adopted.
   actions?: { tool: 'analyze' | 'visualize'; query: string; resultId?: string; error?: string }[];
 };
 type SnippetSummary = { title: string; updatedAt: string };
@@ -89,20 +104,13 @@ export type ModelConnectionInput = z.infer<typeof modelConnectionSchema>;
 export type ModelTestProgress = { completed: number; total: number; active: string[] };
 export type ModelInput = z.infer<typeof modelInputSchema>;
 export type Progress = {
-  chartOutcome?: 'generated' | 'not-needed' | 'empty-data' | 'invalid-response' | 'failed';
-  chartSelection?: string;
   at: string;
   stage: string;
   label: string;
   error?: boolean;
   detail?: string;
-  observation?: { columns: string[]; rows: string[][]; rowCount?: number; columnCount?: number };
   sql?: string;
   durationMs?: number;
-  inputTokens?: number;
-  outputTokens?: number;
-  reasoningTokens?: number;
-  finishReason?: string;
   recovery?: string;
 };
 type TaskFields = {
@@ -166,7 +174,6 @@ export interface API {
   datasetDelete(id: string): Promise<void>;
   datasetRename(id: string, name: string): Promise<void>;
   datasetRelocate(id: string): Promise<boolean>;
-  datasetReparse(id: string): Promise<void>;
   datasetPreview(
     id: string,
     table: string,

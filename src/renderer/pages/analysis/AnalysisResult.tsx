@@ -6,11 +6,12 @@ import { Alert, Button, Dropdown, Spin, Tooltip } from '@renderer/components/ui/
 import { renderMarkdown } from '@shared/markdown';
 import { errorMessage } from '@renderer/utils/feedback';
 import { UserMessage, AssistantMessage } from '@renderer/pages/analysis/ConversationMessage';
-import { replyMarkdown } from '@shared/conversationMarkdown';
-import AnalysisProgress from './AnalysisProgress';
+import { replyMarkdown } from '../../utils/conversationMarkdown';
+import AnalysisTools from './AnalysisTools';
 import ConversationChart from '@renderer/pages/analysis/ConversationChart';
 import Grid from '@renderer/components/data/DataGrid';
 const api = window.workbench;
+const exportFormats: Parameters<typeof api.analysisExport>[1][] = ['pdf', 'png', 'html'];
 function useResultActionFeedback() {
   const [feedback, setFeedback] = useState<{ text: string; error: boolean }>();
   useEffect(() => {
@@ -20,7 +21,7 @@ function useResultActionFeedback() {
   }, [feedback]);
   return [feedback, setFeedback] as const;
 }
-function ResultContent({ run }: { run: Run }) {
+function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: boolean }) {
   const [dataOpen, setDataOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
@@ -43,12 +44,12 @@ function ResultContent({ run }: { run: Run }) {
       setSaving(false);
     }
   };
-  const performExport = async (format: string) => {
+  const performExport = async (format: Parameters<typeof api.analysisExport>[1]) => {
     if (exporting) return;
     setExportFeedback(undefined);
     setExporting(true);
     try {
-      const result = await api.analysisExport(run.id, format as 'pdf' | 'png' | 'html');
+      const result = await api.analysisExport(run.id, format);
       if (result) setExportFeedback({ text: '导出成功', error: false });
     } catch (e) {
       setExportFeedback({ text: errorMessage(e), error: true });
@@ -58,27 +59,12 @@ function ResultContent({ run }: { run: Run }) {
   };
   return (
     <article className="result pb-4.5 mb-4.5 min-w-0">
-      <UserMessage question={run.question} time={run.events[0]?.at || run.createdAt} />
+      {showQuestion && <UserMessage question={run.question} time={run.events[0]?.at || run.createdAt} />}
       <AssistantMessage time={run.createdAt} markdown={() => replyMarkdown(run)}>
         <p className="text-muted text-helper">
           {run.sourceName} · {run.modelName}
         </p>
-        <AnalysisProgress
-          hasAnswer={!!run.output.text.trim()}
-          task={{
-            id: run.id,
-            datasetId: run.datasetId,
-            sourceName: run.sourceName,
-            modelName: run.modelName,
-            question: run.question,
-            strategy: run.strategy,
-            status: 'done',
-            runId: run.id,
-            startedAt: run.events[0]?.at,
-            finishedAt: run.createdAt,
-            events: run.events,
-          }}
-        />
+        <AnalysisTools output={run.output} />
         <div
           className="markdown"
           dangerouslySetInnerHTML={{
@@ -102,16 +88,6 @@ function ResultContent({ run }: { run: Run }) {
                   <Grid rows={result.data} columns={result.schema} />
                 </section>
               ))}
-              {run.output.actions?.length ? (
-                <ul className="text-helper">
-                  {run.output.actions.map((action, index) => (
-                    <li key={index}>
-                      {action.tool === 'analyze' ? '查询' : '绘图'}：{action.query}
-                      {action.error && <span className="text-muted"> · {action.error}</span>}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
             </>
           )}
         </details>
@@ -144,7 +120,7 @@ function ResultContent({ run }: { run: Run }) {
                   if (open) setExportFeedback(undefined);
                 }}
                 menu={{
-                  items: ['pdf', 'png', 'html'].map((key) => ({
+                  items: exportFormats.map((key) => ({
                     key,
                     label: key === 'html' ? 'HTML 源码' : key.toUpperCase(),
                   })),
@@ -170,7 +146,7 @@ function ResultContent({ run }: { run: Run }) {
   );
 }
 
-export default function AnalysisResult(props: { run: RunSummary }) {
+export default function AnalysisResult(props: { run: RunSummary; showQuestion?: boolean }) {
   const detail = useRun(props.run);
   if (detail.error)
     return <Alert type="error" title={detail.error} action={<Button onClick={detail.retry}>重试</Button>} />;

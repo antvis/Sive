@@ -1,5 +1,5 @@
 import type { BrowserWindow } from 'electron';
-import type { CommandHandlers } from '@shared/commands';
+import type { CommandHandlers } from '../commands';
 import type { WorkbenchServices } from '../../services';
 import { selectLocalFile } from '../../services/data/selectLocalFile';
 
@@ -15,7 +15,6 @@ export function createDatasetHandlers(
   | 'datasetRename'
   | 'datasetRelocate'
   | 'datasetDelete'
-  | 'datasetReparse'
   | 'datasetPreview'
   | 'datasetGetTableDetails'
   | 'datasetSaveSemantic'
@@ -31,7 +30,6 @@ export function createDatasetHandlers(
     datasetRename: (id, name) => services.datasets.rename(id, name),
     datasetRelocate: (id) => services.datasets.relocate(id, () => selectLocalFile(win, services.settings)),
     datasetDelete: (id) => services.datasets.deleteData(id),
-    datasetReparse: (id) => services.datasets.reparseData(id),
     datasetPreview: (id, table, options) => services.datasets.preview(id, table, options),
     datasetGetTableDetails: (id, table) => services.datasets.tableDetails(id, table),
     datasetSaveSemantic: (id, text, metrics) => services.datasets.semantic(id, text, metrics),

@@ -108,8 +108,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           className="inline-flex text-muted shrink-0 border-0 p-1 bg-transparent rounded-compact hover:bg-muted/12"
           onClick={() => {
             const node = internal.current;
-            if (!node) return;
-            Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(node, '');
+            const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+            if (!node || !setValue) return;
+            setValue.call(node, '');
             node.dispatchEvent(new Event('input', { bubbles: true }));
             onClear?.();
             node.focus();

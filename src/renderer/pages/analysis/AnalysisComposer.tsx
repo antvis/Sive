@@ -1,8 +1,8 @@
 import { cx } from '@renderer/utils/cx';
 import { Button, Dropdown, TextArea, Tooltip } from '@renderer/components/ui/index';
 import { ArrowUpIcon, CaretDownIcon, StopCircleIcon } from '@phosphor-icons/react';
-import type { Dataset, ModelProfile } from '@shared/contracts';
-import { analysisModes, type AnalysisMode } from '@shared/analysisOptions';
+import type { Dataset, ModelProfile, AnalysisMode } from '@shared/contracts';
+import { analysisModes } from '../../data/analysisOptions';
 import { usePreferences } from '@renderer/hooks/usePreferences';
 import { isSendKey } from '@renderer/utils/keyboard';
 
@@ -99,8 +99,12 @@ export default function AnalysisComposer({
                 children: item.modelIds.map((id) => ({ key: JSON.stringify([item.id, id]), label: id })),
               })),
               onClick: ({ key }) => {
-                const [id, selected] = JSON.parse(key) as [string, string];
-                onModel(id, selected);
+                for (const item of models)
+                  for (const selected of item.modelIds)
+                    if (JSON.stringify([item.id, selected]) === key) {
+                      onModel(item.id, selected);
+                      return;
+                    }
               },
             }}
           >
@@ -132,7 +136,7 @@ export default function AnalysisComposer({
                   </div>
                 ),
               })),
-              onClick: ({ key }) => onMode(key as AnalysisMode),
+              onClick: ({ key }) => onMode(key),
             }}
           >
             <Button

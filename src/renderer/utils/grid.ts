@@ -1,6 +1,20 @@
 import type { TableField } from '@shared/tableValues';
-import { compareNumeric } from '@shared/tableValues';
+import { numericValue } from '@shared/tableValues';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
+
+function compareNumeric(a: unknown, b: unknown, descending: boolean) {
+  const left = numericValue(a),
+    right = numericValue(b);
+  // The grid reverses the comparator for descending. Keep missing/invalid values last in both orders.
+  if (!left || !right) return (left ? -1 : right ? 1 : 0) * (descending ? -1 : 1);
+  if (left.sign !== right.sign) return left.sign - right.sign;
+  if (!left.sign) return 0;
+  const magnitude = Math.sign(left.magnitude - right.magnitude);
+  const length = Math.max(left.digits.length, right.digits.length);
+  const l = left.digits.padEnd(length, '0'),
+    r = right.digits.padEnd(length, '0');
+  return (magnitude || (l < r ? -1 : l > r ? 1 : 0)) * left.sign;
+}
 
 export const MIN_COLUMN_WIDTH = 80;
 export const MAX_COLUMN_WIDTH = 1000;
@@ -28,7 +42,7 @@ export function gridColumns(
       compareNumeric(
         left.getValue(id),
         right.getValue(id),
-        sorting.find((item) => item.id === id)?.desc ? 'descend' : 'ascend',
+        sorting.find((item) => item.id === id)?.desc ?? false,
       ),
   }));
 }

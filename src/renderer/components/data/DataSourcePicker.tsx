@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import { ArrowRightIcon } from '@phosphor-icons/react';
 import type { LocalDataset } from '@shared/contracts';
 import { DATA_SOURCE_GROUPS } from '@renderer/constants';
@@ -38,7 +37,7 @@ export default function DataSourcePicker({
                   key={label}
                   type="button"
                   className="group/source relative grid min-w-0 w-full h-28 py-3 px-4 border border-[color-mix(in_srgb,_var(--border)_80%,_var(--surface))] rounded-source bg-surface text-ink shadow-[0_2px_4px] shadow-ink/3 [transition:border-color_160ms_ease,_background_160ms_ease,_box-shadow_160ms_ease] [&:hover:not(:disabled)]:border-source-line [&:hover:not(:disabled)]:bg-source-hover [&:hover:not(:disabled)]:shadow-[0_4px_12px] [&:hover:not(:disabled)]:shadow-source/9 focus-visible:border-source-line focus-visible:bg-source-hover focus-visible:shadow-[0_4px_12px] focus-visible:shadow-source/9 focus-visible:outline-source data-[available=false]:border-[color-mix(in_srgb,_var(--border)_55%,_var(--surface))] data-[available=false]:text-muted data-[available=false]:shadow-none [&[data-available=true]:disabled]:opacity-55"
-                  style={{ '--source-color': color } as CSSProperties}
+                  style={{ '--source-color': color }}
                   data-available={available}
                   aria-label={`${label}：${description}。${action}`}
                   disabled={!available || disabled || importing}

@@ -24,8 +24,9 @@ export function conversationStatus(
   let status: Task['status'] | undefined;
   let unreadSequence: number | undefined;
   for (const task of tasks) {
-    if (task.conversationId === conversation.id && (task.sequence ?? -1) > sequence) {
-      sequence = task.sequence!;
+    const taskSequence = task.sequence ?? -1;
+    if (task.conversationId === conversation.id && taskSequence > sequence) {
+      sequence = taskSequence;
       status = task.status;
     }
   }

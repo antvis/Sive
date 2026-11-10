@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties } from 'react';
+import { useEffect } from 'react';
 import { getDataSource } from '@renderer/constants';
 import { useScrollLoad } from '@renderer/hooks/useScrollLoad';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
@@ -85,7 +85,7 @@ export default function DataPage({
               return (
                 <CollectionCard
                   className="hover:border-source-line hover:shadow-[0_3px_12px] hover:shadow-ink/5 focus-within:border-source-line focus-within:shadow-[0_3px_12px] focus-within:shadow-ink/5"
-                  style={{ '--source-color': color } as CSSProperties}
+                  style={{ '--source-color': color }}
                   key={d.id}
                   label={d.name}
                   action="打开分析"

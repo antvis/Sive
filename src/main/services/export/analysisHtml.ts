@@ -4,6 +4,7 @@ import type { ChartSpec, Run } from '@shared/contracts';
 import { defaultTheme, themeConfig, themePalette, type ThemeSettings } from '@shared/theme';
 import { chartRuntime } from '../../utils/gptVis';
 import { isAnalysisEvent } from '@shared/progress';
+import { analysisTools } from '@shared/analysisTools';
 export async function chartHTML(
   spec: ChartSpec,
   settings: ThemeSettings = defaultTheme,
@@ -67,6 +68,7 @@ export async function analysisHTML(run: Run, settings: ThemeSettings = defaultTh
   const p = themePalette(settings);
   const savedOutput = saved ? run.snippet?.output : undefined;
   const output = savedOutput || run.output;
+  const tools = analysisTools(output);
   const title = (saved && run.snippet?.title) || run.question;
   const updatedAt = (saved && run.snippet?.updatedAt) || run.createdAt;
   const charts = await Promise.all(
@@ -90,7 +92,7 @@ export async function analysisHTML(run: Run, settings: ThemeSettings = defaultTh
   ${charts.join('')}
   <h2>计算依据</h2><p>业务口径：${escape(run.semantic || '未提供')}</p>
   ${output.results.map(({ id, result }) => `<h3>${escape(result.query)}</h3><small>结果编号：${escape(id)}</small><pre>${escape(result.sql)}</pre>${result.truncated ? '<p>以下数据为截断后的结果快照，并非完整数据。</p>' : ''}${dataTable(result)}`).join('')}
-  ${output.actions?.length ? `<h2>工具调用</h2>${output.actions.map((action) => `<p>${escape(action.tool)} · ${escape(action.query)} · ${escape(action.resultId)}${action.error ? ` · ${escape(action.error)}` : ''}</p>`).join('')}` : ''}
+  ${tools.length ? `<h2>工具调用</h2><pre>${escape(JSON.stringify(tools, null, 2))}</pre>` : ''}
   <h2>${savedOutput ? '原始分析执行过程' : '执行过程'}</h2>${run.events
     .filter(isAnalysisEvent)
     .map(

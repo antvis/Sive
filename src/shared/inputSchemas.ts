@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { WorkbenchError } from '@shared/errors';
 
 export const requiredText = (message = '请填写有效文本') =>
   z.string({ error: message }).refine((value) => value.trim().length > 0, message);
@@ -76,15 +75,3 @@ export const businessMetricSchema = z.object({
   unit: z.string(),
   description: z.string(),
 });
-export const metricFormSchema = businessMetricSchema.extend({
-  name: requiredText('请填写指标名称'),
-  table: requiredText('请选择数据表'),
-  expression: requiredText('请填写聚合公式'),
-});
-
-export function parseInput<T>(schema: z.ZodType<T>, input: unknown): T {
-  const result = schema.safeParse(input);
-  if (!result.success)
-    throw new WorkbenchError('INVALID_INPUT', result.error.issues[0]?.message || '请求参数无效');
-  return result.data;
-}

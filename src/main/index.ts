@@ -55,9 +55,8 @@ app.whenReady().then(async () => {
     minWidth: 980,
     minHeight: 700,
     title: 'Sive',
-    ...(process.platform === 'darwin'
-      ? { titleBarStyle: 'hidden' as const, trafficLightPosition: { x: 14, y: 10 } }
-      : {}),
+    titleBarStyle: process.platform === 'darwin' ? 'hidden' : undefined,
+    trafficLightPosition: process.platform === 'darwin' ? { x: 14, y: 10 } : undefined,
     icon,
     backgroundColor: themePalette(services.settings.theme()).background,
     webPreferences: {

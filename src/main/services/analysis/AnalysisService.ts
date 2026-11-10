@@ -2,14 +2,13 @@ import type { ConversationService } from '../conversation/ConversationService';
 import type { AnalysisRecordService } from './AnalysisRecordService';
 import { WorkbenchError } from '@shared/errors';
 import { randomUUID } from 'node:crypto';
-import type { Task } from '@shared/contracts';
-import type { AnalysisMode, AnalysisOptions } from '@shared/analysisOptions';
+import type { Task, AnalysisMode, AnalysisOptions } from '@shared/contracts';
 import { resolveStrategy } from '../../ai/analysisStrategy';
 import { businessSemantic } from '../../ai/semantics';
 import { sourceSnapshot } from '../../db/mappers';
-import { ModelService, ModelCredentialError } from '../settings/ModelService';
+import { ModelService } from '../settings/ModelService';
 import { ConnectionService } from '../data/ConnectionService';
-import { withAVA } from '../../ai/ava';
+import { withAVA } from '../../ava';
 import { TaskProgress } from './TaskProgress';
 import { runAgent } from '../../ai/agent';
 import type { DatasetService } from '../data/DatasetService';
@@ -169,28 +168,16 @@ export class AnalysisService {
     let { task } = context;
     let analysisOutput: AnalysisOutput | undefined;
     let terminalSaved = false;
-    const reportProgress = (event: Task['events'][number]) => {
-      if (task.strategy === 'direct' && ['stepstart', 'stepend'].includes(event.stage))
-        event = {
-          ...event,
-          label: event.error
-            ? '分析查询未完成'
-            : event.stage === 'stepstart'
-              ? '分析问题并计算结果'
-              : '分析查询已结束',
-          detail: event.error ? event.detail : task.question,
-        };
-      task.events.push(event);
-      taskProgress.schedule(task);
-    };
     try {
+      const languageModel = this.models.model(modelProfile, analysisSignal);
       analysisOutput = await withAVA(
-        dataset,
-        this.models,
-        analysisSignal,
-        reportProgress,
-        async (ava, languageModel) => {
-          if (!languageModel) throw new WorkbenchError('MODEL', '请先配置模型');
+        {
+          dataset,
+          model: languageModel,
+          signal: analysisSignal,
+          connections: this.connections,
+        },
+        async (ava) => {
           const result = await runAgent(
             ava,
             languageModel,
@@ -198,10 +185,9 @@ export class AnalysisService {
             resolvedStrategy,
             conversationHistory,
             analysisSignal,
-            reportProgress,
             (preview) => {
               task.preview = preview;
-              taskProgress.flush(task);
+              taskProgress.schedule(task);
             },
           );
           analysisSignal.throwIfAborted();
@@ -209,8 +195,6 @@ export class AnalysisService {
           analysisSignal.throwIfAborted();
           return result;
         },
-        this.connections,
-        modelProfile,
       );
       taskProgress.cancelPending();
       analysisSignal.throwIfAborted();
@@ -231,10 +215,9 @@ export class AnalysisService {
           ? '分析超过 5 分钟，已停止模型请求。请缩小范围后重试。'
           : analysisOutput
             ? '分析结果保存失败，请检查磁盘空间。'
-            : error instanceof ModelCredentialError || error instanceof WorkbenchError
+            : error instanceof Error
               ? error.message
-              : [...task.events].reverse().find((event) => event.error)?.detail ||
-                '分析未完成。请检查模型连接、数据字段及业务口径后重试。';
+              : String(error);
       task.events.push({
         at: new Date().toISOString(),
         stage: 'settled',

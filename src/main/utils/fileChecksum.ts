@@ -8,7 +8,7 @@ export async function fileChecksum(file: string) {
     for await (const chunk of createReadStream(file)) hash.update(chunk);
     return hash.digest('hex');
   } catch (error) {
-    const code = (error as NodeJS.ErrnoException).code;
+    const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;
     throw new WorkbenchError(
       'CONNECTION',
       code === 'ENOENT' || code === 'ENOTDIR'

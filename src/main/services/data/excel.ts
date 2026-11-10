@@ -112,7 +112,7 @@ export function inspectExcel(file: string): ExcelSheet[] {
     return {
       sheet: name,
       header,
-      range: `${cells[0].column}${headerRow}:${cells.at(-1)!.column}${lastRow}`,
+      range: `${cells[0].column}${headerRow}:${cells[cells.length - 1].column}${lastRow}`,
       stop_at_empty: false,
     };
   });

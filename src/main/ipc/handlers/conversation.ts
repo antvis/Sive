@@ -1,4 +1,4 @@
-import type { CommandHandlers } from '@shared/commands';
+import type { CommandHandlers } from '../commands';
 import type { WorkbenchServices } from '../../services';
 
 export function createConversationHandlers(

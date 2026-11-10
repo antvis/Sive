@@ -1,7 +1,7 @@
 export type TableField = { name: string; type?: string };
 
 // Compare decimal strings without losing BIGINT/DECIMAL precision through Number().
-function numeric(value: unknown) {
+export function numericValue(value: unknown) {
   if (!['number', 'string', 'bigint'].includes(typeof value)) return null;
   const match = String(value)
     .trim()
@@ -30,22 +30,8 @@ export function isNumericColumn(field: TableField, rows: Record<string, unknown>
   for (const row of rows) {
     const value = row[field.name];
     if (value === null || value === undefined || value === '') continue;
-    if (numeric(value) === null) return false;
+    if (numericValue(value) === null) return false;
     hasValue = true;
   }
   return hasValue;
-}
-
-export function compareNumeric(a: unknown, b: unknown, order?: 'ascend' | 'descend' | null) {
-  const left = numeric(a),
-    right = numeric(b);
-  // The grid reverses the comparator for descending. Keep missing/invalid values last in both orders.
-  if (!left || !right) return (left ? -1 : right ? 1 : 0) * (order === 'descend' ? -1 : 1);
-  if (left.sign !== right.sign) return left.sign - right.sign;
-  if (!left.sign) return 0;
-  const magnitude = Math.sign(left.magnitude - right.magnitude);
-  const length = Math.max(left.digits.length, right.digits.length);
-  const l = left.digits.padEnd(length, '0'),
-    r = right.digits.padEnd(length, '0');
-  return (magnitude || (l < r ? -1 : l > r ? 1 : 0)) * left.sign;
 }

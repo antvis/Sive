@@ -47,13 +47,15 @@ export function quickQuestions(dataset: Dataset, tableName?: string): QuickQuest
       question: `${prefix}统计各字段的空值数量和占比，按空值占比降序排列，指出需要关注的字段。空值指 NULL，不把数值 0 当作缺失。`,
     },
   ];
-  if (date && (metric || definedMetric)) {
-    const aggregation = /amount|revenue|sales|金额|收入|销售额|数量|销量/i.test(metric?.name || '')
-      ? '求和'
-      : '求平均值';
-    const calculation = definedMetric
-      ? `计算已定义指标 ${quote(definedMetric.name)}，公式为 ${definedMetric.expression}${definedMetric.unit ? `，单位为 ${definedMetric.unit}` : ''}`
-      : `对数值字段 ${quote(metric!.name)} ${aggregation}`;
+  const aggregation = /amount|revenue|sales|金额|收入|销售额|数量|销量/i.test(metric?.name || '')
+    ? '求和'
+    : '求平均值';
+  const calculation = definedMetric
+    ? `计算已定义指标 ${quote(definedMetric.name)}，公式为 ${definedMetric.expression}${definedMetric.unit ? `，单位为 ${definedMetric.unit}` : ''}`
+    : metric
+      ? `对数值字段 ${quote(metric.name)} ${aggregation}`
+      : undefined;
+  if (date && calculation) {
     out.push({
       id: 'trend',
       label: '时间趋势',

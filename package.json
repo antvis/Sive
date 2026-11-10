@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.84",
+    "@ai-sdk/react": "4.0.170",
     "@antv/ava": "^4.0.0-beta.3",
     "@antv/gpt-vis": "^1.0.2",
     "@hookform/resolvers": "^7.0.2",

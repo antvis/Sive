@@ -1,5 +1,5 @@
 import { clipboard } from 'electron';
-import type { CommandHandlers } from '@shared/commands';
+import type { CommandHandlers } from '../commands';
 import type { WorkbenchServices } from '../../services';
 import { buildWorkspaceState } from '../../services/workspaceState';
 

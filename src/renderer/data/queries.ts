@@ -1,4 +1,4 @@
-import { keepPreviousData, QueryClient, queryOptions } from '@tanstack/react-query';
+import { keepPreviousData, QueryClient, queryOptions, skipToken } from '@tanstack/react-query';
 import type { Dataset, RunSummary, State } from '@shared/contracts';
 
 export const queryClient = new QueryClient({
@@ -24,7 +24,7 @@ export function previewQuery(dataset: Dataset, table: string, page: number, page
 export function tableDetailsQuery(dataset: Dataset, table: string | null) {
   return queryOptions({
     queryKey: ['tableDetails', dataset.id, dataset.updatedAt, table],
-    queryFn: () => window.workbench.datasetGetTableDetails(dataset.id, table!),
+    queryFn: table ? () => window.workbench.datasetGetTableDetails(dataset.id, table) : skipToken,
     enabled: !!table && dataset.schema.models.some((model) => model.name === table),
   });
 }

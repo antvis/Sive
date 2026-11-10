@@ -1,5 +1,5 @@
 import { WorkbenchError } from '@shared/errors';
-import type { AnalysisMode, AnalysisOptions } from '@shared/analysisOptions';
+import type { AnalysisMode, AnalysisOptions } from '@shared/contracts';
 
 export function resolveStrategy(mode: AnalysisMode, options: AnalysisOptions = {}) {
   const value = mode === 'direct' ? (options.maxRetries ?? 2) : (options.maxSteps ?? 6);

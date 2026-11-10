@@ -51,6 +51,8 @@ export default function TableNavigator({
           value: query.data,
           error: query.error ? '结构详情读取失败，请检查连接或查看权限。' : undefined,
         };
+  const value = details?.value;
+  const ddl = value?.ddl;
   return (
     <div className="flex-1 flex flex-col h-full min-h-0 bg-surface">
       <div className="flex items-center gap-1 pt-2 pr-2 pb-0 pl-2">
@@ -161,10 +163,10 @@ export default function TableNavigator({
                             重试
                           </Button>
                         </div>
-                      ) : (
+                      ) : value ? (
                         <>
-                          {details.value!.indexes.length ? (
-                            details.value!.indexes.map((index) => (
+                          {value.indexes.length ? (
+                            value.indexes.map((index) => (
                               <div
                                 className="flex gap-2 my-2 mx-0 text-muted"
                                 key={index.name}
@@ -188,21 +190,23 @@ export default function TableNavigator({
                             size="small"
                             className="mt-1.5"
                             icon={<CodeIcon />}
-                            disabled={!details.value!.ddl}
-                            onClick={() => setDefinition({ table: model.name, ddl: details.value!.ddl! })}
+                            disabled={!ddl}
+                            onClick={() => {
+                              if (ddl) setDefinition({ table: model.name, ddl });
+                            }}
                           >
                             查看建表语句
                           </Button>
-                          {details.value!.ddlError && (
+                          {value.ddlError && (
                             <div className="text-muted text-helper">
-                              {details.value!.ddlError}
+                              {value.ddlError}
                               <Button variant="link" size="small" onClick={() => query.refetch()}>
                                 重试
                               </Button>
                             </div>
                           )}
                         </>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 )}

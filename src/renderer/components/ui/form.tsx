@@ -39,7 +39,7 @@ export function Field({
   label: string;
   required?: boolean;
   extra?: ReactNode;
-  children: ReactElement;
+  children: ReactElement<Record<string, unknown>>;
 }) {
   const { control } = useFormContext();
   const disabled = useContext(DisabledContext);
@@ -58,7 +58,7 @@ export function Field({
               </span>
             )}
           </label>
-          {cloneElement(children as ReactElement<Record<string, unknown>>, {
+          {cloneElement(children, {
             ...field,
             value: field.value ?? '',
             id,

@@ -1,8 +1,7 @@
 import { WorkbenchError } from '@shared/errors';
 import type { datasets, messages } from './schema';
-import type { AnalysisOptions } from '@shared/analysisOptions';
-import type { Task } from '@shared/contracts';
-import type { AssistantMessageContent, MessageOptions, SourceSnapshot, StoredDataset } from './types';
+import type { AnalysisOptions, Task } from '@shared/contracts';
+import type { MessageOptions, SourceSnapshot, StoredDataset } from './types';
 
 export type {
   AnalysisOutput,
@@ -32,8 +31,9 @@ export const sourceSnapshot = (dataset: StoredDataset): SourceSnapshot => ({
       : { path: dataset.file, excelSheets: dataset.excelSheets },
 });
 export function taskRecord(row: MessageRow): Task {
-  const options = row.analysisOptions as MessageOptions;
-  const content = row.content as AssistantMessageContent;
+  const options = row.analysisOptions;
+  const content = row.content;
+  if (!('events' in content)) throw new WorkbenchError('CONFLICT', '分析记录不存在');
   const task = {
     id: row.id,
     datasetId: row.datasetId,
@@ -41,7 +41,7 @@ export function taskRecord(row: MessageRow): Task {
     sequence: row.sequence,
     question: row.question,
     strategy: options.analyze.strategy.type,
-    analysisOptions: analysisOptions(options),
+    analysisOptions: analysisOptions(options.analyze.strategy),
     modelName: `${options.model.provider_name} · ${options.model.model_name}`,
     sourceName: options.source.name,
     startedAt: row.createdAt,
@@ -59,8 +59,10 @@ export function taskRecord(row: MessageRow): Task {
       };
 }
 
-export function analysisOptions(options: MessageOptions): AnalysisOptions {
-  const { maxRetries, maxSteps } = options.analyze.strategy;
+export function analysisOptions({
+  maxRetries,
+  maxSteps,
+}: MessageOptions['analyze']['strategy']): AnalysisOptions {
   return {
     ...(maxRetries !== undefined ? { maxRetries } : {}),
     ...(maxSteps !== undefined ? { maxSteps } : {}),
@@ -82,12 +84,12 @@ export function datasetRecord(row: DatasetRow): StoredDataset {
   };
   if (row.sourceType === 'mysql') {
     // Deleted sources retain their display identity after their connection config is cleared.
-    const connection = source.connection ?? {
+    const connection: NonNullable<StoredDataset['connection']> = source.connection ?? {
       host: '',
       port: 3306,
       database: '',
       user: '',
-      status: 'error' as const,
+      status: 'error',
       hasPassword: false,
     };
     return {
@@ -98,11 +100,12 @@ export function datasetRecord(row: DatasetRow): StoredDataset {
       credentials: source.credentials,
     };
   }
-  if (!['csv', 'json', 'xlsx', 'parquet'].includes(row.sourceType))
+  const format = row.sourceType;
+  if (format !== 'csv' && format !== 'json' && format !== 'xlsx' && format !== 'parquet')
     throw new WorkbenchError('CONNECTION', `当前应用尚不支持此数据源类型：${row.sourceType}`);
   return {
     ...fields,
-    format: row.sourceType as 'csv' | 'json' | 'xlsx' | 'parquet',
+    format,
     file: source.path || '',
     excelSheets: source.excelSheets,
   };

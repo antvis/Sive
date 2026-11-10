@@ -44,10 +44,10 @@ export default function DataBrowser({
   const { message } = useUI();
   const { preferences } = usePreferences();
   const [table, setTable] = useState(dataset.schema.models[0]?.name);
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<{ key: string; page: number; size: number }>({
     key: '',
     page: 1,
-    size: preferences.previewPageSize as number,
+    size: preferences.previewPageSize,
   });
   const [refreshing, setRefreshing] = useState(false);
   const [treeOpen, setTreeOpen] = useState(true);
@@ -337,27 +337,6 @@ export default function DataBrowser({
                   >
                     保存数据语义
                   </Button>
-                  {dataset.format === 'xlsx' && (
-                    <Button
-                      className="ml-3"
-                      disabled={busy || refreshing}
-                      loading={refreshing}
-                      onClick={async () => {
-                        if (refreshing) return;
-                        setRefreshing(true);
-                        try {
-                          await api.datasetReparse(dataset.id);
-                          message.success('表头已重新识别');
-                        } catch (e) {
-                          message.error(String(e));
-                        } finally {
-                          setRefreshing(false);
-                        }
-                      }}
-                    >
-                      重新识别 Excel 表头
-                    </Button>
-                  )}
                 </>
               ),
             },
