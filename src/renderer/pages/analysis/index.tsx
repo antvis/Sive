@@ -1,5 +1,5 @@
 import { cx } from '@renderer/utils/cx';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { Alert, Button } from '@renderer/components/ui/index';
 import { useUI } from '@renderer/hooks/useUI';
@@ -46,6 +46,7 @@ export default function AnalysisPage() {
   const locationRef = useRef(location);
   locationRef.current = location;
   const mounted = useRef(true);
+  const [scrollRequest, setScrollRequest] = useState(0);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -88,6 +89,7 @@ export default function AnalysisPage() {
     )
       return;
     const originKey = location.key;
+    setScrollRequest((value) => value + 1);
     try {
       const { conversationId: selectedId } = await session.send(text, mode);
       await refresh();
@@ -155,6 +157,7 @@ export default function AnalysisPage() {
           className={conversationSpacing}
           sessionKey={datasetId + conversationId + runId}
           targetMessageId={search.get('run') || undefined}
+          scrollRequest={scrollRequest}
         >
           {!dataset.deletedAt && !entries.length && (
             <div className="w-full max-w-85 mt-[clamp(20px,_8vh,_80px)] mr-auto mb-6 ml-auto text-center">

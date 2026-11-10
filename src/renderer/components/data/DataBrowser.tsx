@@ -353,7 +353,6 @@ export default function DataBrowser({
           onAsk={onAsk}
           onModelSettings={onModelSettings}
           active={active}
-          busy={busy}
         />
       </div>
     </div>

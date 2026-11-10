@@ -12,17 +12,19 @@ export function Tooltip({
   title,
   children,
   open,
+  className,
 }: {
   title?: ReactNode;
   children: ReactElement;
   open?: boolean;
+  className?: string;
 }) {
   const [visible, setVisible] = useState(false);
   if (!title) return children;
   return (
     <TooltipPrimitive.Root open={open ?? visible} onOpenChange={setVisible}>
       <TooltipPrimitive.Trigger asChild>
-        <span className="inline-flex align-middle">{children}</span>
+        <span className={cx('inline-flex align-middle', className)}>{children}</span>
       </TooltipPrimitive.Trigger>
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Content

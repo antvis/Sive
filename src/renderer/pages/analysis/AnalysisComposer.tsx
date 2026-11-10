@@ -88,7 +88,7 @@ export default function AnalysisComposer({
           variant="borderless"
           className="pt-3 px-3 pb-1"
         />
-        <div className="flex items-center gap-0.5 pt-1.5 px-2 pb-2">
+        <div className="flex flex-wrap items-center gap-x-0.5 gap-y-1 pt-1.5 px-2 pb-2">
           <Dropdown
             contentClassName="w-65 max-h-75 overflow-y-auto"
             placement="topLeft"
@@ -154,41 +154,42 @@ export default function AnalysisComposer({
               <CaretDownIcon size={12} />
             </Button>
           </Dropdown>
-          <span className="min-w-[4px] flex-1" />
-          {busy ? (
-            <Tooltip title={cancelling ? '正在停止' : '停止分析'}>
-              <Button
-                className="size-7.5 shrink-0 rounded-control text-title"
-                danger
-                aria-label={cancelling ? '正在停止' : '停止分析'}
-                disabled={cancelling}
-                icon={<StopCircleIcon />}
-                onClick={onCancel}
-              />
-            </Tooltip>
-          ) : (
-            <Tooltip title={sendHint}>
-              <Button
-                className="size-7.5 shrink-0 rounded-control text-title"
-                variant="primary"
-                aria-label="开始分析"
-                loading={submitting}
-                disabled={!canSend}
-                icon={<ArrowUpIcon />}
-                onClick={onSubmit}
-              />
-            </Tooltip>
-          )}
+          <div className="ml-auto flex min-w-0 max-w-full items-center gap-2">
+            {!model ? (
+              <Button variant="link" size="small" className="text-accent text-helper" onClick={onSettings}>
+                添加模型后开始分析
+              </Button>
+            ) : (
+              <span className="min-w-0 truncate text-muted text-helper" title={footerHint}>
+                {footerHint}
+              </span>
+            )}
+            {busy ? (
+              <Tooltip title={cancelling ? '正在停止' : '停止分析'}>
+                <Button
+                  className="size-7.5 shrink-0 rounded-control text-title"
+                  danger
+                  aria-label={cancelling ? '正在停止' : '停止分析'}
+                  disabled={cancelling}
+                  icon={<StopCircleIcon />}
+                  onClick={onCancel}
+                />
+              </Tooltip>
+            ) : (
+              <Tooltip title={sendHint}>
+                <Button
+                  className="size-7.5 shrink-0 rounded-control text-title"
+                  variant="primary"
+                  aria-label="开始分析"
+                  loading={submitting}
+                  disabled={!canSend}
+                  icon={<ArrowUpIcon />}
+                  onClick={onSubmit}
+                />
+              </Tooltip>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="flex items-center justify-between gap-2 text-muted text-helper min-h-7.5 px-0.5">
-        {!model ? (
-          <Button variant="link" size="small" className="text-accent text-helper" onClick={onSettings}>
-            添加模型后开始分析
-          </Button>
-        ) : (
-          <span>{footerHint}</span>
-        )}
       </div>
     </div>
   );

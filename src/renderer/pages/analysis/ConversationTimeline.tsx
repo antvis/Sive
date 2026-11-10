@@ -1,5 +1,5 @@
 import { cx } from '@renderer/utils/cx';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@renderer/components/ui/index';
 import { ArrowDownIcon } from '@phosphor-icons/react';
 
@@ -7,24 +7,34 @@ export default function ConversationTimeline({
   children,
   sessionKey,
   targetMessageId,
+  scrollRequest,
   className,
 }: {
   children: ReactNode;
   sessionKey: string;
   targetMessageId?: string;
+  scrollRequest: number;
   className?: string;
 }) {
   const scroll = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const follow = useRef(true);
+  const animating = useRef(false);
   const anchor = useRef<string | undefined>(undefined);
   const [away, setAway] = useState(false);
 
-  const latest = () => {
+  const scrollToBottom = (behavior: ScrollBehavior) => {
+    const node = scroll.current;
+    if (!node) return;
+    animating.current = behavior === 'smooth' && node.scrollHeight - node.scrollTop - node.clientHeight > 1;
+    node.scrollTo({ top: node.scrollHeight, behavior });
+  };
+
+  const latest = (behavior: ScrollBehavior = 'smooth') => {
     anchor.current = undefined;
     follow.current = true;
     setAway(false);
-    if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
+    scrollToBottom(behavior);
   };
 
   const alignTarget = () => {
@@ -39,9 +49,13 @@ export default function ConversationTimeline({
     if (targetMessageId) {
       anchor.current = targetMessageId;
       follow.current = false;
+      animating.current = false;
       alignTarget();
-    } else latest();
+    } else latest('instant');
   }, [sessionKey, targetMessageId]);
+  useLayoutEffect(() => {
+    if (scrollRequest) latest();
+  }, [scrollRequest]);
   useEffect(() => {
     const observer = new ResizeObserver(() => {
       // Keep a linked historical reply in view while earlier results load.
@@ -49,7 +63,7 @@ export default function ConversationTimeline({
         alignTarget();
         return;
       }
-      if (follow.current && scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
+      if (follow.current) scrollToBottom(animating.current ? 'smooth' : 'instant');
     });
     if (content.current) observer.observe(content.current);
     return () => observer.disconnect();
@@ -62,21 +76,29 @@ export default function ConversationTimeline({
           className,
         )}
         ref={scroll}
-        onWheel={() => {
+        onWheel={(event) => {
           anchor.current = undefined;
+          animating.current = false;
+          if (event.deltaY < 0) follow.current = false;
         }}
         onTouchMove={() => {
           anchor.current = undefined;
+          animating.current = false;
         }}
         onPointerDown={() => {
           anchor.current = undefined;
+          animating.current = false;
         }}
         onKeyDown={() => {
           anchor.current = undefined;
+          animating.current = false;
         }}
         onScroll={(event) => {
           const node = event.currentTarget;
-          follow.current = node.scrollHeight - node.scrollTop - node.clientHeight < 48;
+          const remaining = node.scrollHeight - node.scrollTop - node.clientHeight;
+          if (animating.current && remaining > 1) return;
+          animating.current = false;
+          follow.current = remaining < 48;
           setAway(!follow.current);
         }}
       >
@@ -86,6 +108,7 @@ export default function ConversationTimeline({
             if (event.target instanceof Element && event.target.closest('summary')) {
               // A disclosure changes height for reading, not because a new reply arrived.
               follow.current = false;
+              animating.current = false;
               setAway(true);
             }
           }}
@@ -99,7 +122,7 @@ export default function ConversationTimeline({
           size="small"
           aria-label="回到最新"
           icon={<ArrowDownIcon />}
-          onClick={latest}
+          onClick={() => latest()}
         >
           回到最新
         </Button>
