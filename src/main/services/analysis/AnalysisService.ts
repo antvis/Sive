@@ -172,10 +172,8 @@ export class AnalysisService {
       const languageModel = this.models.model(modelProfile, analysisSignal);
       analysisOutput = await withAVA(
         {
-          dataset,
           model: languageModel,
           signal: analysisSignal,
-          connections: this.connections,
         },
         async (ava) => {
           const result = await runAgent(
@@ -189,6 +187,7 @@ export class AnalysisService {
               task.preview = preview;
               taskProgress.schedule(task);
             },
+            { dataset, connections: this.connections },
           );
           analysisSignal.throwIfAborted();
           await this.datasets.assertFileUnchanged(dataset);

@@ -1,4 +1,4 @@
-import type { Schema, Profile, AnalysisResponse } from '@antv/ava';
+import type { Schema, Profile, Semantic, AnalysisResponse } from '@antv/ava';
 import type { ThemeSettings } from '@shared/theme';
 import type { z } from 'zod';
 import type { ToolUIPart } from 'ai';
@@ -51,6 +51,10 @@ export type AnalysisChart = {
   spec: ChartSpec;
 };
 export type AnalysisTools = {
+  source: { input: Record<string, never>; output: { name: string; format: string } };
+  schema: { input: Record<string, never>; output: Schema };
+  profile: { input: Record<string, never>; output: Profile };
+  semantic: { input: Record<string, never>; output: Semantic };
   inspect: { input: { resultId: string }; output: { resultId: string } };
   analyze: { input: { query: string }; output: { resultId: string } };
   visualize: {

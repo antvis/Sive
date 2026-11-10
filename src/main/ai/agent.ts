@@ -15,6 +15,10 @@ import { WorkbenchError } from '@shared/errors';
 import { resolveStrategy } from './analysisStrategy';
 import { conversationMessages, EVIDENCE_INSTRUCTIONS, resultContext, type AnalysisHistory } from './context';
 import { createChart } from './charts';
+import { loadSource, sourceSchema } from '../ava/sources';
+import { businessSemantic } from './semantics';
+import type { StoredDataset } from '../db/types';
+import type { ConnectionService } from '../services/data/ConnectionService';
 
 export async function runAgent(
   ava: AVA,
@@ -24,8 +28,12 @@ export async function runAgent(
   history: AnalysisHistory,
   signal: AbortSignal,
   preview: (output: AnalysisOutput) => void,
+  source: { dataset: StoredDataset; connections: ConnectionService },
 ): Promise<AnalysisOutput> {
+  const { dataset, connections } = source;
   const output: AnalysisOutput = { text: '', results: [], charts: [], tools: [] };
+  const prerequisites: ('source' | 'schema' | 'profile' | 'semantic')[] = ['source', 'schema', 'profile'];
+  if (dataset.semantic || dataset.metrics?.length) prerequisites.push('semantic');
   const results = new Map(
     history
       .filter((turn) => turn.reusable)
@@ -37,6 +45,7 @@ export async function runAgent(
     if (!evidence) throw new WorkbenchError('INVALID_INPUT', '结果编号不存在或已失效，请先 analyze。');
     return evidence;
   };
+
   const evidenceModelOutput = ({
     output: { resultId },
   }: {
@@ -45,6 +54,7 @@ export async function runAgent(
     type: 'text',
     value: JSON.stringify({ resultId, ...resultContext(getEvidence(resultId).result) }),
   });
+
   const agent = new ToolLoopAgent({
     model,
     maxRetries: 0,
@@ -55,11 +65,47 @@ export async function runAgent(
       // Errors are propagated through the UI stream below.
     },
     instructions: `${EVIDENCE_INSTRUCTIONS}
+先依次执行 source、schema、profile；存在业务定义时读取 semantic，再根据实际字段和统计信息分析。
+profile 返回导入或刷新数据源时保存的统计快照；当前数据的统计仍需通过 analyze 查询。
 使用 analyze 执行自包含的分析问题，必要时补查、核对合计。
 inspect 可按 resultId 查看可复用历史结果的有限数据样本。visualize 只能引用已返回或可复用的结果编号。只改图时直接复用指定快照，不重复查询。
 涉及当前数据的统计必须重新查询。回复标注引用的结果编号，区分事实、限制与待验证的解释。
 无需分析或证据不足时可直接说明，不要为了生成图表而编造数据。工具失败可修正，不能声称失败步骤已完成。`,
     tools: {
+      source: tool({
+        description: 'Load the selected dataset into the analysis engine.',
+        inputSchema: z.object({}),
+        execute: async () => {
+          signal.throwIfAborted();
+          await loadSource(ava, dataset, connections);
+          return { name: dataset.name, format: dataset.format };
+        },
+      }),
+      schema: tool({
+        description: 'Read the loaded tables, field types and relationships.',
+        inputSchema: z.object({}),
+        execute: async () => {
+          signal.throwIfAborted();
+          const schema = await sourceSchema(ava, dataset);
+          return schema ? ava.schema({}, () => schema) : ava.schema();
+        },
+      }),
+      profile: tool({
+        description: 'Read the saved data statistics snapshot, including missing values and distributions.',
+        inputSchema: z.object({}),
+        execute: () => {
+          signal.throwIfAborted();
+          return ava.profile({}, () => dataset.profile);
+        },
+      }),
+      semantic: tool({
+        description: 'Read the user-defined business metrics and field meanings.',
+        inputSchema: z.object({}),
+        execute: () => {
+          signal.throwIfAborted();
+          return ava.semantic({}, () => businessSemantic(dataset.semantic, dataset.metrics));
+        },
+      }),
       inspect: tool({
         description: 'Read bounded evidence for an available saved result ID without running a query.',
         inputSchema: z.object({ resultId: z.string() }),
@@ -103,7 +149,22 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
         },
       }),
     },
+    prepareStep: ({ steps }) => {
+      const failed = steps.some((step) =>
+        step.content.some(
+          (part) => part.type === 'tool-error' && prerequisites.some((name) => name === part.toolName),
+        ),
+      );
+      if (failed) return { toolChoice: 'none' };
+      const required = prerequisites.find(
+        (name) => !steps.some((step) => step.toolResults.some((result) => result.toolName === name)),
+      );
+      return required
+        ? { activeTools: [required], toolChoice: { type: 'tool', toolName: required } }
+        : { activeTools: ['inspect', 'analyze', 'visualize'] };
+    },
   });
+
   preview(output);
   try {
     const response = await agent.stream({
@@ -115,6 +176,7 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
       sendReasoning: false,
       onError: (error) => (error instanceof Error ? error.message : String(error)),
     });
+
     for await (const message of readUIMessageStream<UIMessage<unknown, never, AnalysisTools>>({
       stream,
       terminateOnError: true,
@@ -130,6 +192,7 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
     signal.throwIfAborted();
     output.text = (await response.text).trim();
     const finishReason = await response.finishReason;
+
     for (const evidence of results.values())
       if (output.text.includes(evidence.id) && !output.results.some(({ id }) => id === evidence.id))
         output.results.push(evidence);
