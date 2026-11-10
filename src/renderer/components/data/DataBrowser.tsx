@@ -19,8 +19,8 @@ import {
   SidebarIcon,
   TableIcon,
 } from '@phosphor-icons/react';
-import type { Dataset } from '@shared/contracts';
-import { quickQuestions } from '@renderer/utils/quickQuestions';
+import type { Dataset, ModelProfile } from '@shared/contracts';
+import DatasetQuestions from './DatasetQuestions';
 import MetricEditor from '@renderer/components/data/MetricEditor';
 import TableNavigator from '@renderer/components/data/TableNavigator';
 import Grid from '@renderer/components/data/DataGrid';
@@ -31,6 +31,8 @@ export default function DataBrowser({
   dataset,
   datasets,
   onAsk,
+  model: languageModel,
+  onModelSettings,
   active = true,
   busy = false,
   className,
@@ -38,6 +40,8 @@ export default function DataBrowser({
   dataset: Dataset;
   datasets: Dataset[];
   onAsk: (q: string) => void;
+  model?: ModelProfile;
+  onModelSettings: () => void;
   active?: boolean;
   busy?: boolean;
   className?: string;
@@ -343,14 +347,14 @@ export default function DataBrowser({
             },
           ]}
         />
-        <div className="shrink-0 flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-t-line">
-          <span className="text-muted">开始分析</span>
-          {quickQuestions(dataset, activeTable).map((q) => (
-            <Button size="small" key={q.id} onClick={() => onAsk(q.question)}>
-              {q.label}
-            </Button>
-          ))}
-        </div>
+        <DatasetQuestions
+          dataset={dataset}
+          model={languageModel}
+          onAsk={onAsk}
+          onModelSettings={onModelSettings}
+          active={active}
+          busy={busy}
+        />
       </div>
     </div>
   );

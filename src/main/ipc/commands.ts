@@ -46,6 +46,8 @@ const commandSchemas: { [K in Command]: z.ZodType<Parameters<Commands[K]>> } = {
   datasetSaveMySQL: z.tuple([mysqlInputSchema]),
   settingsSaveTheme: z.tuple([themeSchema]),
   datasetGetTableDetails: z.tuple([idSchema, requiredText()]),
+  datasetSuggest: z.tuple([idSchema, idSchema]),
+  datasetCancelSuggestions: oneId,
   datasetPreview: z.tuple([
     idSchema,
     requiredText(),

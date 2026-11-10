@@ -13,6 +13,11 @@ export function createCommandHandlers(
   getRevision: () => number,
 ): CommandHandlers {
   const { datasets, settings, conversations, records, analysis, snippets, models } = services;
+  const suggestions = new Map<string, AbortController>();
+  win.webContents.once('destroyed', () => {
+    for (const controller of suggestions.values()) controller.abort();
+    suggestions.clear();
+  });
   return {
     clipboardWrite: (text) => clipboard.writeText(text),
     workspaceGetState: () => ({
@@ -33,6 +38,18 @@ export function createCommandHandlers(
     datasetDelete: (id) => datasets.deleteData(id),
     datasetPreview: (id, table, options) => datasets.preview(id, table, options),
     datasetGetTableDetails: (id, table) => datasets.tableDetails(id, table),
+    datasetSuggest: async (id, requestId) => {
+      suggestions.get(requestId)?.abort();
+      const controller = new AbortController();
+      const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(60000)]);
+      suggestions.set(requestId, controller);
+      try {
+        return await datasets.suggest(id, models.model(models.active(), signal), signal);
+      } finally {
+        if (suggestions.get(requestId) === controller) suggestions.delete(requestId);
+      }
+    },
+    datasetCancelSuggestions: (requestId) => suggestions.get(requestId)?.abort(),
     datasetSaveSemantic: (id, text, metrics) => datasets.semantic(id, text, metrics),
 
     conversationCreate: (datasetId) => conversations.create(datasetId),

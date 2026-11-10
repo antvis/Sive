@@ -29,6 +29,8 @@ export const commandNames = Object.values({
   datasetSaveMySQL: 'datasetSaveMySQL',
   settingsSaveTheme: 'settingsSaveTheme',
   datasetGetTableDetails: 'datasetGetTableDetails',
+  datasetSuggest: 'datasetSuggest',
+  datasetCancelSuggestions: 'datasetCancelSuggestions',
   datasetPreview: 'datasetPreview',
   datasetSaveSemantic: 'datasetSaveSemantic',
   analysisStart: 'analysisStart',

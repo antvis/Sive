@@ -1,4 +1,4 @@
-import type { Schema, Profile, Semantic, AnalysisResponse } from '@antv/ava';
+import type { Schema, Profile, Semantic, AnalysisResponse, SuggestResult } from '@antv/ava';
 import type { ThemeSettings } from '@shared/theme';
 import type { z } from 'zod';
 import type { ToolUIPart } from 'ai';
@@ -211,6 +211,8 @@ export interface API {
     options?: { offset: number; limit: number },
   ): Promise<Record<string, unknown>[]>;
   datasetGetTableDetails(id: string, table: string): Promise<TableDetails>;
+  datasetSuggest(id: string, requestId: string): Promise<SuggestResult[]>;
+  datasetCancelSuggestions(requestId: string): Promise<void>;
   datasetSaveSemantic(id: string, text: string, metrics?: BusinessMetric[]): Promise<void>;
   analysisStart(
     id: string,

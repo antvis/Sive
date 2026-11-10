@@ -15,6 +15,8 @@ import { identifier } from '../../utils/sql';
 import { ConnectionService, connectionFailure } from './ConnectionService';
 import { inspectExcel } from './excel';
 import { mysqlTableDetails } from './mysqlTableDetails';
+import { suggestOutputSchema } from '@antv/ava';
+import type { LanguageModel } from 'ai';
 
 export class DatasetService {
   private preparing = new Map<string, Promise<StoredDataset>>();
@@ -296,6 +298,20 @@ export class DatasetService {
       await this.assertFileUnchanged(d);
       this.assertDatasetCurrent(d);
       return result.data;
+    });
+  }
+
+  async suggest(id: string, model: LanguageModel, signal: AbortSignal) {
+    const dataset = await this.prepare(id);
+    if (dataset.deletedAt) throw new WorkbenchError('CONFLICT', '数据源已删除');
+    return withAVA({ dataset, connections: this.connections, model, signal }, async (ava) => {
+      const result = suggestOutputSchema.parse(await ava.suggest(2));
+      signal.throwIfAborted();
+      this.assertDatasetCurrent(dataset);
+      const unique = new Map(result.map((item) => [item.query.trim(), item]));
+      const questions = [...unique].flatMap(([query, item]) => (query ? [{ ...item, query }] : []));
+      if (!questions.length) throw new WorkbenchError('MODEL', '未返回有效的推荐问题，请重试。');
+      return questions;
     });
   }
 

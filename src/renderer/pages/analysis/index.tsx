@@ -138,6 +138,8 @@ export default function AnalysisPage() {
               dataset={dataset}
               datasets={state.datasets.filter((d) => !d.deletedAt)}
               onAsk={ask}
+              model={state.models.find((model) => model.id === state.activeModelId)}
+              onModelSettings={openModelSettings}
               active={dataOpen}
               busy={busy || submitting || chat.status === 'streaming' || !!state.refreshingSavedId}
             />
