@@ -1,5 +1,5 @@
 import type { AnalysisMode, AnalysisOptions } from '@shared/analysisOptions';
-import type { Schema, Profile, AnalysisResponse, ChartSpec } from '@antv/ava';
+import type { Schema, Profile, AnalysisResponse } from '@antv/ava';
 import type { ThemeSettings } from '@shared/theme';
 import type { z } from 'zod';
 import type {
@@ -40,6 +40,20 @@ export type TableDetails = {
   ddlError?: string;
 };
 export type BusinessMetric = z.infer<typeof businessMetricSchema>;
+export type ChartSpec = { chartType: string; config: Record<string, unknown> | string };
+export type AnalysisEvidence = { id: string; result: AnalysisResponse };
+export type AnalysisChart = {
+  resultId: string;
+  spec: ChartSpec;
+};
+export type AnalysisOutput = {
+  text: string;
+  results: AnalysisEvidence[];
+  charts: AnalysisChart[];
+  warning?: string;
+  actions?: { tool: 'analyze' | 'visualize'; query: string; resultId?: string; error?: string }[];
+};
+type SnippetSummary = { title: string; updatedAt: string };
 export type Run = {
   id: string;
   conversationId: string;
@@ -51,19 +65,11 @@ export type Run = {
   strategy: string;
   analysisOptions?: AnalysisOptions;
   createdAt: string;
-  savedAt?: string; // Explicitly added to Saved Analyses by the user.
-  savedTitle?: string;
+  snippet?: SnippetSummary & { output?: AnalysisOutput };
   semantic: string;
   metrics?: BusinessMetric[];
   modelName: string;
-  result: AnalysisResponse;
-  chart?: ChartSpec;
-  chartError?: string;
-  savedView?: {
-    result: AnalysisResponse;
-    chart?: ChartSpec;
-    updatedAt: string;
-  };
+  output: AnalysisOutput;
   events: Progress[];
 };
 export type ModelProfile = {
@@ -77,19 +83,8 @@ export type ModelProfile = {
 };
 export type RunSummary = Pick<
   Run,
-  | 'id'
-  | 'conversationId'
-  | 'datasetId'
-  | 'sourceName'
-  | 'question'
-  | 'strategy'
-  | 'analysisOptions'
-  | 'sequence'
-  | 'createdAt'
-  | 'savedAt'
-  | 'savedTitle'
-  | 'modelName'
-> & { viewUpdatedAt?: string };
+  'id' | 'conversationId' | 'datasetId' | 'sourceName' | 'question' | 'sequence' | 'createdAt' | 'modelName'
+> & { snippet?: SnippetSummary };
 export type ModelConnectionInput = z.infer<typeof modelConnectionSchema>;
 export type ModelTestProgress = { completed: number; total: number; active: string[] };
 export type ModelInput = z.infer<typeof modelInputSchema>;
@@ -101,8 +96,13 @@ export type Progress = {
   label: string;
   error?: boolean;
   detail?: string;
+  observation?: { columns: string[]; rows: string[][]; rowCount?: number; columnCount?: number };
   sql?: string;
   durationMs?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  reasoningTokens?: number;
+  finishReason?: string;
   recovery?: string;
 };
 type TaskFields = {
@@ -121,7 +121,7 @@ type TaskFields = {
   error?: string;
   persistenceError?: string;
   runId?: string;
-  preview?: AnalysisResponse;
+  preview?: AnalysisOutput;
 };
 export type Task = TaskFields &
   (
@@ -153,6 +153,7 @@ export interface API {
   workspaceGetState(): Promise<State & { revision: number }>;
   analysisGetRun(id: string): Promise<Run>;
   conversationCreate(datasetId: string): Promise<Conversation>;
+  conversationRename(id: string, title: string): Promise<void>;
   conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;
   conversationPurge(ids: string[]): Promise<void>;
@@ -184,7 +185,12 @@ export interface API {
   snippetRemove(id: string): Promise<void>;
   snippetRename(id: string, title: string): Promise<void>;
   snippetRefresh(id: string): Promise<void>;
-  analysisGetChartHTML(runId: string, theme?: ThemeSettings, saved?: boolean): Promise<string>;
+  analysisGetChartHTML(
+    runId: string,
+    theme?: ThemeSettings,
+    saved?: boolean,
+    index?: number,
+  ): Promise<string>;
   snippetSave(runId: string): Promise<void>;
   modelSave(input: ModelInput): Promise<void>;
   modelListAvailable(input: ModelConnectionInput): Promise<string[]>;

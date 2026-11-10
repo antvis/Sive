@@ -19,10 +19,10 @@ export async function exportAnalysis(
   saved = false,
 ) {
   const run = records.run(id);
-  if (saved && !run.savedAt) throw new WorkbenchError('CONFLICT', '此分析已从收藏中移除');
+  if (saved && !run.snippet) throw new WorkbenchError('CONFLICT', '此分析已从收藏中移除');
   const html = await analysisHTML(run, theme, saved);
   const dest = await dialog.showSaveDialog(win, {
-    defaultPath: exportFilename((saved && run.savedTitle) || run.question, format),
+    defaultPath: exportFilename((saved && run.snippet?.title) || run.question, format),
     filters: [{ name: format.toUpperCase(), extensions: [format] }],
   });
   if (dest.canceled || !dest.filePath) return false;

@@ -4,7 +4,7 @@ import { Chart } from '@renderer/components/charts/Chart';
 
 // Keep the same space while loading or releasing an offscreen chart so the
 // timeline's scroll position and follow-latest behavior remain stable.
-export default function ConversationChart({ run }: { run: Run }) {
+export default function ConversationChart({ run, index = 0 }: { run: Run; index?: number }) {
   const root = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
 
@@ -31,7 +31,7 @@ export default function ConversationChart({ run }: { run: Run }) {
   return (
     <div className="grid grid-rows-[32px_340px] h-93 min-w-0" ref={root}>
       {active ? (
-        <Chart run={run} />
+        <Chart run={run} index={index} />
       ) : (
         <div className="[grid-row:1_/_-1] min-h-0 overflow-auto grid place-items-center text-muted text-helper">
           滚动到此处加载图表

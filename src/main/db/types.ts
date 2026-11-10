@@ -1,5 +1,6 @@
 import type { AnalysisOptions } from '@shared/analysisOptions';
-import type { Dataset, ModelProfile, Progress, Run, Task } from '@shared/contracts';
+import type { AnalysisOutput, Dataset, ModelProfile, Progress, Task } from '@shared/contracts';
+export type { AnalysisOutput } from '@shared/contracts';
 
 export type StoredModel = Omit<ModelProfile, 'hasKey' | 'updatedAt'> & {
   encryptedKey?: string;
@@ -25,16 +26,14 @@ export type MessageOptions = {
   source: SourceSnapshot;
   semantic: string;
   metrics?: Dataset['metrics'];
+  dataVersion?: string;
   analyze: { strategy: { type: string } & AnalysisOptions; includeSummary: boolean };
-  query: { maxRows: number; maxResultBytes: number };
 };
 export type StoredAnalysisOptions = MessageOptions | Record<string, never>;
 
 export type UserMessageContent = { text: string };
 export type AssistantMessageContent = {
-  result?: Run['result'];
-  chart?: Run['chart'];
-  chart_error?: string;
+  output?: AnalysisOutput;
   events: Progress[];
   preview?: Task['preview'];
   error?: string;
@@ -42,7 +41,4 @@ export type AssistantMessageContent = {
 };
 export type MessageContent = UserMessageContent | AssistantMessageContent;
 
-export type AnalysisOutput = Pick<Run, 'result' | 'chart' | 'chartError'>;
-export type SnippetContent = Pick<AssistantMessageContent, 'result' | 'chart_error' | 'error'> & {
-  chart?: Run['chart'] | null;
-};
+export type SnippetContent = Pick<AssistantMessageContent, 'output' | 'error'>;

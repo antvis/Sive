@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { snippets } from '../schema';
 import type { DbService } from '../DbService';
 import { timestamp } from '../../utils/time';
@@ -38,6 +38,16 @@ export class SnippetRepo {
       .all();
   }
 
+  listIdsByMessageIds(messageIds: string[]) {
+    if (!messageIds.length) return [];
+    return this.db
+      .select({ id: snippets.id })
+      .from(snippets)
+      .where(inArray(snippets.messageId, messageIds))
+      .all()
+      .map((row) => row.id);
+  }
+
   insert(values: SnippetInsert) {
     return this.db.insert(snippets).values(values).returning().get();
   }
@@ -52,9 +62,6 @@ export class SnippetRepo {
   }
 
   remove(id: string) {
-    const row = this.get(id);
-    if (!row) return;
-    const now = timestamp(row.updatedAt);
-    this.update(id, { deletedAt: now, updatedAt: now });
+    this.db.delete(snippets).where(eq(snippets.id, id)).run();
   }
 }

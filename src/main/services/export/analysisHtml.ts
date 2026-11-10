@@ -1,42 +1,28 @@
-import { dataTable, escape, exportMarkdown, exportTableStyles } from '@main/services/export/exportTables';
-import fs from 'node:fs';
-import path from 'node:path';
-import { createRequire } from 'node:module';
-import type { ChartSpec } from '@antv/ava';
-import type { Run } from '@shared/contracts';
+import { dataTable, escape, exportTableStyles } from './exportTables';
+import { renderMarkdown } from '@shared/markdown';
+import type { ChartSpec, Run } from '@shared/contracts';
 import { defaultTheme, themeConfig, themePalette, type ThemeSettings } from '@shared/theme';
-const require = createRequire(__filename);
-let runtime: string;
-function chartRuntime() {
-  if (!runtime) {
-    const entry = require.resolve('@antv/gpt-vis');
-    let dir = path.dirname(entry);
-    while (!fs.existsSync(path.join(dir, 'package.json'))) dir = path.dirname(dir);
-    runtime = fs
-      .readFileSync(path.join(dir, 'dist/umd/index.min.js'), 'utf8')
-      .replace(/<\/script/gi, '<\\/script');
-  }
-  return runtime;
-}
+import { chartRuntime } from '../../utils/gptVis';
+import { isAnalysisEvent } from '@shared/progress';
 export async function chartHTML(
   spec: ChartSpec,
   settings: ThemeSettings = defaultTheme,
   embedRuntime = true,
 ) {
   const palette = themePalette(settings);
-  const themed = {
-    ...spec,
-    config: {
-      ...spec.config,
-      theme: settings.mode === 'dark' ? 'dark' : 'light',
-      style: {
-        ...(typeof spec.config.style === 'object' && spec.config.style ? spec.config.style : {}),
-        backgroundColor: palette.surface,
-        palette: themeConfig.chartPalette,
-      },
-    },
-  };
-  const config = JSON.stringify(themed.config)
+  const themed =
+    typeof spec.config === 'string'
+      ? spec.config
+      : {
+          theme: settings.mode === 'dark' ? 'dark' : 'light',
+          ...spec.config,
+          style: {
+            backgroundColor: palette.surface,
+            palette: themeConfig.chartPalette,
+            ...(typeof spec.config.style === 'object' && spec.config.style ? spec.config.style : {}),
+          },
+        };
+  const config = JSON.stringify(themed)
     .replace(/</g, '\\u003c')
     .replace(/\u2028/g, '\\u2028')
     .replace(/\u2029/g, '\\u2029');
@@ -60,7 +46,7 @@ export async function chartHTML(
         const rect = document.getElementById('container').getBoundingClientRect();
         if (rect.width < 10 || rect.height < 10) { timer = setTimeout(draw, 200); return; }
         try {
-          gptVis ||= new GPTVis.GPTVis({ container: '#container' });
+          gptVis ||= new GPTVis.GPTVis({ container: '#container', theme: '${settings.mode === 'dark' ? 'dark' : 'light'}' });
           gptVis.render(visConfig);
           timer = setTimeout(() => {
             try {
@@ -79,12 +65,16 @@ export async function chartHTML(
 }
 export async function analysisHTML(run: Run, settings: ThemeSettings = defaultTheme, saved = false) {
   const p = themePalette(settings);
-  const view = saved ? run.savedView : undefined;
-  const result = view ? view.result : run.result;
-  const spec = view ? view.chart : run.chart;
-  const title = (saved && run.savedTitle) || run.question;
-  const updatedAt = view?.updatedAt || run.createdAt;
-  const chart = spec ? await chartHTML(spec, settings) : '';
+  const savedOutput = saved ? run.snippet?.output : undefined;
+  const output = savedOutput || run.output;
+  const title = (saved && run.snippet?.title) || run.question;
+  const updatedAt = (saved && run.snippet?.updatedAt) || run.createdAt;
+  const charts = await Promise.all(
+    output.charts.map(
+      async ({ spec, resultId }) =>
+        `<p>图表依据：${escape(resultId)}</p><iframe sandbox="allow-scripts" title="分析图表" srcdoc="${escape(await chartHTML(spec, settings))}"></iframe>`,
+    ),
+  );
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-src about:; img-src data: blob:">
   <title>${escape(title)}</title><style>
@@ -95,11 +85,18 @@ export async function analysisHTML(run: Run, settings: ThemeSettings = defaultTh
   @media print{body{font-size:11px}main{padding:0}iframe,tr{break-inside:avoid}h1,h2{break-after:avoid}}
   ${exportTableStyles}</style><script>window.chartStates=new Map();addEventListener('message',e=>{if(e.data?.type==='ava-chart'&&Array.from(document.querySelectorAll('iframe')).some(f=>f.contentWindow===e.source))window.chartStates.set(e.source,e.data.status)});window.analysisReady=()=>{const f=Array.from(document.querySelectorAll('iframe'));return f.some(x=>window.chartStates.get(x.contentWindow)==='error')?'error':f.every(x=>window.chartStates.get(x.contentWindow)==='ready')?'ready':'waiting'};</script></head>
   <body><main><small>Sive · ${saved ? '收藏快照' : '分析快照'} · ${escape(run.sourceName)} · ${escape(updatedAt)} · ${escape(run.modelName)}</small>
-  <h1>${escape(title)}</h1>${title !== run.question ? `<p>分析问题：${escape(run.question)}</p>` : ''}${exportMarkdown(result.text || (view ? '此收藏快照未包含文字总结，请查看保存的计算数据与图表。' : '本次分析未生成文字总结。'))}
-  ${chart ? `<iframe sandbox="allow-scripts" title="分析图表" srcdoc="${escape(chart)}"></iframe>` : ''}
-  <h2>计算依据</h2><p>业务口径：${escape(run.semantic || '未提供')}</p><pre>${escape(result.sql)}</pre>
-  ${result.truncated ? '<p>以下数据为截断后的结果快照，并非完整数据。</p>' : ''}
-  ${dataTable(result)}
-  <h2>${view ? '原始分析执行过程' : '执行过程'}</h2>${run.events.map((e) => `<p><small>${escape(e.at)}</small> ${escape(e.label)}${e.durationMs === undefined ? '' : ` · ${(e.durationMs / 1000).toFixed(1)} 秒`}${e.detail ? ` · ${escape(e.detail)}` : ''}</p>`).join('')}
+  <h1>${escape(title)}</h1>${title !== run.question ? `<p>分析问题：${escape(run.question)}</p>` : ''}${renderMarkdown(output.text || (savedOutput ? '此收藏快照未包含文字总结，请查看保存的计算数据与图表。' : '本次分析未生成文字总结。'))}
+  ${output.warning ? `<p>${escape(output.warning)}</p>` : ''}
+  ${charts.join('')}
+  <h2>计算依据</h2><p>业务口径：${escape(run.semantic || '未提供')}</p>
+  ${output.results.map(({ id, result }) => `<h3>${escape(result.query)}</h3><small>结果编号：${escape(id)}</small><pre>${escape(result.sql)}</pre>${result.truncated ? '<p>以下数据为截断后的结果快照，并非完整数据。</p>' : ''}${dataTable(result)}`).join('')}
+  ${output.actions?.length ? `<h2>工具调用</h2>${output.actions.map((action) => `<p>${escape(action.tool)} · ${escape(action.query)} · ${escape(action.resultId)}${action.error ? ` · ${escape(action.error)}` : ''}</p>`).join('')}` : ''}
+  <h2>${savedOutput ? '原始分析执行过程' : '执行过程'}</h2>${run.events
+    .filter(isAnalysisEvent)
+    .map(
+      (e) =>
+        `<p><small>${escape(e.at)}</small> ${escape(e.label)}${e.durationMs === undefined ? '' : ` · ${(e.durationMs / 1000).toFixed(1)} 秒`}${e.detail ? ` · ${escape(e.detail)}` : ''}</p>`,
+    )
+    .join('')}
   <footer><small>${saved ? '导出内容为当前收藏的快照，不会重新查询数据或调用模型。' : '导出内容为分析时的快照。'}AI 结论请结合计算依据核对。</small></footer></main></body></html>`;
 }

@@ -49,6 +49,15 @@ export class MessageRepo {
       .all();
   }
 
+  listIdsByConversationId(conversationId: string) {
+    return this.db
+      .select({ id: messages.id })
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .all()
+      .map((row) => row.id);
+  }
+
   insert(values: MessageInsert) {
     return this.db.insert(messages).values(values).returning().get();
   }
@@ -63,10 +72,7 @@ export class MessageRepo {
   }
 
   remove(id: string) {
-    const row = this.get(id);
-    if (!row) return;
-    const now = timestamp(row.updatedAt);
-    this.update(id, { deletedAt: now, updatedAt: now });
+    this.db.delete(messages).where(eq(messages.id, id)).run();
   }
 
   private analysisQuery(filter?: SQL) {
@@ -80,6 +86,39 @@ export class MessageRepo {
 
   getAnalysis(id: string) {
     return this.analysisQuery(eq(messages.id, id)).get();
+  }
+
+  recentAnalyses(conversationId: string, limit: number) {
+    return this.analysisQuery(and(eq(messages.conversationId, conversationId), eq(messages.status, 'done')))
+      .orderBy(desc(messages.sequence))
+      .limit(limit)
+      .all()
+      .reverse();
+  }
+
+  recentAnalysisExcerpts(conversationId: string, offset: number, limit: number) {
+    return this.db
+      .select({
+        question,
+        text: sql<string>`coalesce(json_extract(${messages.content}, '$.output.text'), '')`,
+        warning: sql<string>`coalesce(json_extract(${messages.content}, '$.output.warning'), '')`,
+      })
+      .from(messages)
+      .innerJoin(conversations, eq(conversations.id, messages.conversationId))
+      .innerJoin(users, precedingUser)
+      .where(
+        and(
+          assistant,
+          isNull(conversations.deletedAt),
+          eq(messages.conversationId, conversationId),
+          eq(messages.status, 'done'),
+        ),
+      )
+      .orderBy(desc(messages.sequence))
+      .limit(limit)
+      .offset(offset)
+      .all()
+      .reverse();
   }
 
   listAnalysesByStatus(statuses: MessageInsert['status'][]) {
@@ -102,8 +141,8 @@ export class MessageRepo {
         analysisOptions: messages.analysisOptions,
         updatedAt: messages.updatedAt,
         question,
-        savedAt: snippets.updatedAt,
-        savedTitle: snippets.title,
+        snippetUpdatedAt: snippets.updatedAt,
+        snippetTitle: snippets.title,
       })
       .from(messages)
       .innerJoin(conversations, eq(conversations.id, messages.conversationId))

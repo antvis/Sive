@@ -53,9 +53,6 @@ export class ConversationRepo {
   }
 
   remove(id: string) {
-    const row = this.get(id);
-    if (!row) return;
-    const now = timestamp(row.updatedAt);
-    this.update(id, { deletedAt: now, updatedAt: now });
+    this.db.delete(conversations).where(eq(conversations.id, id)).run();
   }
 }

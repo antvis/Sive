@@ -1,9 +1,10 @@
 import { z } from 'zod';
+import { analysisModeSchema } from '@shared/inputSchemas';
 
 export const preferencesStorageKey = 'sive.preferences.v1';
 const preferencesSchema = z.object({
   sendShortcut: z.enum(['enter', 'mod-enter']),
-  analysisMode: z.enum(['direct', 'loop']),
+  analysisMode: analysisModeSchema,
   previewPageSize: z.union([z.literal(50), z.literal(100), z.literal(200)]),
 });
 export type Preferences = z.infer<typeof preferencesSchema>;
@@ -15,7 +16,13 @@ export const defaultPreferences: Preferences = {
 
 export function restorePreferences(serialized: string | null): Preferences {
   try {
-    const parsed = preferencesSchema.partial().parse(JSON.parse(serialized || '{}'));
+    const stored = JSON.parse(serialized || '{}');
+    const parsed = preferencesSchema.partial().parse({
+      ...stored,
+      analysisMode: analysisModeSchema.safeParse(stored.analysisMode).success
+        ? stored.analysisMode
+        : defaultPreferences.analysisMode,
+    });
     return { ...defaultPreferences, ...parsed };
   } catch {
     return { ...defaultPreferences };

@@ -117,7 +117,7 @@ export default function GeneralSettings() {
         </h3>
         <SettingRow
           title="分析方式"
-          description="记住最近选择，分析输入框中的切换也会同步保存。多步探索通常耗时更长、调用更多。"
+          description="记住最近选择，分析输入框中的切换也会同步保存。两种模式都需要模型支持工具调用；多步探索通常耗时更长、调用更多。"
         >
           <Select
             className="min-w-42 max-[1101px]:min-w-35.5 max-[541px]:w-full"

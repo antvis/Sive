@@ -209,22 +209,6 @@ export default function DataPage({
                         </Tooltip>
                       </>
                     )}
-                    <Tooltip title="移除数据源">
-                      <ConfirmAction
-                        title="删除连接？"
-                        description="仅解除连接，不删除原始文件或数据库。历史会话和分析收藏仍可查看和导出，但不能继续分析或刷新。"
-                        onConfirm={() => perform('delete', () => api.datasetDelete(d.id))}
-                      >
-                        <Button
-                          variant="ghost"
-                          className="relative z-2 hover:text-danger hover:bg-danger/8"
-                          size="small"
-                          icon={<TrashIcon />}
-                          aria-label={`移除数据源：${d.name}`}
-                          disabled={analyzing || !!busy}
-                        />
-                      </ConfirmAction>
-                    </Tooltip>
                     {d.format !== 'mysql' && (
                       <Tooltip title="重新选择源文件">
                         <Button
@@ -246,6 +230,22 @@ export default function DataPage({
                         />
                       </Tooltip>
                     )}
+                    <Tooltip title="移除数据源">
+                      <ConfirmAction
+                        title="删除连接？"
+                        description="仅解除连接，不删除原始文件或数据库。历史会话和分析收藏仍可查看和导出，但不能继续分析或刷新。"
+                        onConfirm={() => perform('delete', () => api.datasetDelete(d.id))}
+                      >
+                        <Button
+                          variant="ghost"
+                          className="relative z-2 hover:text-danger hover:bg-danger/8"
+                          size="small"
+                          icon={<TrashIcon />}
+                          aria-label={`移除数据源：${d.name}`}
+                          disabled={analyzing || !!busy}
+                        />
+                      </ConfirmAction>
+                    </Tooltip>
                   </div>
                 </CollectionCard>
               );

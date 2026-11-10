@@ -4,20 +4,16 @@ const markdown = new MarkdownIt({ html: false, linkify: false, breaks: true });
 markdown.renderer.rules.link_open = () => '<span>';
 markdown.renderer.rules.link_close = () => '</span>';
 markdown.renderer.rules.image = (tokens, index) => markdown.utils.escapeHtml(tokens[index].content);
-export function renderMarkdown(text: string, collapseTables = false) {
-  const tokens = markdown.parse(text, {});
-  if (!collapseTables) return markdown.renderer.render(tokens, markdown.options, {});
+markdown.renderer.rules.table_open = (tokens, index, options, { collapseTables }, renderer) => {
   // Keep the original model table available; it is not the authoritative query result.
-  let html = '';
-  for (let index = 0; index < tokens.length; index++) {
-    if (tokens[index].type === 'table_open') {
-      const start = index;
-      while (index < tokens.length && tokens[index].type !== 'table_close') index++;
-      html +=
-        '<details class="summary-table"><summary>查看总结中的表格</summary><div class="summary-table-scroll">' +
-        markdown.renderer.render(tokens.slice(start, index + 1), markdown.options, {}) +
-        '</div></details>';
-    } else html += markdown.renderer.render([tokens[index]], markdown.options, {});
-  }
-  return html;
+  const wrapper = collapseTables
+    ? '<details><summary>查看总结中的表格</summary><div class="summary-table-scroll">'
+    : '<div class="table-scroll">';
+  return wrapper + renderer.renderToken(tokens, index, options);
+};
+markdown.renderer.rules.table_close = (tokens, index, options, { collapseTables }, renderer) =>
+  renderer.renderToken(tokens, index, options) + (collapseTables ? '</div></details>' : '</div>');
+
+export function renderMarkdown(text: string, collapseTables = false) {
+  return markdown.render(text, { collapseTables });
 }

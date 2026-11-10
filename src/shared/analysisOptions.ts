@@ -3,11 +3,15 @@ import type { analysisModeSchema, analysisOptionsSchema } from '@shared/inputSch
 export type AnalysisMode = z.infer<typeof analysisModeSchema>;
 export type AnalysisOptions = z.infer<typeof analysisOptionsSchema>;
 export const analysisModes = [
-  { value: 'direct' as const, label: '直接分析', description: '适合明确的统计问题：生成查询、计算并总结。' },
+  {
+    value: 'direct' as const,
+    label: '直接分析',
+    description: '每次查询直接生成并执行，适合明确的统计问题；需要模型支持工具调用。',
+  },
   {
     value: 'loop' as const,
     label: '多步探索',
-    description: '适合需要逐步排查的问题：先探索数据，再调整查询与核对结果。通常更慢、调用更多。',
+    description: '每次查询先探索数据，再调整查询与核对结果；通常更慢、调用更多，需模型支持工具调用。',
   },
 ];
 export function analysisLabel(mode: string) {

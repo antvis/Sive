@@ -57,23 +57,24 @@ function ChartFrame({ html, title, saved }: { html: string; title: string; saved
     </>
   );
 }
-export function Chart({ run, saved = false }: { run: Run; saved?: boolean }) {
+export function Chart({ run, saved = false, index = 0 }: { run: Run; saved?: boolean; index?: number }) {
   const { settings } = useTheme();
   const [html, setHTML] = useState('');
   const [error, setError] = useState('');
   // Original results are immutable; only saved-view refreshes change chart content.
+  const savedVersion = saved ? run.snippet?.updatedAt : undefined;
   useEffect(() => {
     let live = true;
     setHTML('');
     setError('');
     Promise.resolve()
-      .then(() => api.analysisGetChartHTML(run.id, settings, saved))
+      .then(() => api.analysisGetChartHTML(run.id, settings, saved, index))
       .then((s) => live && setHTML(s))
       .catch(() => live && setError('图表加载失败，请重新分析或查看计算数据'));
     return () => {
       live = false;
     };
-  }, [run.id, settings.mode, saved, run.savedView?.updatedAt]);
+  }, [run.id, settings.mode, saved, savedVersion, index]);
   return error ? (
     <Alert
       className={saved ? 'shrink-0' : 'row-span-full min-h-0 overflow-auto'}

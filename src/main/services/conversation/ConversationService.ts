@@ -44,6 +44,21 @@ export class ConversationService {
     return conversation;
   }
 
+  rename(id: string, title: string) {
+    const nextTitle = title.trim();
+    if (!nextTitle) throw new WorkbenchError('INVALID_INPUT', '请输入任务标题');
+    const changed = this.data.database.write(() => {
+      const conversation = this.get(id);
+      if (conversation.title === nextTitle) return false;
+      this.data.conversations.update(id, {
+        title: nextTitle,
+        updatedAt: timestamp(conversation.updatedAt),
+      });
+      return true;
+    });
+    if (changed) this.change();
+  }
+
   archive(id: string) {
     if (this.isRunning(id)) throw new WorkbenchError('CONFLICT', '请先停止此会话的分析');
     this.assertNotRefreshing([id]);
@@ -73,15 +88,21 @@ export class ConversationService {
       for (const id of ids)
         if (!this.get(id).archivedAt) throw new WorkbenchError('CONFLICT', '只能永久删除已归档的会话');
       for (const id of ids) {
-        for (const message of this.data.messages.listByConversationId(id)) {
-          const snippet = this.data.snippets.getByMessageId(message.id);
-          if (snippet) this.data.snippets.remove(snippet.id);
-          this.data.messages.remove(message.id);
+        const messageIds = this.data.messages.listIdsByConversationId(id);
+        for (let offset = 0; offset < messageIds.length; offset += 500) {
+          const batch = messageIds.slice(offset, offset + 500);
+          for (const snippetId of this.data.snippets.listIdsByMessageIds(batch))
+            this.data.snippets.remove(snippetId);
         }
+        for (const messageId of messageIds) this.data.messages.remove(messageId);
         this.data.conversations.remove(id);
       }
     });
-    this.change();
+    try {
+      this.data.database.checkpointDeletedContent();
+    } finally {
+      this.change();
+    }
   }
 
   private assertNotRefreshing(ids: string[]) {

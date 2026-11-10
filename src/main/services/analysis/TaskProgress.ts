@@ -3,15 +3,15 @@ import type { Task } from '@shared/contracts';
 
 // Coalesce progress writes to the message row; terminal transactions stay synchronous.
 export class TaskProgress {
-  private timer?: ReturnType<typeof setTimeout>;
+  private flushTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private records: AnalysisRecordService,
-    private notify: (task: Task) => void,
+    private notifyTaskChanged: (task: Task) => void,
   ) {}
 
   schedule(task: Task) {
-    if (!this.timer) this.timer = setTimeout(() => this.flush(task), 250);
+    if (!this.flushTimer) this.flushTimer = setTimeout(() => this.flush(task), 250);
   }
 
   flush(task: Task) {
@@ -22,11 +22,15 @@ export class TaskProgress {
     } catch {
       task.persistenceError = '进度保存失败，请检查磁盘空间；当前分析仍在运行。';
     }
-    this.notify(task);
+    try {
+      this.notifyTaskChanged(task);
+    } catch {
+      // Progress notification is best effort; the next workspace refresh reads persisted state.
+    }
   }
 
   cancelPending() {
-    clearTimeout(this.timer);
-    this.timer = undefined;
+    clearTimeout(this.flushTimer);
+    this.flushTimer = undefined;
   }
 }

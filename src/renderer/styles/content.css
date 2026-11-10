@@ -1,26 +1,152 @@
 /* Styles for generated Markdown and third-party toast markup. */
 .markdown {
-  font-size: var(--text-body);
-  line-height: 1.75;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
   overflow-wrap: anywhere;
 }
+
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown p {
+  margin: 0 0 12px;
+  line-height: inherit;
+}
+
 .markdown h1,
 .markdown h2,
-.markdown h3 {
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  margin: 20px 0 8px;
   font-weight: 600;
+  line-height: 1.4;
+}
+
+.markdown h1 {
+  font-size: var(--text-headline);
+}
+
+.markdown h2 {
+  font-size: var(--text-section);
+}
+
+.markdown h3 {
   font-size: var(--text-title);
 }
+
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  font-size: var(--text-body);
+}
+
+.markdown ul,
+.markdown ol {
+  margin: 0 0 12px;
+  padding-left: 1.5em;
+}
+
+.markdown ul {
+  list-style-type: disc;
+}
+
+.markdown ol {
+  list-style-type: decimal;
+}
+
+.markdown li {
+  padding-left: 2px;
+}
+
+.markdown li + li {
+  margin-top: 4px;
+}
+
+.markdown li > p {
+  margin-bottom: 4px;
+}
+
+.markdown blockquote {
+  margin: 12px 0;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+}
+
+.markdown blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown :not(pre) > code {
+  padding: 2px 4px;
+  border-radius: var(--radius-compact);
+  background: color-mix(in srgb, var(--muted) 8%, var(--surface));
+  font-size: 0.9em;
+}
+
+.markdown pre {
+  margin: 12px 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--background) 65%, var(--surface));
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.markdown pre code {
+  font: inherit;
+}
+
+.markdown hr {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.markdown .table-scroll,
+.markdown .summary-table-scroll {
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
 .markdown table {
   border-collapse: collapse;
   width: 100%;
+  font-size: 13px;
+  line-height: 1.5;
 }
+
 .markdown th,
 .markdown td {
   border: 1px solid var(--border);
-  padding: 6px;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
 }
-.summary-table-scroll {
-  overflow: auto;
+
+.markdown th {
+  background: color-mix(in srgb, var(--muted) 7%, var(--surface));
+  font-weight: 600;
+}
+
+.markdown details {
+  margin: 12px 0;
+}
+
+.markdown summary {
+  font-size: var(--text-helper);
 }
 @keyframes result-save-enter {
   from {

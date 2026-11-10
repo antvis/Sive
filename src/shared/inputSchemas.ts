@@ -44,12 +44,7 @@ const modelURLSchema = requiredText('请填写服务地址').superRefine((value,
     context.addIssue({ code: 'custom', message: '模型服务地址无效' });
     return;
   }
-  if (url.hostname === 'platform.deepseek.com') {
-    context.addIssue({
-      code: 'custom',
-      message: '这是 DeepSeek 管理控制台地址，请将服务地址改为 https://api.deepseek.com。',
-    });
-  } else if (
+  if (
     url.username ||
     url.password ||
     url.search ||
