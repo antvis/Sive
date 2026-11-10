@@ -2,16 +2,14 @@ import type { ConversationService } from '../conversation/ConversationService';
 import type { AnalysisRecordService } from './AnalysisRecordService';
 import { WorkbenchError } from '@shared/errors';
 import { randomUUID } from 'node:crypto';
-import type { Task } from '@shared/contracts';
-import type { AnalysisMode, AnalysisOptions } from '@shared/analysisOptions';
-import { resolveStrategy } from '../../ai/analysisStrategy';
+import type { Task, AnalysisMode, AnalysisOptions } from '@shared/contracts';
 import { businessSemantic } from '../../ai/semantics';
 import { sourceSnapshot } from '../../db/mappers';
-import { ModelService, ModelCredentialError } from '../settings/ModelService';
+import { ModelService } from '../settings/ModelService';
 import { ConnectionService } from '../data/ConnectionService';
-import { withAVA } from '../../ai/ava';
+import { withAVA } from '../../ava';
 import { TaskProgress } from './TaskProgress';
-import { runAgent } from '../../ai/agent';
+import { runAgent, resolveStrategy } from '../../ai/agent';
 import type { DatasetService } from '../data/DatasetService';
 import type { AnalysisHistory } from '../../ai/context';
 import type { AnalysisOutput, StoredDataset, StoredModel } from '../../db/mappers';
@@ -126,22 +124,12 @@ export class AnalysisService {
         abortController,
         analysisSignal,
         taskProgress,
-      }).catch((error) =>
-        console.error('分析任务收尾失败', error instanceof Error ? error.name : 'UnknownError'),
-      );
+      });
       executionStarted = true;
-      this.notifyWorkspaceChanged();
+      this.workspaceChanged();
       return task.id;
     } finally {
       if (!executionStarted) this.activeExecutions.delete(conversation.id);
-    }
-  }
-
-  private notifyWorkspaceChanged() {
-    try {
-      this.workspaceChanged();
-    } catch {
-      // The renderer may have closed; the persisted task remains available after reload.
     }
   }
 
@@ -153,7 +141,7 @@ export class AnalysisService {
       this.tasks.delete(taskId);
       recoveredTask = true;
     }
-    if (recoveredTask) this.notifyWorkspaceChanged();
+    if (recoveredTask) this.workspaceChanged();
   }
 
   private async executeTask(context: TaskExecutionContext) {
@@ -169,28 +157,14 @@ export class AnalysisService {
     let { task } = context;
     let analysisOutput: AnalysisOutput | undefined;
     let terminalSaved = false;
-    const reportProgress = (event: Task['events'][number]) => {
-      if (task.strategy === 'direct' && ['stepstart', 'stepend'].includes(event.stage))
-        event = {
-          ...event,
-          label: event.error
-            ? '分析查询未完成'
-            : event.stage === 'stepstart'
-              ? '分析问题并计算结果'
-              : '分析查询已结束',
-          detail: event.error ? event.detail : task.question,
-        };
-      task.events.push(event);
-      taskProgress.schedule(task);
-    };
     try {
+      const languageModel = this.models.model(modelProfile, analysisSignal);
       analysisOutput = await withAVA(
-        dataset,
-        this.models,
-        analysisSignal,
-        reportProgress,
-        async (ava, languageModel) => {
-          if (!languageModel) throw new WorkbenchError('MODEL', '请先配置模型');
+        {
+          model: languageModel,
+          signal: analysisSignal,
+        },
+        async (ava) => {
           const result = await runAgent(
             ava,
             languageModel,
@@ -198,19 +172,17 @@ export class AnalysisService {
             resolvedStrategy,
             conversationHistory,
             analysisSignal,
-            reportProgress,
             (preview) => {
               task.preview = preview;
-              taskProgress.flush(task);
+              taskProgress.schedule(task);
             },
+            { dataset, connections: this.connections },
           );
           analysisSignal.throwIfAborted();
           await this.datasets.assertFileUnchanged(dataset);
           analysisSignal.throwIfAborted();
           return result;
         },
-        this.connections,
-        modelProfile,
       );
       taskProgress.cancelPending();
       analysisSignal.throwIfAborted();
@@ -225,16 +197,10 @@ export class AnalysisService {
         runId: undefined,
         finishedAt: new Date().toISOString(),
       };
-      task.error = abortController.signal.aborted
-        ? '分析已取消'
-        : analysisSignal.aborted
-          ? '分析超过 5 分钟，已停止模型请求。请缩小范围后重试。'
-          : analysisOutput
-            ? '分析结果保存失败，请检查磁盘空间。'
-            : error instanceof ModelCredentialError || error instanceof WorkbenchError
-              ? error.message
-              : [...task.events].reverse().find((event) => event.error)?.detail ||
-                '分析未完成。请检查模型连接、数据字段及业务口径后重试。';
+      task.error = error instanceof Error ? error.message : String(error);
+      if (analysisOutput) task.error = '分析结果保存失败，请检查磁盘空间。';
+      if (analysisSignal.aborted) task.error = '分析超过 5 分钟，已停止模型请求。请缩小范围后重试。';
+      if (abortController.signal.aborted) task.error = '分析已取消';
       task.events.push({
         at: new Date().toISOString(),
         stage: 'settled',
@@ -253,7 +219,7 @@ export class AnalysisService {
       if (terminalSaved) this.tasks.delete(task.id);
       else this.tasks.set(task.id, task);
       if (task.conversationId) this.activeExecutions.delete(task.conversationId);
-      this.notifyWorkspaceChanged();
+      this.workspaceChanged();
     }
   }
 

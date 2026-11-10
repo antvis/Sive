@@ -20,6 +20,7 @@ export function useDataSourceActions({
   const [busy, setBusy] = useState('');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const form = useForm<MySQLInput>({ mode: 'onChange', resolver: zodResolver(mysqlInputSchema) });
+
   const perform = async (key: string, fn: () => Promise<unknown>) => {
     setBusy(key);
     try {
@@ -30,11 +31,13 @@ export function useDataSourceActions({
       setBusy('');
     }
   };
+
   const connection = (d?: Dataset) => {
     setFeedback(null);
     form.reset(d?.connection ? { ...d.connection, name: d.name } : { port: 3306 });
     setEditing(d || 'new');
   };
+
   const importData = (format: LocalDataset['format']) =>
     perform('import', async () => {
       const d = await api.datasetImport(format);
@@ -42,6 +45,7 @@ export function useDataSourceActions({
         onImported(d);
       }
     });
+
   async function submit(save: boolean) {
     if (!(await form.trigger(undefined, { shouldFocus: true }))) return;
     const values = form.getValues();

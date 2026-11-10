@@ -30,6 +30,7 @@ export default function DatasetName({
   useEffect(() => {
     if (editing) form.setFocus('name', { shouldSelect: true });
   }, [editing, form.setFocus]);
+
   const finish = () => {
     setEditing(false);
     requestAnimationFrame(() => editButton.current?.focus());

@@ -19,6 +19,7 @@ export default function ConversationSearch({
   const [query, setQuery] = useState('');
   const input = useRef<HTMLInputElement>(null);
   const shortcut = navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K';
+
   const show = () => {
     setQuery('');
     setOpen(true);
@@ -50,6 +51,7 @@ export default function ConversationSearch({
         `${conversation.title} ${names.get(conversation.datasetId)}`.toLocaleLowerCase().includes(needle),
     )
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
   const select = (conversation: Conversation) => {
     onSelect(conversation);
     setOpen(false);

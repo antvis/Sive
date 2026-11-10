@@ -22,11 +22,7 @@ export class TaskProgress {
     } catch {
       task.persistenceError = '进度保存失败，请检查磁盘空间；当前分析仍在运行。';
     }
-    try {
-      this.notifyTaskChanged(task);
-    } catch {
-      // Progress notification is best effort; the next workspace refresh reads persisted state.
-    }
+    this.notifyTaskChanged(task);
   }
 
   cancelPending() {

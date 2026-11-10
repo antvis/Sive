@@ -1,6 +1,6 @@
 import { cx } from '@renderer/utils/cx';
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { tableDetailsQuery } from '@renderer/data/queries';
 import { Button, Empty, Input, Modal, Spin } from '@renderer/components/ui/index';
 import { useUI } from '@renderer/hooks/useUI';
@@ -17,7 +17,82 @@ import {
   ListIcon,
   CodeIcon,
 } from '@phosphor-icons/react';
-import type { Dataset } from '@shared/contracts';
+import type { Dataset, TableDetails } from '@shared/contracts';
+
+function columnIcon(type: string, primary: boolean) {
+  if (primary) return KeyIcon;
+  if (/INT|DECIMAL|FLOAT|DOUBLE|NUMERIC/i.test(type)) return HashIcon;
+  if (/DATE|TIME/i.test(type)) return CalendarBlankIcon;
+  return TextTIcon;
+}
+
+function TableIndexes({
+  query,
+  onDefinition,
+}: {
+  query: UseQueryResult<TableDetails>;
+  onDefinition: (ddl: string) => void;
+}) {
+  if (query.isPending || query.isFetching)
+    return (
+      <div className="flex items-center gap-2 text-muted text-helper py-2 px-0">
+        <Spin size="small" />
+        读取结构详情…
+      </div>
+    );
+  if (query.isError)
+    return (
+      <div className="text-muted text-helper">
+        <span>结构详情读取失败，请检查连接或查看权限。</span>
+        <Button className="mt-1.5" variant="link" size="small" onClick={() => query.refetch()}>
+          重试
+        </Button>
+      </div>
+    );
+  const value = query.data;
+  if (!value) return null;
+  return (
+    <>
+      {value.indexes.map((index) => (
+        <div
+          className="flex gap-2 my-2 mx-0 text-muted"
+          key={index.name}
+          title={`${index.name} · ${index.type} · ${index.columns.join(', ')}`}
+        >
+          <ListIcon />
+          <div className="min-w-0">
+            <span className="block truncate">{index.name}</span>
+            <small className="block truncate text-helper mt-1">
+              {index.columns.join(', ')}
+              {index.unique && ' · 唯一'}
+            </small>
+          </div>
+        </div>
+      ))}
+      {!value.indexes.length && <span className="text-muted">暂无索引</span>}
+      <Button
+        variant="ghost"
+        size="small"
+        className="mt-1.5"
+        icon={<CodeIcon />}
+        disabled={!value.ddl}
+        onClick={() => {
+          if (value.ddl) onDefinition(value.ddl);
+        }}
+      >
+        查看建表语句
+      </Button>
+      {value.ddlError && (
+        <div className="text-muted text-helper">
+          {value.ddlError}
+          <Button variant="link" size="small" onClick={() => query.refetch()}>
+            重试
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function TableNavigator({
   dataset,
@@ -44,13 +119,6 @@ export default function TableNavigator({
   const tables = dataset.schema.models.filter((model) =>
     model.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
   );
-  const details =
-    query.isPending || query.isFetching
-      ? null
-      : {
-          value: query.data,
-          error: query.error ? '结构详情读取失败，请检查连接或查看权限。' : undefined,
-        };
   return (
     <div className="flex-1 flex flex-col h-full min-h-0 bg-surface">
       <div className="flex items-center gap-1 pt-2 pr-2 pb-0 pl-2">
@@ -115,94 +183,35 @@ export default function TableNavigator({
                 {isOpen && (
                   <div className="mt-1 mr-2 mb-3 ml-7.5">
                     <ul className="list-none p-0 m-0">
-                      {model.columns.map((column) => (
-                        <li
-                          className="flex items-center gap-2 py-1.5 px-0"
-                          key={column.name}
-                          title={`${column.name} · ${column.type}${primary.includes(column.name) ? ' · 主键' : ''}${column.notNull ? ' · 非空' : ''}`}
-                        >
-                          <span
-                            className={primary.includes(column.name) ? 'text-accent' : 'text-muted'}
-                            aria-label={primary.includes(column.name) ? '主键' : undefined}
+                      {model.columns.map((column) => {
+                        const isPrimary = primary.includes(column.name);
+                        const Icon = columnIcon(column.type, isPrimary);
+                        return (
+                          <li
+                            className="flex items-center gap-2 py-1.5 px-0"
+                            key={column.name}
+                            title={`${column.name} · ${column.type}${isPrimary ? ' · 主键' : ''}${column.notNull ? ' · 非空' : ''}`}
                           >
-                            {primary.includes(column.name) ? (
-                              <KeyIcon />
-                            ) : /INT|DECIMAL|FLOAT|DOUBLE|NUMERIC/i.test(column.type) ? (
-                              <HashIcon />
-                            ) : /DATE|TIME/i.test(column.type) ? (
-                              <CalendarBlankIcon />
-                            ) : (
-                              <TextTIcon />
-                            )}
-                          </span>
-                          <span className="min-w-0 truncate">{column.name}</span>
-                          <small className="text-muted max-w-20 truncate ml-auto shrink-0">
-                            {column.type}
-                          </small>
-                        </li>
-                      ))}
+                            <span
+                              className={isPrimary ? 'text-accent' : 'text-muted'}
+                              aria-label={isPrimary ? '主键' : undefined}
+                            >
+                              <Icon />
+                            </span>
+                            <span className="min-w-0 truncate">{column.name}</span>
+                            <small className="text-muted max-w-20 truncate ml-auto shrink-0">
+                              {column.type}
+                            </small>
+                          </li>
+                        );
+                      })}
                     </ul>
                     <div className="border-t border-t-line mt-2.5 pt-2.5">
                       <small className="block text-muted tracking-[0.06em] mb-1.5">索引</small>
-                      {!details ? (
-                        <div className="flex items-center gap-2 text-muted text-helper py-2 px-0">
-                          <Spin size="small" />
-                          读取结构详情…
-                        </div>
-                      ) : details.error ? (
-                        <div className="text-muted text-helper">
-                          <span>{details.error}</span>
-                          <Button
-                            className="mt-1.5"
-                            variant="link"
-                            size="small"
-                            onClick={() => query.refetch()}
-                          >
-                            重试
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          {details.value!.indexes.length ? (
-                            details.value!.indexes.map((index) => (
-                              <div
-                                className="flex gap-2 my-2 mx-0 text-muted"
-                                key={index.name}
-                                title={`${index.name} · ${index.type} · ${index.columns.join(', ')}`}
-                              >
-                                <ListIcon />
-                                <div className="min-w-0">
-                                  <span className="block truncate">{index.name}</span>
-                                  <small className="block truncate text-helper mt-1">
-                                    {index.columns.join(', ')}
-                                    {index.unique ? ' · 唯一' : ''}
-                                  </small>
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <span className="text-muted">暂无索引</span>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="small"
-                            className="mt-1.5"
-                            icon={<CodeIcon />}
-                            disabled={!details.value!.ddl}
-                            onClick={() => setDefinition({ table: model.name, ddl: details.value!.ddl! })}
-                          >
-                            查看建表语句
-                          </Button>
-                          {details.value!.ddlError && (
-                            <div className="text-muted text-helper">
-                              {details.value!.ddlError}
-                              <Button variant="link" size="small" onClick={() => query.refetch()}>
-                                重试
-                              </Button>
-                            </div>
-                          )}
-                        </>
-                      )}
+                      <TableIndexes
+                        query={query}
+                        onDefinition={(ddl) => setDefinition({ table: model.name, ddl })}
+                      />
                     </div>
                   </div>
                 )}

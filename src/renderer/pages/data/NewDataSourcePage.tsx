@@ -9,6 +9,7 @@ export default function NewDataSourcePage() {
   const { open } = useWorkspace();
   const navigate = useNavigate();
   const location = useLocation();
+
   const back = () => navigate(dataListReturnTo(location.state?.returnTo));
   const actions = useDataSourceActions({ onImported: open, onConnected: back });
   return (

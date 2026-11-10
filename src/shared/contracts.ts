@@ -1,14 +1,22 @@
-import type { AnalysisMode, AnalysisOptions } from '@shared/analysisOptions';
-import type { Schema, Profile, AnalysisResponse } from '@antv/ava';
+import type { Schema, Profile, Semantic, AnalysisResponse, SuggestResult } from '@antv/ava';
 import type { ThemeSettings } from '@shared/theme';
 import type { z } from 'zod';
+import type { ToolUIPart } from 'ai';
 import type {
   mysqlInputSchema,
   modelConnectionSchema,
   modelInputSchema,
   businessMetricSchema,
+  analysisModeSchema,
+  analysisOptionsSchema,
 } from '@shared/inputSchemas';
+
+export type AnalysisMode = z.infer<typeof analysisModeSchema>;
+
+export type AnalysisOptions = z.infer<typeof analysisOptionsSchema>;
+
 export type MySQLInput = z.infer<typeof mysqlInputSchema>;
+
 export type ConnectionInfo = Omit<MySQLInput, 'id' | 'name' | 'password'> & {
   hasPassword: boolean;
   checkedAt?: string;
@@ -27,33 +35,61 @@ type DatasetFields = {
   metrics?: BusinessMetric[];
   excelSheets?: ExcelSheet[];
 };
+
 export type LocalDataset = DatasetFields & {
   format: 'csv' | 'json' | 'xlsx' | 'parquet';
   connection?: never;
 };
+
 export type MySQLDataset = DatasetFields & { format: 'mysql'; connection: ConnectionInfo };
+
 export type Dataset = LocalDataset | MySQLDataset;
+
 export type ExcelSheet = { sheet: string; header: boolean; range?: string; stop_at_empty?: boolean };
+
 export type TableDetails = {
   indexes: { name: string; columns: string[]; unique: boolean; type: string }[];
   ddl?: string;
   ddlError?: string;
 };
+
 export type BusinessMetric = z.infer<typeof businessMetricSchema>;
+
 export type ChartSpec = { chartType: string; config: Record<string, unknown> | string };
+
 export type AnalysisEvidence = { id: string; result: AnalysisResponse };
+
 export type AnalysisChart = {
   resultId: string;
   spec: ChartSpec;
 };
+
+export type AnalysisTools = {
+  source: { input: Record<string, never>; output: { name: string; format: string } };
+  schema: { input: Record<string, never>; output: Schema };
+  profile: { input: Record<string, never>; output: Profile };
+  semantic: { input: Record<string, never>; output: Semantic };
+  inspect: { input: { resultId: string }; output: { resultId: string } };
+  analyze: { input: { query: string }; output: { resultId: string } };
+  visualize: {
+    input: { resultId: string; query: string };
+    output: { resultId: string; chartType?: string | null };
+  };
+};
+
+export type AnalysisToolPart = ToolUIPart<AnalysisTools>;
+
 export type AnalysisOutput = {
   text: string;
   results: AnalysisEvidence[];
   charts: AnalysisChart[];
   warning?: string;
+  tools?: AnalysisToolPart[];
+  // Read compatibility for analyses saved before native SDK tool parts were adopted.
   actions?: { tool: 'analyze' | 'visualize'; query: string; resultId?: string; error?: string }[];
 };
 type SnippetSummary = { title: string; updatedAt: string };
+
 export type Run = {
   id: string;
   conversationId: string;
@@ -72,6 +108,7 @@ export type Run = {
   output: AnalysisOutput;
   events: Progress[];
 };
+
 export type ModelProfile = {
   id: string;
   name: string;
@@ -81,28 +118,26 @@ export type ModelProfile = {
   hasKey: boolean;
   updatedAt: string;
 };
+
 export type RunSummary = Pick<
   Run,
   'id' | 'conversationId' | 'datasetId' | 'sourceName' | 'question' | 'sequence' | 'createdAt' | 'modelName'
 > & { snippet?: SnippetSummary };
+
 export type ModelConnectionInput = z.infer<typeof modelConnectionSchema>;
+
 export type ModelTestProgress = { completed: number; total: number; active: string[] };
+
 export type ModelInput = z.infer<typeof modelInputSchema>;
+
 export type Progress = {
-  chartOutcome?: 'generated' | 'not-needed' | 'empty-data' | 'invalid-response' | 'failed';
-  chartSelection?: string;
   at: string;
   stage: string;
   label: string;
   error?: boolean;
   detail?: string;
-  observation?: { columns: string[]; rows: string[][]; rowCount?: number; columnCount?: number };
   sql?: string;
   durationMs?: number;
-  inputTokens?: number;
-  outputTokens?: number;
-  reasoningTokens?: number;
-  finishReason?: string;
   recovery?: string;
 };
 type TaskFields = {
@@ -123,11 +158,13 @@ type TaskFields = {
   runId?: string;
   preview?: AnalysisOutput;
 };
+
 export type Task = TaskFields &
   (
     | { status: 'done'; runId: string; finishedAt: string }
     | { status: 'running' | 'cancelling' | 'error' | 'cancelled' | 'interrupted' }
   );
+
 export type Conversation = {
   archivedAt?: string | null;
   deletedAt?: string | null;
@@ -137,6 +174,7 @@ export type Conversation = {
   createdAt: string;
   updatedAt: string;
 };
+
 export type State = {
   refreshingSavedId?: string;
   conversations: Conversation[];
@@ -148,6 +186,7 @@ export type State = {
   tasks: Task[];
   theme: ThemeSettings;
 };
+
 export interface API {
   clipboardWrite(text: string): Promise<void>;
   workspaceGetState(): Promise<State & { revision: number }>;
@@ -166,13 +205,14 @@ export interface API {
   datasetDelete(id: string): Promise<void>;
   datasetRename(id: string, name: string): Promise<void>;
   datasetRelocate(id: string): Promise<boolean>;
-  datasetReparse(id: string): Promise<void>;
   datasetPreview(
     id: string,
     table: string,
     options?: { offset: number; limit: number },
   ): Promise<Record<string, unknown>[]>;
   datasetGetTableDetails(id: string, table: string): Promise<TableDetails>;
+  datasetSuggest(id: string, requestId: string): Promise<SuggestResult[]>;
+  datasetCancelSuggestions(requestId: string): Promise<void>;
   datasetSaveSemantic(id: string, text: string, metrics?: BusinessMetric[]): Promise<void>;
   analysisStart(
     id: string,
@@ -200,4 +240,5 @@ export interface API {
   analysisOnTaskChange(callback: (update: TaskUpdate) => void): () => void;
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;
 }
+
 export type TaskUpdate = { revision: number; task: Task };

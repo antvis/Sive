@@ -1,6 +1,7 @@
 import { navigationItem } from '@renderer/components/layout/navigationStyles';
 import { cx } from '@renderer/utils/cx';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useChat } from '@ai-sdk/react';
 import {
   Navigate,
   NavLink,
@@ -13,8 +14,7 @@ import {
 import { Alert, Spin } from '@renderer/components/ui/index';
 import { useUI } from '@renderer/hooks/useUI';
 import { DatabaseIcon, GearSixIcon, ChartBarIcon } from '@phosphor-icons/react';
-import type { Conversation, Dataset, State } from '@shared/contracts';
-import type { AnalysisMode } from '@shared/analysisOptions';
+import type { Conversation, Dataset, State, AnalysisMode } from '@shared/contracts';
 import { conversationIdsWithContent, type WorkspaceTab } from '@renderer/utils/workspaceTabs';
 import DatasetTabs from '@renderer/components/layout/DatasetTabs';
 import WorkspaceLayout from '@renderer/components/layout/WorkspaceLayout';
@@ -30,16 +30,18 @@ import type { WorkspaceContext } from '@renderer/hooks/useWorkspace';
 import { pruneWorkspaceQueries } from '@renderer/data/queries';
 import { usePreferences } from '@renderer/hooks/usePreferences';
 import { useConversationRead } from '@renderer/hooks/useConversationRead';
+import { AnalysisChat } from './data/analysisChat';
 
 const api = window.workbench;
+
 export default function Layout() {
   const { message } = useUI();
   const [state, setState] = useState<State | null>(null);
   const [loadError, setLoadError] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const { preferences, updatePreferences } = usePreferences();
   const analysisMode = preferences.analysisMode;
+
   const setAnalysisMode = (mode: AnalysisMode) => {
     updatePreferences({ analysisMode: mode });
   };
@@ -49,6 +51,16 @@ export default function Layout() {
   const { datasetId = '' } = useParams();
   const [search] = useSearchParams();
   const conversationId = search.get('conversation') || '';
+  const session = useMemo(
+    () => new AnalysisChat(api, datasetId, conversationId, state),
+    [datasetId, conversationId],
+  );
+  const chat = useChat({ chat: session.chat, resume: !!state, throttle: 100 });
+  const submitting = chat.status === 'submitted';
+  useLayoutEffect(() => {
+    if (state) session.update(state);
+  }, [session, state]);
+  useEffect(() => () => session.transport.close(), [session]);
   const runId = search.get('run') || '';
   const target = { datasetId, conversationId, runId };
   const redirect = state && datasetId ? datasetRedirect(state, target) : undefined;
@@ -58,6 +70,7 @@ export default function Layout() {
     location.key,
   );
   const { workspaceTabs } = navigation;
+
   const receive = (snapshot: State) => {
     pruneWorkspaceQueries(snapshot);
     setState(snapshot);
@@ -73,6 +86,7 @@ export default function Layout() {
       subscription.current = null;
     };
   }, []);
+
   const refresh = async () => subscription.current?.refresh();
   const selectedConversation = state?.conversations.find(
     (conversation) => conversation.id === conversationId && conversation.datasetId === datasetId,
@@ -95,12 +109,16 @@ export default function Layout() {
   const conversations = state.conversations
     .filter((item) => item.datasetId === datasetId && contentIds.has(item.id))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
   const selectConversation = (conversation: Conversation) =>
     navigate(datasetPath(conversation.datasetId, conversation.id));
+
   const openModelSettings = () =>
     navigate('/settings/models', { state: { returnTo: location.pathname + location.search } });
+
   const activateTab = (tab: WorkspaceTab) =>
     navigate(datasetPath(tab.datasetId, tab.conversationId, tab.runId));
+
   const open = (source: Dataset) => {
     // Import returns the dataset before the change subscription necessarily catches up.
     setState((previous) =>
@@ -112,6 +130,7 @@ export default function Layout() {
     const conversation = state.conversations.find((c) => c.datasetId === source.id && contentIds.has(c.id));
     navigate(datasetPath(source.id, existing?.conversationId ?? conversation?.id, existing?.runId));
   };
+
   const archiveConversation = async (id: string) => {
     if (archivingId) return;
     setArchivingId(id);
@@ -126,9 +145,10 @@ export default function Layout() {
   };
   const context: WorkspaceContext = {
     state,
+    session,
+    chat,
     busy,
     submitting,
-    setSubmitting,
     analysisMode,
     setAnalysisMode,
     navigation,

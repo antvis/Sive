@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { metricFormSchema } from '@shared/inputSchemas';
+import { businessMetricSchema, requiredText } from '@shared/inputSchemas';
 import {
   Button,
   Form,
@@ -13,6 +13,12 @@ import {
 } from '@renderer/components/ui/index';
 import { useForm } from 'react-hook-form';
 import type { BusinessMetric, Dataset } from '@shared/contracts';
+
+const metricFormSchema = businessMetricSchema.extend({
+  name: requiredText('请填写指标名称'),
+  table: requiredText('请选择数据表'),
+  expression: requiredText('请填写聚合公式'),
+});
 
 export default function MetricEditor({
   dataset,
@@ -29,7 +35,10 @@ export default function MetricEditor({
 }) {
   const [index, setIndex] = useState<number | null>(null);
   const form = useForm<BusinessMetric>({ mode: 'onChange', resolver: zodResolver(metricFormSchema) });
-  const sources = datasets.filter((item) => item.id !== dataset.id && item.metrics?.length);
+  const sources = datasets.flatMap((item) =>
+    item.id !== dataset.id && item.metrics?.length ? [{ ...item, metrics: item.metrics }] : [],
+  );
+
   function edit(position: number) {
     form.reset(
       metrics[position] ?? {
@@ -65,10 +74,11 @@ export default function MetricEditor({
               label: item.name,
             }))}
             onChange={(id) => {
-              const source = sources.find((item) => item.id === id)!;
+              const source = sources.find((item) => item.id === id);
+              if (!source) return;
               onChange([
                 ...metrics,
-                ...source.metrics!.map((metric) => ({
+                ...source.metrics.map((metric) => ({
                   ...metric,
                   table: dataset.schema.models.some((model) => model.name === metric.table)
                     ? metric.table
@@ -112,10 +122,11 @@ export default function MetricEditor({
         cancelText="取消"
         onCancel={() => setIndex(null)}
         onOk={async () => {
+          if (index === null) return;
           if (!(await form.trigger(undefined, { shouldFocus: true }))) return;
           const value = form.getValues();
           const next = [...metrics];
-          next[index!] = value;
+          next[index] = value;
           onChange(next);
           setIndex(null);
         }}

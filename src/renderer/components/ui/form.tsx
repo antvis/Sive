@@ -7,6 +7,7 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 const DisabledContext = createContext(false);
+
 export function Form<T extends FieldValues>({
   form,
   disabled = false,
@@ -28,6 +29,7 @@ export function Form<T extends FieldValues>({
     </FormProvider>
   );
 }
+
 export function Field({
   name,
   label,
@@ -39,7 +41,7 @@ export function Field({
   label: string;
   required?: boolean;
   extra?: ReactNode;
-  children: ReactElement;
+  children: ReactElement<Record<string, unknown>>;
 }) {
   const { control } = useFormContext();
   const disabled = useContext(DisabledContext);
@@ -58,14 +60,14 @@ export function Field({
               </span>
             )}
           </label>
-          {cloneElement(children as ReactElement<Record<string, unknown>>, {
+          {cloneElement(children, {
             ...field,
             value: field.value ?? '',
             id,
             disabled,
             'aria-labelledby': `${id}-label`,
             'aria-invalid': !!fieldState.error,
-            'aria-describedby': fieldState.error ? `${id}-error` : extra ? `${id}-help` : undefined,
+            'aria-describedby': (fieldState.error && `${id}-error`) || (extra && `${id}-help`) || undefined,
           })}
           {extra && (
             <small className="text-muted leading-[1.6] text-helper" id={`${id}-help`}>

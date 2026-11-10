@@ -19,17 +19,20 @@ import {
   SidebarIcon,
   TableIcon,
 } from '@phosphor-icons/react';
-import type { Dataset } from '@shared/contracts';
-import { quickQuestions } from '@renderer/utils/quickQuestions';
+import type { Dataset, ModelProfile } from '@shared/contracts';
+import DatasetQuestions from './DatasetQuestions';
 import MetricEditor from '@renderer/components/data/MetricEditor';
 import TableNavigator from '@renderer/components/data/TableNavigator';
 import Grid from '@renderer/components/data/DataGrid';
 import { errorMessage } from '@renderer/utils/feedback';
 const api = window.workbench;
+
 export default function DataBrowser({
   dataset,
   datasets,
   onAsk,
+  model: languageModel,
+  onModelSettings,
   active = true,
   busy = false,
   className,
@@ -37,6 +40,8 @@ export default function DataBrowser({
   dataset: Dataset;
   datasets: Dataset[];
   onAsk: (q: string) => void;
+  model?: ModelProfile;
+  onModelSettings: () => void;
   active?: boolean;
   busy?: boolean;
   className?: string;
@@ -44,16 +49,17 @@ export default function DataBrowser({
   const { message } = useUI();
   const { preferences } = usePreferences();
   const [table, setTable] = useState(dataset.schema.models[0]?.name);
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<{ key: string; page: number; size: number }>({
     key: '',
     page: 1,
-    size: preferences.previewPageSize as number,
+    size: preferences.previewPageSize,
   });
   const [refreshing, setRefreshing] = useState(false);
   const [treeOpen, setTreeOpen] = useState(true);
   const [compact, setCompact] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const treeToggle = useRef<HTMLButtonElement>(null);
+
   const closeTree = () => {
     setTreeOpen(false);
     requestAnimationFrame(() => treeToggle.current?.focus());
@@ -66,6 +72,7 @@ export default function DataBrowser({
   const page = pagination.key === tableKey ? pagination.page : 1;
   const pageSize = pagination.size;
   const requestKey = JSON.stringify([tableKey, page, pageSize]);
+
   const changePage = (next: number, size = pageSize) => setPagination({ key: tableKey, page: next, size });
   const [tab, setTab] = useState('rows');
   useEffect(() => {
@@ -87,6 +94,12 @@ export default function DataBrowser({
   const error = preview.error && !pending ? errorMessage(preview.error) : '';
   const rows = preview.isError ? [] : (preview.data || []).slice(0, pageSize);
   const hasMore = !preview.isError && (preview.data?.length || 0) > pageSize;
+  let pageSummary = page === 1 ? '暂无数据' : '本页暂无数据，可返回上一页';
+  if (rows.length)
+    pageSummary = `第 ${(page - 1) * pageSize + 1}–${(page - 1) * pageSize + rows.length} 行${hasMore ? ' · 后续还有数据' : ' · 已到末页'}`;
+  if (error) pageSummary = '读取失败';
+  if (pending) pageSummary = '正在读取…';
+
   const refresh = async () => {
     if (refreshing) return;
     setRefreshing(true);
@@ -210,15 +223,7 @@ export default function DataBrowser({
                     footer={
                       <div className="flex-1 flex items-center flex-wrap gap-2">
                         <span className="[&:first-child]:mr-auto" aria-live="polite">
-                          {pending
-                            ? '正在读取…'
-                            : error
-                              ? '读取失败'
-                              : rows.length
-                                ? `第 ${(page - 1) * pageSize + 1}–${(page - 1) * pageSize + rows.length} 行${hasMore ? ' · 后续还有数据' : ' · 已到末页'}`
-                                : page === 1
-                                  ? '暂无数据'
-                                  : '本页暂无数据，可返回上一页'}
+                          {pageSummary}
                         </span>
                         <span
                           className="text-muted [&:first-child]:mr-auto"
@@ -337,40 +342,18 @@ export default function DataBrowser({
                   >
                     保存数据语义
                   </Button>
-                  {dataset.format === 'xlsx' && (
-                    <Button
-                      className="ml-3"
-                      disabled={busy || refreshing}
-                      loading={refreshing}
-                      onClick={async () => {
-                        if (refreshing) return;
-                        setRefreshing(true);
-                        try {
-                          await api.datasetReparse(dataset.id);
-                          message.success('表头已重新识别');
-                        } catch (e) {
-                          message.error(String(e));
-                        } finally {
-                          setRefreshing(false);
-                        }
-                      }}
-                    >
-                      重新识别 Excel 表头
-                    </Button>
-                  )}
                 </>
               ),
             },
           ]}
         />
-        <div className="shrink-0 flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-t-line">
-          <span className="text-muted">开始分析</span>
-          {quickQuestions(dataset, activeTable).map((q) => (
-            <Button size="small" key={q.id} onClick={() => onAsk(q.question)}>
-              {q.label}
-            </Button>
-          ))}
-        </div>
+        <DatasetQuestions
+          dataset={dataset}
+          model={languageModel}
+          onAsk={onAsk}
+          onModelSettings={onModelSettings}
+          active={active}
+        />
       </div>
     </div>
   );

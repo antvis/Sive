@@ -1,7 +1,7 @@
 export type TableField = { name: string; type?: string };
 
 // Compare decimal strings without losing BIGINT/DECIMAL precision through Number().
-function numeric(value: unknown) {
+export function numericValue(value: unknown) {
   if (!['number', 'string', 'bigint'].includes(typeof value)) return null;
   const match = String(value)
     .trim()
@@ -11,8 +11,10 @@ function numeric(value: unknown) {
   const digits = (integer + fraction).replace(/^0+/, '');
   const exponent = Number(match[3] || 0);
   if (!Number.isSafeInteger(exponent)) return null;
+  let sign = 0;
+  if (digits) sign = match[1] === '-' ? -1 : 1;
   return {
-    sign: !digits ? 0 : match[1] === '-' ? -1 : 1,
+    sign,
     digits: digits.replace(/0+$/, ''),
     magnitude: digits.length - fraction.length + exponent,
   };
@@ -23,29 +25,21 @@ export function isNumericColumn(field: TableField, rows: Record<string, unknown>
     return (
       /^(?:(?:U)?(?:TINY|SMALL|MEDIUM|BIG|HUGE)?INT(?:EGER)?|INT\d+|UINT\d+|DECIMAL|NUMERIC|NUMBER|FLOAT\d*|DOUBLE(?: PRECISION)?|REAL)(?:\b|\()/i.test(
         field.type.trim(),
-      ) && !/[\[\]<>]/.test(field.type)
+      ) && !/[[\]<>]/.test(field.type)
     );
   }
   let hasValue = false;
   for (const row of rows) {
     const value = row[field.name];
     if (value === null || value === undefined || value === '') continue;
-    if (numeric(value) === null) return false;
+    if (numericValue(value) === null) return false;
     hasValue = true;
   }
   return hasValue;
 }
 
-export function compareNumeric(a: unknown, b: unknown, order?: 'ascend' | 'descend' | null) {
-  const left = numeric(a),
-    right = numeric(b);
-  // The grid reverses the comparator for descending. Keep missing/invalid values last in both orders.
-  if (!left || !right) return (left ? -1 : right ? 1 : 0) * (order === 'descend' ? -1 : 1);
-  if (left.sign !== right.sign) return left.sign - right.sign;
-  if (!left.sign) return 0;
-  const magnitude = Math.sign(left.magnitude - right.magnitude);
-  const length = Math.max(left.digits.length, right.digits.length);
-  const l = left.digits.padEnd(length, '0'),
-    r = right.digits.padEnd(length, '0');
-  return (magnitude || (l < r ? -1 : l > r ? 1 : 0)) * left.sign;
+export function tableValue(value: unknown, empty = '—'): string {
+  if (value == null) return empty;
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
 }

@@ -34,9 +34,12 @@ export async function mysqlTableDetails(
       }
       index.columns.push(row.column_name == null ? '表达式索引' : String(row.column_name));
     }
-    const indexes = [...byName.values()].sort((a, b) =>
-      a.name === 'PRIMARY' ? -1 : b.name === 'PRIMARY' ? 1 : a.name.localeCompare(b.name),
-    );
+    const indexes = [...byName.values()].sort((a, b) => {
+      if (a.name === b.name) return 0;
+      if (a.name === 'PRIMARY') return -1;
+      if (b.name === 'PRIMARY') return 1;
+      return a.name.localeCompare(b.name);
+    });
     try {
       const [definition] = await connection.query<RowDataPacket[]>({
         sql: 'SHOW CREATE TABLE ' + identifier(options.database) + '.' + identifier(table),

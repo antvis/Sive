@@ -5,6 +5,7 @@ export type ConversationState = {
   question: string;
   drafts: Record<string, string>;
 };
+
 export const initialConversationState: ConversationState = {
   datasetId: '',
   conversationId: '',
@@ -12,8 +13,10 @@ export const initialConversationState: ConversationState = {
   question: '',
   drafts: {},
 };
+
 export const draftKey = (state: Pick<ConversationState, 'conversationId' | 'datasetId'>) =>
   state.conversationId || `new:${state.datasetId}`;
+
 export type ConversationAction =
   | {
       type: 'navigate';
@@ -30,6 +33,7 @@ export type ConversationAction =
       conversationId: string;
       sentQuestion: string;
     };
+
 export function conversationReducer(state: ConversationState, action: ConversationAction): ConversationState {
   switch (action.type) {
     case 'navigate': {

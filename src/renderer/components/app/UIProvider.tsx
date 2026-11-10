@@ -10,6 +10,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
   const [confirmation, setConfirmation] = useState<ConfirmOptions | null>(null);
   const resolver = useRef<((result: boolean) => void) | null>(null);
   const { dark } = useTheme();
+
   const close = (result: boolean) => {
     resolver.current?.(result);
     resolver.current = null;

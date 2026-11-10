@@ -10,6 +10,7 @@ export function conversationView(runs: RunSummary[], tasks: Task[], conversation
   for (const run of runs) {
     if (run.conversationId === conversationId) entries.set(run.id, { kind: 'run', run });
   }
+
   const sequence = (entry: Entry) => (entry.kind === 'run' ? entry.run.sequence : (entry.task.sequence ?? 0));
   return [...entries.values()].sort((a, b) => sequence(a) - sequence(b));
 }
@@ -24,8 +25,9 @@ export function conversationStatus(
   let status: Task['status'] | undefined;
   let unreadSequence: number | undefined;
   for (const task of tasks) {
-    if (task.conversationId === conversation.id && (task.sequence ?? -1) > sequence) {
-      sequence = task.sequence!;
+    const taskSequence = task.sequence ?? -1;
+    if (task.conversationId === conversation.id && taskSequence > sequence) {
+      sequence = taskSequence;
       status = task.status;
     }
   }

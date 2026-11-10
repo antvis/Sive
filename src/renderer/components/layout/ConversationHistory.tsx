@@ -51,6 +51,7 @@ export default function ConversationHistory({
       input.current?.select();
     }
   }, [editingId]);
+
   const rename = async (conversation: Conversation) => {
     if (saving || disabled) return;
     const title = titleDraft.trim();
@@ -143,7 +144,7 @@ export default function ConversationHistory({
               ) : (
                 <>
                   <button
-                    className={cx(navigationItem, 'flex-col items-stretch gap-1 pr-17')}
+                    className={cx(navigationItem, 'flex-col items-stretch gap-1 pr-14')}
                     aria-current={c.id === currentId ? 'page' : undefined}
                     disabled={disabled}
                     onClick={() => onSelect(c)}
@@ -159,13 +160,13 @@ export default function ConversationHistory({
                       {unreadSequence !== undefined && <span className="text-accent-ink">未读</span>}
                     </span>
                   </button>
-                  <div className="absolute right-1 top-2 flex items-center gap-0.5 opacity-0 pointer-events-none group-hover/history:opacity-100 group-hover/history:pointer-events-auto group-focus-within/history:opacity-100 group-focus-within/history:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
+                  <div className="absolute right-1 top-2 flex items-center opacity-0 pointer-events-none group-hover/history:opacity-100 group-hover/history:pointer-events-auto group-focus-within/history:opacity-100 group-focus-within/history:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
                     <Tooltip title="修改标题">
                       <Button
-                        className={cx(navigationIconButton, 'size-7 p-1')}
+                        className={cx(navigationIconButton, 'size-6 p-1')}
                         variant="ghost"
                         size="small"
-                        icon={<PencilSimpleIcon size={18} />}
+                        icon={<PencilSimpleIcon />}
                         disabled={disabled || saving}
                         onClick={() => {
                           setTitleDraft(c.title);
@@ -177,10 +178,10 @@ export default function ConversationHistory({
                     </Tooltip>
                     <Tooltip title="归档会话">
                       <Button
-                        className={cx(navigationIconButton, 'size-7 p-1')}
+                        className={cx(navigationIconButton, 'size-6 p-1')}
                         variant="ghost"
                         size="small"
-                        icon={<ArchiveIcon size={18} />}
+                        icon={<ArchiveIcon />}
                         disabled={archiveDisabled(c)}
                         onClick={() => onArchive(c)}
                         aria-label={`归档会话：${c.title}`}

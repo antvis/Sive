@@ -22,6 +22,7 @@ type Action =
   | { type: 'conversation'; action: ConversationAction; id: string }
   | { type: 'display'; dataOpen: boolean };
 const initial: Navigation = { tabs: [], activeId: '', ready: false };
+
 function reducer(state: Navigation, action: Action): Navigation {
   switch (action.type) {
     case 'snapshot': {
@@ -101,6 +102,7 @@ function reducer(state: Navigation, action: Action): Navigation {
     }
   }
 }
+
 export function useWorkspaceNavigation(
   report: (message: string) => void,
   target?: DatasetLocation,
@@ -112,6 +114,7 @@ export function useWorkspaceNavigation(
   useLayoutEffect(() => {
     if (navigation.ready && target) dispatch({ type: 'select', target });
   }, [navigation.ready, target?.datasetId, target?.conversationId, target?.runId, locationKey]);
+
   const receive = (snapshot: State) => {
     if (!initialized.current) {
       initialized.current = true;

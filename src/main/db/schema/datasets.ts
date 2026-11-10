@@ -11,7 +11,7 @@ const encryptedSourceConfig = customType<{ data: SourceConfig; driverData: strin
     return encrypt(JSON.stringify(value));
   },
   fromDriver(value) {
-    return JSON.parse(decrypt(value)) as SourceConfig;
+    return JSON.parse(decrypt(value));
   },
 });
 

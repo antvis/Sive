@@ -1,8 +1,8 @@
 import { cx } from '@renderer/utils/cx';
 import { Button, Dropdown, TextArea, Tooltip } from '@renderer/components/ui/index';
 import { ArrowUpIcon, CaretDownIcon, StopCircleIcon } from '@phosphor-icons/react';
-import type { Dataset, ModelProfile } from '@shared/contracts';
-import { analysisModes, type AnalysisMode } from '@shared/analysisOptions';
+import type { Dataset, ModelProfile, AnalysisMode } from '@shared/contracts';
+import { analysisModes } from '../../data/analysisOptions';
 import { usePreferences } from '@renderer/hooks/usePreferences';
 import { isSendKey } from '@renderer/utils/keyboard';
 
@@ -43,19 +43,23 @@ export default function AnalysisComposer({
 }) {
   const { preferences } = usePreferences();
   const mac = navigator.platform.includes('Mac');
-  const sendKey = preferences.sendShortcut === 'enter' ? 'Enter' : mac ? '⌘ + Enter' : 'Ctrl + Enter';
+  const modifier = mac ? '⌘' : 'Ctrl';
+  const sendKey = preferences.sendShortcut === 'enter' ? 'Enter' : `${modifier} + Enter`;
   const locked = submitting;
   const model = models.find((item) => item.id === modelId && item.modelIds.includes(item.model));
   const canSend = !!dataset && !!model && !!question.trim() && !locked && !busy && !refreshing;
-  const sendHint = refreshing
-    ? '收藏的分析正在刷新，完成后可发送'
-    : !dataset
-      ? '请先打开数据源'
-      : !model
-        ? '先配置并选择模型'
-        : !question.trim()
-          ? '输入想分析的问题'
-          : `发送 · ${sendKey}`;
+  let sendHint = `发送 · ${sendKey}`;
+  if (!question.trim()) sendHint = '输入想分析的问题';
+  if (!model) sendHint = '先配置并选择模型';
+  if (!dataset) sendHint = '请先打开数据源';
+  if (refreshing) sendHint = '收藏的分析正在刷新，完成后可发送';
+
+  const newlineKey = preferences.sendShortcut === 'enter' ? 'Shift + Enter' : 'Enter';
+  let footerHint = `${sendKey} 发送 · ${newlineKey} 换行`;
+  if (busy) footerHint = '正在分析，可编辑下一条问题或切换会话';
+  if (busy && cancelling) footerHint = '正在结束本次分析…';
+  if (refreshing) footerHint = '收藏的分析正在刷新，完成后可发送';
+  if (!dataset) footerHint = '请先打开数据源';
   return (
     <div className={cx('pt-2 px-3 pb-1.5 bg-surface shrink-0', className)}>
       <div
@@ -84,7 +88,7 @@ export default function AnalysisComposer({
           variant="borderless"
           className="pt-3 px-3 pb-1"
         />
-        <div className="flex items-center gap-0.5 pt-1.5 px-2 pb-2">
+        <div className="flex flex-wrap items-center gap-x-0.5 gap-y-1 pt-1.5 px-2 pb-2">
           <Dropdown
             contentClassName="w-65 max-h-75 overflow-y-auto"
             placement="topLeft"
@@ -99,8 +103,12 @@ export default function AnalysisComposer({
                 children: item.modelIds.map((id) => ({ key: JSON.stringify([item.id, id]), label: id })),
               })),
               onClick: ({ key }) => {
-                const [id, selected] = JSON.parse(key) as [string, string];
-                onModel(id, selected);
+                for (const item of models)
+                  for (const selected of item.modelIds)
+                    if (JSON.stringify([item.id, selected]) === key) {
+                      onModel(item.id, selected);
+                      return;
+                    }
               },
             }}
           >
@@ -132,7 +140,7 @@ export default function AnalysisComposer({
                   </div>
                 ),
               })),
-              onClick: ({ key }) => onMode(key as AnalysisMode),
+              onClick: ({ key }) => onMode(key),
             }}
           >
             <Button
@@ -146,51 +154,42 @@ export default function AnalysisComposer({
               <CaretDownIcon size={12} />
             </Button>
           </Dropdown>
-          <span className="min-w-[4px] flex-1" />
-          {busy ? (
-            <Tooltip title={cancelling ? '正在停止' : '停止分析'}>
-              <Button
-                className="size-7.5 shrink-0 rounded-control text-title"
-                danger
-                aria-label={cancelling ? '正在停止' : '停止分析'}
-                disabled={cancelling}
-                icon={<StopCircleIcon />}
-                onClick={onCancel}
-              />
-            </Tooltip>
-          ) : (
-            <Tooltip title={sendHint}>
-              <Button
-                className="size-7.5 shrink-0 rounded-control text-title"
-                variant="primary"
-                aria-label="开始分析"
-                loading={submitting}
-                disabled={!canSend}
-                icon={<ArrowUpIcon />}
-                onClick={onSubmit}
-              />
-            </Tooltip>
-          )}
+          <div className="ml-auto flex min-w-0 max-w-full items-center gap-2">
+            {!model ? (
+              <Button variant="link" size="small" className="text-accent text-helper" onClick={onSettings}>
+                添加模型后开始分析
+              </Button>
+            ) : (
+              <span className="min-w-0 truncate text-muted text-helper" title={footerHint}>
+                {footerHint}
+              </span>
+            )}
+            {busy ? (
+              <Tooltip title={cancelling ? '正在停止' : '停止分析'}>
+                <Button
+                  className="size-7.5 shrink-0 rounded-control text-title"
+                  danger
+                  aria-label={cancelling ? '正在停止' : '停止分析'}
+                  disabled={cancelling}
+                  icon={<StopCircleIcon />}
+                  onClick={onCancel}
+                />
+              </Tooltip>
+            ) : (
+              <Tooltip title={sendHint}>
+                <Button
+                  className="size-7.5 shrink-0 rounded-control text-title"
+                  variant="primary"
+                  aria-label="开始分析"
+                  loading={submitting}
+                  disabled={!canSend}
+                  icon={<ArrowUpIcon />}
+                  onClick={onSubmit}
+                />
+              </Tooltip>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="flex items-center justify-between gap-2 text-muted text-helper min-h-7.5 px-0.5">
-        {!model ? (
-          <Button variant="link" size="small" className="text-accent text-helper" onClick={onSettings}>
-            添加模型后开始分析
-          </Button>
-        ) : !dataset ? (
-          <span>请先打开数据源</span>
-        ) : (
-          <span>
-            {refreshing
-              ? '收藏的分析正在刷新，完成后可发送'
-              : busy
-                ? cancelling
-                  ? '正在结束本次分析…'
-                  : '正在分析，可编辑下一条问题或切换会话'
-                : `${sendKey} 发送 · ${preferences.sendShortcut === 'enter' ? 'Shift + Enter' : 'Enter'} 换行`}
-          </span>
-        )}
       </div>
     </div>
   );

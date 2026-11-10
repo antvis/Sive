@@ -1,21 +1,23 @@
+import { parseInput } from '../../utils/input';
 import type { ModelProviderRepo } from '../../db/repository/ModelProviderRepo';
 import type { DbService } from '../../db/DbService';
 import type { SettingRepo } from '../../db/repository/SettingRepo';
 import { isDeepStrictEqual } from 'node:util';
 import { timestamp } from '../../utils/time';
 import type { StoredModel } from '../../db/mappers';
-import { modelConnectionSchema, modelInputSchema, parseInput } from '@shared/inputSchemas';
+import { modelConnectionSchema, modelInputSchema } from '@shared/inputSchemas';
 import { WorkbenchError } from '@shared/errors';
 import { createModel } from '../../ai/provider';
 import { APICallError, generateText } from 'ai';
 import { randomUUID } from 'node:crypto';
-import type { ModelConnectionInput, ModelInput, ModelTestProgress, Progress } from '@shared/contracts';
+import type { ModelConnectionInput, ModelInput, ModelTestProgress } from '@shared/contracts';
 
-export class ModelCredentialError extends WorkbenchError {
-  constructor() {
-    super('CREDENTIALS', '无法读取此模型已保存的密钥，请在设置中重新填写密钥并验证保存。');
-    this.name = 'ModelCredentialError';
-  }
+function modelTestError(error: unknown, model: string) {
+  if (error instanceof Error && error.name === 'TimeoutError')
+    return `模型「${model}」测试超时（30 秒），配置未保存。服务繁忙或模型响应较慢均可能导致超时，不代表模型不可用，请稍后重试。`;
+  if (APICallError.isInstance(error) && [429, 503].includes(error.statusCode ?? 0))
+    return `模型「${model}」服务繁忙或请求被限流（HTTP ${error.statusCode}），配置未保存，请稍后重试。`;
+  return `模型「${model}」测试失败，整个服务配置未保存。请检查模型权限、密钥及接口兼容性。`;
 }
 
 export class ModelService {
@@ -42,7 +44,10 @@ export class ModelService {
     try {
       return encrypted ? this.decrypt(encrypted) : '';
     } catch {
-      throw new ModelCredentialError();
+      throw new WorkbenchError(
+        'CREDENTIALS',
+        '无法读取此模型已保存的密钥，请在设置中重新填写密钥并验证保存。',
+      );
     }
   }
 
@@ -97,13 +102,9 @@ export class ModelService {
     }
   }
 
-  model(
-    profile: StoredModel,
-    signal?: AbortSignal,
-    progress?: (event: Progress) => void,
-  ): ReturnType<typeof createModel> {
+  model(profile: StoredModel, signal?: AbortSignal): ReturnType<typeof createModel> {
     const key = this.decryptKey(profile.encryptedKey);
-    return createModel(profile.baseURL, key, profile.model, signal, progress);
+    return createModel(profile.baseURL, key, profile.model, signal);
   }
 
   active() {
@@ -132,39 +133,33 @@ export class ModelService {
     // Reuse successful checks only when the service and saved credentials are unchanged.
     const reusable = old && old.baseURL === p.baseURL && !input.apiKey;
     const pending = reusable ? modelIds.filter((id) => !old.modelIds.includes(id)) : modelIds;
+    const key = pending.length ? this.decryptKey(p.encryptedKey) : '';
     const abort = new AbortController();
     const active = new Set<string>();
     let next = 0;
     let completed = modelIds.length - pending.length;
     let failure: unknown;
+
     const report = () => onProgress?.({ completed, total: modelIds.length, active: [...active] });
     report();
+
     const worker = async () => {
       while (!abort.signal.aborted && next < pending.length) {
         const model = pending[next++];
-        const timeout = AbortSignal.timeout(30000);
         active.add(model);
         report();
         try {
           await generateText({
-            model: this.model({ ...p, model }, AbortSignal.any([abort.signal, timeout])),
+            model: createModel(p.baseURL, key, model),
             prompt: 'Reply with OK.',
             maxRetries: 0,
+            abortSignal: abort.signal,
+            timeout: 30000,
           });
           completed++;
         } catch (error) {
           if (!abort.signal.aborted) {
-            failure =
-              error instanceof ModelCredentialError
-                ? error
-                : new WorkbenchError(
-                    'MODEL',
-                    timeout.aborted
-                      ? `模型「${model}」测试超时（30 秒），配置未保存。服务繁忙或模型响应较慢均可能导致超时，不代表模型不可用，请稍后重试。`
-                      : APICallError.isInstance(error) && [429, 503].includes(error.statusCode ?? 0)
-                        ? `模型「${model}」服务繁忙或请求被限流（HTTP ${error.statusCode}），配置未保存，请稍后重试。`
-                        : `模型「${model}」测试失败，整个服务配置未保存。请检查模型权限、密钥及接口兼容性。`,
-                  );
+            failure = new WorkbenchError('MODEL', modelTestError(error, model));
             abort.abort();
           }
         } finally {

@@ -7,7 +7,9 @@ const preferencesSchema = z.object({
   analysisMode: analysisModeSchema,
   previewPageSize: z.union([z.literal(50), z.literal(100), z.literal(200)]),
 });
+
 export type Preferences = z.infer<typeof preferencesSchema>;
+
 export const defaultPreferences: Preferences = {
   sendShortcut: 'enter',
   analysisMode: 'direct',

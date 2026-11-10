@@ -23,6 +23,7 @@ export default function ModelPicker({
   const ids = [...new Set([...options, ...value])].filter((name) =>
     name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
   );
+
   const add = () => {
     const name = manual.trim();
     if (!name || disabled) return;

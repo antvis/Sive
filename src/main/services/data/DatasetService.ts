@@ -10,10 +10,13 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { Dataset, LocalDataset, BusinessMetric, MySQLInput, ExcelSheet } from '@shared/contracts';
 import { businessSemantic } from '../../ai/semantics';
-import { withAVA, identifier } from '../../ai/ava';
+import { withAVA } from '../../ava';
+import { identifier } from '../../utils/sql';
 import { ConnectionService, connectionFailure } from './ConnectionService';
 import { inspectExcel } from './excel';
 import { mysqlTableDetails } from './mysqlTableDetails';
+import { suggestOutputSchema } from '@antv/ava';
+import type { LanguageModel } from 'ai';
 
 export class DatasetService {
   private preparing = new Map<string, Promise<StoredDataset>>();
@@ -88,24 +91,17 @@ export class DatasetService {
   private async inspectMySQL(input: MySQLInput) {
     const dataset = this.connections.prepare(input);
     try {
-      const inspected = await withAVA(
-        dataset,
-        undefined,
-        undefined,
-        undefined,
-        async (ava) => {
-          const schema = await ava.schema();
-          if (!schema.models.length) throw new WorkbenchError('INVALID_INPUT', '数据库没有可读取的表');
-          const result = await ava.query(
-            `SELECT * FROM ${identifier(schema.models[0].name)} LIMIT 30`,
-            QUERY_OPTIONS,
-          );
-          return { schema, rows: result.data.length };
-        },
-        this.connections,
-      );
+      const inspected = await withAVA({ dataset, connections: this.connections }, async (ava) => {
+        const schema = await ava.schema();
+        if (!schema.models.length) throw new WorkbenchError('INVALID_INPUT', '数据库没有可读取的表');
+        const result = await ava.query(
+          `SELECT * FROM ${identifier(schema.models[0].name)} LIMIT 30`,
+          QUERY_OPTIONS,
+        );
+        return { schema, rows: result.data.length };
+      });
       dataset.schema = inspected.schema;
-      dataset.connection!.checkedAt = new Date().toISOString();
+      dataset.connection.checkedAt = new Date().toISOString();
       return { dataset, rows: inspected.rows };
     } catch (error) {
       if (error instanceof WorkbenchError) throw error;
@@ -157,37 +153,21 @@ export class DatasetService {
   }
 
   private inspect(file: string, format: LocalDataset['format'], excelSheets?: ExcelSheet[]) {
-    return withAVA(
-      { file, format, excelSheets, semantic: '' },
-      undefined,
-      undefined,
-      undefined,
-      async (ava) => {
-        const schema = await ava.schema();
-        if (excelSheets) {
-          const order = excelSheets
-            .filter((s) => s.header)
-            .concat(excelSheets.filter((s) => !s.header))
-            .map((s) => s.sheet);
-          schema.models.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
-        }
-        const profile = await ava.profile({
-          metrics: ['row_count', 'null_count', 'distinct_count', 'min', 'max', 'mean'],
-        });
-        if (!schema.models.length) throw new WorkbenchError('INVALID_INPUT', '未发现可分析的数据表');
-        return { schema, profile };
-      },
-    );
-  }
-
-  async reparseData(id: string) {
-    this.assertEditable();
-    const original = this.dataset(id);
-    if (original.format !== 'xlsx') throw new WorkbenchError('INVALID_INPUT', '仅 Excel 需要重新识别表头');
-    const next = await this.readLocal(original.file);
-    this.assertEditable();
-    this.putDataset({ ...original, ...next.data }, original);
-    this.change();
+    return withAVA({ dataset: { file, format, excelSheets, semantic: '' } }, async (ava) => {
+      const schema = await ava.schema();
+      if (excelSheets) {
+        const order = excelSheets
+          .filter((s) => s.header)
+          .concat(excelSheets.filter((s) => !s.header))
+          .map((s) => s.sheet);
+        schema.models.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+      }
+      const profile = await ava.profile({
+        metrics: ['row_count', 'null_count', 'distinct_count', 'min', 'max', 'mean'],
+      });
+      if (!schema.models.length) throw new WorkbenchError('INVALID_INPUT', '未发现可分析的数据表');
+      return { schema, profile };
+    });
   }
 
   private assertEditable() {
@@ -197,15 +177,19 @@ export class DatasetService {
 
   private async readLocal(file: string) {
     file = path.resolve(file);
-    const format = path.extname(file).slice(1).toLowerCase() as LocalDataset['format'];
-    if (!['csv', 'xlsx', 'json', 'parquet'].includes(format))
+    const format = path.extname(file).slice(1).toLowerCase();
+    if (format !== 'csv' && format !== 'xlsx' && format !== 'json' && format !== 'parquet')
       throw new WorkbenchError('INVALID_INPUT', '请选择 CSV、XLSX、JSON 或 Parquet 文件');
     const checksum = await fileChecksum(file);
     try {
       const excelSheets = format === 'xlsx' ? inspectExcel(file) : undefined;
       const inspected = await this.inspect(file, format, excelSheets);
       await this.assertFileUnchanged({ file, format }, checksum);
-      return { data: { file, format, excelSheets, ...inspected }, checksum };
+      const data = { file, format, excelSheets, ...inspected } satisfies Pick<
+        StoredDataset,
+        'file' | 'format' | 'excelSheets' | 'schema' | 'profile'
+      >;
+      return { data, checksum };
     } catch (error) {
       if (error instanceof WorkbenchError) throw error;
       // Prefer an actionable missing/permission error if the file vanished during parsing.
@@ -306,22 +290,29 @@ export class DatasetService {
       throw new WorkbenchError('INVALID_INPUT', '无效的预览分页参数');
     const keys = typeof model.primaryKey === 'string' ? [model.primaryKey] : model.primaryKey || [];
     const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
-    return withAVA(
-      d,
-      undefined,
-      undefined,
-      undefined,
-      async (ava) => {
-        const result = await ava.query(
-          `SELECT * FROM ${identifier(table)}${order} LIMIT ${limit} OFFSET ${offset}`,
-          QUERY_OPTIONS,
-        );
-        await this.assertFileUnchanged(d);
-        this.assertDatasetCurrent(d);
-        return result.data;
-      },
-      this.connections,
-    );
+    return withAVA({ dataset: d, connections: this.connections }, async (ava) => {
+      const result = await ava.query(
+        `SELECT * FROM ${identifier(table)}${order} LIMIT ${limit} OFFSET ${offset}`,
+        QUERY_OPTIONS,
+      );
+      await this.assertFileUnchanged(d);
+      this.assertDatasetCurrent(d);
+      return result.data;
+    });
+  }
+
+  async suggest(id: string, model: LanguageModel, signal: AbortSignal) {
+    const dataset = await this.prepare(id);
+    if (dataset.deletedAt) throw new WorkbenchError('CONFLICT', '数据源已删除');
+    return withAVA({ dataset, connections: this.connections, model, signal }, async (ava) => {
+      const result = suggestOutputSchema.parse(await ava.suggest(2));
+      signal.throwIfAborted();
+      this.assertDatasetCurrent(dataset);
+      const unique = new Map(result.map((item) => [item.query.trim(), item]));
+      const questions = [...unique].flatMap(([query, item]) => (query ? [{ ...item, query }] : []));
+      if (!questions.length) throw new WorkbenchError('MODEL', '未返回有效的推荐问题，请重试。');
+      return questions;
+    });
   }
 
   async tableDetails(id: string, table: string) {
@@ -352,31 +343,24 @@ export class DatasetService {
       if (names.has(key)) throw new WorkbenchError('INVALID_INPUT', '同一张表的指标名称不能重复');
       names.add(key);
     }
-    await withAVA(
-      d,
-      undefined,
-      undefined,
-      undefined,
-      async (ava) => {
-        for (const metric of metrics) {
-          try {
-            const result = await ava.query(
-              `SELECT (${metric.expression}) AS metric_value FROM ${identifier(metric.table)} WHERE FALSE`,
-              QUERY_OPTIONS,
-            );
-            if (result.data.length !== 1)
-              throw new WorkbenchError('INVALID_INPUT', '请使用 SUM、AVG、COUNT 等聚合公式');
-          } catch (error) {
-            throw new WorkbenchError(
-              'INVALID_INPUT',
-              `指标「${metric.name}」公式校验失败：${error instanceof Error ? error.message : String(error)}`,
-            );
-          }
+    await withAVA({ dataset: d, connections: this.connections }, async (ava) => {
+      for (const metric of metrics) {
+        try {
+          const result = await ava.query(
+            `SELECT (${metric.expression}) AS metric_value FROM ${identifier(metric.table)} WHERE FALSE`,
+            QUERY_OPTIONS,
+          );
+          if (result.data.length !== 1)
+            throw new WorkbenchError('INVALID_INPUT', '请使用 SUM、AVG、COUNT 等聚合公式');
+        } catch (error) {
+          throw new WorkbenchError(
+            'INVALID_INPUT',
+            `指标「${metric.name}」公式校验失败：${error instanceof Error ? error.message : String(error)}`,
+          );
         }
-        await ava.semantic({}, () => businessSemantic(text, metrics));
-      },
-      this.connections,
-    );
+      }
+      await ava.semantic({}, () => businessSemantic(text, metrics));
+    });
     this.assertEditable();
     await this.assertFileUnchanged(d);
     this.assertEditable();

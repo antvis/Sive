@@ -1,9 +1,10 @@
 import { QUERY_OPTIONS } from '../../ai/queryOptions';
 import { WorkbenchError } from '@shared/errors';
 import type { AVA, Schema, PrimaryKey } from '@antv/ava';
+import { identifier } from '../../utils/sql';
 
 const literal = (value: string) => "'" + value.replaceAll("'", "''") + "'";
-const identifier = (value: string) => '"' + value.replaceAll('"', '""') + '"';
+
 const key = (value: string[]): PrimaryKey => (value.length === 1 ? value[0] : [value[0], ...value.slice(1)]);
 
 // AVA 4 beta's MySQL metadata UNION can return JSON as binary-escaped text
@@ -28,7 +29,8 @@ export async function mysqlSchema(ava: AVA, database: string): Promise<Schema> {
   const foreign = await read(
     `SELECT TABLE_NAME AS table_name, CONSTRAINT_NAME AS constraint_name, COLUMN_NAME AS column_name, REFERENCED_TABLE_NAME AS target_table, REFERENCED_COLUMN_NAME AS target_column FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = ${db} AND REFERENCED_TABLE_SCHEMA = ${db} AND REFERENCED_TABLE_NAME IS NOT NULL ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION`,
   );
-  const schema: Schema = { models: [], relationships: [] };
+  const relationships: NonNullable<Schema['relationships']> = [];
+  const schema: Schema = { models: [], relationships };
   const models = new Map<string, Schema['models'][number]>();
   for (const row of columns) {
     const name = String(row.table_name);
@@ -82,11 +84,11 @@ export async function mysqlSchema(ava: AVA, database: string): Promise<Schema> {
     const model = models.get(from);
     if (!model || !models.has(to)) continue;
     const keys = [model.primaryKey, ...(model.uniqueKeys || [])]
-      .filter(Boolean)
-      .map((k) => (typeof k === 'string' ? [k] : k!));
+      .filter((k) => k !== undefined)
+      .map((k) => (typeof k === 'string' ? [k] : k));
     const columns = new Set(rows.map((row) => row.column_name));
     const one = keys.some((key) => key.every((column) => columns.has(column)));
-    schema.relationships!.push({
+    relationships.push({
       name,
       models: [from, to],
       joinType: one ? 'ONE_TO_ONE' : 'MANY_TO_ONE',

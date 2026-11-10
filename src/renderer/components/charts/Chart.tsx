@@ -1,9 +1,15 @@
-import { cx } from '@renderer/utils/cx';
+import { cx } from '../../utils/cx';
 import { useState, useEffect, useRef } from 'react';
 import { Alert, Spin, Button } from '@renderer/components/ui/index';
 import type { Run } from '@shared/contracts';
 import { useTheme } from '@renderer/hooks/useTheme';
 const api = window.workbench;
+const chartStatusText: Record<string, string> = {
+  loading: '正在绘制图表…',
+  error: '图表绘制失败，请查看计算数据或重新加载。',
+  timeout: '图表加载较慢，可尝试重新加载。',
+};
+
 function ChartFrame({ html, title, saved }: { html: string; title: string; saved: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [attempt, setAttempt] = useState(0);
@@ -11,6 +17,7 @@ function ChartFrame({ html, title, saved }: { html: string; title: string; saved
   useEffect(() => {
     setStatus('loading');
     const timer = setTimeout(() => setStatus((s) => (s === 'loading' ? 'timeout' : s)), 15000);
+
     const receive = (event: MessageEvent) => {
       if (event.source !== frame.current?.contentWindow || event.data?.type !== 'ava-chart') return;
       if (['ready', 'error'].includes(event.data.status)) {
@@ -33,15 +40,7 @@ function ChartFrame({ html, title, saved }: { html: string; title: string; saved
         )}
         role="status"
       >
-        <span>
-          {status === 'loading'
-            ? '正在绘制图表…'
-            : status === 'error'
-              ? '图表绘制失败，请查看计算数据或重新加载。'
-              : status === 'timeout'
-                ? '图表加载较慢，可尝试重新加载。'
-                : ''}
-        </span>
+        <span>{chartStatusText[status]}</span>
         <Button variant="ghost" size="small" onClick={() => setAttempt((v) => v + 1)}>
           重新加载图表
         </Button>
@@ -57,6 +56,7 @@ function ChartFrame({ html, title, saved }: { html: string; title: string; saved
     </>
   );
 }
+
 export function Chart({ run, saved = false, index = 0 }: { run: Run; saved?: boolean; index?: number }) {
   const { settings } = useTheme();
   const [html, setHTML] = useState('');
@@ -67,23 +67,24 @@ export function Chart({ run, saved = false, index = 0 }: { run: Run; saved?: boo
     let live = true;
     setHTML('');
     setError('');
-    Promise.resolve()
-      .then(() => api.analysisGetChartHTML(run.id, settings, saved, index))
+    api
+      .analysisGetChartHTML(run.id, settings, saved, index)
       .then((s) => live && setHTML(s))
       .catch(() => live && setError('图表加载失败，请重新分析或查看计算数据'));
     return () => {
       live = false;
     };
   }, [run.id, settings.mode, saved, savedVersion, index]);
-  return error ? (
-    <Alert
-      className={saved ? 'shrink-0' : 'row-span-full min-h-0 overflow-auto'}
-      type="warning"
-      title={error}
-    />
-  ) : html ? (
-    <ChartFrame html={html} title={run.question} saved={saved} />
-  ) : (
+  if (error)
+    return (
+      <Alert
+        className={saved ? 'shrink-0' : 'row-span-full min-h-0 overflow-auto'}
+        type="warning"
+        title={error}
+      />
+    );
+  if (html) return <ChartFrame html={html} title={run.question} saved={saved} />;
+  return (
     <div
       className={cx('grid place-content-center', saved ? 'min-h-50' : 'row-span-full min-h-0 overflow-auto')}
     >

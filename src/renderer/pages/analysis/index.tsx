@@ -1,33 +1,34 @@
 import { cx } from '@renderer/utils/cx';
-import { Fragment, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { Alert, Button } from '@renderer/components/ui/index';
 import { useUI } from '@renderer/hooks/useUI';
-import { CaretRightIcon } from '@phosphor-icons/react';
-import { taskReplyMarkdown } from '@shared/conversationMarkdown';
+import { CaretRightIcon, CircleNotchIcon } from '@phosphor-icons/react';
+import { taskReplyMarkdown } from '../../utils/conversationMarkdown';
 import { renderMarkdown } from '@shared/markdown';
 import { useWorkspace } from '@renderer/hooks/useWorkspace';
 import { datasetPath } from '@renderer/utils/routes';
 import { errorMessage } from '@renderer/utils/feedback';
 import { draftKey } from '@renderer/utils/conversationState';
-import { conversationView } from '@renderer/utils/conversationView';
 import DatasetLayout from '@renderer/pages/analysis/DatasetLayout';
 import ConversationTimeline from '@renderer/pages/analysis/ConversationTimeline';
 import { AssistantMessage, UserMessage } from '@renderer/pages/analysis/ConversationMessage';
 import Result from '@renderer/pages/analysis/AnalysisResult';
-import AnalysisProgress from '@renderer/pages/analysis/AnalysisProgress';
+import AnalysisTools from './AnalysisTools';
 import AnalysisComposer from '@renderer/pages/analysis/AnalysisComposer';
 import DataBrowser from '@renderer/components/data/DataBrowser';
 import Grid from '@renderer/components/data/DataGrid';
 import logo from '@assets/sive.svg';
 
 const api = window.workbench;
+
 export default function AnalysisPage() {
   const {
     state,
+    session,
+    chat,
     busy,
     submitting,
-    setSubmitting,
     analysisMode: mode,
     setAnalysisMode: setMode,
     navigation,
@@ -38,23 +39,27 @@ export default function AnalysisPage() {
   const [search] = useSearchParams();
   const { conversationState, dispatchConversation, dataOpen, setDataOpen } = navigation;
   const { datasetId, conversationId, runId, question } = conversationState;
-  const dataset = state.datasets.find((d) => d.id === datasetId)!;
+  const dataset = state.datasets.find((d) => d.id === datasetId);
   const { message } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
   const locationRef = useRef(location);
   locationRef.current = location;
   const mounted = useRef(true);
+  const [scrollRequest, setScrollRequest] = useState(0);
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
     };
   }, []);
-  const entries = conversationView(state.runs, state.tasks, conversationId);
+  const entries = chat.messages;
   const activeTask = state.tasks.find(
-    (task) => task.conversationId === conversationId && ['running', 'cancelling'].includes(task.status),
+    (task) =>
+      task.conversationId === session.transport.conversationId &&
+      ['running', 'cancelling'].includes(task.status),
   );
+
   const perform = async (fn: () => Promise<unknown>) => {
     try {
       await fn();
@@ -62,12 +67,14 @@ export default function AnalysisPage() {
       message.error(errorMessage(error));
     }
   };
+
   const ask = (q: string) => {
     dispatchConversation({
       type: 'edit',
       question: q,
     });
   };
+
   const start = async () => {
     const text = question.trim();
     if (
@@ -76,15 +83,15 @@ export default function AnalysisPage() {
       !!activeTask ||
       !!state.refreshingSavedId ||
       submitting ||
+      chat.status === 'streaming' ||
       !text ||
       !state.activeModelId
     )
       return;
-    setSubmitting(true);
     const originKey = location.key;
+    setScrollRequest((value) => value + 1);
     try {
-      const selectedId = conversationId || (await api.conversationCreate(dataset.id)).id;
-      await api.analysisStart(dataset.id, text, mode, undefined, selectedId);
+      const { conversationId: selectedId } = await session.send(text, mode);
       await refresh();
       dispatchConversation({
         type: 'submitted',
@@ -97,8 +104,6 @@ export default function AnalysisPage() {
         navigate(datasetPath(dataset.id, selectedId), { replace: true });
     } catch (e) {
       message.error(errorMessage(e));
-    } finally {
-      setSubmitting(false);
     }
   };
   // The layout synchronizes the route into the workspace before the first paint.
@@ -135,8 +140,10 @@ export default function AnalysisPage() {
               dataset={dataset}
               datasets={state.datasets.filter((d) => !d.deletedAt)}
               onAsk={ask}
+              model={state.models.find((model) => model.id === state.activeModelId)}
+              onModelSettings={openModelSettings}
               active={dataOpen}
-              busy={busy || submitting || !!state.refreshingSavedId}
+              busy={busy || submitting || chat.status === 'streaming' || !!state.refreshingSavedId}
             />
           )}
         </section>
@@ -150,6 +157,7 @@ export default function AnalysisPage() {
           className={conversationSpacing}
           sessionKey={datasetId + conversationId + runId}
           targetMessageId={search.get('run') || undefined}
+          scrollRequest={scrollRequest}
         >
           {!dataset.deletedAt && !entries.length && (
             <div className="w-full max-w-85 mt-[clamp(20px,_8vh,_80px)] mr-auto mb-6 ml-auto text-center">
@@ -186,20 +194,33 @@ export default function AnalysisPage() {
             </div>
           )}
           {entries.map((entry) => {
-            if (entry.kind === 'run')
+            if (entry.role === 'user')
               return (
-                <div key={entry.run.id} data-message-id={entry.run.id}>
-                  <Result run={entry.run} />
+                <div key={entry.id} data-message-id={entry.metadata?.analysisId}>
+                  <UserMessage
+                    question={entry.parts
+                      .filter((part) => part.type === 'text')
+                      .map((part) => part.text)
+                      .join('')}
+                    time={entry.metadata?.createdAt}
+                  />
                 </div>
               );
-            const currentTask = entry.task;
+            const analysis = entry.parts.find((part) => part.type === 'data-analysis')?.data;
+            if (!analysis) return null;
+            if (analysis.kind === 'run')
+              return (
+                <div key={entry.id} data-message-id={entry.id}>
+                  <Result run={analysis.run} showQuestion={false} />
+                </div>
+              );
+            const currentTask = analysis.task;
+            const text = currentTask.preview?.text || '';
+            const active = ['running', 'cancelling'].includes(currentTask.status);
+            let taskHint = currentTask.preview ? '正在分析' : '正在准备数据';
+            if (currentTask.status === 'cancelling') taskHint = '正在停止分析，等待当前操作结束';
             return (
-              <Fragment key={currentTask.id}>
-                <UserMessage
-                  key={currentTask.id}
-                  question={currentTask.question}
-                  time={currentTask.startedAt || currentTask.events[0]?.at}
-                />
+              <div key={entry.id} data-message-id={entry.id}>
                 <AssistantMessage
                   time={currentTask.finishedAt || currentTask.events.at(-1)?.at || currentTask.startedAt}
                   markdown={() => taskReplyMarkdown(currentTask)}
@@ -207,17 +228,33 @@ export default function AnalysisPage() {
                   <p className="text-muted text-helper">
                     {currentTask.sourceName} · {currentTask.modelName}
                   </p>
-                  <AnalysisProgress task={currentTask} />
-                  {currentTask.preview?.text && (
+                  {currentTask.persistenceError && (
+                    <Alert type="warning" title={currentTask.persistenceError} />
+                  )}
+                  <AnalysisTools output={currentTask.preview} active={active} />
+                  {active ? (
+                    <p className="my-2 flex items-center gap-2 text-helper text-muted" role="status">
+                      <CircleNotchIcon className="shrink-0 animate-spin" aria-hidden="true" />
+                      {taskHint}
+                    </p>
+                  ) : (
+                    currentTask.status !== 'done' && (
+                      <Alert
+                        type={currentTask.status === 'error' ? 'error' : 'info'}
+                        title={currentTask.error || '分析已中断'}
+                      />
+                    )
+                  )}
+                  {text && (
                     <div
                       className="markdown"
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(currentTask.preview.text, true) }}
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(text, true) }}
                     />
                   )}
                   {currentTask.preview?.warning && (
                     <Alert type="warning" title={currentTask.preview.warning} />
                   )}
-                  {currentTask.preview && (
+                  {!!currentTask.preview?.results.length && (
                     <details open>
                       <summary>
                         {['running', 'cancelling'].includes(currentTask.status)
@@ -241,9 +278,10 @@ export default function AnalysisPage() {
                     </div>
                   )}
                 </AssistantMessage>
-              </Fragment>
+              </div>
             );
           })}
+          {chat.error && <Alert type="error" title={errorMessage(chat.error)} />}
         </ConversationTimeline>
         {dataset.deletedAt ? (
           <Alert type="info" title="连接已删除，无法继续分析" />
@@ -258,12 +296,18 @@ export default function AnalysisPage() {
             onModel={(id, model) => perform(() => api.modelActivate(id, model))}
             mode={mode}
             onMode={setMode}
-            busy={!!activeTask}
+            busy={!!activeTask || chat.status === 'streaming'}
             refreshing={!!state.refreshingSavedId}
             cancelling={activeTask?.status === 'cancelling'}
             submitting={submitting}
             onSubmit={() => start()}
-            onCancel={() => activeTask && perform(() => api.analysisCancel(activeTask.id))}
+            onCancel={() =>
+              activeTask &&
+              perform(async () => {
+                await session.transport.cancel(activeTask.id);
+                await chat.stop();
+              })
+            }
             onSettings={openModelSettings}
           />
         )}

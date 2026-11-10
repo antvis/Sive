@@ -1,5 +1,5 @@
 import type { Progress, Run, Task } from '@shared/contracts';
-import { isAnalysisEvent } from './progress';
+import { analysisTools, isAnalysisEvent } from '@shared/analysis';
 
 const taskStatus: Record<Task['status'], string> = {
   running: '分析中 · 尚未完成',
@@ -16,6 +16,7 @@ function fenced(text: string, language: string) {
   const fence = '`'.repeat(length);
   return `${fence}${language}\n${text}\n${fence}`;
 }
+
 function eventsMarkdown(events: Progress[]) {
   return events
     .filter(isAnalysisEvent)
@@ -25,6 +26,7 @@ function eventsMarkdown(events: Progress[]) {
     )
     .join('\n');
 }
+
 export function replyMarkdown(run: Run) {
   const sections = [
     `数据：${run.sourceName} · 模型：${run.modelName} · ${run.createdAt}`,
@@ -46,8 +48,8 @@ export function replyMarkdown(run: Run) {
       `### 计算数据${result.truncated ? '（已截断）' : ''}`,
       fenced(JSON.stringify(result.data, null, 2), 'json'),
     );
-  if (run.output.actions?.length)
-    sections.push('### 工具调用', fenced(JSON.stringify(run.output.actions, null, 2), 'json'));
+  const tools = analysisTools(run.output);
+  if (tools.length) sections.push('### 工具调用', fenced(JSON.stringify(tools, null, 2), 'json'));
   sections.push('### 执行过程', eventsMarkdown(run.events) || '暂无执行记录');
   return sections.join('\n\n');
 }
@@ -57,6 +59,8 @@ export function taskReplyMarkdown(task: Task) {
   if (task.error) sections.push(task.error);
   if (task.persistenceError) sections.push(task.persistenceError);
   if (task.preview) {
+    const tools = analysisTools(task.preview);
+    if (tools.length) sections.push('### 工具调用', fenced(JSON.stringify(tools, null, 2), 'json'));
     sections.push('### 中间结果（未完成）');
     if (task.preview.text) sections.push(task.preview.text);
     for (const { id, result } of task.preview.results)

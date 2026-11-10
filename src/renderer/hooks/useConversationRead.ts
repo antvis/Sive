@@ -48,6 +48,7 @@ export function useConversationRead(
     ) ?? -1;
   useEffect(() => {
     if (!conversationId || sequence < 0) return;
+
     const markRead = () => {
       if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
       save(advanceConversationRead(current.current, conversationId, sequence));

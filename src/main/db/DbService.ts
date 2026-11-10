@@ -66,8 +66,8 @@ export class DbService {
   }
 
   checkpointDeletedContent() {
-    const result = this.connection.$client.pragma('wal_checkpoint(TRUNCATE)') as { busy: number }[];
-    if (result[0]?.busy)
+    const busy = this.connection.$client.pragma('wal_checkpoint(TRUNCATE)', { simple: true });
+    if (busy)
       throw new WorkbenchError('PERSISTENCE', '记录已删除，但数据库日志仍在使用；关闭并重启应用后会清理。');
   }
 

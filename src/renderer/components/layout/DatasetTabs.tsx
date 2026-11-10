@@ -30,8 +30,8 @@ export default function DatasetTabs({
   useEffect(() => {
     const container = list.current;
     const active = container?.querySelector<HTMLElement>('[aria-selected="true"]');
-    if (!container || !active) return;
-    const item = active.parentElement!;
+    const item = active?.parentElement;
+    if (!container || !item) return;
     const left =
       item.getBoundingClientRect().left - container.getBoundingClientRect().left + container.scrollLeft;
     if (left < container.scrollLeft) container.scrollLeft = left;

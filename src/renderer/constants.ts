@@ -20,6 +20,7 @@ type Source = {
   color: string;
   format?: Dataset['format'];
 };
+
 export const DATA_SOURCE_GROUPS: { name: string; icon: Icon; sources: Source[] }[] = [
   {
     name: '文件与文本',

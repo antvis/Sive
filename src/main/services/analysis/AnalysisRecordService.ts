@@ -40,8 +40,8 @@ export class AnalysisRecordService {
 
   message(id: string) {
     const message = this.data.messages.getAnalysis(id);
-    if (!message) throw new WorkbenchError('CONFLICT', '分析记录不存在');
-    return message;
+    if (!message || !('events' in message.content)) throw new WorkbenchError('CONFLICT', '分析记录不存在');
+    return { ...message, content: message.content };
   }
 
   startTask(task: Task, conversation: Conversation, messageOptions: MessageOptions) {
@@ -148,9 +148,9 @@ export class AnalysisRecordService {
       reusable: false,
     }));
     const recent = rows.flatMap((row) => {
-      const output = (row.content as AssistantMessageContent).output;
+      const output = 'output' in row.content ? row.content.output : undefined;
       if (!output) return [];
-      const options = row.analysisOptions as MessageOptions;
+      const options = row.analysisOptions;
       const reusable =
         isDeepStrictEqual(sourceIdentity(options.source), sourceIdentity(sourceSnapshot(source))) &&
         options.semantic === (businessSemantic(source.semantic, source.metrics).description || '') &&
@@ -163,17 +163,17 @@ export class AnalysisRecordService {
   }
 
   assertRunSource(id: string, source: StoredDataset) {
-    const old = (this.message(id).analysisOptions as MessageOptions).source;
+    const old = this.message(id).analysisOptions.source;
     if (!isDeepStrictEqual(sourceIdentity(old), sourceIdentity(sourceSnapshot(source))))
       throw new WorkbenchError('CONFLICT', '数据来源或读取配置已变化，请开始新的分析');
   }
 
   run(id: string): Run {
     const row = this.message(id);
-    const content = row.content as AssistantMessageContent;
+    const content = row.content;
     const output = content.output;
     if (row.status !== 'done' || !output) throw new WorkbenchError('CONFLICT', '分析尚未成功完成');
-    const options = row.analysisOptions as MessageOptions;
+    const options = row.analysisOptions;
     const snippet = this.data.snippets.getByMessageId(id);
     if (!snippet) throw new WorkbenchError('CONFLICT', '分析片段不存在');
     const view = snippet.content.output;
@@ -186,7 +186,7 @@ export class AnalysisRecordService {
       sourceName: options.source.name,
       excelSheets: options.source.config.excelSheets,
       strategy: options.analyze.strategy.type,
-      analysisOptions: analysisOptions(options),
+      analysisOptions: analysisOptions(options.analyze.strategy),
       createdAt: row.updatedAt,
       semantic: options.semantic,
       metrics: options.metrics,
@@ -220,7 +220,7 @@ export class AnalysisRecordService {
 
   listRuns() {
     return this.data.messages.listRuns().map((row): RunSummary => {
-      const options = row.analysisOptions as MessageOptions;
+      const options = row.analysisOptions;
       return {
         id: row.id,
         conversationId: row.conversationId,

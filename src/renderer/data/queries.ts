@@ -1,5 +1,5 @@
-import { keepPreviousData, QueryClient, queryOptions } from '@tanstack/react-query';
-import type { Dataset, RunSummary, State } from '@shared/contracts';
+import { keepPreviousData, QueryClient, queryOptions, skipToken } from '@tanstack/react-query';
+import type { Dataset, ModelProfile, RunSummary, State } from '@shared/contracts';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,8 +24,30 @@ export function previewQuery(dataset: Dataset, table: string, page: number, page
 export function tableDetailsQuery(dataset: Dataset, table: string | null) {
   return queryOptions({
     queryKey: ['tableDetails', dataset.id, dataset.updatedAt, table],
-    queryFn: () => window.workbench.datasetGetTableDetails(dataset.id, table!),
+    queryFn: table ? () => window.workbench.datasetGetTableDetails(dataset.id, table) : skipToken,
     enabled: !!table && dataset.schema.models.some((model) => model.name === table),
+  });
+}
+
+export function suggestionsQuery(dataset: Dataset, model?: ModelProfile, active = true) {
+  return queryOptions({
+    queryKey: ['suggestions', dataset.id, dataset.updatedAt, model?.id, model?.model, model?.updatedAt],
+    queryFn: async ({ signal }) => {
+      const requestId = crypto.randomUUID();
+
+      const cancel = () => {
+        void window.workbench.datasetCancelSuggestions(requestId);
+      };
+      signal.throwIfAborted();
+      signal.addEventListener('abort', cancel, { once: true });
+      try {
+        return await window.workbench.datasetSuggest(dataset.id, requestId);
+      } finally {
+        signal.removeEventListener('abort', cancel);
+      }
+    },
+    enabled: active && !!model && !dataset.deletedAt,
+    staleTime: Infinity,
   });
 }
 
@@ -45,6 +67,7 @@ export function pruneWorkspaceQueries(state: State) {
   queryClient.removeQueries({
     predicate: ({ queryKey: [kind, id] }) =>
       (kind === 'run' && !runs.has(String(id))) ||
-      ((kind === 'preview' || kind === 'tableDetails') && !datasets.has(String(id))),
+      ((kind === 'preview' || kind === 'tableDetails' || kind === 'suggestions') &&
+        !datasets.has(String(id))),
   });
 }

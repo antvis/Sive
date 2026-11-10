@@ -9,10 +9,12 @@ import { QUERY_OPTIONS } from '../../ai/queryOptions';
 import { WorkbenchError } from '@shared/errors';
 import { ModelService } from '../settings/ModelService';
 import { ConnectionService } from '../data/ConnectionService';
-import { withAVA } from '../../ai/ava';
+import { withAVA } from '../../ava';
 import { createChart } from '../../ai/charts';
 import { chartHTML } from '../export/analysisHtml';
-import { validateTheme, type ThemeSettings } from '@shared/theme';
+import type { ThemeSettings } from '@shared/theme';
+import { themeSchema } from '@shared/inputSchemas';
+import { parseInput } from '../../utils/input';
 import type { DatasetService } from '../data/DatasetService';
 
 export class SnippetService {
@@ -102,20 +104,25 @@ export class SnippetService {
       const saved = run.snippet.output || run.output;
       const source = await this.datasets.prepare(run.datasetId);
       if (source.format === 'mysql') this.records.assertRunSource(run.id, source);
-      if (!saved.results.length || saved.results.some(({ result }) => !result.sql?.trim()))
-        throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
+      if (!saved.results.length) throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
+      const queries = saved.results.map((evidence) => {
+        const sql = evidence.result.sql;
+        if (!sql?.trim()) throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
+        return { ...evidence, sql };
+      });
       const signal = AbortSignal.timeout(300000);
       const view = await withAVA(
-        { ...source, semantic: run.semantic, metrics: run.metrics },
-        undefined,
-        signal,
-        undefined,
+        {
+          dataset: { ...source, semantic: run.semantic, metrics: run.metrics },
+          signal,
+          connections: this.connections,
+        },
         async (ava) => {
           const output: AnalysisOutput = { text: '', results: [], charts: [] };
           let model: ReturnType<ModelService['model']> | undefined;
-          for (const { id: resultId, result } of saved.results) {
+          for (const { id: resultId, result, sql } of queries) {
             signal.throwIfAborted();
-            const queried = await ava.query(result.sql!, QUERY_OPTIONS);
+            const queried = await ava.query(sql, QUERY_OPTIONS);
             output.results.push({
               id: resultId,
               result: { ...queried, query: result.query, sql: result.sql, text: '' },
@@ -136,7 +143,6 @@ export class SnippetService {
                 `保持原图类型 ${chart.spec.chartType}。${run.question}`,
                 (model ||= this.models.model(this.models.active(), signal)),
                 signal,
-                () => {},
                 chart.spec,
               );
               if (!next || next.spec.chartType !== chart.spec.chartType)
@@ -149,7 +155,6 @@ export class SnippetService {
           signal.throwIfAborted();
           return output;
         },
-        this.connections,
       );
       this.saveView(id, run.snippet.updatedAt, source, view);
     } catch (error) {
@@ -168,6 +173,6 @@ export class SnippetService {
     const run = this.records.run(id);
     const chart = (saved && run.snippet?.output ? run.snippet.output : run.output).charts[index]?.spec;
     if (!chart) throw new WorkbenchError('CONFLICT', '尚无图表');
-    return chartHTML(chart, theme ? validateTheme(theme) : this.settings.theme());
+    return chartHTML(chart, theme ? parseInput(themeSchema, theme) : this.settings.theme());
   }
 }

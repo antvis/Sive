@@ -6,7 +6,7 @@ import { useUI } from '@renderer/hooks/useUI';
 import { useTheme } from '@renderer/hooks/useTheme';
 import { usePreferences } from '@renderer/hooks/usePreferences';
 import { defaultPreferences } from '@renderer/data/preferences';
-import { analysisModes } from '@shared/analysisOptions';
+import { analysisModes } from '../../data/analysisOptions';
 import { errorMessage } from '@renderer/utils/feedback';
 
 function SettingRow({

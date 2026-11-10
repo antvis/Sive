@@ -27,6 +27,9 @@ function MessageActions({
     return () => window.clearTimeout(timer);
   }, [feedback]);
   const date = time ? new Date(time) : undefined;
+  const copyLabel = markdown ? '复制回复（Markdown）' : '复制问题';
+  const feedbackLabel = feedback === 'success' ? '复制成功' : '复制失败，请重试';
+
   const copy = async () => {
     if (copying) return;
     setCopying(true);
@@ -61,17 +64,7 @@ function MessageActions({
       )}
       <Tooltip
         open={feedback === 'idle' ? undefined : true}
-        title={
-          feedback === 'idle' ? (
-            markdown ? (
-              '复制回复（Markdown）'
-            ) : (
-              '复制问题'
-            )
-          ) : (
-            <span role="status">{feedback === 'success' ? '复制成功' : '复制失败，请重试'}</span>
-          )
-        }
+        title={feedback === 'idle' ? copyLabel : <span role="status">{feedbackLabel}</span>}
       >
         <Button
           variant="ghost"

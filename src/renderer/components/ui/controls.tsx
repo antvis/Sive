@@ -38,6 +38,7 @@ const buttonVariants = {
   ghost: 'text-muted bg-transparent hover:text-ink hover:bg-muted/9',
   link: 'bg-transparent text-accent-ink max-w-full h-auto whitespace-normal text-left px-0 hover:underline',
 };
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   { variant = 'secondary', size = 'default', danger, loading, icon, children, className, disabled, ...props },
   ref,
@@ -73,6 +74,7 @@ type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'prefix' | 'size'>
   allowClear?: boolean;
   onClear?: () => void;
 };
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { prefix, allowClear, onClear, value, onChange, className, style, disabled, ...props },
   ref,
@@ -108,8 +110,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           className="inline-flex text-muted shrink-0 border-0 p-1 bg-transparent rounded-compact hover:bg-muted/12"
           onClick={() => {
             const node = internal.current;
-            if (!node) return;
-            Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(node, '');
+            const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+            if (!node || !setValue) return;
+            setValue.call(node, '');
             node.dispatchEvent(new Event('input', { bubbles: true }));
             onClear?.();
             node.focus();
@@ -121,6 +124,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     </span>
   );
 });
+
 export function SearchInput(props: InputProps) {
   return (
     <Input
@@ -130,6 +134,7 @@ export function SearchInput(props: InputProps) {
     />
   );
 }
+
 export const PasswordInput = forwardRef<HTMLInputElement, InputProps>(function PasswordInput(props, ref) {
   const [visible, setVisible] = useState(false);
   return (
@@ -151,6 +156,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, InputProps>(function P
     </div>
   );
 });
+
 export const InputNumber = forwardRef<
   HTMLInputElement,
   Omit<InputProps, 'value' | 'onChange'> & {
@@ -173,11 +179,13 @@ type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   showCount?: boolean;
   variant?: 'borderless';
 };
+
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
   { autoSize, showCount, className, variant, style, ...props },
   ref,
 ) {
   const internal = useRef<HTMLTextAreaElement | null>(null);
+
   const resize = () => {
     const node = internal.current;
     if (!node || !autoSize) return;
@@ -221,6 +229,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
 });
 
 type Option<T> = { value: T; label: ReactNode; disabled?: boolean };
+
 export function Select<T extends string | number>({
   value,
   onChange,
@@ -307,6 +316,7 @@ export function Select<T extends string | number>({
     </SelectPrimitive.Root>
   );
 }
+
 export function Tabs({
   activeKey,
   onChange,
@@ -344,6 +354,7 @@ export function Tabs({
     </TabsPrimitive.Root>
   );
 }
+
 export function Segmented({
   options,
   value,
@@ -380,6 +391,7 @@ export function Segmented({
     </div>
   );
 }
+
 export function Pagination({
   current,
   pageSize,
@@ -421,6 +433,7 @@ export function Pagination({
     </nav>
   );
 }
+
 export function Tag({
   children,
   color,
@@ -442,6 +455,7 @@ export function Tag({
     </span>
   );
 }
+
 export function Spin({ size }: { size?: 'small' }) {
   return (
     <CircleNotchIcon
@@ -452,6 +466,7 @@ export function Spin({ size }: { size?: 'small' }) {
     />
   );
 }
+
 export function Empty({ description, children }: { description: ReactNode; children?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 min-h-35 p-7.5 text-muted text-center text-body">
@@ -461,6 +476,7 @@ export function Empty({ description, children }: { description: ReactNode; child
     </div>
   );
 }
+
 export function Alert({
   type = 'info',
   title,
@@ -478,7 +494,12 @@ export function Alert({
   className?: string;
   onClose?: () => void;
 }) {
-  const Icon = type === 'success' ? CheckCircleIcon : type === 'info' ? InfoIcon : WarningCircleIcon;
+  const { icon: Icon, color } = {
+    success: { icon: CheckCircleIcon, color: 'text-accent' },
+    info: { icon: InfoIcon, color: 'text-accent' },
+    warning: { icon: WarningCircleIcon, color: 'text-warning' },
+    error: { icon: WarningCircleIcon, color: 'text-danger' },
+  }[type];
   return (
     <div
       className={cx(
@@ -488,13 +509,7 @@ export function Alert({
       data-tone={type}
       role={type === 'error' ? 'alert' : 'status'}
     >
-      <Icon
-        size={16}
-        className={cx(
-          'shrink-0 mt-px',
-          type === 'error' ? 'text-danger' : type === 'warning' ? 'text-warning' : 'text-accent',
-        )}
-      />
+      <Icon size={16} className={cx('shrink-0 mt-px', color)} />
       <div className="min-w-0 flex-1">
         <div>{title}</div>
         {description && <p className="mt-1 mr-0 mb-0 ml-0 text-muted">{description}</p>}
