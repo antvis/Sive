@@ -65,7 +65,7 @@ export function Field({
             disabled,
             'aria-labelledby': `${id}-label`,
             'aria-invalid': !!fieldState.error,
-            'aria-describedby': fieldState.error ? `${id}-error` : extra ? `${id}-help` : undefined,
+            'aria-describedby': (fieldState.error && `${id}-error`) || (extra && `${id}-help`) || undefined,
           })}
           {extra && (
             <small className="text-muted leading-[1.6] text-helper" id={`${id}-help`}>

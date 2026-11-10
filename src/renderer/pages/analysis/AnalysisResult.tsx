@@ -29,7 +29,8 @@ function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: 
   const [saveFeedback, setSaveFeedback] = useResultActionFeedback();
   const [saving, setSaving] = useState(false);
   const saved = !!run.snippet || saveFeedback?.error === false;
-  const saveLabel = saving ? '保存中' : saved ? '已保存' : '保存分析';
+  let saveLabel = saved ? '已保存' : '保存分析';
+  if (saving) saveLabel = '保存中';
   const save = async () => {
     if (saving || saved) return;
     setSaveFeedback(undefined);

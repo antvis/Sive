@@ -1,19 +1,23 @@
 import type { TableField } from '@shared/tableValues';
-import { numericValue } from '@shared/tableValues';
+import { numericValue, tableValue } from '@shared/tableValues';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
 
 function compareNumeric(a: unknown, b: unknown, descending: boolean) {
   const left = numericValue(a),
     right = numericValue(b);
   // The grid reverses the comparator for descending. Keep missing/invalid values last in both orders.
-  if (!left || !right) return (left ? -1 : right ? 1 : 0) * (descending ? -1 : 1);
+  if (!left && !right) return 0;
+  if (!left) return descending ? -1 : 1;
+  if (!right) return descending ? 1 : -1;
   if (left.sign !== right.sign) return left.sign - right.sign;
   if (!left.sign) return 0;
   const magnitude = Math.sign(left.magnitude - right.magnitude);
+  if (magnitude) return magnitude * left.sign;
   const length = Math.max(left.digits.length, right.digits.length);
   const l = left.digits.padEnd(length, '0'),
     r = right.digits.padEnd(length, '0');
-  return (magnitude || (l < r ? -1 : l > r ? 1 : 0)) * left.sign;
+  if (l === r) return 0;
+  return (l > r ? 1 : -1) * left.sign;
 }
 
 export const MIN_COLUMN_WIDTH = 80;
@@ -48,7 +52,7 @@ export function gridColumns(
 }
 
 function textWidth(value: unknown) {
-  const text = value == null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value);
+  const text = tableValue(value, '');
   return Array.from(text.slice(0, 100)).reduce(
     (width, char) => width + (char.charCodeAt(0) > 255 ? 13 : 7),
     0,
@@ -64,7 +68,8 @@ export function contentColumnWidths(
   const sample = rows.slice(0, 100);
   const widths = fields.map((field) => {
     const numeric = numericColumns.has(field.name);
-    const minimum = numeric ? 100 : /DATE|TIME/i.test(field.type || '') ? 176 : 140;
+    let minimum = /DATE|TIME/i.test(field.type || '') ? 176 : 140;
+    if (numeric) minimum = 100;
     return Math.min(
       360,
       Math.max(

@@ -1,15 +1,9 @@
 import { ipcMain, type BrowserWindow } from 'electron';
 import { commandNames } from '@shared/commands';
-import { invokeCommand, type CommandHandlers } from './commands';
+import { invokeCommand } from './commands';
 import { WorkbenchError, type Reply } from '@shared/errors';
 import type { WorkbenchServices } from '../services';
-import { createWorkspaceHandlers } from './handlers/workspace';
-import { createDatasetHandlers } from './handlers/dataset';
-import { createConversationHandlers } from './handlers/conversation';
-import { createAnalysisHandlers } from './handlers/analysis';
-import { createSnippetHandlers } from './handlers/snippet';
-import { createModelHandlers } from './handlers/model';
-import { createSettingsHandlers } from './handlers/settings';
+import { createCommandHandlers } from './handlers';
 
 function failure(error: unknown): Reply<never> {
   return {
@@ -28,15 +22,7 @@ export function registerIPC(
   getRevision: () => number,
   rendererURL: URL,
 ) {
-  const handlers: CommandHandlers = {
-    ...createWorkspaceHandlers(services, getRevision),
-    ...createDatasetHandlers(win, services),
-    ...createConversationHandlers(services.conversations),
-    ...createAnalysisHandlers(win, services, root),
-    ...createSnippetHandlers(services.snippets),
-    ...createModelHandlers(win, services.models),
-    ...createSettingsHandlers(win, services.settings),
-  };
+  const handlers = createCommandHandlers(win, services, root, getRevision);
 
   for (const name of commandNames) {
     ipcMain.handle('workbench:' + name, async (event, ...args: unknown[]) => {

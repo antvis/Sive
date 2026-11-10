@@ -36,10 +36,8 @@ export const mysqlInputSchema = z.object({
 });
 
 const modelURLSchema = requiredText('请填写服务地址').superRefine((value, context) => {
-  let url: URL;
-  try {
-    url = new URL(value);
-  } catch {
+  const url = URL.parse(value);
+  if (!url) {
     context.addIssue({ code: 'custom', message: '模型服务地址无效' });
     return;
   }

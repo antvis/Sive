@@ -29,7 +29,7 @@ import {
   MIN_COLUMN_WIDTH,
   MAX_COLUMN_WIDTH,
 } from '@renderer/utils/grid';
-import { isNumericColumn, type TableField } from '@shared/tableValues';
+import { isNumericColumn, tableValue, type TableField } from '@shared/tableValues';
 
 function ResizeHeader({
   header,
@@ -42,6 +42,8 @@ function ResizeHeader({
   const table = header.getContext().table;
   const name = column.id;
   const size = column.getSize();
+  const sorted = column.getIsSorted() || 'none';
+  const sortLabels = { asc: 'ascending', desc: 'descending', none: 'none' } as const;
   const freezeWidths = () =>
     table.setColumnSizing(
       Object.fromEntries(table.getAllLeafColumns().map((item) => [item.id, item.getSize()])),
@@ -51,15 +53,7 @@ function ResizeHeader({
       className={cx(tableHeader, 'pr-4')}
       scope="col"
       aria-label={name}
-      aria-sort={
-        column.getCanSort()
-          ? column.getIsSorted() === 'asc'
-            ? 'ascending'
-            : column.getIsSorted() === 'desc'
-              ? 'descending'
-              : 'none'
-          : undefined
-      }
+      aria-sort={column.getCanSort() ? sortLabels[sorted] : undefined}
     >
       {children}
       <span
@@ -112,9 +106,6 @@ function ResizeHeader({
     </th>
   );
 }
-const cell = (value: unknown) =>
-  value == null ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value);
-
 export default function Grid({
   rows,
   columns,
@@ -199,6 +190,9 @@ export default function Grid({
                 const column = header.column;
                 const name = column.id;
                 const sorted = column.getIsSorted();
+                const SortIcon = { asc: CaretUpIcon, desc: CaretDownIcon, none: ArrowsDownUpIcon }[
+                  sorted || 'none'
+                ];
                 return (
                   <ResizeHeader key={header.id} header={header}>
                     {column.getCanSort() ? (
@@ -215,13 +209,7 @@ export default function Grid({
                         }}
                       >
                         <span className="truncate">{name}</span>
-                        {sorted === 'asc' ? (
-                          <CaretUpIcon className="text-muted shrink-0" size={12} />
-                        ) : sorted === 'desc' ? (
-                          <CaretDownIcon className="text-muted shrink-0" size={12} />
-                        ) : (
-                          <ArrowsDownUpIcon className="text-muted shrink-0" size={12} />
-                        )}
+                        <SortIcon className="text-muted shrink-0" size={12} />
                       </button>
                     ) : (
                       <span className="truncate block" title={name}>
@@ -237,7 +225,7 @@ export default function Grid({
             {visible.map((row) => (
               <tr className={tableRow} key={row.id}>
                 {row.getVisibleCells().map((entry) => {
-                  const text = cell(entry.getValue());
+                  const text = tableValue(entry.getValue());
                   return (
                     <td className={cx(tableCell, 'truncate')} key={entry.id} title={text}>
                       {text}

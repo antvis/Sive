@@ -12,7 +12,8 @@ export type AnalysisMessage = UIMessage<
 export function analysisEntry(state: State, id: string): AnalysisEntry | undefined {
   const run = state.runs.find((item) => item.id === id);
   const task = state.tasks.find((item) => item.id === id);
-  return run ? { kind: 'run', run } : task ? { kind: 'task', task } : undefined;
+  if (run) return { kind: 'run', run };
+  if (task) return { kind: 'task', task };
 }
 
 export function analysisMessages(state: State | null | undefined, conversationId: string): AnalysisMessage[] {

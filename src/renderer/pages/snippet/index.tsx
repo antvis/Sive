@@ -119,6 +119,40 @@ function SavedCard({
       setPending(false);
     }
   };
+  const renderContent = () => {
+    if (tab === 'SQL')
+      return <pre className="m-0 h-full overflow-auto">{result?.sql || '此分析没有 SQL'}</pre>;
+    if (tab !== '图表')
+      return (
+        <Grid
+          className="shrink-0"
+          rows={result?.data || []}
+          columns={result?.schema}
+          resetKey={updatedAt}
+          pageSize={5}
+        />
+      );
+    if (output.charts.length) {
+      if (visible) return <Chart run={run} saved index={chartIndex} />;
+      return (
+        <div className="h-65 grid place-items-center">
+          <Spin />
+        </div>
+      );
+    }
+    if (output.text)
+      return (
+        <div
+          className="markdown overflow-auto"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(output.text, true) }}
+        />
+      );
+    return (
+      <Empty
+        description={result?.data.length ? '本次分析没有图表，可切换查看数据或 SQL' : '查询未返回数据'}
+      />
+    );
+  };
   return (
     <article className={savedCardSurface} ref={root} aria-label={title}>
       <header className="flex gap-2 items-start">
@@ -230,36 +264,7 @@ function SavedCard({
             onClose={() => setError('')}
           />
         )}
-        {tab === '图表' ? (
-          output.charts.length ? (
-            visible ? (
-              <Chart run={run} saved index={chartIndex} />
-            ) : (
-              <div className="h-65 grid place-items-center">
-                <Spin />
-              </div>
-            )
-          ) : output.text ? (
-            <div
-              className="markdown overflow-auto"
-              dangerouslySetInnerHTML={{ __html: renderMarkdown(output.text, true) }}
-            />
-          ) : (
-            <Empty
-              description={result?.data.length ? '本次分析没有图表，可切换查看数据或 SQL' : '查询未返回数据'}
-            />
-          )
-        ) : tab === 'SQL' ? (
-          <pre className="m-0 h-full overflow-auto">{result?.sql || '此分析没有 SQL'}</pre>
-        ) : (
-          <Grid
-            className="shrink-0"
-            rows={result?.data || []}
-            columns={result?.schema}
-            resetKey={updatedAt}
-            pageSize={5}
-          />
-        )}
+        {renderContent()}
       </div>
       <footer className="flex items-center gap-2 flex-wrap justify-between border-t border-t-line pt-3">
         <span className="text-muted">

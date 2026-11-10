@@ -11,8 +11,10 @@ export function numericValue(value: unknown) {
   const digits = (integer + fraction).replace(/^0+/, '');
   const exponent = Number(match[3] || 0);
   if (!Number.isSafeInteger(exponent)) return null;
+  let sign = 0;
+  if (digits) sign = match[1] === '-' ? -1 : 1;
   return {
-    sign: !digits ? 0 : match[1] === '-' ? -1 : 1,
+    sign,
     digits: digits.replace(/0+$/, ''),
     magnitude: digits.length - fraction.length + exponent,
   };
@@ -34,4 +36,10 @@ export function isNumericColumn(field: TableField, rows: Record<string, unknown>
     hasValue = true;
   }
   return hasValue;
+}
+
+export function tableValue(value: unknown, empty = '—'): string {
+  if (value == null) return empty;
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
 }

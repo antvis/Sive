@@ -8,11 +8,7 @@ import type { MySQLInput } from '@shared/contracts';
 
 export function connectionFailure(error: unknown) {
   const text =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'object' && error && 'message' in error
-        ? String(error.message)
-        : String(error);
+    typeof error === 'object' && error && 'message' in error ? String(error.message) : String(error);
   // Never return the native driver text: ATTACH errors can contain passwords.
   if (/extension|download|install|http|扩展/i.test(text))
     return 'MySQL 扩展加载失败，请检查当前平台的 DuckDB 安装与 mysql 扩展。';
@@ -29,12 +25,8 @@ export class ConnectionService {
     input = parseInput(mysqlInputSchema, input);
     const old = input.id ? this.getDataset(input.id) : undefined;
     if (old && old.format !== 'mysql') throw new WorkbenchError('INVALID_INPUT', '只能编辑 MySQL 连接');
-    const credentials =
-      input.password === undefined
-        ? old?.credentials
-        : input.password
-          ? { password: input.password }
-          : undefined;
+    let credentials = old?.credentials;
+    if (input.password !== undefined) credentials = input.password ? { password: input.password } : undefined;
     return {
       id: old?.id || randomUUID(),
       name: input.name.trim(),

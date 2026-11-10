@@ -1,4 +1,4 @@
-import type { AnalysisOutput, AnalysisToolPart } from './contracts';
+import type { AnalysisOutput, AnalysisToolPart, Progress } from './contracts';
 
 export function analysisTools(output?: AnalysisOutput): AnalysisToolPart[] {
   if (output?.tools) return output.tools;
@@ -25,3 +25,7 @@ export function analysisTools(output?: AnalysisOutput): AnalysisToolPart[] {
       : { ...part, title: '历史调用' };
   });
 }
+
+// Historical model diagnostics are excluded from copied replies and exports.
+export const isAnalysisEvent = (event: Progress) =>
+  !['modelstart', 'modelend', 'capabilitystart', 'capabilityend'].includes(event.stage);

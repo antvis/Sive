@@ -50,11 +50,9 @@ export function quickQuestions(dataset: Dataset, tableName?: string): QuickQuest
   const aggregation = /amount|revenue|sales|金额|收入|销售额|数量|销量/i.test(metric?.name || '')
     ? '求和'
     : '求平均值';
-  const calculation = definedMetric
-    ? `计算已定义指标 ${quote(definedMetric.name)}，公式为 ${definedMetric.expression}${definedMetric.unit ? `，单位为 ${definedMetric.unit}` : ''}`
-    : metric
-      ? `对数值字段 ${quote(metric.name)} ${aggregation}`
-      : undefined;
+  let calculation = metric ? `对数值字段 ${quote(metric.name)} ${aggregation}` : undefined;
+  if (definedMetric)
+    calculation = `计算已定义指标 ${quote(definedMetric.name)}，公式为 ${definedMetric.expression}${definedMetric.unit ? `，单位为 ${definedMetric.unit}` : ''}`;
   if (date && calculation) {
     out.push({
       id: 'trend',

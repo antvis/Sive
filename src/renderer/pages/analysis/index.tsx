@@ -207,6 +207,9 @@ export default function AnalysisPage() {
               );
             const currentTask = analysis.task;
             const text = currentTask.preview?.text || '';
+            const active = ['running', 'cancelling'].includes(currentTask.status);
+            let taskHint = currentTask.preview ? '正在分析' : '正在准备数据';
+            if (currentTask.status === 'cancelling') taskHint = '正在停止分析，等待当前操作结束';
             return (
               <div key={entry.id} data-message-id={entry.id}>
                 <AssistantMessage
@@ -219,18 +222,11 @@ export default function AnalysisPage() {
                   {currentTask.persistenceError && (
                     <Alert type="warning" title={currentTask.persistenceError} />
                   )}
-                  <AnalysisTools
-                    output={currentTask.preview}
-                    active={['running', 'cancelling'].includes(currentTask.status)}
-                  />
-                  {['running', 'cancelling'].includes(currentTask.status) ? (
+                  <AnalysisTools output={currentTask.preview} active={active} />
+                  {active ? (
                     <p className="my-2 flex items-center gap-2 text-helper text-muted" role="status">
                       <CircleNotchIcon className="shrink-0 animate-spin" aria-hidden="true" />
-                      {currentTask.status === 'cancelling'
-                        ? '正在停止分析，等待当前操作结束'
-                        : currentTask.preview
-                          ? '正在分析'
-                          : '正在准备数据'}
+                      {taskHint}
                     </p>
                   ) : (
                     currentTask.status !== 'done' && (

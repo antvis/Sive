@@ -1,8 +1,9 @@
-import type { ChatTransport, InferUIMessageChunk } from 'ai';
+import { createUIMessageStream, type ChatTransport, type InferUIMessageChunk } from 'ai';
 import type { API, State, Task } from '@shared/contracts';
 import { z } from 'zod';
 import { analysisModeSchema } from '@shared/inputSchemas';
 import { analysisEntry, type AnalysisMessage } from './messages';
+import { errorMessage } from '../../utils/feedback';
 
 export type ChatStarted = { taskId: string; conversationId: string };
 
@@ -59,70 +60,62 @@ export class AnalysisChatTransport implements ChatTransport<AnalysisMessage> {
     this.close();
     let taskId: string | undefined;
     let cancelled = false;
-    let closed = false;
-    let pending = true;
-    let readerCancelled = false;
-    let controller: ReadableStreamDefaultController<Chunk>;
-    const emit = (chunk: Chunk) => controller.enqueue(chunk);
+    let detached = false;
+    let finish: (() => void) | undefined;
+    let receive: ((state: State) => void) | undefined;
     const cleanup = () => {
-      closed = true;
+      detached = true;
       if (this.receive === receive) this.receive = undefined;
       signal?.removeEventListener('abort', abort);
       if (this.detach === detach) this.detach = undefined;
     };
     const detach = () => {
-      if (closed) return;
+      if (detached) return;
       cleanup();
-      // Let a pending IPC acceptance settle even if its view has already left.
-      if (!pending) controller.close();
+      finish?.();
     };
     const abort = () => {
       cancelled = true;
       if (taskId && cancelOnAbort) void this.cancel(taskId).catch(() => {});
       detach();
     };
-    const fail = (error: unknown) => {
-      cleanup();
-      controller.error(error);
-    };
-    const receive = (state: State) => {
-      if (closed || !taskId) return;
-      const entry = analysisEntry(state, taskId);
-      if (!entry) return;
-      emit({ type: 'data-analysis', id: taskId, data: entry });
-      if (entry.kind === 'run' || !running(entry.task)) {
-        emit({ type: 'finish' });
-        detach();
-      }
-    };
-    return new ReadableStream<Chunk>({
-      start: (value) => {
-        controller = value;
-        this.detach = detach;
-        signal?.addEventListener('abort', abort, { once: true });
+    this.detach = detach;
+    signal?.addEventListener('abort', abort, { once: true });
+    return createUIMessageStream<AnalysisMessage>({
+      execute: async ({ writer }) => {
         if (signal?.aborted) {
-          pending = false;
           abort();
           return;
         }
-        this.receive = receive;
-        void begin()
-          .then((id) => {
-            pending = false;
-            taskId = id;
-            if (cancelled && cancelOnAbort) void this.cancel(id).catch(() => {});
-            if (closed) {
-              if (!readerCancelled) controller.close();
-              return;
-            }
-            emit({ type: 'start', messageId: id });
-            if (this.state) receive(this.state);
-          })
-          .catch(fail);
+        // Let IPC acceptance settle even if navigation has detached the view.
+        taskId = await begin();
+        if (cancelled && cancelOnAbort) void this.cancel(taskId).catch(() => {});
+        if (detached) return;
+        writer.write({ type: 'start', messageId: taskId });
+        writer.merge(
+          new ReadableStream<Chunk>({
+            start: (controller) => {
+              finish = () => controller.close();
+              receive = (state) => {
+                if (detached || !taskId) return;
+                const entry = analysisEntry(state, taskId);
+                if (!entry) return;
+                controller.enqueue({ type: 'data-analysis', id: taskId, data: entry });
+                if (entry.kind === 'run' || !running(entry.task)) {
+                  controller.enqueue({ type: 'finish' });
+                  detach();
+                }
+              };
+              this.receive = receive;
+              if (this.state) receive(this.state);
+            },
+            cancel: cleanup,
+          }),
+        );
       },
-      cancel: () => {
-        readerCancelled = true;
-        cleanup();
+      onError: (error) => {
+        detach();
+        return errorMessage(error);
       },
     });
   }

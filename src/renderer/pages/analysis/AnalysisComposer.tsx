@@ -43,19 +43,23 @@ export default function AnalysisComposer({
 }) {
   const { preferences } = usePreferences();
   const mac = navigator.platform.includes('Mac');
-  const sendKey = preferences.sendShortcut === 'enter' ? 'Enter' : mac ? '⌘ + Enter' : 'Ctrl + Enter';
+  const modifier = mac ? '⌘' : 'Ctrl';
+  const sendKey = preferences.sendShortcut === 'enter' ? 'Enter' : `${modifier} + Enter`;
   const locked = submitting;
   const model = models.find((item) => item.id === modelId && item.modelIds.includes(item.model));
   const canSend = !!dataset && !!model && !!question.trim() && !locked && !busy && !refreshing;
-  const sendHint = refreshing
-    ? '收藏的分析正在刷新，完成后可发送'
-    : !dataset
-      ? '请先打开数据源'
-      : !model
-        ? '先配置并选择模型'
-        : !question.trim()
-          ? '输入想分析的问题'
-          : `发送 · ${sendKey}`;
+  let sendHint = `发送 · ${sendKey}`;
+  if (!question.trim()) sendHint = '输入想分析的问题';
+  if (!model) sendHint = '先配置并选择模型';
+  if (!dataset) sendHint = '请先打开数据源';
+  if (refreshing) sendHint = '收藏的分析正在刷新，完成后可发送';
+
+  const newlineKey = preferences.sendShortcut === 'enter' ? 'Shift + Enter' : 'Enter';
+  let footerHint = `${sendKey} 发送 · ${newlineKey} 换行`;
+  if (busy) footerHint = '正在分析，可编辑下一条问题或切换会话';
+  if (busy && cancelling) footerHint = '正在结束本次分析…';
+  if (refreshing) footerHint = '收藏的分析正在刷新，完成后可发送';
+  if (!dataset) footerHint = '请先打开数据源';
   return (
     <div className={cx('pt-2 px-3 pb-1.5 bg-surface shrink-0', className)}>
       <div
@@ -182,18 +186,8 @@ export default function AnalysisComposer({
           <Button variant="link" size="small" className="text-accent text-helper" onClick={onSettings}>
             添加模型后开始分析
           </Button>
-        ) : !dataset ? (
-          <span>请先打开数据源</span>
         ) : (
-          <span>
-            {refreshing
-              ? '收藏的分析正在刷新，完成后可发送'
-              : busy
-                ? cancelling
-                  ? '正在结束本次分析…'
-                  : '正在分析，可编辑下一条问题或切换会话'
-                : `${sendKey} 发送 · ${preferences.sendShortcut === 'enter' ? 'Shift + Enter' : 'Enter'} 换行`}
-          </span>
+          <span>{footerHint}</span>
         )}
       </div>
     </div>

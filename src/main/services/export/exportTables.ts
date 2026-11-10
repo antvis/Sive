@@ -1,4 +1,4 @@
-import { isNumericColumn } from '@shared/tableValues';
+import { isNumericColumn, tableValue } from '@shared/tableValues';
 import type { AnalysisResponse } from '@antv/ava';
 
 const htmlEntities: Record<string, string> = {
@@ -24,9 +24,7 @@ export function dataTable(result: AnalysisResponse) {
     .map((row) => {
       const cells = columns
         .map(({ name, attributes }) => {
-          const value = row[name];
-          const text =
-            value == null ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value);
+          const text = tableValue(row[name]);
           return `<td${attributes}>${escape(text)}</td>`;
         })
         .join('');

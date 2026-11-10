@@ -87,6 +87,11 @@ export default function DataBrowser({
   const error = preview.error && !pending ? errorMessage(preview.error) : '';
   const rows = preview.isError ? [] : (preview.data || []).slice(0, pageSize);
   const hasMore = !preview.isError && (preview.data?.length || 0) > pageSize;
+  let pageSummary = page === 1 ? '暂无数据' : '本页暂无数据，可返回上一页';
+  if (rows.length)
+    pageSummary = `第 ${(page - 1) * pageSize + 1}–${(page - 1) * pageSize + rows.length} 行${hasMore ? ' · 后续还有数据' : ' · 已到末页'}`;
+  if (error) pageSummary = '读取失败';
+  if (pending) pageSummary = '正在读取…';
   const refresh = async () => {
     if (refreshing) return;
     setRefreshing(true);
@@ -210,15 +215,7 @@ export default function DataBrowser({
                     footer={
                       <div className="flex-1 flex items-center flex-wrap gap-2">
                         <span className="[&:first-child]:mr-auto" aria-live="polite">
-                          {pending
-                            ? '正在读取…'
-                            : error
-                              ? '读取失败'
-                              : rows.length
-                                ? `第 ${(page - 1) * pageSize + 1}–${(page - 1) * pageSize + rows.length} 行${hasMore ? ' · 后续还有数据' : ' · 已到末页'}`
-                                : page === 1
-                                  ? '暂无数据'
-                                  : '本页暂无数据，可返回上一页'}
+                          {pageSummary}
                         </span>
                         <span
                           className="text-muted [&:first-child]:mr-auto"

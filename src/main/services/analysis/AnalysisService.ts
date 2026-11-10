@@ -3,14 +3,13 @@ import type { AnalysisRecordService } from './AnalysisRecordService';
 import { WorkbenchError } from '@shared/errors';
 import { randomUUID } from 'node:crypto';
 import type { Task, AnalysisMode, AnalysisOptions } from '@shared/contracts';
-import { resolveStrategy } from '../../ai/analysisStrategy';
 import { businessSemantic } from '../../ai/semantics';
 import { sourceSnapshot } from '../../db/mappers';
 import { ModelService } from '../settings/ModelService';
 import { ConnectionService } from '../data/ConnectionService';
 import { withAVA } from '../../ava';
 import { TaskProgress } from './TaskProgress';
-import { runAgent } from '../../ai/agent';
+import { runAgent, resolveStrategy } from '../../ai/agent';
 import type { DatasetService } from '../data/DatasetService';
 import type { AnalysisHistory } from '../../ai/context';
 import type { AnalysisOutput, StoredDataset, StoredModel } from '../../db/mappers';
@@ -125,22 +124,12 @@ export class AnalysisService {
         abortController,
         analysisSignal,
         taskProgress,
-      }).catch((error) =>
-        console.error('分析任务收尾失败', error instanceof Error ? error.name : 'UnknownError'),
-      );
+      });
       executionStarted = true;
-      this.notifyWorkspaceChanged();
+      this.workspaceChanged();
       return task.id;
     } finally {
       if (!executionStarted) this.activeExecutions.delete(conversation.id);
-    }
-  }
-
-  private notifyWorkspaceChanged() {
-    try {
-      this.workspaceChanged();
-    } catch {
-      // The renderer may have closed; the persisted task remains available after reload.
     }
   }
 
@@ -152,7 +141,7 @@ export class AnalysisService {
       this.tasks.delete(taskId);
       recoveredTask = true;
     }
-    if (recoveredTask) this.notifyWorkspaceChanged();
+    if (recoveredTask) this.workspaceChanged();
   }
 
   private async executeTask(context: TaskExecutionContext) {
@@ -208,15 +197,10 @@ export class AnalysisService {
         runId: undefined,
         finishedAt: new Date().toISOString(),
       };
-      task.error = abortController.signal.aborted
-        ? '分析已取消'
-        : analysisSignal.aborted
-          ? '分析超过 5 分钟，已停止模型请求。请缩小范围后重试。'
-          : analysisOutput
-            ? '分析结果保存失败，请检查磁盘空间。'
-            : error instanceof Error
-              ? error.message
-              : String(error);
+      task.error = error instanceof Error ? error.message : String(error);
+      if (analysisOutput) task.error = '分析结果保存失败，请检查磁盘空间。';
+      if (analysisSignal.aborted) task.error = '分析超过 5 分钟，已停止模型请求。请缩小范围后重试。';
+      if (abortController.signal.aborted) task.error = '分析已取消';
       task.events.push({
         at: new Date().toISOString(),
         stage: 'settled',
@@ -235,7 +219,7 @@ export class AnalysisService {
       if (terminalSaved) this.tasks.delete(task.id);
       else this.tasks.set(task.id, task);
       if (task.conversationId) this.activeExecutions.delete(task.conversationId);
-      this.notifyWorkspaceChanged();
+      this.workspaceChanged();
     }
   }
 

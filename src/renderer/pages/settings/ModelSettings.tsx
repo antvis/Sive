@@ -32,6 +32,12 @@ export default function ModelSettings({ state }: { state: State }) {
   const baseURL = form.watch('baseURL');
   const apiKey = form.watch('apiKey') || '';
   const currentCatalog = catalog && catalog.baseURL === baseURL && catalog.apiKey === apiKey ? catalog : null;
+  let catalogHint = '填写服务地址和密钥后获取';
+  if (currentCatalog)
+    catalogHint = currentCatalog.ids.length
+      ? `获取到 ${currentCatalog.ids.length} 个模型`
+      : '未返回模型，请手动填写名称';
+  if (discovering) catalogHint = '正在获取…';
   const startEdit = (model?: ModelProfile) => {
     form.reset(
       model
@@ -189,13 +195,7 @@ export default function ModelSettings({ state }: { state: State }) {
               {currentCatalog ? '刷新模型列表' : '获取可用模型'}
             </Button>
             <span className="text-helper text-muted" role="status">
-              {discovering
-                ? '正在获取…'
-                : currentCatalog
-                  ? currentCatalog.ids.length
-                    ? `获取到 ${currentCatalog.ids.length} 个模型`
-                    : '未返回模型，请手动填写名称'
-                  : '填写服务地址和密钥后获取'}
+              {catalogHint}
             </span>
           </div>
           {catalogError && <Alert type="error" title={catalogError} />}

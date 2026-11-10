@@ -479,7 +479,12 @@ export function Alert({
   className?: string;
   onClose?: () => void;
 }) {
-  const Icon = type === 'success' ? CheckCircleIcon : type === 'info' ? InfoIcon : WarningCircleIcon;
+  const { icon: Icon, color } = {
+    success: { icon: CheckCircleIcon, color: 'text-accent' },
+    info: { icon: InfoIcon, color: 'text-accent' },
+    warning: { icon: WarningCircleIcon, color: 'text-warning' },
+    error: { icon: WarningCircleIcon, color: 'text-danger' },
+  }[type];
   return (
     <div
       className={cx(
@@ -489,13 +494,7 @@ export function Alert({
       data-tone={type}
       role={type === 'error' ? 'alert' : 'status'}
     >
-      <Icon
-        size={16}
-        className={cx(
-          'shrink-0 mt-px',
-          type === 'error' ? 'text-danger' : type === 'warning' ? 'text-warning' : 'text-accent',
-        )}
-      />
+      <Icon size={16} className={cx('shrink-0 mt-px', color)} />
       <div className="min-w-0 flex-1">
         <div>{title}</div>
         {description && <p className="mt-1 mr-0 mb-0 ml-0 text-muted">{description}</p>}

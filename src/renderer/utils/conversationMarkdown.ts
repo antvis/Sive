@@ -1,6 +1,5 @@
 import type { Progress, Run, Task } from '@shared/contracts';
-import { isAnalysisEvent } from '@shared/progress';
-import { analysisTools } from '@shared/analysisTools';
+import { analysisTools, isAnalysisEvent } from '@shared/analysis';
 
 const taskStatus: Record<Task['status'], string> = {
   running: '分析中 · 尚未完成',

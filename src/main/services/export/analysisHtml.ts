@@ -3,8 +3,7 @@ import { renderMarkdown } from '@shared/markdown';
 import type { ChartSpec, Run } from '@shared/contracts';
 import { defaultTheme, themeConfig, themePalette, type ThemeSettings } from '@shared/theme';
 import { chartRuntime } from '../../utils/gptVis';
-import { isAnalysisEvent } from '@shared/progress';
-import { analysisTools } from '@shared/analysisTools';
+import { analysisTools, isAnalysisEvent } from '@shared/analysis';
 export async function chartHTML(
   spec: ChartSpec,
   settings: ThemeSettings = defaultTheme,

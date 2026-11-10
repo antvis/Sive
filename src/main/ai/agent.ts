@@ -10,15 +10,28 @@ import {
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import type { AVA } from '@antv/ava';
-import type { AnalysisOutput, AnalysisTools } from '@shared/contracts';
+import type { AnalysisOutput, AnalysisTools, AnalysisMode, AnalysisOptions } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
-import { resolveStrategy } from './analysisStrategy';
 import { conversationMessages, EVIDENCE_INSTRUCTIONS, resultContext, type AnalysisHistory } from './context';
 import { createChart } from './charts';
 import { loadSource, sourceSchema } from '../ava/sources';
 import { businessSemantic } from './semantics';
 import type { StoredDataset } from '../db/types';
 import type { ConnectionService } from '../services/data/ConnectionService';
+
+export function resolveStrategy(mode: AnalysisMode, options: AnalysisOptions = {}) {
+  const value = mode === 'direct' ? (options.maxRetries ?? 2) : (options.maxSteps ?? 6);
+  const min = mode === 'direct' ? 0 : 3;
+  const max = mode === 'direct' ? 5 : 12;
+  if (!Number.isInteger(value) || value < min || value > max)
+    throw new WorkbenchError(
+      'INVALID_INPUT',
+      mode === 'direct' ? '查询纠错次数需为 0–5 的整数' : '探索步数需为 3–12 的整数',
+    );
+  return mode === 'direct'
+    ? { type: 'direct' as const, maxRetries: value }
+    : { type: 'loop' as const, maxSteps: value };
+}
 
 export async function runAgent(
   ava: AVA,

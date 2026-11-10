@@ -25,13 +25,9 @@ export default function DataSourcePicker({
           <div className="grid grid-cols-[repeat(auto-fill,_min(200px,_100%))] gap-4">
             {sources.map(({ name: label, description, icon: SourceIcon, color, format }) => {
               const available = !!format;
-              const action = !available
-                ? '即将支持'
-                : disabled || importing
-                  ? '请稍候'
-                  : format === 'mysql'
-                    ? '开始连接'
-                    : '选择文件';
+              let action = format === 'mysql' ? '开始连接' : '选择文件';
+              if (disabled || importing) action = '请稍候';
+              if (!available) action = '即将支持';
               return (
                 <button
                   key={label}
@@ -41,7 +37,10 @@ export default function DataSourcePicker({
                   data-available={available}
                   aria-label={`${label}：${description}。${action}`}
                   disabled={!available || disabled || importing}
-                  onClick={() => (format === 'mysql' ? onConnect() : format && onImport(format))}
+                  onClick={() => {
+                    if (format === 'mysql') onConnect();
+                    else if (format) onImport(format);
+                  }}
                 >
                   <span
                     className="group-hover/source:invisible group-focus-visible/source:invisible [grid-area:1_/_1] flex flex-col items-center justify-center gap-1 min-w-0"
