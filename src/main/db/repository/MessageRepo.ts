@@ -31,6 +31,33 @@ export class MessageRepo {
       .get();
   }
 
+  list() {
+    return this.db
+      .select()
+      .from(messages)
+      .where(isNull(messages.deletedAt))
+      .orderBy(desc(messages.createdAt), desc(messages.id))
+      .all();
+  }
+
+  listByConversationId(conversationId: string) {
+    return this.db
+      .select()
+      .from(messages)
+      .where(and(eq(messages.conversationId, conversationId), isNull(messages.deletedAt)))
+      .orderBy(messages.sequence)
+      .all();
+  }
+
+  listIdsByConversationId(conversationId: string) {
+    return this.db
+      .select({ id: messages.id })
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .all()
+      .map((row) => row.id);
+  }
+
   insert(values: MessageInsert) {
     return this.db.insert(messages).values(values).returning().get();
   }
@@ -44,8 +71,8 @@ export class MessageRepo {
       .get();
   }
 
-  purgeConversation(conversationId: string) {
-    this.db.delete(messages).where(eq(messages.conversationId, conversationId)).run();
+  remove(id: string) {
+    this.db.delete(messages).where(eq(messages.id, id)).run();
   }
 
   private analysisQuery(filter?: SQL) {
@@ -136,6 +163,16 @@ export class MessageRepo {
       .all();
   }
 
+  latestAnalysisId(conversationId: string, status: MessageInsert['status']) {
+    return this.db
+      .select({ id: messages.id })
+      .from(messages)
+      .where(and(assistant, eq(messages.conversationId, conversationId), eq(messages.status, status)))
+      .orderBy(desc(messages.sequence))
+      .limit(1)
+      .get()?.id;
+  }
+
   hasStatus(conversationId: string, statuses: MessageInsert['status'][]) {
     return !!this.db
       .select({ id: messages.id })
@@ -165,5 +202,9 @@ export class MessageRepo {
       .where(inArray(messages.conversationId, conversationIds))
       .all()
       .map((row) => row.id);
+  }
+
+  insertMany(values: MessageInsert[]) {
+    return this.db.insert(messages).values(values).returning().all();
   }
 }

@@ -52,7 +52,7 @@ export class ConversationRepo {
       .get();
   }
 
-  purge(id: string) {
+  remove(id: string) {
     this.db.delete(conversations).where(eq(conversations.id, id)).run();
   }
 }
