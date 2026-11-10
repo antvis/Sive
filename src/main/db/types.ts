@@ -28,7 +28,6 @@ export type MessageOptions = {
   metrics?: Dataset['metrics'];
   dataVersion?: string;
   analyze: { strategy: { type: string } & AnalysisOptions; includeSummary: boolean };
-  query: { maxRows: number; maxResultBytes: number };
 };
 export type StoredAnalysisOptions = MessageOptions | Record<string, never>;
 

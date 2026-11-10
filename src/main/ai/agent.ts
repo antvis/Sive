@@ -7,10 +7,7 @@ import { WorkbenchError } from '@shared/errors';
 import { resolveStrategy } from './analysisStrategy';
 import { conversationMessages, EVIDENCE_INSTRUCTIONS, resultContext, type AnalysisHistory } from './context';
 import { createChart } from './charts';
-import { LOOP_QUERY_OPTIONS, QUERY_OPTIONS } from './queryOptions';
 import { modelOutputError, outputIssue } from './modelOutput';
-
-const TOOL_LOOP_MAX_STEPS = 6;
 
 export async function runAgent(
   ava: AVA,
@@ -29,8 +26,6 @@ export async function runAgent(
       .flatMap((turn) => turn.output.results)
       .map((result) => [result.id, result]),
   );
-  let queries = 0;
-  let charts = 0;
   const execute = async (
     action: NonNullable<AnalysisOutput['actions']>[number],
     fn: () => Promise<unknown>,
@@ -50,9 +45,9 @@ export async function runAgent(
     model,
     maxRetries: 0,
     toolCallConcurrency: 1,
-    stopWhen: isStepCount(TOOL_LOOP_MAX_STEPS),
+    stopWhen: isStepCount(8),
     instructions: `${EVIDENCE_INSTRUCTIONS}
-使用 analyze 执行自包含的分析问题，必要时补查、核对合计，最多 6 次查询、4 次绘图。
+使用 analyze 执行自包含的分析问题，必要时补查、核对合计。
 inspect 可按 resultId 查看可复用历史结果的有限数据样本。visualize 只能引用已返回或可复用的结果编号。只改图时直接复用指定快照，不重复查询。
 涉及当前数据的统计必须重新查询。回复标注引用的结果编号，区分事实、限制与待验证的解释。
 无需分析或证据不足时可直接说明，不要为了生成图表而编造数据。工具失败可修正，不能声称失败步骤已完成。`,
@@ -73,12 +68,9 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
         execute: ({ query }) => {
           const action = { tool: 'analyze' as const, query, resultId: undefined as string | undefined };
           return execute(action, async () => {
-            if (++queries > 6)
-              throw new WorkbenchError('MODEL', '已达到 6 次查询上限，请基于已有证据结束分析。');
             const result = await ava.analyze(query, {
               strategy,
               includeSummary: false,
-              ...(strategy.type === 'loop' ? LOOP_QUERY_OPTIONS : QUERY_OPTIONS),
             });
             signal.throwIfAborted();
             const evidence = { id: randomUUID(), result };
@@ -95,7 +87,6 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
         inputSchema: z.object({ resultId: z.string(), query: z.string().min(1).max(2000) }),
         execute: ({ resultId, query }) =>
           execute({ tool: 'visualize', resultId, query }, async () => {
-            if (++charts > 4) throw new WorkbenchError('MODEL', '已达到 4 次绘图上限，请结束分析。');
             const evidence = results.get(resultId);
             if (!evidence)
               throw new WorkbenchError('INVALID_INPUT', '结果编号不存在或已失效，请先 analyze。');

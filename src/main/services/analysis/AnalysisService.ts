@@ -1,6 +1,5 @@
 import type { ConversationService } from '../conversation/ConversationService';
 import type { AnalysisRecordService } from './AnalysisRecordService';
-import { LOOP_QUERY_OPTIONS, QUERY_OPTIONS } from '../../ai/queryOptions';
 import { WorkbenchError } from '@shared/errors';
 import { randomUUID } from 'node:crypto';
 import type { Task } from '@shared/contracts';
@@ -116,7 +115,6 @@ export class AnalysisService {
         metrics: dataset.metrics,
         dataVersion: this.datasets.dataVersion(dataset),
         analyze: { strategy: resolvedStrategy, includeSummary: false },
-        query: mode === 'loop' ? LOOP_QUERY_OPTIONS : QUERY_OPTIONS,
       });
       this.tasks.set(task.id, task);
       void this.executeTask({
