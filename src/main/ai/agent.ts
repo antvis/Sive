@@ -4,17 +4,20 @@ import { randomUUID } from 'node:crypto';
 import type { AVA } from '@antv/ava';
 import type { AnalysisOutput, Progress } from '@shared/contracts';
 import { WorkbenchError } from '@shared/errors';
+import { resolveStrategy } from './analysisStrategy';
 import { conversationMessages, EVIDENCE_INSTRUCTIONS, resultContext, type AnalysisHistory } from './context';
 import { createChart } from './charts';
-import { QUERY_OPTIONS } from './queryOptions';
+import { LOOP_QUERY_OPTIONS, QUERY_OPTIONS } from './queryOptions';
 import { modelOutputError, outputIssue } from './modelOutput';
+
+const TOOL_LOOP_MAX_STEPS = 6;
 
 export async function runAgent(
   ava: AVA,
   model: LanguageModel,
   question: string,
+  strategy: ReturnType<typeof resolveStrategy>,
   history: AnalysisHistory,
-  maxSteps: number,
   signal: AbortSignal,
   progress: (event: Progress) => void,
   preview: (output: AnalysisOutput) => void,
@@ -47,7 +50,7 @@ export async function runAgent(
     model,
     maxRetries: 0,
     toolCallConcurrency: 1,
-    stopWhen: isStepCount(maxSteps),
+    stopWhen: isStepCount(TOOL_LOOP_MAX_STEPS),
     instructions: `${EVIDENCE_INSTRUCTIONS}
 使用 analyze 执行自包含的分析问题，必要时补查、核对合计，最多 6 次查询、4 次绘图。
 inspect 可按 resultId 查看可复用历史结果的有限数据样本。visualize 只能引用已返回或可复用的结果编号。只改图时直接复用指定快照，不重复查询。
@@ -73,9 +76,9 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
             if (++queries > 6)
               throw new WorkbenchError('MODEL', '已达到 6 次查询上限，请基于已有证据结束分析。');
             const result = await ava.analyze(query, {
-              strategy: { type: 'direct', maxRetries: 1 },
+              strategy,
               includeSummary: false,
-              ...QUERY_OPTIONS,
+              ...(strategy.type === 'loop' ? LOOP_QUERY_OPTIONS : QUERY_OPTIONS),
             });
             signal.throwIfAborted();
             const evidence = { id: randomUUID(), result };

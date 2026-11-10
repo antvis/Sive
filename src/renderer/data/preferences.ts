@@ -16,7 +16,13 @@ export const defaultPreferences: Preferences = {
 
 export function restorePreferences(serialized: string | null): Preferences {
   try {
-    const parsed = preferencesSchema.partial().parse(JSON.parse(serialized || '{}'));
+    const stored = JSON.parse(serialized || '{}');
+    const parsed = preferencesSchema.partial().parse({
+      ...stored,
+      analysisMode: analysisModeSchema.safeParse(stored.analysisMode).success
+        ? stored.analysisMode
+        : defaultPreferences.analysisMode,
+    });
     return { ...defaultPreferences, ...parsed };
   } catch {
     return { ...defaultPreferences };

@@ -12,7 +12,7 @@ import { ModelService, ModelCredentialError } from '../settings/ModelService';
 import { ConnectionService } from '../data/ConnectionService';
 import { withAVA } from '../../ai/ava';
 import { TaskProgress } from './TaskProgress';
-import { runAnalysis } from '../../ai/runAnalysis';
+import { runAgent } from '../../ai/agent';
 import type { DatasetService } from '../data/DatasetService';
 import type { AnalysisHistory } from '../../ai/context';
 import type { AnalysisOutput, StoredDataset, StoredModel } from '../../db/mappers';
@@ -193,7 +193,7 @@ export class AnalysisService {
         reportProgress,
         async (ava, languageModel) => {
           if (!languageModel) throw new WorkbenchError('MODEL', '请先配置模型');
-          const result = await runAnalysis(
+          const result = await runAgent(
             ava,
             languageModel,
             task.question,

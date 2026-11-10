@@ -12,7 +12,5 @@ export function resolveStrategy(mode: AnalysisMode, options: AnalysisOptions = {
     );
   return mode === 'direct'
     ? { type: 'direct' as const, maxRetries: value }
-    : mode === 'agent'
-      ? { type: 'agent' as const, maxSteps: value }
-      : { type: 'loop' as const, maxSteps: value };
+    : { type: 'loop' as const, maxSteps: value };
 }

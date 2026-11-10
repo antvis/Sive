@@ -5,7 +5,7 @@ export const requiredText = (message = '请填写有效文本') =>
   z.string({ error: message }).refine((value) => value.trim().length > 0, message);
 export const idSchema = requiredText('标识不能为空');
 export const localFormatSchema = z.enum(['csv', 'json', 'xlsx', 'parquet']);
-export const analysisModeSchema = z.enum(['direct', 'loop', 'agent']);
+export const analysisModeSchema = z.enum(['direct', 'loop']);
 export const analysisOptionsSchema = z.object({
   maxRetries: z.int().optional(),
   maxSteps: z.int().optional(),
