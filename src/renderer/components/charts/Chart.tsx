@@ -62,6 +62,7 @@ export function Chart({ run, saved = false, index = 0 }: { run: Run; saved?: boo
   const [html, setHTML] = useState('');
   const [error, setError] = useState('');
   // Original results are immutable; only saved-view refreshes change chart content.
+  const savedVersion = saved ? run.snippet?.updatedAt : undefined;
   useEffect(() => {
     let live = true;
     setHTML('');
@@ -73,7 +74,7 @@ export function Chart({ run, saved = false, index = 0 }: { run: Run; saved?: boo
     return () => {
       live = false;
     };
-  }, [run.id, settings.mode, saved, run.snippet?.updatedAt, index]);
+  }, [run.id, settings.mode, saved, savedVersion, index]);
   return error ? (
     <Alert
       className={saved ? 'shrink-0' : 'row-span-full min-h-0 overflow-auto'}

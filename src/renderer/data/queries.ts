@@ -1,4 +1,4 @@
-import { QueryClient, queryOptions } from '@tanstack/react-query';
+import { keepPreviousData, QueryClient, queryOptions } from '@tanstack/react-query';
 import type { Dataset, RunSummary, State } from '@shared/contracts';
 
 export const queryClient = new QueryClient({
@@ -35,6 +35,7 @@ export function runQuery(summary: RunSummary) {
     queryFn: () => window.workbench.analysisGetRun(summary.id),
     // Original messages are immutable; snippet changes invalidate via updated_at.
     staleTime: Infinity,
+    placeholderData: keepPreviousData,
   });
 }
 
