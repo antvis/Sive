@@ -1,12 +1,16 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { settings } from '../schema';
-import type { DbService } from './DBConnection';
+import type { DBConnection } from './DBConnection';
 
 type SettingInsert = typeof settings.$inferInsert;
 type SettingUpdate = Partial<Omit<SettingInsert, 'key' | 'createdAt'>>;
 
+export type ActiveModel = { providerId: string; model?: string };
+
+const ACTIVE_MODEL_KEY = 'activeModel';
+
 export class SettingRepo {
-  constructor(private database: DbService) {}
+  constructor(private database: DBConnection) {}
 
   private get db() {
     return this.database.connection;
@@ -22,6 +26,20 @@ export class SettingRepo {
 
   list() {
     return this.db.select().from(settings).where(isNull(settings.deletedAt)).orderBy(settings.key).all();
+  }
+
+  getActiveModel(): ActiveModel {
+    return (
+      (this.get(ACTIVE_MODEL_KEY)?.value as ActiveModel | undefined) ?? {
+        providerId: '',
+      }
+    );
+  }
+
+  saveActiveModel(value: ActiveModel) {
+    const now = new Date().toISOString();
+    if (this.get(ACTIVE_MODEL_KEY)) this.update(ACTIVE_MODEL_KEY, { value, updatedAt: now });
+    else this.insert({ key: ACTIVE_MODEL_KEY, value, createdAt: now, updatedAt: now });
   }
 
   insert(values: SettingInsert) {

@@ -1,12 +1,12 @@
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import { conversations } from '../schema';
-import type { DbService } from './DBConnection';
+import type { DBConnection } from './DBConnection';
 
 type ConversationInsert = typeof conversations.$inferInsert;
 type ConversationUpdate = Partial<Omit<ConversationInsert, 'id' | 'createdAt'>>;
 
 export class ConversationRepo {
-  constructor(private database: DbService) {}
+  constructor(private database: DBConnection) {}
 
   private get db() {
     return this.database.connection;
@@ -24,8 +24,17 @@ export class ConversationRepo {
     return this.db
       .select()
       .from(conversations)
-      .where(isNull(conversations.deletedAt))
+      .where(and(isNull(conversations.deletedAt), isNull(conversations.archivedAt)))
       .orderBy(desc(conversations.createdAt), desc(conversations.id))
+      .all();
+  }
+
+  listArchived() {
+    return this.db
+      .select()
+      .from(conversations)
+      .where(and(isNull(conversations.deletedAt), isNotNull(conversations.archivedAt)))
+      .orderBy(desc(conversations.archivedAt), desc(conversations.id))
       .all();
   }
 
@@ -33,7 +42,13 @@ export class ConversationRepo {
     return this.db
       .select()
       .from(conversations)
-      .where(and(eq(conversations.datasetId, datasetId), isNull(conversations.deletedAt)))
+      .where(
+        and(
+          eq(conversations.datasetId, datasetId),
+          isNull(conversations.deletedAt),
+          isNull(conversations.archivedAt),
+        ),
+      )
       .orderBy(desc(conversations.createdAt), desc(conversations.id))
       .all();
   }

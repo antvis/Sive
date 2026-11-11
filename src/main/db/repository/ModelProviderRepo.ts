@@ -1,12 +1,12 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { modelProviders } from '../schema';
-import type { DbService } from './DBConnection';
+import type { DBConnection } from './DBConnection';
 
 type ModelProviderInsert = typeof modelProviders.$inferInsert;
 type ModelProviderUpdate = Partial<Omit<ModelProviderInsert, 'id' | 'createdAt'>>;
 
 export class ModelProviderRepo {
-  constructor(private database: DbService) {}
+  constructor(private database: DBConnection) {}
 
   private get db() {
     return this.database.connection;

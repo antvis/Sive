@@ -1,12 +1,12 @@
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { snippets } from '../schema';
-import type { DbService } from './DBConnection';
+import type { DBConnection } from './DBConnection';
 
 type SnippetInsert = typeof snippets.$inferInsert;
 type SnippetUpdate = Partial<Omit<SnippetInsert, 'id' | 'createdAt'>>;
 
 export class SnippetRepo {
-  constructor(private database: DbService) {}
+  constructor(private database: DBConnection) {}
 
   private get db() {
     return this.database.connection;
@@ -42,7 +42,7 @@ export class SnippetRepo {
     return this.db
       .select({ id: snippets.id })
       .from(snippets)
-      .where(inArray(snippets.messageId, messageIds))
+      .where(and(inArray(snippets.messageId, messageIds), isNull(snippets.deletedAt)))
       .all()
       .map((row) => row.id);
   }

@@ -1,9 +1,8 @@
 import { customType, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import type { Dataset } from '@shared/contracts';
-import { decrypt, encrypt } from '../../utils/credentials';
-import type { SourceConfig } from '../types';
+import type { DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
+import { decrypt, encrypt } from '../../util';
 
-const encryptedSourceConfig = customType<{ data: SourceConfig; driverData: string }>({
+const encryptedSourceConfig = customType<{ data: DataSourceConfig; driverData: string }>({
   dataType() {
     return 'text';
   },
@@ -22,24 +21,24 @@ export const datasets = sqliteTable('datasets', {
   // Display name of the dataset.
   name: text('name').notNull(),
 
-  // Must be one of: csv, json, xlsx, parquet, text, mysql, postgresql, sqlite,
-  // mongodb, clickhouse, http_file, supabase, feishu_bitable.
-  sourceType: text('source_type').notNull(),
+  // AVA data source type, mirrored from sourceConfig.type.
+  sourceType: text('source_type').$type<DataSourceConfig['type']>().notNull(),
 
   // Encrypted JSON object containing source configuration and credentials.
   sourceConfig: encryptedSourceConfig('source_config').notNull(),
 
   // JSON object containing the AVA data schema.
-  schema: text('schema', { mode: 'json' }).$type<Dataset['schema']>().notNull(),
+  schema: text('schema', { mode: 'json' }).$type<Schema>().notNull(),
 
   // JSON object containing the AVA data profile.
-  profile: text('profile', { mode: 'json' }).$type<Dataset['profile']>().notNull(),
+  profile: text('profile', { mode: 'json' }).$type<Profile>().notNull(),
 
   // Business semantic description of the dataset.
-  semantic: text('semantic').notNull().default(''),
+  semantic: text('semantic', { mode: 'json' }).$type<Semantic>().notNull(),
 
   // Optional JSON array of business metric definitions.
-  metrics: text('metrics', { mode: 'json' }).$type<NonNullable<Dataset['metrics']>>(),
+  // Only for dataset semantic, with structured data and tabular schema.
+  metrics: text('metrics', { mode: 'json' }),
 
   // Creation timestamp.
   createdAt: text('created_at').notNull(),

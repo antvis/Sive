@@ -1,12 +1,12 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { datasets } from '../schema';
-import type { DbService } from './DBConnection';
+import type { DBConnection } from './DBConnection';
 
 type DatasetInsert = typeof datasets.$inferInsert;
 type DatasetUpdate = Partial<Omit<DatasetInsert, 'id' | 'createdAt'>>;
 
 export class DatasetRepo {
-  constructor(private database: DbService) {}
+  constructor(private database: DBConnection) {}
 
   private get db() {
     return this.database.connection;
