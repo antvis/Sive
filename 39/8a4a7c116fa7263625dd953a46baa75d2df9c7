@@ -1,0 +1,28 @@
+src/main/db/index.ts
+  h_63dffd5e80151f 1-2,4-5
+src/main/db/repository/ConversationRepo.ts
+  h_63dffd5e80151f 3,48
+src/main/db/repository/DBConnection.ts
+  h_63dffd5e80151f 21,23-27
+src/main/db/repository/DatasetRepo.ts
+  h_63dffd5e80151f 3,39,48
+src/main/db/repository/ModelProviderRepo.ts
+  h_63dffd5e80151f 3,39,48
+src/main/db/repository/SettingRepo.ts
+  h_63dffd5e80151f 3,34,43
+src/main/db/repository/SnippetRepo.ts
+  h_63dffd5e80151f 3,57
+src/main/db/repository/index.ts
+  h_63dffd5e80151f 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "398a4a7c116fa7263625dd953a46baa75d2df9c7",
+  "prompts": {},
+  "humans": {
+    "h_63dffd5e80151f": {
+      "author": "hustcc <i@hust.cc>"
+    }
+  }
+}
