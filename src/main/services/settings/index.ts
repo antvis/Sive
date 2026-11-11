@@ -1,6 +1,6 @@
 import type { Repositories } from '../../db/repository';
-import type { DBConnection } from '../../db/repository/DBConnection';
-import type { ActiveModel } from '../../db/repository/SettingRepo';
+import type { DBConnection } from '../../db/repository/db-connection';
+import type { ActiveModel } from '../../db/repository/setting-repo';
 import type { ThemeSettings } from '../types';
 
 const THEME_KEY = 'theme';

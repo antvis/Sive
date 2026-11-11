@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import { messages } from '../schema';
-import type { DBConnection } from './DBConnection';
+import type { DBConnection } from './db-connection';
 
 type MessageInsert = typeof messages.$inferInsert;
 

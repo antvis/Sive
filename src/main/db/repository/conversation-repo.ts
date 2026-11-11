@@ -1,6 +1,6 @@
 import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import { conversations } from '../schema';
-import type { DBConnection } from './DBConnection';
+import type { DBConnection } from './db-connection';
 
 type ConversationInsert = typeof conversations.$inferInsert;
 type ConversationUpdate = Partial<Omit<ConversationInsert, 'id' | 'createdAt'>>;

@@ -1,5 +1,5 @@
 import { createRepositories } from '../db/repository';
-import type { DBConnection } from '../db/repository/DBConnection';
+import type { DBConnection } from '../db/repository/db-connection';
 import { AnalysisService } from './analysis';
 import { ConversationService } from './conversation';
 import { DatasetService } from './dataset';

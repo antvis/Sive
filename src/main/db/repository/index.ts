@@ -1,10 +1,10 @@
-import type { DBConnection } from './DBConnection';
-import { ConversationRepo } from './ConversationRepo';
-import { DatasetRepo } from './DatasetRepo';
-import { MessageRepo } from './MessageRepo';
-import { ModelProviderRepo } from './ModelProviderRepo';
-import { SettingRepo } from './SettingRepo';
-import { SnippetRepo } from './SnippetRepo';
+import type { DBConnection } from './db-connection';
+import { ConversationRepo } from './conversation-repo';
+import { DatasetRepo } from './dataset-repo';
+import { MessageRepo } from './message-repo';
+import { ModelProviderRepo } from './model-provider-repo';
+import { SettingRepo } from './setting-repo';
+import { SnippetRepo } from './snippet-repo';
 
 export function createRepositories(database: DBConnection) {
   return {

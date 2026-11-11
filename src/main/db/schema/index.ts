@@ -1,4 +1,4 @@
-export { modelProviders } from './modelProviders';
+export { modelProviders } from './model-providers';
 export { settings } from './settings';
 export { datasets } from './datasets';
 export { conversations } from './conversations';

@@ -1,6 +1,6 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { modelProviders } from '../schema';
-import type { DBConnection } from './DBConnection';
+import type { DBConnection } from './db-connection';
 
 type ModelProviderInsert = typeof modelProviders.$inferInsert;
 type ModelProviderUpdate = Partial<Omit<ModelProviderInsert, 'id' | 'createdAt'>>;

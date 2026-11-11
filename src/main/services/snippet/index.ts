@@ -1,5 +1,5 @@
 import type { Repositories } from '../../db/repository';
-import type { DBConnection } from '../../db/repository/DBConnection';
+import type { DBConnection } from '../../db/repository/db-connection';
 import { required } from '../../util';
 
 export class SnippetService {

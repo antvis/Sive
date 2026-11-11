@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Repositories } from '../../db/repository';
-import type { DBConnection } from '../../db/repository/DBConnection';
+import type { DBConnection } from '../../db/repository/db-connection';
 import { encrypt, required } from '../../util';
 import type { ModelInput } from '../types';
 
