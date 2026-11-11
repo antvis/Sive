@@ -174,7 +174,7 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
         (name) => !steps.some((step) => step.toolResults.some((result) => result.toolName === name)),
       );
       return required
-        ? { activeTools: [required], toolChoice: { type: 'tool', toolName: required } }
+        ? { activeTools: [required], toolChoice: 'auto' }
         : { activeTools: ['inspect', 'analyze', 'visualize'] };
     },
   });

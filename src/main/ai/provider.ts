@@ -1,5 +1,6 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type { LanguageModel } from 'ai';
+import { MODEL_REQUEST_TIMEOUT_MS } from '../config';
 
 export function createModel(
   baseURL: string,
@@ -13,7 +14,7 @@ export function createModel(
       signal: AbortSignal.any([
         ...(init?.signal ? [init.signal] : []),
         ...(signal ? [signal] : []),
-        AbortSignal.timeout(180000),
+        AbortSignal.timeout(MODEL_REQUEST_TIMEOUT_MS),
       ]),
     });
   return createOpenAICompatible({

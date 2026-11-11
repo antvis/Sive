@@ -5,7 +5,7 @@ import type { Repositories } from '../../db';
 import type { StoredDataset } from '../../db/types';
 import type { AnalysisOutput } from '@shared/contracts';
 import { timestamp } from '../../utils/time';
-import { QUERY_OPTIONS } from '../../ai/queryOptions';
+import { QUERY_OPTIONS, TASK_TIMEOUT_MS } from '../../config';
 import { WorkbenchError } from '@shared/errors';
 import { ModelService } from '../settings/ModelService';
 import { ConnectionService } from '../data/ConnectionService';
@@ -110,7 +110,7 @@ export class SnippetService {
         if (!sql?.trim()) throw new WorkbenchError('CONFLICT', '此分析没有可刷新的 SQL');
         return { ...evidence, sql };
       });
-      const signal = AbortSignal.timeout(300000);
+      const signal = AbortSignal.timeout(TASK_TIMEOUT_MS);
       const view = await withAVA(
         {
           dataset: { ...source, semantic: run.semantic, metrics: run.metrics },

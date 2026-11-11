@@ -3,6 +3,7 @@ import type { ConnectionService } from '../services/data/ConnectionService';
 import type { LanguageModel } from 'ai';
 import { businessSemantic } from '../ai/semantics';
 import { type AVADataset, loadSource, sourceSchema } from './sources';
+import { AVA_ENGINE_OPTIONS } from '../config';
 
 type AVAOptions = {
   dataset?: AVADataset;
@@ -22,9 +23,7 @@ export async function withAVA<T>(
     },
     engine: {
       type: 'duckdb',
-      memoryLimit: '512MB',
-      threads: 2,
-      queryTimeoutMs: 30000,
+      ...AVA_ENGINE_OPTIONS,
     },
   });
   let operationFailed = false;
