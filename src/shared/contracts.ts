@@ -231,7 +231,7 @@ export interface API {
     saved?: boolean,
     index?: number,
   ): Promise<string>;
-  snippetSave(runId: string): Promise<void>;
+  snippetSave(runId: string, title: string): Promise<void>;
   modelSave(input: ModelInput): Promise<void>;
   modelListAvailable(input: ModelConnectionInput): Promise<string[]>;
   modelActivate(id: string, model?: string): Promise<void>;

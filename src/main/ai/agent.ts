@@ -83,7 +83,7 @@ export async function runAgent(
 profile 返回导入或刷新数据源时保存的统计快照；当前数据的统计仍需通过 analyze 查询。
 使用 analyze 执行自包含的分析问题，必要时补查、核对合计。
 inspect 可按 resultId 查看可复用历史结果的有限数据样本。visualize 只能引用已返回或可复用的结果编号。只改图时直接复用指定快照，不重复查询。
-涉及当前数据的统计必须重新查询。回复标注引用的结果编号，区分事实、限制与待验证的解释。
+涉及当前数据的统计必须重新查询。回复区分事实、限制与待验证的解释，正文不输出内部结果编号或编号引用标记。
 无需分析或证据不足时可直接说明，不要为了生成图表而编造数据。工具失败可修正，不能声称失败步骤已完成。`,
     tools: {
       source: tool({
@@ -125,7 +125,8 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
         inputSchema: z.object({ resultId: z.string() }),
         execute: ({ resultId }) => {
           signal.throwIfAborted();
-          getEvidence(resultId);
+          const evidence = getEvidence(resultId);
+          if (!output.results.some((result) => result.id === resultId)) output.results.push(evidence);
           return { resultId };
         },
         toModelOutput: evidenceModelOutput,
@@ -207,9 +208,6 @@ inspect 可按 resultId 查看可复用历史结果的有限数据样本。visua
     output.text = (await response.text).trim();
     const finishReason = await response.finishReason;
 
-    for (const evidence of results.values())
-      if (output.text.includes(evidence.id) && !output.results.some(({ id }) => id === evidence.id))
-        output.results.push(evidence);
     output.warning = finishReason !== 'stop' || !output.text ? '模型输出未完成，请重试。' : undefined;
     if ((await response.steps).some((step) => step.content.some((part) => part.type === 'tool-error')))
       output.warning = [output.warning, '部分工具调用失败，请结合执行过程核对覆盖范围。']

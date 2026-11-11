@@ -11,6 +11,7 @@ import {
   Spin,
   Modal,
   Input,
+  Tooltip,
 } from '@renderer/components/ui/index';
 import { useUI } from '@renderer/hooks/useUI';
 import {
@@ -25,11 +26,10 @@ import type { Dataset, Run, RunSummary } from '@shared/contracts';
 import { errorMessage } from '@renderer/utils/feedback';
 import { Chart } from '@renderer/components/charts/Chart';
 import Grid from '@renderer/components/data/DataGrid';
-import { cx } from '@renderer/utils/cx';
 import { renderMarkdown } from '@shared/markdown';
 
 const savedCardSurface =
-  'grid [grid-row:span_6] grid-rows-subgrid gap-y-0 min-w-0 w-full p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-accent-line hover:shadow-[0_4px_18px] hover:shadow-ink/4 focus-within:border-accent-line focus-within:shadow-[0_4px_18px] focus-within:shadow-ink/4';
+  'grid [grid-row:span_5] grid-rows-subgrid gap-y-0 min-w-0 w-full overflow-hidden p-4.5 border border-line rounded-card bg-surface [transition:border-color_150ms,_box-shadow_150ms] hover:border-accent-line hover:shadow-[0_4px_18px] hover:shadow-ink/4 focus-within:border-accent-line focus-within:shadow-[0_4px_18px] focus-within:shadow-ink/4';
 
 function SavedCard({
   run,
@@ -47,9 +47,10 @@ function SavedCard({
   source?: Dataset;
 }) {
   const { message, confirm } = useUI();
-  const [tab, setTab] = useState('图表');
+  const [evidenceTab, setEvidenceTab] = useState('数据');
   const [resultIndex, setResultIndex] = useState(0);
   const [chartIndex, setChartIndex] = useState(0);
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [visible, setVisible] = useState(false);
@@ -90,10 +91,10 @@ function SavedCard({
     return () => observer.disconnect();
   }, []);
   const output = run.snippet?.output || run.output;
-  const chartResultIndex = output.results.findIndex(({ id }) => id === output.charts[chartIndex]?.resultId);
-  const result =
-    output.results[tab === '图表' ? chartResultIndex : resultIndex]?.result || output.results[0]?.result;
+  const refreshed = !!run.snippet?.output;
+  const result = output.results[resultIndex]?.result;
   const updatedAt = run.snippet?.updatedAt || run.createdAt;
+  const updatedDate = new Date(updatedAt);
 
   const exportCard = async (format: string) => {
     if (exporting || refreshing) return;
@@ -123,19 +124,7 @@ function SavedCard({
     }
   };
 
-  const renderContent = () => {
-    if (tab === 'SQL')
-      return <pre className="m-0 h-full overflow-auto">{result?.sql || '此分析没有 SQL'}</pre>;
-    if (tab !== '图表')
-      return (
-        <Grid
-          className="shrink-0"
-          rows={result?.data || []}
-          columns={result?.schema}
-          resetKey={updatedAt}
-          pageSize={5}
-        />
-      );
+  const renderPreview = () => {
     if (output.charts.length) {
       if (visible) return <Chart run={run} saved index={chartIndex} />;
       return (
@@ -144,25 +133,23 @@ function SavedCard({
         </div>
       );
     }
-    if (output.text)
-      return (
-        <div
-          className="markdown overflow-auto"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(output.text, true) }}
-        />
-      );
-    return (
-      <Empty
-        description={result?.data.length ? '本次分析没有图表，可切换查看数据或 SQL' : '查询未返回数据'}
-      />
-    );
+    if (result?.data.length)
+      return <Grid rows={result.data} columns={result.schema} resetKey={updatedAt} pageSize={5} />;
+    return <Empty description={output.text ? '本次分析没有图表或数据' : '查询未返回数据'} />;
   };
   return (
     <article className={savedCardSurface} ref={root} aria-label={title}>
-      <header className="flex gap-2 items-start">
-        <h3 className="flex-1 min-w-0 m-0 text-body leading-[24px] wrap-anywhere line-clamp-2" title={title}>
-          {title}
-        </h3>
+      <header className="flex min-w-0 max-w-full gap-2 items-start border-b border-b-line pb-3 mb-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="m-0 w-full min-w-0 truncate text-title leading-[24px]" title={title}>
+            {title}
+          </h3>
+          {title !== run.question && (
+            <p className="m-0 mt-1 text-muted text-helper line-clamp-2 wrap-anywhere" title={run.question}>
+              原问题：{run.question}
+            </p>
+          )}
+        </div>
         <Dropdown
           menu={{
             items: [
@@ -199,59 +186,41 @@ function SavedCard({
           <Button variant="ghost" size="small" icon={<DotsThreeIcon />} aria-label={'分析操作：' + title} />
         </Dropdown>
       </header>
-      <div className="items-center grid grid-cols-[auto_minmax(0,_1fr)] gap-y-1 gap-x-2 text-muted text-helper mt-2 mr-0 mb-3.5 ml-0">
-        <DatabaseIcon />
-        <span className="min-w-0 truncate" title={sourceName}>
-          {sourceName}
-          {disconnected ? ' · 连接已删除' : ''}
-        </span>
-        <time className="[grid-column:2] tabular-nums" dateTime={updatedAt}>
-          数据更新于 {new Date(updatedAt).toLocaleString()}
-        </time>
-      </div>
-      <div className="flex gap-2 items-center flex-wrap">
-        <div className="flex-1 min-w-48 whitespace-nowrap">
-          <Segmented
-            aria-label="分析内容"
-            options={['数据', 'SQL', '图表']}
-            value={tab}
-            onChange={(next) => {
-              if (tab === '图表' && chartResultIndex >= 0) setResultIndex(chartResultIndex);
-              setTab(next);
-            }}
+      <div className="min-h-16 min-w-0 max-w-full overflow-hidden text-[13.5px] leading-[1.7]">
+        {output.text ? (
+          <div
+            className="markdown snippet-card-markdown w-full min-w-0 max-h-18 overflow-hidden"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(output.text) }}
           />
-        </div>
-        {(tab === '图表' ? output.charts.length : output.results.length) > 1 && (
+        ) : (
+          <p className="m-0 text-muted">
+            {refreshed
+              ? '数据已刷新，此快照未生成新结论。请结合图表和计算依据查看。'
+              : '本次分析没有文字总结，请查看图表或计算依据。'}
+          </p>
+        )}
+      </div>
+      <div className="min-w-0 max-w-full overflow-hidden">
+        {output.charts.length > 1 && (
           <Dropdown
             menu={{
-              selectedKeys: [String(tab === '图表' ? chartIndex : resultIndex)],
-              items:
-                tab === '图表'
-                  ? output.charts.map((chart, index) => ({
-                      key: String(index),
-                      label: `图表 ${index + 1} · ${chart.spec.chartType}`,
-                    }))
-                  : output.results.map(({ result }, index) => ({
-                      key: String(index),
-                      label: `结果 ${index + 1} · ${result.query}`,
-                    })),
-              onClick: ({ key }) =>
-                tab === '图表' ? setChartIndex(Number(key)) : setResultIndex(Number(key)),
+              selectedKeys: [String(chartIndex)],
+              items: output.charts.map((chart, index) => ({
+                key: String(index),
+                label: `图表 ${index + 1} · ${chart.spec.chartType}`,
+              })),
+              onClick: ({ key }) => setChartIndex(Number(key)),
             }}
           >
             <Button size="small">
-              {tab === '图表' ? `图表 ${chartIndex + 1}` : `结果 ${resultIndex + 1}`}
+              图表 {chartIndex + 1} / {output.charts.length}
             </Button>
           </Dropdown>
         )}
-      </div>
-      <div
-        className={cx(
-          'flex flex-col h-65 min-h-0 min-w-0 my-3 mx-0',
-          tab === '图表' ? 'overflow-hidden' : 'overflow-auto',
+        {output.warning && <Alert className="mt-2" type="warning" title={output.warning} />}
+        {!output.warning && output.results.some(({ result: item }) => item.truncated) && (
+          <Alert className="mt-2" type="warning" title="部分查询结果已截断，请核对查询范围。" />
         )}
-      >
-        {output.warning && <Alert className="shrink-0" type="warning" title={output.warning} />}
         {refreshing && (
           <div className="shrink-0 flex gap-2 items-center mt-3 text-helper text-accent" role="status">
             <Spin size="small" />
@@ -268,14 +237,91 @@ function SavedCard({
             onClose={() => setError('')}
           />
         )}
-        {renderContent()}
+        <div className="flex flex-col h-65 min-h-0 min-w-0 overflow-hidden my-3 mx-0">{renderPreview()}</div>
       </div>
-      <footer className="flex items-center gap-2 flex-wrap justify-between border-t border-t-line pt-3">
-        <span className="text-muted">
-          {result?.data.length || 0} 行 · {result?.schema.length || 0} 列
-          {result?.truncated ? ' · 结果已截断' : ''}
-        </span>
-        <div className="flex items-center gap-2 ml-auto">
+      {output.results.length ? (
+        <details
+          className="min-w-0 max-w-full border-t border-t-line pt-2 text-helper"
+          onToggle={(event) => setEvidenceOpen(event.currentTarget.open)}
+        >
+          <summary className="cursor-pointer text-muted">计算依据 · {output.results.length} 个结果</summary>
+          {evidenceOpen && (
+            <>
+              <div className="flex min-w-0 gap-2 items-center flex-wrap mt-3">
+                <Segmented
+                  aria-label="计算依据内容"
+                  options={['数据', 'SQL']}
+                  value={evidenceTab}
+                  onChange={setEvidenceTab}
+                />
+                {output.results.length > 1 && (
+                  <Dropdown
+                    menu={{
+                      selectedKeys: [String(resultIndex)],
+                      items: output.results.map(({ result: item }, index) => ({
+                        key: String(index),
+                        label: (
+                          <span className="block max-w-60 truncate" title={item.query}>
+                            结果 {index + 1} · {item.query}
+                          </span>
+                        ),
+                      })),
+                      onClick: ({ key }) => setResultIndex(Number(key)),
+                    }}
+                  >
+                    <Button size="small">结果 {resultIndex + 1}</Button>
+                  </Dropdown>
+                )}
+              </div>
+              <div className="h-65 min-w-0 max-w-full overflow-auto my-3">
+                {evidenceTab === 'SQL' ? (
+                  <pre className="m-0 h-full min-w-0 overflow-auto whitespace-pre-wrap wrap-anywhere">
+                    {result?.sql || '此分析没有 SQL'}
+                  </pre>
+                ) : (
+                  <Grid
+                    rows={result?.data || []}
+                    columns={result?.schema}
+                    resetKey={updatedAt}
+                    pageSize={5}
+                  />
+                )}
+              </div>
+              {result?.truncated && <p className="m-0 text-muted">结果已截断，请核对查询范围。</p>}
+            </>
+          )}
+        </details>
+      ) : (
+        <div className="border-t border-t-line pt-2 text-muted text-helper">无计算依据</div>
+      )}
+      <footer className="flex items-center gap-2 min-w-0 border-t border-t-line pt-3">
+        <div className="flex items-center gap-2 min-w-0 mr-auto text-muted">
+          <Tooltip
+            title={
+              <span className="break-words">
+                {sourceName}
+                {disconnected ? ' · 连接已删除' : ''}
+              </span>
+            }
+          >
+            <span
+              className="inline-flex shrink-0"
+              role="img"
+              aria-label={`数据源：${sourceName}${disconnected ? '，连接已删除' : ''}`}
+              tabIndex={0}
+            >
+              <DatabaseIcon className="size-4" aria-hidden="true" />
+            </span>
+          </Tooltip>
+          <time
+            className="min-w-0 truncate whitespace-nowrap tabular-nums"
+            dateTime={updatedAt}
+            title={updatedDate.toLocaleString()}
+          >
+            {updatedDate.toLocaleDateString('zh-CN')}
+          </time>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
           <Dropdown
             disabled={exporting || refreshing}
             open={exportMenuOpen}
@@ -343,7 +389,9 @@ function SavedCardLoader(props: {
   if (!detail.run)
     return (
       <article className={savedCardSurface}>
-        <h3>{props.run.snippet?.title || props.run.question}</h3>
+        <h3 className="m-0 min-w-0 truncate" title={props.run.snippet?.title || props.run.question}>
+          {props.run.snippet?.title || props.run.question}
+        </h3>
         <Spin />
       </article>
     );
@@ -395,7 +443,7 @@ export default function SnippetPage({
         <span className="text-muted">{filtered.length} 个洞察 Snippet</span>
       </div>
       {filtered.length ? (
-        <div className="grid grid-cols-[repeat(auto-fill,_minmax(min(360px,_100%),_1fr))] gap-4 items-stretch mt-5">
+        <div className="grid grid-cols-[repeat(auto-fill,_minmax(min(420px,_100%),_1fr))] gap-4 items-stretch mt-5">
           {filtered.slice(0, count).map((run) => (
             <SavedCardLoader
               key={run.id}
