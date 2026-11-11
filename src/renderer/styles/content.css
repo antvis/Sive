@@ -115,8 +115,7 @@
   border-top: 1px solid var(--border);
 }
 
-.markdown .table-scroll,
-.markdown .summary-table-scroll {
+.markdown .table-scroll {
   margin: 12px 0;
   overflow-x: auto;
 }
