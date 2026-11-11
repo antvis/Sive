@@ -3,7 +3,7 @@ import type { DbService } from '../../db/DbService';
 import { datasetRecord, sourceSnapshot } from '../../db/mappers';
 import { timestamp } from '../../utils/time';
 import type { StoredDataset } from '../../db/mappers';
-import { QUERY_OPTIONS } from '../../ai/queryOptions';
+import { QUERY_OPTIONS } from '../../config';
 import { WorkbenchError } from '@shared/errors';
 import { fileChecksum } from '../../utils/fileChecksum';
 import path from 'node:path';

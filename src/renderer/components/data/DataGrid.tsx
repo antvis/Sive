@@ -15,13 +15,8 @@ import {
   type Header,
   type SortingState,
 } from '@tanstack/react-table';
-import { Button, Pagination, Tooltip } from '@renderer/components/ui/index';
-import {
-  ArrowCounterClockwiseIcon,
-  ArrowsDownUpIcon,
-  CaretUpIcon,
-  CaretDownIcon,
-} from '@phosphor-icons/react';
+import { Pagination } from '@renderer/components/ui/index';
+import { ArrowsDownUpIcon, CaretUpIcon, CaretDownIcon } from '@phosphor-icons/react';
 import {
   clampColumnWidth,
   contentColumnWidths,
@@ -263,18 +258,7 @@ export default function Grid({
           fill && 'shrink-0 border-t border-t-line pt-2 mt-1',
         )}
       >
-        {footer || <span>{rows.length} 行 · 排序仅作用于已加载数据</span>}
-        <Tooltip title="恢复全部列宽；拖动表头右边界可调整，双击可恢复单列">
-          <Button
-            size="small"
-            variant="ghost"
-            icon={<ArrowCounterClockwiseIcon />}
-            aria-label="恢复全部列宽"
-            className="hover:text-muted"
-            disabled={!Object.keys(table.getState().columnSizing).length}
-            onClick={() => table.resetColumnSizing()}
-          />
-        </Tooltip>
+        {footer}
       </div>
     </div>
   );

@@ -11,10 +11,11 @@ import { createModel } from '../../ai/provider';
 import { APICallError, generateText } from 'ai';
 import { randomUUID } from 'node:crypto';
 import type { ModelConnectionInput, ModelInput, ModelTestProgress } from '@shared/contracts';
+import { MODEL_TEST_TIMEOUT_MS, MODEL_LIST_TIMEOUT_MS, MODEL_TEST_CONCURRENCY } from '../../config';
 
 function modelTestError(error: unknown, model: string) {
   if (error instanceof Error && error.name === 'TimeoutError')
-    return `模型「${model}」测试超时（30 秒），配置未保存。服务繁忙或模型响应较慢均可能导致超时，不代表模型不可用，请稍后重试。`;
+    return `模型「${model}」测试超时（${MODEL_TEST_TIMEOUT_MS / 1000} 秒），配置未保存。服务繁忙或模型响应较慢均可能导致超时，不代表模型不可用，请稍后重试。`;
   if (APICallError.isInstance(error) && [429, 503].includes(error.statusCode ?? 0))
     return `模型「${model}」服务繁忙或请求被限流（HTTP ${error.statusCode}），配置未保存，请稍后重试。`;
   return `模型「${model}」测试失败，整个服务配置未保存。请检查模型权限、密钥及接口兼容性。`;
@@ -57,7 +58,7 @@ export class ModelService {
     try {
       const response = await fetch(input.baseURL.replace(/\/+$/, '') + '/models', {
         headers: key ? { Authorization: `Bearer ${key}` } : {},
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(MODEL_LIST_TIMEOUT_MS),
         redirect: 'error',
       });
       if (!response.ok) {
@@ -97,7 +98,10 @@ export class ModelService {
           '模型列表响应不是有效 JSON，请确认 API 服务地址和服务的模型列表接口。',
         );
       if (error instanceof Error && ['TimeoutError', 'AbortError'].includes(error.name))
-        throw new WorkbenchError('MODEL', '获取模型列表超时（15 秒），请检查网络连接或稍后重试。');
+        throw new WorkbenchError(
+          'MODEL',
+          `获取模型列表超时（${MODEL_LIST_TIMEOUT_MS / 1000} 秒），请检查网络连接或稍后重试。`,
+        );
       throw new WorkbenchError('MODEL', '无法连接模型列表接口，请检查 API 服务地址、网络、代理或证书配置。');
     }
   }
@@ -154,7 +158,7 @@ export class ModelService {
             prompt: 'Reply with OK.',
             maxRetries: 0,
             abortSignal: abort.signal,
-            timeout: 30000,
+            timeout: MODEL_TEST_TIMEOUT_MS,
           });
           completed++;
         } catch (error) {
@@ -168,7 +172,7 @@ export class ModelService {
         }
       }
     };
-    await Promise.all(Array.from({ length: Math.min(3, pending.length) }, worker));
+    await Promise.all(Array.from({ length: Math.min(MODEL_TEST_CONCURRENCY, pending.length) }, worker));
     if (failure) throw failure;
     this.saveProfile(p, old);
     this.change();

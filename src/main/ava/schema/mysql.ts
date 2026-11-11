@@ -1,4 +1,4 @@
-import { QUERY_OPTIONS } from '../../ai/queryOptions';
+import { QUERY_OPTIONS } from '../../config';
 import { WorkbenchError } from '@shared/errors';
 import type { AVA, Schema, PrimaryKey } from '@antv/ava';
 import { identifier } from '../../utils/sql';

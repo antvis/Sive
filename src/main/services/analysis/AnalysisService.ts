@@ -13,6 +13,7 @@ import { runAgent, resolveStrategy } from '../../ai/agent';
 import type { DatasetService } from '../data/DatasetService';
 import type { AnalysisHistory } from '../../ai/context';
 import type { AnalysisOutput, StoredDataset, StoredModel } from '../../db/mappers';
+import { TASK_TIMEOUT_MS, AVA_ENGINE_OPTIONS } from '../../config';
 
 type TaskExecutionContext = {
   task: Task;
@@ -77,7 +78,7 @@ export class AnalysisService {
       throw new WorkbenchError('CONFLICT', '会话不存在或不属于当前数据源');
     if (this.isRunning(conversation.id)) throw new WorkbenchError('CONFLICT', '此会话已有分析正在进行');
     const abortController = new AbortController();
-    const analysisSignal = AbortSignal.any([abortController.signal, AbortSignal.timeout(300000)]);
+    const analysisSignal = AbortSignal.any([abortController.signal, AbortSignal.timeout(TASK_TIMEOUT_MS)]);
     const taskProgress = new TaskProgress(this.records, this.taskChanged);
     this.activeExecutions.set(conversation.id, { abortController, taskProgress });
     let executionStarted = false;
@@ -199,7 +200,8 @@ export class AnalysisService {
       };
       task.error = error instanceof Error ? error.message : String(error);
       if (analysisOutput) task.error = '分析结果保存失败，请检查磁盘空间。';
-      if (analysisSignal.aborted) task.error = '分析超过 5 分钟，已停止模型请求。请缩小范围后重试。';
+      if (analysisSignal.aborted)
+        task.error = `分析超过 ${TASK_TIMEOUT_MS / 60000} 分钟，已停止模型请求。请缩小范围后重试。`;
       if (abortController.signal.aborted) task.error = '分析已取消';
       task.events.push({
         at: new Date().toISOString(),
@@ -232,7 +234,7 @@ export class AnalysisService {
       at: new Date().toISOString(),
       stage: 'cancelling',
       label: '正在停止分析',
-      detail: '已取消模型请求，等待正在执行的查询和连接释放。查询超时上限为 30 秒。',
+      detail: `已取消模型请求，等待正在执行的查询和连接释放。查询超时上限为 ${AVA_ENGINE_OPTIONS.queryTimeoutMs / 1000} 秒。`,
     });
     execution.abortController.abort();
     execution.taskProgress.flush(task);

@@ -5,6 +5,7 @@ import { themePalette } from '@shared/theme';
 import { selectLocalFile } from '../services/data/selectLocalFile';
 import { exportAnalysis } from '../services/export/exportAnalysis';
 import { buildWorkspaceState } from '../services/workspaceState';
+import { SUGGEST_TIMEOUT_MS } from '../config';
 
 export function createCommandHandlers(
   win: BrowserWindow,
@@ -41,7 +42,7 @@ export function createCommandHandlers(
     datasetSuggest: async (id, requestId) => {
       suggestions.get(requestId)?.abort();
       const controller = new AbortController();
-      const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(60000)]);
+      const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(SUGGEST_TIMEOUT_MS)]);
       suggestions.set(requestId, controller);
       try {
         return await datasets.suggest(id, models.model(models.active(), signal), signal);

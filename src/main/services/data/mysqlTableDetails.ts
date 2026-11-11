@@ -1,5 +1,6 @@
 import { createConnection, type RowDataPacket } from 'mysql2/promise';
 import type { MySQLInput, TableDetails } from '@shared/contracts';
+import { MYSQL_CONNECT_TIMEOUT_MS, MYSQL_QUERY_TIMEOUT_MS } from '../../config';
 
 const identifier = (text: string) => '`' + text.replaceAll('`', '``') + '`';
 
@@ -15,14 +16,14 @@ export async function mysqlTableDetails(
     database: options.database,
     user: options.user,
     password: options.password,
-    connectTimeout: 10000,
+    connectTimeout: MYSQL_CONNECT_TIMEOUT_MS,
     multipleStatements: false,
   });
   try {
     const [rows] = await connection.query<RowDataPacket[]>({
       sql: 'SELECT INDEX_NAME AS index_name, COLUMN_NAME AS column_name, NON_UNIQUE AS non_unique, INDEX_TYPE AS index_type FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY INDEX_NAME, SEQ_IN_INDEX',
       values: [options.database, table],
-      timeout: 10000,
+      timeout: MYSQL_QUERY_TIMEOUT_MS,
     });
     const byName = new Map<string, TableDetails['indexes'][number]>();
     for (const row of rows) {
@@ -43,7 +44,7 @@ export async function mysqlTableDetails(
     try {
       const [definition] = await connection.query<RowDataPacket[]>({
         sql: 'SHOW CREATE TABLE ' + identifier(options.database) + '.' + identifier(table),
-        timeout: 10000,
+        timeout: MYSQL_QUERY_TIMEOUT_MS,
       });
       const ddl = definition[0]?.['Create Table'] ?? definition[0]?.['Create View'];
       if (typeof ddl !== 'string') return { indexes, ddlError: '建表语句不可用，请在数据库工具中查看。' };

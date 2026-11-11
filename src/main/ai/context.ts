@@ -1,9 +1,14 @@
 import type { AnalysisResponse } from '@antv/ava';
 import type { ModelMessage } from 'ai';
 import type { AnalysisOutput } from '@shared/contracts';
+import { EVIDENCE_MAX_ROWS, EVIDENCE_MAX_BYTES, RECENT_TURN_COUNT, HISTORY_BUDGET_BYTES } from '../config';
 
 // 把完整 AVA 结果裁剪成有界样本，供 analyze 和 inspect 返回给模型
-export function resultContext(result: AnalysisResponse, maxRows = 50, maxBytes = 12000) {
+export function resultContext(
+  result: AnalysisResponse,
+  maxRows = EVIDENCE_MAX_ROWS,
+  maxBytes = EVIDENCE_MAX_BYTES,
+) {
   const rows: Record<string, unknown>[] = [];
   let bytes = 0;
   for (const row of result.data.slice(0, maxRows)) {
@@ -26,9 +31,6 @@ export function resultContext(result: AnalysisResponse, maxRows = 50, maxBytes =
 }
 
 export type AnalysisHistory = { question: string; output: AnalysisOutput; reusable: boolean }[];
-
-const RECENT_TURN_COUNT = 4;
-const HISTORY_BUDGET_BYTES = 16000;
 
 function answerContext(turn: AnalysisHistory[number]) {
   const answer = turn.output.text.slice(0, 1500) || '本轮没有文字结论。';
