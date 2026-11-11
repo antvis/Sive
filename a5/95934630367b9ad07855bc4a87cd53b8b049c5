@@ -1,0 +1,159 @@
+docs/PRODUCT.md
+  s_0853dbf02f8b8a::t_d3cd7e7cf2e947 1-190,200-246
+  s_0853dbf02f8b8a::t_96596e63976f63 191-199
+src/main/util/index.ts
+  s_d4537b6d3f592f::t_07c0012f32dabf 1-2
+src/main/services/snippet/index.ts
+  s_b3ea22838a5e27::t_c8394d391f29dc 2,7
+  s_0853dbf02f8b8a::t_94667a01c8d04a 4-6,10,13-16,19-23,26-28
+  s_d4537b6d3f592f::t_5b252afef29afc 3
+  s_d4537b6d3f592f::t_1829218fcf4801 11-12
+  s_0853dbf02f8b8a::t_717dca5616a763 1,8-9,17-18,24-25
+src/main/db/index.ts
+  s_b3ea22838a5e27::t_6f4cdcb6ab0583 4
+  s_0853dbf02f8b8a::t_6b0b9f8c570e39 1
+  s_0853dbf02f8b8a::t_46bf7df000b90d 2-3
+src/main/db/schema/snippets.ts
+  s_d4537b6d3f592f::t_5b7dcd4c94222b 18
+src/main/services/conversation/index.ts
+  s_d4537b6d3f592f::t_e805a8d22e1041 4
+  s_0853dbf02f8b8a::t_6eab03afe1e0c2 2,7,9-10,13,17,21,24-30,36-37,43-44,50-51,59,61-63,65-66
+  s_0853dbf02f8b8a::t_dfe38954892e30 1,5-6,11-12,14-16,18-20,22-23,31-35,38-42,45-49,52-58,60,64,67-70
+  s_b3ea22838a5e27::t_4b46ceae8bab1a 3,8
+src/main/db/repository/DBConnection.ts
+  s_b3ea22838a5e27::t_11c71c6b9f5fc0 13,17,31
+  s_0853dbf02f8b8a::t_a367ac8cee4dbe 21,25
+  s_0853dbf02f8b8a::t_8caa286d2381b6 43
+  s_0853dbf02f8b8a::t_7ba01fdbe0a02c 1,5
+src/main/util/assert.ts
+  s_d4537b6d3f592f::t_ea25f0a08cd9fa 1-4
+src/main/db/repository/SnippetRepo.ts
+  s_0853dbf02f8b8a::t_3a9bdd27774873 45
+  s_b3ea22838a5e27::t_857ffbc7fad26f 3,9
+src/main/db/repository/MessageRepo.ts
+  s_b3ea22838a5e27::t_e498386569cf07 3,8
+  s_0853dbf02f8b8a::t_01e784e7227098 1-2,4-7,9-71
+src/main/services/analysis/index.ts
+  s_d4537b6d3f592f::t_705646ed37c17b 7,11,15
+  s_4e192d4008722c::t_8d372bc702b972 8,12,16
+  s_d4537b6d3f592f::t_d1539858f011e4 5
+  s_0853dbf02f8b8a::t_fb2cd3020fe01d 1
+  s_4e192d4008722c::t_cac0a1da754d7a 2
+  s_0853dbf02f8b8a::t_710bc95a033070 3-4,6,9-10,13-14,17-18
+src/main/db/repository/SettingRepo.ts
+  s_d4537b6d3f592f::t_3d20d6ac64071e 41
+  s_b3ea22838a5e27::t_d306ea3a68d871 3,13
+  s_d4537b6d3f592f::t_feaf03171cb381 8-11
+  s_d4537b6d3f592f::t_7814d02e626d30 31-40,42-44
+src/main/services/dataset/index.ts
+  s_4e192d4008722c::t_4db0430d99b88f 15,19,27,34
+  s_d4537b6d3f592f::t_2edb89bf2400df 26
+  s_d4537b6d3f592f::t_34df76ddb9c28e 30
+  s_d4537b6d3f592f::t_6293263193a5da 54
+  s_d4537b6d3f592f::t_4c164a3745e61f 6
+  s_b3ea22838a5e27::t_278428a222aaa4 4,10
+  s_d4537b6d3f592f::t_e19490a5d0dc20 2
+  s_0853dbf02f8b8a::t_e4151bbb3bd9a9 3,5,9,11-12,36-37,39,45-46,51,56-57
+  s_0853dbf02f8b8a::t_d19cdc37054eab 1,7-8,13-14,16-18,20-25,28-29,31-33,35,38,40-44,47-50,52-53,55,58-60
+src/main/services/types.ts
+  s_0853dbf02f8b8a::t_ddf1df7a3cd8a4 2-5,13-22
+  s_d4537b6d3f592f::t_f89027b41371e6 9
+  s_d4537b6d3f592f::t_9bc74cc0ca2081 10
+  s_4e192d4008722c::t_a8d8252d154ca7 11-12
+  s_d4537b6d3f592f::t_b44d617a479441 7-8
+  s_d4537b6d3f592f::t_8ef26e8d6b512b 6
+  s_d4537b6d3f592f::t_68a56670c3c6bd 1
+src/main/services/index.ts
+  s_b3ea22838a5e27::t_aebdd688f8364b 2,10
+  s_0853dbf02f8b8a::t_d1da7afaf0ca29 3-9,21-23
+  s_0853dbf02f8b8a::t_511bdf2a41a016 1,11-14,17
+  s_d4537b6d3f592f::t_ed4d07917d730c 15-16,18-20
+src/main/db/repository/ConversationRepo.ts
+  s_0853dbf02f8b8a::t_98d4e5a6e199c2 45-51
+  s_0853dbf02f8b8a::t_5833e112e83563 27,32-37
+  s_b3ea22838a5e27::t_48489c6b9c622e 3,9
+  s_0853dbf02f8b8a::t_884466275dc465 1
+  s_0853dbf02f8b8a::t_fe05d3501d7ed4 38-40
+src/main/services/model/index.ts
+  s_b3ea22838a5e27::t_ee01d4da9debca 3,9
+  s_0853dbf02f8b8a::t_80ab21b1bc8608 2,5,10-11,13,15,32-34,38-41,51-52,57,70-71
+  s_d4537b6d3f592f::t_80c314ace5322a 4
+  s_0853dbf02f8b8a::t_3c2d293176c924 1,6-8,12,16-31,35-37,42-50,53-56,58,60-64,66-69,74-77
+  s_d4537b6d3f592f::t_7d4f7e1c12e063 14,59,72
+  s_d4537b6d3f592f::t_043bafbc3d46d2 65,73
+src/main/index.ts
+  s_0853dbf02f8b8a::t_a8d7262a3cbbc5 1,3-5,7-8,10-12,20-24
+  s_0853dbf02f8b8a::t_f30d8a0cd40bda 13-19
+  s_b3ea22838a5e27::t_60756749b19829 2,6,9
+src/main/db/schema/datasets.ts
+  s_d4537b6d3f592f::t_b30ce65e765a61 24-25
+  s_d4537b6d3f592f::t_32b6f338ae2d19 41
+  s_d4537b6d3f592f::t_7ec75df7ce86c6 3
+  s_d4537b6d3f592f::t_ed299605330874 2,5
+  s_d4537b6d3f592f::t_d2626cdce21c32 40
+src/main/services/settings/index.ts
+  s_b3ea22838a5e27::t_fceaafbdf348f9 2,10
+  s_d4537b6d3f592f::t_af99cbc5471a7e 3
+  s_0853dbf02f8b8a::t_46f34cdcceed9a 5-8,13-16,20-23,27-33,35-37,39-40
+  s_0853dbf02f8b8a::t_e877b1b5e8cc27 1,4,9,11-12,19
+  s_0853dbf02f8b8a::t_f30d8a0cd40bda 17-18,24-26
+  s_d4537b6d3f592f::t_46c686a7cbf4a5 34,38
+src/main/db/repository/DatasetRepo.ts
+  s_b3ea22838a5e27::t_9c6fcf3085fba6 3,9
+src/main/db/repository/index.ts
+  s_b3ea22838a5e27::t_db2060a36040c4 1,9
+  s_0853dbf02f8b8a::t_81523bc9646c4c 2-8,10-22
+src/main/db/repository/ModelProviderRepo.ts
+  s_b3ea22838a5e27::t_997320f6be54f9 3,9
+src/main/db/schema/messages.ts
+  s_d4537b6d3f592f::t_90d3b701163642 24,27
+src/main/ipc/index.ts
+  s_d4537b6d3f592f::t_c8873a8227367c 3
+  s_d4537b6d3f592f::t_a57acd576ebd66 5
+  s_0853dbf02f8b8a::t_5037bde7a32e23 1-2,6-8,24-30,41-42,44-48,50-53,55-57,60-63,65-69,71-74,76-79,81-84,86-89,91-94,96-97,99-102,104-107,109-112,114-117,119-122,124-127,129-131
+  s_d4537b6d3f592f::t_f945e9efc78ceb 31-40
+  s_d4537b6d3f592f::t_eb1e8c123ef5e8 59
+  s_d4537b6d3f592f::t_828b2620456d0d 90
+  s_0853dbf02f8b8a::t_5020d888b6e534 4
+  s_0853dbf02f8b8a::t_43678d3f764c1d 9-23,43,49,54,58,64,70,75,80,85,95,98,103,108,113,118,123,128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a595934630367b9ad07855bc4a87cd53b8b049c5",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_4e192d4008722c": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "ec2fc527-67d3-44b2-9647-09d7cf0b038e",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_b3ea22838a5e27": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "4395f731-04e9-46dd-bb0b-2c54b74a36d4",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_d4537b6d3f592f": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "bed76758-ce35-481d-9e48-1ab70dbd7ef2",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
