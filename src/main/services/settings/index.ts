@@ -1,9 +1,11 @@
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { ActiveModel } from '../../db/repository/setting-repo';
-import type { ThemeSettings } from '../types';
+import type { Preferences, ThemeSettings } from '../types';
 
 const THEME_KEY = 'theme';
+const PREFERENCES_KEY = 'preferences';
+const defaultPreferences: Preferences = { analysisMode: 'direct', sendShortcut: 'enter' };
 
 export class SettingsService {
   constructor(
@@ -28,6 +30,18 @@ export class SettingsService {
 
   saveTheme(theme: ThemeSettings) {
     this.set(THEME_KEY, theme);
+  }
+
+  getPreferences(): Preferences {
+    const saved = this.repositories.settings.get(PREFERENCES_KEY)?.value as Partial<Preferences> | undefined;
+    return {
+      analysisMode: saved?.analysisMode ?? defaultPreferences.analysisMode,
+      sendShortcut: saved?.sendShortcut ?? defaultPreferences.sendShortcut,
+    };
+  }
+
+  savePreferences(preferences: Preferences) {
+    this.set(PREFERENCES_KEY, preferences);
   }
 
   getActiveModel(): ActiveModel {

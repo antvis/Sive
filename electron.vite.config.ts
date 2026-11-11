@@ -5,11 +5,10 @@ import { resolve } from 'node:path';
 
 // Electron must launch as a desktop app even when the parent runs in Node mode.
 delete process.env.ELECTRON_RUN_AS_NODE;
-const shared = resolve('src/shared');
 
 export default defineConfig(({ command }) => ({
   main: {
-    resolve: { alias: { '@main': resolve('src/main'), '@shared': shared } },
+    resolve: { alias: { '@main': resolve('src/main') } },
     build: {
       outDir: 'dist-electron',
       // Watch rebuilds must preserve the preload bundle in this shared directory.
@@ -21,7 +20,6 @@ export default defineConfig(({ command }) => ({
     },
   },
   preload: {
-    resolve: { alias: { '@shared': shared } },
     build: {
       outDir: 'dist-electron',
       // Main and preload share this directory; keep the main build intact.
@@ -34,10 +32,10 @@ export default defineConfig(({ command }) => ({
     },
   },
   renderer: {
-    root: 'src/renderer',
+    root: 'sive-renderer',
     publicDir: resolve('assets'),
     resolve: {
-      alias: { '@renderer': resolve('src/renderer'), '@shared': shared, '@assets': resolve('assets') },
+      alias: { '@renderer': resolve('sive-renderer'), '@assets': resolve('assets') },
     },
     base: './',
     plugins: [react(), tailwindcss()],
@@ -46,7 +44,7 @@ export default defineConfig(({ command }) => ({
       outDir: resolve('dist'),
       minify: true,
       chunkSizeWarningLimit: 1600,
-      rolldownOptions: { input: resolve('src/renderer/index.html') },
+      rolldownOptions: { input: resolve('sive-renderer/index.html') },
     },
   },
 }));

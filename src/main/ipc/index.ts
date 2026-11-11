@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
 import type { Services } from '../services';
-import type { DatasetSaveInput, ModelInput, ThemeSettings } from '../services/types';
+import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -32,10 +32,10 @@ export function registerIpc(services: Services) {
     conversations: services.conversation.list(),
     archivedConversations: services.conversation.listArchived(),
     datasets: services.dataset.list(),
-    runs: services.analysis.listSummaries(),
     models: services.model.list(),
     activeModelId: services.settings.getActiveModel().providerId,
     theme: services.settings.getTheme(),
+    preferences: services.settings.getPreferences(),
     revision,
   }));
 
@@ -114,8 +114,17 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('modelSave', (event, input) => {
-    services.model.save(objectInput<ModelInput>(input));
+  ipcMain.handle('settingsSavePreferences', (event, preferences) => {
+    services.settings.savePreferences(objectInput<Preferences>(preferences));
+    changed(event);
+  });
+
+  ipcMain.handle('modelListAvailable', (_event, input) => services.model.listAvailable(objectInput(input)));
+
+  ipcMain.handle('modelSave', async (event, input) => {
+    const model = objectInput<ModelInput>(input);
+    await services.model.test(model, (progress) => event.sender.send('model:test-progress', progress));
+    services.model.save(model);
     changed(event);
   });
 

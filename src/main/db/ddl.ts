@@ -6,12 +6,13 @@ export const SchemaDDL = `
     source_config TEXT NOT NULL,
     schema TEXT NOT NULL,
     profile TEXT NOT NULL,
-    semantic TEXT NOT NULL DEFAULT '',
+    semantic TEXT NOT NULL DEFAULT '{}',
     metrics TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     deleted_at TEXT
   );
+  UPDATE datasets SET semantic = '{}' WHERE semantic = '';
 
   CREATE TABLE IF NOT EXISTS conversations (
     id TEXT PRIMARY KEY,

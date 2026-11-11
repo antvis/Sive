@@ -1,14 +1,36 @@
 import { randomUUID } from 'node:crypto';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { generateText } from 'ai';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
-import { encrypt, required } from '../../util';
-import type { ModelInput } from '../types';
+import { decrypt, encrypt, required } from '../../util';
+import type { ModelConnectionInput, ModelInput, ModelTestProgress } from '../types';
+
+function modelURL(value: string) {
+  const url = new URL(value);
+  const localHTTP = url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  if ((url.protocol !== 'https:' && !localHTTP) || url.username || url.password || url.search || url.hash) {
+    throw new Error('服务地址需使用 HTTPS，或本机 HTTP 地址，且不能包含凭据、查询参数或锚点。');
+  }
+  return value.replace(/\/+$/, '');
+}
 
 export class ModelService {
   constructor(
     private database: DBConnection,
     private repositories: Repositories,
   ) {}
+
+  private resolveApiKey(input: ModelConnectionInput) {
+    if (input.apiKey) return input.apiKey;
+    if (!input.credentialSourceId) return '';
+    const source = required(
+      this.repositories.modelProviders.get(input.credentialSourceId),
+      '凭据来源不存在。',
+    );
+    if (source.baseUrl !== input.baseURL) throw new Error('服务地址已修改，请重新填写密钥。');
+    return source.encryptedKey ? decrypt(source.encryptedKey) : '';
+  }
 
   list() {
     const active = this.repositories.settings.getActiveModel();
@@ -24,6 +46,67 @@ export class ModelService {
       hasKey: Boolean(row.encryptedKey),
       updatedAt: row.updatedAt,
     }));
+  }
+
+  async listAvailable(input: ModelConnectionInput) {
+    const baseURL = modelURL(input.baseURL);
+    const apiKey = this.resolveApiKey({ ...input, baseURL });
+    const response = await fetch(`${baseURL}/models`, {
+      headers: { Accept: 'application/json', ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}) },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) throw new Error(`获取模型列表失败（HTTP ${response.status}）。`);
+    const body: unknown = await response.json();
+    if (!body || typeof body !== 'object' || !('data' in body) || !Array.isArray(body.data)) {
+      throw new Error('模型服务返回了无法识别的模型列表。');
+    }
+    return [
+      ...new Set(
+        body.data.flatMap((item) =>
+          item && typeof item === 'object' && 'id' in item && typeof item.id === 'string' && item.id
+            ? [item.id]
+            : [],
+        ),
+      ),
+    ];
+  }
+
+  async test(input: ModelInput, report: (progress: ModelTestProgress) => void) {
+    if (!input.modelIds.length) throw new Error('请至少选择一个模型。');
+    const baseURL = modelURL(input.baseURL);
+    const apiKey = this.resolveApiKey({ ...input, baseURL });
+    const provider = createOpenAICompatible({ name: 'sive', baseURL, apiKey: apiKey || undefined });
+    let cursor = 0;
+    let completed = 0;
+    const active = new Set<string>();
+    const progress = () => report({ completed, total: input.modelIds.length, active: [...active] });
+
+    const worker = async () => {
+      while (cursor < input.modelIds.length) {
+        const modelId = input.modelIds[cursor++];
+        active.add(modelId);
+        progress();
+        try {
+          await generateText({
+            model: provider.chatModel(modelId),
+            prompt: 'Reply with OK.',
+            maxOutputTokens: 32,
+            maxRetries: 0,
+            timeout: 30_000,
+          });
+        } finally {
+          active.delete(modelId);
+          completed += 1;
+          progress();
+        }
+      }
+    };
+
+    const results = await Promise.allSettled(
+      Array.from({ length: Math.min(3, input.modelIds.length) }, worker),
+    );
+    const failed = results.find((result) => result.status === 'rejected');
+    if (failed) throw failed.reason;
   }
 
   save(input: ModelInput) {

@@ -1,0 +1,70 @@
+export type ThemeSettings = { mode: 'light' | 'dark' };
+
+export type Preferences = {
+  analysisMode: 'direct' | 'loop';
+  sendShortcut: 'enter' | 'mod-enter';
+};
+
+export type ModelConnectionInput = {
+  baseURL: string;
+  apiKey?: string;
+  credentialSourceId?: string;
+};
+
+export type ModelTestProgress = { completed: number; total: number; active: string[] };
+
+export type ModelProfile = {
+  id: string;
+  name: string;
+  model: string;
+  modelIds: string[];
+  baseURL: string;
+  hasKey: boolean;
+  updatedAt: string;
+};
+
+export type ModelInput = {
+  id?: string;
+  name: string;
+  modelIds: string[];
+  baseURL: string;
+  apiKey?: string;
+  credentialSourceId?: string;
+};
+
+export type Conversation = {
+  id: string;
+  datasetId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+  deletedAt: string | null;
+};
+
+export type DatasetSummary = { id: string; name: string; sourceType: string };
+
+export type WorkspaceState = {
+  conversations: Conversation[];
+  archivedConversations: Conversation[];
+  datasets: DatasetSummary[];
+  models: ModelProfile[];
+  activeModelId: string;
+  theme: ThemeSettings;
+  preferences: Preferences;
+  revision: number;
+};
+
+export type WorkbenchApi = {
+  workspaceGetState(): Promise<WorkspaceState>;
+  workspaceOnChange(callback: () => void): () => void;
+  settingsSaveTheme(theme: ThemeSettings): Promise<void>;
+  settingsSavePreferences(preferences: Preferences): Promise<void>;
+  modelListAvailable(input: ModelConnectionInput): Promise<string[]>;
+  modelSave(input: ModelInput): Promise<void>;
+  modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;
+  modelActivate(id: string, model?: string): Promise<void>;
+  modelDelete(id: string): Promise<void>;
+  conversationRestore(id: string): Promise<void>;
+  conversationPurge(ids: string[]): Promise<void>;
+};
