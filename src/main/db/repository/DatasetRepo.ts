@@ -1,7 +1,6 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { datasets } from '../schema';
-import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/time';
+import type { DbService } from './DBConnection';
 
 type DatasetInsert = typeof datasets.$inferInsert;
 type DatasetUpdate = Partial<Omit<DatasetInsert, 'id' | 'createdAt'>>;
@@ -37,7 +36,7 @@ export class DatasetRepo {
   update(id: string, values: DatasetUpdate) {
     return this.db
       .update(datasets)
-      .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
+      .set({ ...values, updatedAt: values.updatedAt ?? new Date().toISOString() })
       .where(and(eq(datasets.id, id), isNull(datasets.deletedAt)))
       .returning()
       .get();
@@ -46,7 +45,7 @@ export class DatasetRepo {
   remove(id: string) {
     const row = this.get(id);
     if (!row) return;
-    const now = timestamp(row.updatedAt);
+    const now = new Date().toISOString();
     this.update(id, { deletedAt: now, updatedAt: now });
   }
 }

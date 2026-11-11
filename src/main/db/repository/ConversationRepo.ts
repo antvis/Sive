@@ -1,7 +1,6 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { conversations } from '../schema';
-import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/time';
+import type { DbService } from './DBConnection';
 
 type ConversationInsert = typeof conversations.$inferInsert;
 type ConversationUpdate = Partial<Omit<ConversationInsert, 'id' | 'createdAt'>>;
@@ -46,7 +45,7 @@ export class ConversationRepo {
   update(id: string, values: ConversationUpdate) {
     return this.db
       .update(conversations)
-      .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
+      .set({ ...values, updatedAt: values.updatedAt ?? new Date().toISOString() })
       .where(and(eq(conversations.id, id), isNull(conversations.deletedAt)))
       .returning()
       .get();

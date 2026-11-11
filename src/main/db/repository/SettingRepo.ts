@@ -1,7 +1,6 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { settings } from '../schema';
-import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/time';
+import type { DbService } from './DBConnection';
 
 type SettingInsert = typeof settings.$inferInsert;
 type SettingUpdate = Partial<Omit<SettingInsert, 'key' | 'createdAt'>>;
@@ -32,7 +31,7 @@ export class SettingRepo {
   update(key: string, values: SettingUpdate) {
     return this.db
       .update(settings)
-      .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
+      .set({ ...values, updatedAt: values.updatedAt ?? new Date().toISOString() })
       .where(and(eq(settings.key, key), isNull(settings.deletedAt)))
       .returning()
       .get();
@@ -41,7 +40,7 @@ export class SettingRepo {
   remove(key: string) {
     const row = this.get(key);
     if (!row) return;
-    const now = timestamp(row.updatedAt);
+    const now = new Date().toISOString();
     this.update(key, { deletedAt: now, updatedAt: now });
   }
 }

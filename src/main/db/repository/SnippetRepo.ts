@@ -1,7 +1,6 @@
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { snippets } from '../schema';
-import type { DbService } from '../DbService';
-import { timestamp } from '../../utils/time';
+import type { DbService } from './DBConnection';
 
 type SnippetInsert = typeof snippets.$inferInsert;
 type SnippetUpdate = Partial<Omit<SnippetInsert, 'id' | 'createdAt'>>;
@@ -55,7 +54,7 @@ export class SnippetRepo {
   update(id: string, values: SnippetUpdate) {
     return this.db
       .update(snippets)
-      .set({ ...values, updatedAt: values.updatedAt ?? timestamp() })
+      .set({ ...values, updatedAt: values.updatedAt ?? new Date().toISOString() })
       .where(and(eq(snippets.id, id), isNull(snippets.deletedAt)))
       .returning()
       .get();

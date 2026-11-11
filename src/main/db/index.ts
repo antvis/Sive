@@ -1,22 +1,6 @@
-import { DbService } from './DbService';
-import { ConversationRepo } from './repository/ConversationRepo';
-import { DatasetRepo } from './repository/DatasetRepo';
-import { MessageRepo } from './repository/MessageRepo';
-import { ModelProviderRepo } from './repository/ModelProviderRepo';
-import { SettingRepo } from './repository/SettingRepo';
-import { SnippetRepo } from './repository/SnippetRepo';
+// Database schema and interface definitions.
+export { conversations, datasets, modelProviders, settings, snippets } from './schema';
 
-export async function createRepositories(root: string) {
-  const database = await DbService.connect(root);
-  return {
-    database,
-    conversations: new ConversationRepo(database),
-    datasets: new DatasetRepo(database),
-    messages: new MessageRepo(database),
-    providers: new ModelProviderRepo(database),
-    settings: new SettingRepo(database),
-    snippets: new SnippetRepo(database),
-  };
-}
+// Database repository classes, used to perform CRUD operations on the database.
+export { ConversationRepo, DatasetRepo, ModelProviderRepo, SettingRepo, SnippetRepo } from './repository';
 
-export type Repositories = Awaited<ReturnType<typeof createRepositories>>;
