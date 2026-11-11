@@ -1,0 +1,79 @@
+sive-renderer/pages/settings/ModelSettings.tsx
+  s_0853dbf02f8b8a::t_e7e1052c521eaf 228-230,233-236,239
+  s_0853dbf02f8b8a::t_50959f40ae4e1e 6
+  s_0853dbf02f8b8a::t_5e5ef5f5c0a322 142-145,148-149
+src/preload/index.ts
+  s_0853dbf02f8b8a::t_6406e3050b8fac 12
+  s_0853dbf02f8b8a::t_442b79364dd93d 13-14
+src/preload/api.ts
+  s_0853dbf02f8b8a::t_37e9129e927e33 45-53
+  s_0853dbf02f8b8a::t_214b07da99dc64 69
+  s_0853dbf02f8b8a::t_a958b010cfc4b9 70-71
+src/main/ipc/index.ts
+  s_0853dbf02f8b8a::t_bd479ade738b3a 34
+  s_0853dbf02f8b8a::t_dbe71a65786bc2 1
+  s_0853dbf02f8b8a::t_5c3352733c02e7 49-51
+  s_0853dbf02f8b8a::t_b95686290ef82b 56,58
+  s_0853dbf02f8b8a::t_5fc27099154704 42-45,47-48,52-55,57,59-60
+  s_0853dbf02f8b8a::t_1fe7db573b2342 46
+sive-renderer/hooks/useImportCsv.ts
+  s_0853dbf02f8b8a::t_b4c2611142a3ee 1-22
+sive-renderer/components/IconButton.tsx
+  s_0853dbf02f8b8a::t_d03b6f30f80bf2 1-15,17-28,30-39
+  s_0853dbf02f8b8a::t_27fb89b62e25f1 29
+  s_0853dbf02f8b8a::t_6cfe95e4b91179 16
+sive-renderer/components/AppShell.tsx
+  s_0853dbf02f8b8a::t_5455fdd860664d 38
+  s_0853dbf02f8b8a::t_7fb1b95addce4d 5
+  s_0853dbf02f8b8a::t_46e281eec0e889 36-37,39
+  s_0853dbf02f8b8a::t_680ded55b8f96f 9
+  s_0853dbf02f8b8a::t_807041ce241dd4 19
+src/main/services/dataset/index.ts
+  s_0853dbf02f8b8a::t_e8d692e35f2c55 2,8,12-33,45-48,53-55
+  s_0853dbf02f8b8a::t_8ef89e36ac2e01 3-5,10,56-74
+  s_0853dbf02f8b8a::t_50031bf9959405 11
+  s_0853dbf02f8b8a::t_f07f6276b76be9 75
+sive-renderer/pages/WelcomePage.tsx
+  s_0853dbf02f8b8a::t_5c3352733c02e7 43-51,81-83,109-114
+  s_0853dbf02f8b8a::t_b85beeb8721109 6,13,52-53,57-60,93
+  s_0853dbf02f8b8a::t_3beca5825dd02b 4,90
+  s_0853dbf02f8b8a::t_1a8e7090cca048 91
+sive-renderer/App.tsx
+  s_0853dbf02f8b8a::t_b93c2de7874fd0 1,14,21-23,25-27,29
+  s_0853dbf02f8b8a::t_602e54ec878088 7
+  s_0853dbf02f8b8a::t_4e3c1a8f57b09a 24
+  s_0853dbf02f8b8a::t_4f180aaaa67ab5 15
+  s_0853dbf02f8b8a::t_9a925f90e6384a 38-40
+sive-renderer/pages/datasets/index.tsx
+  s_0853dbf02f8b8a::t_2d9181c15fe687 5
+  s_0853dbf02f8b8a::t_551b2f5efb72f7 137-139,146
+  s_0853dbf02f8b8a::t_e3a1976fd99b09 4,7,9-17,22-26,66,110-118,121-125,127-128,148-151,153-159,161,163-172
+  s_0853dbf02f8b8a::t_e0e6f229e9f440 2,21,28-53,56,58,69,73-94,96-97,101-105,108-109,130,134,140-141
+  s_0853dbf02f8b8a::t_78a2b41323eb3c 126
+  s_0853dbf02f8b8a::t_771cec1cc16c8e 152
+  s_0853dbf02f8b8a::t_98e5b3abdddd73 98-100,106-107
+  s_0853dbf02f8b8a::t_8855d12ecaf73b 120
+  s_0853dbf02f8b8a::t_c265139c88df26 1,3,6,8,18-20,27,54-55,57,59-65,67-68,70-72,95,129,131-133,135-136,143-145,147
+  s_0853dbf02f8b8a::t_6e8c683a388535 160,162
+  s_0853dbf02f8b8a::t_d572e4e3d4ec03 119
+  s_0853dbf02f8b8a::t_241029175fd961 142
+sive-renderer/pages/settings/ArchivedConversations.tsx
+  s_0853dbf02f8b8a::t_1a9dea8936185b 5
+  s_0853dbf02f8b8a::t_8614876d113a9d 76-78,81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4dc6cac29b37136e9a566f8605b54c82a8de42bd",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
