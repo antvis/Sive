@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
+import { IconButton } from '../../components/IconButton';
 import { Modal } from '../../components/Modal';
 import { Select } from '../../components/Select';
 import type { ModelProfile, ModelTestProgress } from '../../types';
@@ -138,16 +139,14 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
               </div>
               <div className="flex items-center gap-2">
                 {catalogHint && <span className="text-xs text-muted">{catalogHint}</span>}
-                <Button
-                  variant="ghost"
-                  className="size-9 p-0 text-accent hover:bg-accent-soft"
+                <IconButton
+                  icon={ArrowClockwise}
+                  iconClassName={discovering ? 'animate-spin' : undefined}
+                  className="text-accent hover:bg-accent-soft"
                   disabled={discovering}
                   onClick={() => void discover()}
-                  aria-label={currentCatalog ? '刷新模型列表' : '获取可用模型'}
-                  title={currentCatalog ? '刷新模型列表' : '获取可用模型'}
-                >
-                  <ArrowClockwise size={24} className={discovering ? 'animate-spin' : undefined} />
-                </Button>
+                  label={currentCatalog ? '刷新模型列表' : '获取可用模型'}
+                />
               </div>
             </div>
             <ModelPicker
@@ -226,23 +225,18 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                     设为默认
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
+                <IconButton
+                  icon={PencilSimple}
+                  label={`编辑 ${model.name}`}
                   disabled={busy}
                   onClick={() => setEditing(model)}
-                  aria-label={`编辑 ${model.name}`}
-                  title="编辑"
-                >
-                  <PencilSimple size={16} />
-                </Button>
-                <Button
-                  variant="ghost"
+                />
+                <IconButton
+                  icon={Trash}
+                  label={`删除 ${model.name}`}
                   disabled={busy}
                   onClick={() => setDeleting(model)}
-                  aria-label={`删除 ${model.name}`}
-                >
-                  <Trash size={16} />
-                </Button>
+                />
               </div>
             </div>
 

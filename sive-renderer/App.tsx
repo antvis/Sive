@@ -1,22 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
 import type { AppPage } from './components/AppShell';
 import { Button } from './components/Button';
 import { useWorkspace } from './hooks/useWorkspace';
+import { DatasetsPage } from './pages/datasets';
 import { SettingsPage } from './pages/settings';
 import { WelcomePage } from './pages/WelcomePage';
 
 export default function App() {
   const [page, setPage] = useState<AppPage>('welcome');
   const { state, error, refresh } = useWorkspace();
+  const datasetCount = state?.datasets.length ?? 0;
+  const previousDatasetCount = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     document.documentElement.dataset.theme = state?.theme.mode ?? 'light';
   }, [state?.theme.mode]);
 
+  useEffect(() => {
+    const previous = previousDatasetCount.current;
+    if (datasetCount > 0 && (previous === undefined || datasetCount > previous)) setPage('datasets');
+    else if (datasetCount === 0 && previous !== undefined && previous > 0) setPage('welcome');
+    previousDatasetCount.current = datasetCount;
+  }, [datasetCount]);
+
   return (
-    <AppShell page={page} onNavigate={setPage}>
+    <AppShell page={page} hasDatasets={datasetCount > 0} onNavigate={setPage}>
       {!state && !error && <div className="grid h-full place-items-center text-muted">正在加载工作台…</div>}
       {!state && error && (
         <div className="grid h-full place-content-center justify-items-center gap-4">
@@ -25,6 +35,9 @@ export default function App() {
         </div>
       )}
       {state && page === 'welcome' && <WelcomePage />}
+      {state && page === 'datasets' && (
+        <DatasetsPage datasets={state.datasets} onAdd={() => setPage('welcome')} />
+      )}
       {state && page === 'settings' && <SettingsPage state={state} />}
       <Toaster
         theme={state?.theme.mode ?? 'light'}

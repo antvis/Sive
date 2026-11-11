@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
 import type { Services } from '../services';
@@ -31,13 +31,32 @@ export function registerIpc(services: Services) {
   ipcMain.handle('workspaceGetState', () => ({
     conversations: services.conversation.list(),
     archivedConversations: services.conversation.listArchived(),
-    datasets: services.dataset.list(),
+    datasets: services.dataset.listSummaries(),
     models: services.model.list(),
     activeModelId: services.settings.getActiveModel().providerId,
     theme: services.settings.getTheme(),
     preferences: services.settings.getPreferences(),
     revision,
   }));
+
+  ipcMain.handle('datasetImportCsv', async (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    const options = {
+      title: '选择 CSV 文件',
+      properties: ['openFile' as const],
+      filters: [{ name: 'CSV 文件', extensions: ['csv'] }],
+    };
+    const result = window
+      ? await dialog.showOpenDialog(window, options)
+      : await dialog.showOpenDialog(options);
+    const filePath = result.filePaths[0];
+    if (result.canceled || !filePath) return null;
+    if (!filePath.toLowerCase().endsWith('.csv')) throw new Error('请选择 CSV 文件。');
+    const dataset = await services.dataset.importCsv(filePath);
+    const summary = services.dataset.getSummary(dataset.id);
+    changed(event);
+    return summary ?? null;
+  });
 
   ipcMain.handle('datasetSave', (event, input) => {
     const result = services.dataset.save(objectInput<DatasetSaveInput>(input));

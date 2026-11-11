@@ -2,10 +2,11 @@ import { Database, GearSix, Lightbulb, Plus } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import type { PropsWithChildren } from 'react';
 
-export type AppPage = 'welcome' | 'settings';
+export type AppPage = 'welcome' | 'datasets' | 'settings';
 
 type AppShellProps = PropsWithChildren<{
   page: AppPage;
+  hasDatasets: boolean;
   onNavigate: (page: AppPage) => void;
 }>;
 
@@ -15,7 +16,7 @@ const itemClass = (active: boolean) =>
     active ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-surface hover:text-ink',
   );
 
-export function AppShell({ page, onNavigate, children }: AppShellProps) {
+export function AppShell({ page, hasDatasets, onNavigate, children }: AppShellProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-page">
       <aside className="flex w-52 shrink-0 flex-col border-r px-3 pt-12 pb-5">
@@ -32,7 +33,10 @@ export function AppShell({ page, onNavigate, children }: AppShellProps) {
           <Plus size={17} />
           新建分析
         </button>
-        <button className={itemClass(page === 'welcome')} onClick={() => onNavigate('welcome')}>
+        <button
+          className={itemClass(page === 'welcome' || page === 'datasets')}
+          onClick={() => onNavigate(hasDatasets ? 'datasets' : 'welcome')}
+        >
           <Database size={17} />
           数据源
         </button>

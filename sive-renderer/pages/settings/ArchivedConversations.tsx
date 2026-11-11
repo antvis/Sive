@@ -2,6 +2,7 @@ import { Archive, ArrowCounterClockwise, Trash } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
+import { IconButton } from '../../components/IconButton';
 import { Modal } from '../../components/Modal';
 import type { Conversation, DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
@@ -72,14 +73,12 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                       归档于 {new Date(conversation.archivedAt!).toLocaleString('zh-CN')}
                     </time>
                   </div>
-                  <Button
-                    variant="ghost"
+                  <IconButton
+                    icon={Trash}
+                    label={`永久删除 ${conversation.title}`}
                     disabled={busy}
                     onClick={() => setDeleting(conversation)}
-                    aria-label={`永久删除 ${conversation.title}`}
-                  >
-                    <Trash size={16} />
-                  </Button>
+                  />
                   <Button
                     disabled={busy}
                     onClick={() =>

@@ -42,7 +42,15 @@ export type Conversation = {
   deletedAt: string | null;
 };
 
-export type DatasetSummary = { id: string; name: string; sourceType: string };
+export type DatasetSummary = {
+  id: string;
+  name: string;
+  sourceType: string;
+  updatedAt: string;
+  fileSize?: number;
+  rowCount?: number;
+  columnCount: number;
+};
 
 export type WorkspaceState = {
   conversations: Conversation[];
@@ -58,6 +66,9 @@ export type WorkspaceState = {
 export type WorkbenchApi = {
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
+  datasetImportCsv(): Promise<DatasetSummary | null>;
+  datasetRename(id: string, name: string): Promise<void>;
+  datasetDelete(id: string): Promise<void>;
   settingsSaveTheme(theme: ThemeSettings): Promise<void>;
   settingsSavePreferences(preferences: Preferences): Promise<void>;
   modelListAvailable(input: ModelConnectionInput): Promise<string[]>;

@@ -9,6 +9,9 @@ const api = {
     ipcRenderer.on('workspace:changed', listener);
     return () => ipcRenderer.removeListener('workspace:changed', listener);
   },
+  datasetImportCsv: () => ipcRenderer.invoke('datasetImportCsv'),
+  datasetRename: (id, name) => ipcRenderer.invoke('datasetRename', id, name),
+  datasetDelete: (id) => ipcRenderer.invoke('datasetDelete', id),
   settingsSaveTheme: (theme) => ipcRenderer.invoke('settingsSaveTheme', theme),
   settingsSavePreferences: (preferences) => ipcRenderer.invoke('settingsSavePreferences', preferences),
   modelListAvailable: (input) => ipcRenderer.invoke('modelListAvailable', input),

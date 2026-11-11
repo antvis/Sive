@@ -1,15 +1,16 @@
 import { Database, FileCode, FileCsv, FileText, Files, Lightning, Stack, Table } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import type { CSSProperties } from 'react';
+import { useImportCsv } from '../hooks/useImportCsv';
 
-type Source = { name: string; description: string; color: string; icon: Icon };
+type Source = { name: string; description: string; color: string; icon: Icon; csv?: boolean };
 
 const groups: { title: string; icon: Icon; sources: Source[] }[] = [
   {
     title: '文件与文本',
     icon: Files,
     sources: [
-      { name: 'CSV 文件', description: '本地或远程 CSV 文件', color: '#25804d', icon: FileCsv },
+      { name: 'CSV 文件', description: '本地 CSV 文件', color: '#25804d', icon: FileCsv, csv: true },
       { name: 'JSON 文件', description: '本地或远程 JSON 文件', color: '#8054b6', icon: FileCode },
       { name: 'Excel', description: '支持多个工作表的 XLSX 文件', color: '#18734b', icon: Table },
       { name: 'Parquet', description: '面向分析的列式数据文件', color: '#a66a1c', icon: Stack },
@@ -39,13 +40,24 @@ const groups: { title: string; icon: Icon; sources: Source[] }[] = [
   },
 ];
 
-function SourceCard({ name, description, color, icon: SourceIcon }: Source) {
+function CsvSourceCard({
+  source,
+  importing,
+  onImport,
+}: {
+  source: Source;
+  importing: boolean;
+  onImport: () => void;
+}) {
+  const { name, description, color, icon: SourceIcon, csv } = source;
+  const action = !csv ? '待接入' : importing ? '正在导入…' : '选择文件';
   return (
     <button
       type="button"
-      disabled
-      aria-label={`${name}：${description}。待接入`}
-      className="group relative grid h-28 w-full min-w-0 rounded-[14px] border bg-surface px-4 py-3 text-left text-ink shadow-[0_2px_4px] shadow-ink/3 transition-[border-color,box-shadow] hover:border-[var(--source-color)] hover:shadow-[0_4px_12px] focus-visible:border-[var(--source-color)] focus-visible:outline-none"
+      disabled={!csv || importing}
+      onClick={onImport}
+      aria-label={`${name}：${description}。${action}`}
+      className="group relative grid h-28 w-full min-w-0 rounded-[14px] border bg-surface px-4 py-3 text-left text-ink shadow-[0_2px_4px] shadow-ink/3 transition-[border-color,box-shadow] hover:border-[var(--source-color)] hover:shadow-[0_4px_12px] focus-visible:border-[var(--source-color)] focus-visible:outline-none disabled:opacity-60"
       style={{ '--source-color': color } as CSSProperties}
     >
       <span
@@ -66,15 +78,19 @@ function SourceCard({ name, description, color, icon: SourceIcon }: Source) {
       >
         <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
         <small className="text-xs text-muted">{description}</small>
-        <span className="mt-0.5 text-xs text-muted">待接入</span>
+        <span className="mt-0.5 text-xs" style={{ color: csv ? color : undefined }}>
+          {action}
+        </span>
       </span>
     </button>
   );
 }
 
 export function WelcomePage() {
+  const { importing, importCsv } = useImportCsv();
+
   return (
-    <div className="mx-auto max-w-266 px-6 pt-8 pb-12">
+    <div className="mx-auto max-w-266 px-6 pt-8 pb-12" aria-busy={importing}>
       <header>
         <h1 className="m-0 text-[26px] leading-[1.35] font-semibold tracking-[-0.03em]">欢迎使用 Sive</h1>
         <p className="mt-3 mb-0 max-w-150 leading-[1.7] text-muted">
@@ -90,7 +106,12 @@ export function WelcomePage() {
             </h2>
             <div className="grid grid-cols-[repeat(auto-fill,min(200px,100%))] gap-4">
               {sources.map((source) => (
-                <SourceCard key={source.name} {...source} />
+                <CsvSourceCard
+                  key={source.name}
+                  source={source}
+                  importing={importing}
+                  onImport={() => void importCsv()}
+                />
               ))}
             </div>
           </section>
