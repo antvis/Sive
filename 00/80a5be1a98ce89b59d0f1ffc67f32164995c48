@@ -1,0 +1,49 @@
+src/main/db/repository/setting-repo.ts
+  s_d4537b6d3f592f::t_0f58665947a96e 3
+src/main/services/conversation/index.ts
+  s_d4537b6d3f592f::t_fc330b87bd1555 3
+src/main/services/settings/index.ts
+  s_d4537b6d3f592f::t_c8d73f8ad1ce8f 2-3
+src/main/services/model/index.ts
+  s_d4537b6d3f592f::t_14c0c752f73528 3
+src/main/services/index.ts
+  s_d4537b6d3f592f::t_b12528d9a35ab6 2
+src/main/services/snippet/index.ts
+  s_d4537b6d3f592f::t_4cd6607d7806b7 2
+src/main/services/analysis/index.ts
+  s_d4537b6d3f592f::t_563d7af13dc941 2
+src/main/db/index.ts
+  s_d4537b6d3f592f::t_5dd6ccbc7c09cf 4
+src/main/db/repository/snippet-repo.ts
+  s_d4537b6d3f592f::t_8d0cbbfb860f32 3
+src/main/services/dataset/index.ts
+  s_d4537b6d3f592f::t_7ffeee61778e1a 4
+src/main/db/repository/conversation-repo.ts
+  s_d4537b6d3f592f::t_e37a1bdb8a1d6f 3
+src/main/db/schema/index.ts
+  s_d4537b6d3f592f::t_a7d1255994f346 1
+src/main/db/repository/model-provider-repo.ts
+  s_d4537b6d3f592f::t_0c442d47738f5a 3
+src/main/db/repository/message-repo.ts
+  s_d4537b6d3f592f::t_90532d72ca2a0b 3
+src/main/db/repository/dataset-repo.ts
+  s_d4537b6d3f592f::t_106214324d39e5 3
+src/main/db/repository/index.ts
+  s_d4537b6d3f592f::t_f6b8e6215cfec7 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0080a5be1a98ce89b59d0f1ffc67f32164995c48",
+  "prompts": {},
+  "sessions": {
+    "s_d4537b6d3f592f": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "bed76758-ce35-481d-9e48-1ab70dbd7ef2",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
