@@ -1,0 +1,154 @@
+sive-renderer/components/Modal.tsx
+  s_0853dbf02f8b8a::t_ebbb4ead5aaf0c 1-22,27-36
+  s_0853dbf02f8b8a::t_e24bb2c3dd5139 23-26
+src/main/ipc/index.ts
+  s_0853dbf02f8b8a::t_588a4027427bcb 117-121,123-127
+  s_0853dbf02f8b8a::t_470bf685cdc1ac 5
+  s_0853dbf02f8b8a::t_a5da275e7ab269 122
+  s_0853dbf02f8b8a::t_5e030965589905 38
+sive-renderer/pages/WelcomePage.tsx
+  s_0853dbf02f8b8a::t_e62294e43680d3 2-3,5,7-11,14-15,19-23,39,42,44-71,77-98
+  s_0853dbf02f8b8a::t_35e973f3ddfd41 1
+  s_0853dbf02f8b8a::t_0a5a0138986000 12-13,16-18,24-38
+  s_0853dbf02f8b8a::t_c024c3164f03b1 4,6,40-41,43,72-76,99-101
+sive-renderer/components/Select.tsx
+  s_0853dbf02f8b8a::t_4755fe79bf3ce0 25-28
+  s_0853dbf02f8b8a::t_34c18c6a271734 1,3-8,10-12,21-24,29-46
+  s_0853dbf02f8b8a::t_8328d64898aeaa 13-20
+  s_0853dbf02f8b8a::t_e0c65230958dc0 2,9
+electron.vite.config.ts
+  s_0853dbf02f8b8a::t_8fef88452e4b3e 47
+  s_0853dbf02f8b8a::t_3fe6cc2e6c42ca 11
+  s_0853dbf02f8b8a::t_7534658b184a4e 35,38
+sive-renderer/pages/settings/index.tsx
+  s_0853dbf02f8b8a::t_f897a0825b1d86 46
+  s_0853dbf02f8b8a::t_de668d741939e5 1-15,22-29,38-45,47,51-54
+  s_0853dbf02f8b8a::t_e24bb2c3dd5139 16-21,30-37,48-50
+src/main/index.ts
+  s_0853dbf02f8b8a::t_35081f26836112 1-2,9-15,18-31,35,46-52
+  s_0853dbf02f8b8a::t_d0f207bc2a9886 16-17
+  s_0853dbf02f8b8a::t_d2e16eb23436de 53
+sive-renderer/hooks/useWorkspace.ts
+  s_0853dbf02f8b8a::t_4c4b9fc9f93d1a 1-24
+src/main/services/model/index.ts
+  s_0853dbf02f8b8a::t_a5da275e7ab269 11-12
+  s_0853dbf02f8b8a::t_1450d9ec05d58e 2-3,6-10,13-16,24-34,51-110
+  s_0853dbf02f8b8a::t_f8c76d1a8db206 111
+tsconfig.web.json
+  s_0853dbf02f8b8a::t_6375357162474b 12
+  s_0853dbf02f8b8a::t_fa9345d44f1534 8
+src/preload/api.ts
+  s_0853dbf02f8b8a::t_8696f3c984827f 62-63,65
+  s_0853dbf02f8b8a::t_f21a48e2f8f371 3-15
+  s_0853dbf02f8b8a::t_75f4cf34b04183 54
+  s_0853dbf02f8b8a::t_4a28cca66d6003 1-2,16-53,55-61,64,66-70
+sive-renderer/index.html
+  s_0853dbf02f8b8a::t_74035e8b13195d 1-13
+sive-renderer/pages/settings/ArchivedConversations.tsx
+  s_0853dbf02f8b8a::t_e24bb2c3dd5139 52-57,62-65,71-73,75-84,88-91,98-114,116-125
+  s_0853dbf02f8b8a::t_e6c215e67fbd51 85-87
+  s_0853dbf02f8b8a::t_c5634142cb1410 3
+  s_0853dbf02f8b8a::t_db9f31580d9b89 27,32
+  s_0853dbf02f8b8a::t_db2249988f7621 1-2,4-26,28-31,33-51,58-61,66-70,74,92-97,126-129
+  s_0853dbf02f8b8a::t_f4829a083025b9 115
+sive-renderer/pages/settings/ModelPicker.tsx
+  s_0853dbf02f8b8a::t_64908d354156f7 51
+  s_0853dbf02f8b8a::t_92b663a0c30393 83
+  s_0853dbf02f8b8a::t_3648fc7c2f6022 2-12,14,16-20,26,28-30,32,34,43-45,47,105-107
+  s_0853dbf02f8b8a::t_1dc6dcb59fe00c 31
+  s_0853dbf02f8b8a::t_8d1726c3f3b784 1,13,15,21-25,27,48-50,52-82,84-97,99-100,102,104
+  s_0853dbf02f8b8a::t_a5da275e7ab269 35-42,98,101,103
+  s_0853dbf02f8b8a::t_cef8ea00f77d9f 33,46
+sive-renderer/utils.ts
+  s_0853dbf02f8b8a::t_b1e27a6ec92a6b 1-3
+package.json
+  s_0853dbf02f8b8a::t_6acca9c3405a6e 20-22,24
+sive-renderer/pages/settings/ModelSettings.tsx
+  s_0853dbf02f8b8a::t_5e959c2ab8e718 217
+  s_0853dbf02f8b8a::t_1f34cdaafea65b 104-113
+  s_0853dbf02f8b8a::t_4077b83d47f39f 134,139-141,144-148,150-152
+  s_0853dbf02f8b8a::t_98047cbf239c66 143
+  s_0853dbf02f8b8a::t_f3c477a8c67639 4,8,10,12-13,18-22,26-47,52,55,57-58,68,73-75,84,88,95-96,101-103,114,122-124,132-133,159-167,179,184,195
+  s_0853dbf02f8b8a::t_718b09c7b0e54b 206
+  s_0853dbf02f8b8a::t_74752954204309 142
+  s_0853dbf02f8b8a::t_a5da275e7ab269 24-25,92-94,115-121,125-131,153-158,196-199,218-228,237-245,291-294,296-302,304-325
+  s_0853dbf02f8b8a::t_91953684e0e733 271
+  s_0853dbf02f8b8a::t_db0c1c8865d41f 1
+  s_0853dbf02f8b8a::t_6008e7b0808e01 135-138
+  s_0853dbf02f8b8a::t_55efe029ad9e36 263
+  s_0853dbf02f8b8a::t_0c6cf853b931a2 79-83
+  s_0853dbf02f8b8a::t_2a0785fa57d7a2 276
+  s_0853dbf02f8b8a::t_b477f5d8d2bdc3 2-3,5-6,9,11,14-17,23,48-51,53-54,56,59-67,69-72,76-78,85-87,89-91,97-100,168-178,180-183,185-194,200-203,211,215-216,246,282-290,295,303,326-330
+  s_0853dbf02f8b8a::t_faca5076f6a8b6 229-236
+  s_0853dbf02f8b8a::t_a537dbb9224e48 204-205,207-210,212-214,247-262,264-270,272-275,277-281
+  s_0853dbf02f8b8a::t_80c720f883d040 7
+  s_0853dbf02f8b8a::t_b6c8d8a60a0dcb 149
+sive-renderer/env.d.ts
+  s_0853dbf02f8b8a::t_8ac96f837ca21c 1-9
+src/main/db/ddl.ts
+  s_0853dbf02f8b8a::t_f6a5fc4cd18aea 9
+  s_0853dbf02f8b8a::t_4238a1baeca9f5 15
+sive-renderer/components/Button.tsx
+  s_0853dbf02f8b8a::t_af2240d4bd00f5 1-23
+sive-renderer/components/AppShell.tsx
+  s_0853dbf02f8b8a::t_450163731f0f65 50-51
+  s_0853dbf02f8b8a::t_3ad20ae4ded9e5 26
+  s_0853dbf02f8b8a::t_685d7e0679710a 21
+  s_0853dbf02f8b8a::t_bf7755082bf7be 1-20,30-49,52-57
+  s_0853dbf02f8b8a::t_f12b3cb5e7b601 22-25,28-29
+  s_0853dbf02f8b8a::t_1e9c2786b0a25f 27
+sive-renderer/styles.css
+  s_0853dbf02f8b8a::t_0871442c69116d 1-85
+src/main/services/settings/index.ts
+  s_0853dbf02f8b8a::t_88b2909ae57a8c 4,7
+  s_0853dbf02f8b8a::t_29a6ebe12df540 35,41-46
+  s_0853dbf02f8b8a::t_142e2094a73a96 36-40
+  s_0853dbf02f8b8a::t_108c3ede422aee 8
+src/main/services/types.ts
+  s_0853dbf02f8b8a::t_8f241b089ea076 23-39
+sive-renderer/App.tsx
+  s_0853dbf02f8b8a::t_03c9f6a38af903 1,3-28,48-50
+  s_0853dbf02f8b8a::t_9785fe8469f45b 29-31,33-47
+  s_0853dbf02f8b8a::t_83e0c2dbc2f845 32
+  s_0853dbf02f8b8a::t_59e95698b2e835 2
+src/preload/index.ts
+  s_0853dbf02f8b8a::t_b48a11161a3b11 17
+  s_0853dbf02f8b8a::t_e3415ff277748f 2-3
+  s_0853dbf02f8b8a::t_ac5565ec3d5b93 13-14,16,18-20
+  s_0853dbf02f8b8a::t_dbbdafa45ae397 1,4-12,15,21-27
+sive-renderer/types.ts
+  s_0853dbf02f8b8a::t_d3ffe73d2ec391 4,7-8
+  s_0853dbf02f8b8a::t_25f15430c5c9d0 1-3,5-6,9-11
+sive-renderer/pages/settings/GeneralSettings.tsx
+  s_0853dbf02f8b8a::t_935298f847c36f 8
+  s_0853dbf02f8b8a::t_ab9bf1f1fcc2cf 65
+  s_0853dbf02f8b8a::t_f020ba99995f66 104
+  s_0853dbf02f8b8a::t_b34106ed6402da 101,103,106-123
+  s_0853dbf02f8b8a::t_b3aea30df08296 172
+  s_0853dbf02f8b8a::t_bb60d63e4c81be 3
+  s_0853dbf02f8b8a::t_e327ba381872f5 1-2,4,10-11,44,46-47,49-51,53-59,62,175-176
+  s_0853dbf02f8b8a::t_0258ce66b3b9df 133-134,137-138,140-144
+  s_0853dbf02f8b8a::t_a1b77ec31e6a0f 5-7,9,13-22,32-43,45,48,52,60-61,63,69-71,90-96,124,145-148,173-174
+  s_0853dbf02f8b8a::t_d8ce72feebff23 64,66-68
+  s_0853dbf02f8b8a::t_a16768ae57e497 12
+  s_0853dbf02f8b8a::t_a5da275e7ab269 23-31,72-79,82-84,86-88,97-100,102,105,125-132,135-136,139,149-171
+  s_0853dbf02f8b8a::t_463a14261c8d3b 80-81,85,89
+sive-renderer/main.tsx
+  s_0853dbf02f8b8a::t_1fb31e5c3d99d3 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f157e5771387a4c1c89472bf92a55afad54a2df3",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
