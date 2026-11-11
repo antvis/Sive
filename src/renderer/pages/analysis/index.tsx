@@ -215,7 +215,6 @@ export default function AnalysisPage() {
                 </div>
               );
             const currentTask = analysis.task;
-            const text = currentTask.preview?.text || '';
             const active = ['running', 'cancelling'].includes(currentTask.status);
             let taskHint = currentTask.preview ? '正在分析' : '正在准备数据';
             if (currentTask.status === 'cancelling') taskHint = '正在停止分析，等待当前操作结束';
@@ -245,10 +244,10 @@ export default function AnalysisPage() {
                       />
                     )
                   )}
-                  {text && (
+                  {currentTask.preview?.text && (
                     <div
                       className="markdown"
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(text, true) }}
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(currentTask.preview.text) }}
                     />
                   )}
                   {currentTask.preview?.warning && (
@@ -257,13 +256,13 @@ export default function AnalysisPage() {
                   {!!currentTask.preview?.results.length && (
                     <details open>
                       <summary>
-                        {['running', 'cancelling'].includes(currentTask.status)
-                          ? '已得到计算结果，正在完成分析'
-                          : '本次分析中断前的计算结果'}
+                        {active ? '已得到计算结果，正在完成分析' : '本次分析中断前的计算结果'}
                       </summary>
-                      {currentTask.preview.results.map(({ id, result }) => (
+                      {currentTask.preview.results.map(({ id, result }, index) => (
                         <section key={id}>
-                          <p>{result.query}</p>
+                          <p>
+                            依据 {index + 1} · {result.query}
+                          </p>
                           {result.truncated && (
                             <Alert type="warning" title="此结果已截断，请核对查询范围。" />
                           )}

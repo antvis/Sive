@@ -36,7 +36,7 @@ const commandSchemas: { [K in Command]: z.ZodType<Parameters<Commands[K]>> } = {
   datasetRename: z.tuple([idSchema, requiredText('请填写连接名称')]),
   datasetRelocate: oneId,
   datasetRefreshMySQL: oneId,
-  snippetSave: oneId,
+  snippetSave: z.tuple([idSchema, requiredText('请输入收藏标题')]),
   snippetRemove: oneId,
   snippetRename: z.tuple([idSchema, requiredText()]),
   snippetRefresh: oneId,

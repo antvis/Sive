@@ -8,9 +8,9 @@ markdown.renderer.rules.table_open = (tokens, index, options, _, renderer) => {
   // Keep the original model table available; it is not the authoritative query result.
   return '<div class="table-scroll">' + renderer.renderToken(tokens, index, options);
 };
-markdown.renderer.rules.table_close = (tokens, index, options, { collapseTables }, renderer) =>
-  renderer.renderToken(tokens, index, options) + (collapseTables ? '</div></details>' : '</div>');
+markdown.renderer.rules.table_close = (tokens, index, options, _, renderer) =>
+  renderer.renderToken(tokens, index, options) + '</div>';
 
-export function renderMarkdown(text: string, collapseTables = false) {
-  return markdown.render(text, { collapseTables });
+export function renderMarkdown(text: string) {
+  return markdown.render(text);
 }

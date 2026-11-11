@@ -368,12 +368,16 @@ export function Segmented({
 }) {
   const id = useId();
   return (
-    <div className="flex p-1 rounded-card bg-muted/7 gap-0.5" role="radiogroup" {...props}>
+    <div
+      className="inline-flex w-max shrink-0 p-1 rounded-card bg-muted/7 gap-0.5"
+      role="radiogroup"
+      {...props}
+    >
       {options.map((option) => (
         <label
           key={option}
           className={cx(
-            'flex-1 relative cursor-pointer text-center text-helper text-muted rounded-button py-1 px-3 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-solid has-[:focus-visible]:outline-accent has-[:focus-visible]:outline-offset-1',
+            'flex-1 relative cursor-pointer whitespace-nowrap text-center text-helper text-muted rounded-button py-1 px-3 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-solid has-[:focus-visible]:outline-accent has-[:focus-visible]:outline-offset-1',
             value === option && 'bg-surface text-ink shadow-[0_1px_3px_#0000000d]',
           )}
         >

@@ -38,14 +38,17 @@ export class SnippetService {
     return snippet;
   }
 
-  save(id: string) {
+  save(id: string, title: string) {
     this.data.database.write(() => {
       if (this.records.message(id).status !== 'done')
         throw new WorkbenchError('CONFLICT', '只能保存已完成的分析');
+      const name = title.trim();
+      if (!name) throw new WorkbenchError('INVALID_INPUT', '请输入收藏标题');
       const snippet = this.snippet(id);
       if (!snippet.isVisible)
         this.data.snippets.update(snippet.id, {
           isVisible: 1,
+          title: name,
           updatedAt: timestamp(snippet.updatedAt),
         });
     });

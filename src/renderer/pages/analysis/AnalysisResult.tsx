@@ -2,7 +2,7 @@ import { useRun } from '@renderer/hooks/useRun';
 import { useEffect, useState } from 'react';
 import { BookmarkSimpleIcon, CheckIcon, DownloadSimpleIcon } from '@phosphor-icons/react';
 import type { Run, RunSummary } from '@shared/contracts';
-import { Alert, Button, Dropdown, Spin, Tooltip } from '@renderer/components/ui/index';
+import { Alert, Button, Dropdown, Input, Modal, Spin, Tooltip } from '@renderer/components/ui/index';
 import { renderMarkdown } from '@shared/markdown';
 import { errorMessage } from '@renderer/utils/feedback';
 import { UserMessage, AssistantMessage } from '@renderer/pages/analysis/ConversationMessage';
@@ -30,20 +30,27 @@ function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: 
   const [exportFeedback, setExportFeedback] = useResultActionFeedback();
   const [saveFeedback, setSaveFeedback] = useResultActionFeedback();
   const [saving, setSaving] = useState(false);
+  const [saveTitle, setSaveTitle] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState('');
   const saved = !!run.snippet || saveFeedback?.error === false;
   let saveLabel = saved ? '已保存' : '保存分析';
   if (saving) saveLabel = '保存中';
 
   const save = async () => {
-    if (saving || saved) return;
+    if (saving || saved || !saveTitle?.trim()) return;
     setSaveFeedback(undefined);
+    setSaveError('');
     setSaving(true);
     try {
       // Keep fast local saves visible long enough to avoid a loading flash.
-      await Promise.all([api.snippetSave(run.id), new Promise((resolve) => window.setTimeout(resolve, 350))]);
+      await Promise.all([
+        api.snippetSave(run.id, saveTitle.trim()),
+        new Promise((resolve) => window.setTimeout(resolve, 350)),
+      ]);
+      setSaveTitle(null);
       setSaveFeedback({ text: '保存成功', error: false });
     } catch (error) {
-      setSaveFeedback({ text: errorMessage(error), error: true });
+      setSaveError(errorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -73,7 +80,7 @@ function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: 
         <div
           className="markdown"
           dangerouslySetInnerHTML={{
-            __html: renderMarkdown(run.output.text || '没有文字总结，请查看计算结果。', true),
+            __html: renderMarkdown(run.output.text || '没有文字总结，请查看计算结果。'),
           }}
         />
         {run.output.charts.map((chart, index) => (
@@ -84,10 +91,11 @@ function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: 
           <summary>计算依据 · {run.output.results.length} 个结果</summary>
           {dataOpen && (
             <>
-              {run.output.results.map(({ id, result }) => (
+              {run.output.results.map(({ id, result }, index) => (
                 <section key={id} className="mb-3">
-                  <p>{result.query}</p>
-                  <p className="text-muted text-helper">结果编号：{id}</p>
+                  <p>
+                    依据 {index + 1} · {result.query}
+                  </p>
                   {result.truncated && <Alert type="warning" title="此结果已截断，请核对查询范围。" />}
                   <pre className="mb-3">{result.sql}</pre>
                   <Grid rows={result.data} columns={result.schema} />
@@ -104,7 +112,10 @@ function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: 
               loading={saving}
               icon={saved ? <CheckIcon /> : <BookmarkSimpleIcon />}
               disabled={saving || saved}
-              onClick={() => save()}
+              onClick={() => {
+                setSaveTitle(run.question);
+                setSaveError('');
+              }}
             >
               <span
                 key={saveLabel}
@@ -147,6 +158,38 @@ function ResultContent({ run, showQuestion = true }: { run: Run; showQuestion?: 
           </Tooltip>
         </div>
       </AssistantMessage>
+      <Modal
+        title="保存分析"
+        open={saveTitle !== null}
+        onCancel={() => !saving && setSaveTitle(null)}
+        onOk={save}
+        okText="保存"
+        cancelText="取消"
+        confirmLoading={saving}
+        okButtonProps={{ disabled: !saveTitle?.trim() }}
+      >
+        <label className="grid gap-2 text-body font-medium">
+          标题
+          <Input
+            autoFocus
+            aria-label="收藏标题"
+            value={saveTitle ?? ''}
+            disabled={saving}
+            placeholder="输入收藏标题"
+            onChange={(event) => {
+              setSaveTitle(event.target.value);
+              setSaveError('');
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.nativeEvent.isComposing && !event.repeat) {
+                event.preventDefault();
+                save();
+              }
+            }}
+          />
+        </label>
+        {saveError && <Alert className="mt-3" type="error" title={saveError} />}
+      </Modal>
     </article>
   );
 }

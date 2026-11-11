@@ -1,18 +1,17 @@
 import { cx } from '../../utils/cx';
 import { useState, useEffect, useRef } from 'react';
-import { Alert, Spin, Button } from '@renderer/components/ui/index';
+import { Alert, Spin } from '@renderer/components/ui/index';
 import type { Run } from '@shared/contracts';
 import { useTheme } from '@renderer/hooks/useTheme';
 const api = window.workbench;
 const chartStatusText: Record<string, string> = {
   loading: '正在绘制图表…',
-  error: '图表绘制失败，请查看计算数据或重新加载。',
-  timeout: '图表加载较慢，可尝试重新加载。',
+  error: '图表绘制失败，请查看计算数据。',
+  timeout: '图表加载较慢，请稍候或查看计算数据。',
 };
 
 function ChartFrame({ html, title, saved }: { html: string; title: string; saved: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
-  const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState('loading');
   useEffect(() => {
     setStatus('loading');
@@ -30,25 +29,20 @@ function ChartFrame({ html, title, saved }: { html: string; title: string; saved
       clearTimeout(timer);
       window.removeEventListener('message', receive);
     };
-  }, [html, attempt]);
+  }, [html]);
   return (
     <>
-      <div
-        className={cx(
-          'flex items-center justify-between text-muted text-helper',
-          status === 'ready' && (saved ? 'hidden' : 'justify-end'),
-        )}
-        role="status"
-      >
-        <span>{chartStatusText[status]}</span>
-        <Button variant="ghost" size="small" onClick={() => setAttempt((v) => v + 1)}>
-          重新加载图表
-        </Button>
-      </div>
+      {status !== 'ready' && (
+        <div className="text-muted text-helper" role="status">
+          {chartStatusText[status]}
+        </div>
+      )}
       <iframe
-        key={attempt}
         ref={frame}
-        className={cx('block w-full border-0 bg-surface', saved ? 'h-0 flex-1 min-h-0' : 'h-full')}
+        className={cx(
+          'block w-full border-0 bg-surface',
+          saved ? 'h-0 flex-1 min-h-0' : 'row-start-2 h-full min-h-0',
+        )}
         title={title}
         sandbox="allow-scripts"
         srcDoc={html}

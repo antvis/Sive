@@ -29,7 +29,7 @@ export default function ConversationChart({ run, index = 0 }: { run: Run; index?
   }, []);
 
   return (
-    <div className="grid grid-rows-[32px_340px] h-93 min-w-0" ref={root}>
+    <div className="grid grid-rows-[auto_minmax(0,1fr)] h-93 min-w-0" ref={root}>
       {active ? (
         <Chart run={run} index={index} />
       ) : (

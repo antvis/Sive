@@ -66,7 +66,7 @@ export function createCommandHandlers(
     analysisExport: (id, format, saved) =>
       exportAnalysis(win, records, settings.theme(), root, id, format, saved),
 
-    snippetSave: (id) => snippets.save(id),
+    snippetSave: (id, title) => snippets.save(id, title),
     snippetRemove: (id) => snippets.remove(id),
     snippetRename: (id, title) => snippets.rename(id, title),
     snippetRefresh: (id) => snippets.refresh(id),
