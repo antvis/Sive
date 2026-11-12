@@ -1,0 +1,21 @@
+src/renderer/pages/analysis/AnalysisMessage.tsx
+  s_0853dbf02f8b8a::t_360a1aa145ff82 369-373
+src/renderer/components/Markdown.css
+  s_0853dbf02f8b8a::t_6c6929457e04ee 48-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d5e1eb951d468af6ff6993d00f2160879a6f6eb8",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
