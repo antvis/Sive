@@ -1,0 +1,36 @@
+src/shared/messages.ts
+  s_0853dbf02f8b8a::t_7e59d61500e789 1-24
+src/shared/api.ts
+  s_0853dbf02f8b8a::t_f328a7b83d0d9c 1-116
+src/renderer/env.d.ts
+  s_0853dbf02f8b8a::t_79b628f3378cf0 1
+src/main/db/schema/messages.ts
+  s_0853dbf02f8b8a::t_40829a64481719 2
+src/preload/api.ts
+  s_0853dbf02f8b8a::t_75064a7d9c8079 1
+src/renderer/types.ts
+  s_0853dbf02f8b8a::t_84e2de2ae40554 15
+electron.vite.config.ts
+  s_0853dbf02f8b8a::t_22026e363e7719 39
+  s_0853dbf02f8b8a::t_3f24e33d6657e8 11
+  s_0853dbf02f8b8a::t_42c2ec15d34a1c 23
+tsconfig.web.json
+  s_0853dbf02f8b8a::t_683eae72742f14 8-9
+  s_0853dbf02f8b8a::t_d37a8fd61b4293 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7c9e05e5bec3ffa5197d8b1e0a22b37fc7d18db4",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
