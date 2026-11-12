@@ -1,0 +1,137 @@
+sive-renderer/types.ts
+  s_0853dbf02f8b8a::t_3cff2f6980d693 3
+  s_0853dbf02f8b8a::t_70b158a69fd4f0 13
+src/main/services/model/index.ts
+  s_0853dbf02f8b8a::t_62350dce971a10 51
+  s_0853dbf02f8b8a::t_d814a4a3272180 62
+  s_0853dbf02f8b8a::t_f7af988be68c20 58-59
+  s_0853dbf02f8b8a::t_03417e6c15819c 52-57,60-61,63-64
+sive-renderer/App.tsx
+  s_0853dbf02f8b8a::t_60b78ec1a51166 14
+  s_0853dbf02f8b8a::t_65595c69985f5e 19-28
+  s_0853dbf02f8b8a::t_13b7b39395d7a0 55,58-61
+  s_0853dbf02f8b8a::t_0f5690fd35e001 64-69,71-72
+  s_0853dbf02f8b8a::t_8ec1fabc0d5b55 88-99
+  s_0853dbf02f8b8a::t_d0fb2b4535e3b2 7
+  s_0853dbf02f8b8a::t_4f56c4b80a0a53 70
+  s_0853dbf02f8b8a::t_d5ac573e9aaf56 82-87
+  s_0853dbf02f8b8a::t_d1b165a8f7dc80 56-57
+  s_0853dbf02f8b8a::t_09ef6197866685 30-32,38-43
+  s_0853dbf02f8b8a::t_2ca69b9bd6e93d 15
+  s_0853dbf02f8b8a::t_6b252e1d1e8da4 33-37
+  s_0853dbf02f8b8a::t_fa75fad2af54cf 29
+  s_0853dbf02f8b8a::t_797d44749102fa 62
+src/preload/api.ts
+  s_0853dbf02f8b8a::t_0bd98243005089 74-77
+  s_0853dbf02f8b8a::t_39f56dcef89db9 73
+  s_0853dbf02f8b8a::t_5bebceddf00f9e 57-58
+  s_0853dbf02f8b8a::t_9c372a17901710 1-2
+sive-renderer/components/ResizeHandle.tsx
+  s_0853dbf02f8b8a::t_84ccd6f7365644 1-13
+sive-renderer/hooks/useImportCsv.ts
+  s_0853dbf02f8b8a::t_5ea9f4d7a0ce3b 17-20
+  s_0853dbf02f8b8a::t_c38ce7f0f25877 5-6
+  s_0853dbf02f8b8a::t_788a4f84319c80 14-16
+sive-renderer/pages/datasets/index.tsx
+  s_0853dbf02f8b8a::t_b8b0952835ebe5 76-79
+  s_0853dbf02f8b8a::t_07bb8af4bb17c1 207
+  s_0853dbf02f8b8a::t_b31e0952bb7238 91
+  s_0853dbf02f8b8a::t_9c7fd08d8d72de 130-137
+  s_0853dbf02f8b8a::t_91923e5112e942 17-25
+  s_0853dbf02f8b8a::t_3d5b3bd288f6c6 65
+  s_0853dbf02f8b8a::t_b653c842ddefa5 182-185,187-190,192
+  s_0853dbf02f8b8a::t_da7fa0710bb266 123-124
+  s_0853dbf02f8b8a::t_a6efeec9ce9db3 186,191
+  s_0853dbf02f8b8a::t_f1ecd2dbe84ae6 106-115
+  s_0853dbf02f8b8a::t_428b13deddc81f 194
+src/main/index.ts
+  s_0853dbf02f8b8a::t_8e53cf0b6a4e55 35
+  s_0853dbf02f8b8a::t_7fa46fbe50cb4f 8
+  s_0853dbf02f8b8a::t_036d5b6666d1a2 17
+sive-renderer/pages/analysis/ConversationPanel.tsx
+  s_0853dbf02f8b8a::t_9410960638a245 1-28,33-92,94-109,111-116,118-119,121,126-127,132-135,137-143
+  s_0853dbf02f8b8a::t_918ad7015b8e7a 110
+  s_0853dbf02f8b8a::t_f7af988be68c20 29-32,122-125,128-131
+  s_0853dbf02f8b8a::t_56aef4b64a428c 117
+  s_0853dbf02f8b8a::t_45e0ce16ed1527 120
+  s_0853dbf02f8b8a::t_2bbe457b0245a0 136
+  s_0853dbf02f8b8a::t_f487028e0f4b67 93
+src/main/services/dataset/index.ts
+  s_0853dbf02f8b8a::t_7eddb80f6f81a9 76,78-79,98
+  s_0853dbf02f8b8a::t_d6d548dae39772 59-75,77,86-88,90-95
+  s_0853dbf02f8b8a::t_68bc5a63b27b85 89,108
+  s_0853dbf02f8b8a::t_cc0e62f97c6eef 4
+  s_0853dbf02f8b8a::t_2f7fd194823cd5 84-85,103-104
+  s_0853dbf02f8b8a::t_014ac2897f36ea 80-83,99-102
+sive-renderer/pages/analysis/index.tsx
+  s_0853dbf02f8b8a::t_724f0c14acd118 2-3,20,36-37,40-41
+  s_0853dbf02f8b8a::t_7710193ed78cef 4
+  s_0853dbf02f8b8a::t_94aaa651038b95 18
+  s_0853dbf02f8b8a::t_0750cbf353d616 1
+  s_0853dbf02f8b8a::t_b7fea2a9d424a7 21-28
+  s_0853dbf02f8b8a::t_885166e776938b 38
+  s_0853dbf02f8b8a::t_5f880283da5810 5-17,19,29-35,39,42-43
+sive-renderer/styles.css
+  s_0853dbf02f8b8a::t_561de508065a6a 53
+  s_0853dbf02f8b8a::t_bc4d8cc6b4dd15 45-50
+sive-renderer/utils.ts
+  s_0853dbf02f8b8a::t_77a8c85c8c5b7d 4-20
+src/preload/index.ts
+  s_0853dbf02f8b8a::t_51492252fe2884 12
+  s_0853dbf02f8b8a::t_4c82a25ff9dcec 13-16
+sive-renderer/components/AppShell.tsx
+  s_0853dbf02f8b8a::t_760e85838b1fff 10
+  s_0853dbf02f8b8a::t_c38ec485f4fe3a 3
+  s_0853dbf02f8b8a::t_f60914a42373e6 6
+  s_0853dbf02f8b8a::t_a880d873242bc9 18
+  s_0853dbf02f8b8a::t_d6f2f30ab0dc9a 34
+  s_0853dbf02f8b8a::t_d06a04deb45004 105-106
+  s_0853dbf02f8b8a::t_846ac416342753 135-137
+  s_0853dbf02f8b8a::t_87d34a7771f82f 5,8,40,50-57,59-81,83,134,138-140
+  s_0853dbf02f8b8a::t_2c3321694bbb14 1
+  s_0853dbf02f8b8a::t_44eb89a8151df1 84,86
+  s_0853dbf02f8b8a::t_1ac7f03bee8906 15-17
+  s_0853dbf02f8b8a::t_653de82da5abb2 87-92,95-99,101-104,107-113,117-127
+  s_0853dbf02f8b8a::t_20baa0265323c3 28-33,35-37
+  s_0853dbf02f8b8a::t_ed7e664a95f22f 100
+  s_0853dbf02f8b8a::t_b9b24509af8fd3 7
+  s_0853dbf02f8b8a::t_f3e610f0006af1 93-94
+  s_0853dbf02f8b8a::t_89248196e3133c 114-116
+  s_0853dbf02f8b8a::t_4cfce95cc163d6 41-48
+  s_0853dbf02f8b8a::t_d73431f91de1ba 85,128-133
+  s_0853dbf02f8b8a::t_72ded98fe19b2b 49
+  s_0853dbf02f8b8a::t_7a676315b7cb1c 38
+  s_0853dbf02f8b8a::t_fcea1b1f516e56 82
+sive-renderer/pages/analysis/DatasetPanel.tsx
+  s_0853dbf02f8b8a::t_093e07d3f4faa8 1-71,73,92-93,99,103-104,124-126,133-159
+  s_0853dbf02f8b8a::t_082fe38383f077 94-98,100-102,105-123
+  s_0853dbf02f8b8a::t_f7af988be68c20 74-91,127-132
+  s_0853dbf02f8b8a::t_147e673132d9db 72
+src/main/ipc/index.ts
+  s_0853dbf02f8b8a::t_826336d1d3f726 1
+  s_0853dbf02f8b8a::t_d6bb8244be18de 63-67,69-70
+  s_0853dbf02f8b8a::t_04b83e507ab90e 68
+  s_0853dbf02f8b8a::t_8ea46e9337b01c 43,47
+  s_0853dbf02f8b8a::t_5c694d8e25974d 60
+sive-renderer/components/Select.tsx
+  s_0853dbf02f8b8a::t_1a0a4dfd6d8b6e 3
+  s_0853dbf02f8b8a::t_fda9e5a51c6a14 25
+  s_0853dbf02f8b8a::t_acd9224e2ed953 21
+  s_0853dbf02f8b8a::t_3624fbcc07bdd6 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "10d8c2d26c82d6fe63926fcba84bb16f09085bb0",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
