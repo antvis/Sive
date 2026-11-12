@@ -366,7 +366,11 @@ function StreamContent({ parts }: { parts: StreamPart[] }) {
         index += 1;
         next = parts[index + 1];
       }
-      blocks.push(<Markdown key={`text-${start}`}>{text}</Markdown>);
+      blocks.push(
+        <div key={`text-${start}`} className="p-3">
+          <Markdown>{text}</Markdown>
+        </div>,
+      );
     } else if (part.type === 'tool-call') {
       blocks.push(<ToolCallView key={part.toolCallId} call={part} parts={parts} />);
     }
