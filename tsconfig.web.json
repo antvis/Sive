@@ -5,9 +5,8 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
     "paths": {
-      "@renderer/*": ["./sive-renderer/*"],
       "@assets/*": ["./assets/*"]
     }
   },
-  "include": ["sive-renderer", "src/preload/api.ts", "src/main/db/schema/messages.ts"]
+  "include": ["src/renderer", "src/preload/api.ts", "src/main/db/schema/messages.ts"]
 }

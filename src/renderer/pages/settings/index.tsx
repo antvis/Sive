@@ -1,67 +1,53 @@
-import { SlidersHorizontalIcon, CpuIcon, ArchiveIcon, ArrowLeftIcon } from '@phosphor-icons/react';
-import { useEffect, useRef } from 'react';
-import type { State } from '@shared/contracts';
-import { Button } from '@renderer/components/ui/index';
-import GeneralSettings from '@renderer/pages/settings/GeneralSettings';
-import ModelSettings from '@renderer/pages/settings/ModelSettings';
-import DeletedConversations from '@renderer/pages/settings/DeletedConversations';
+import { Archive, Cpu, SlidersHorizontal } from '@phosphor-icons/react';
+import clsx from 'clsx';
+import { useState } from 'react';
+import type { WorkspaceState } from '../../types';
+import { ArchivedConversations } from './ArchivedConversations';
+import { GeneralSettings } from './GeneralSettings';
+import { ModelSettings } from './ModelSettings';
 
-export default function SettingsPage({
-  state,
-  tab,
-  onTab,
-  onBack,
-}: {
-  state: State;
-  tab: string;
-  onTab: (tab: string) => void;
-  onBack?: () => void;
-}) {
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    root.current?.closest('.page')?.scrollTo({ top: 0 });
-  }, [tab]);
+type Section = 'general' | 'models' | 'archived';
+
+export function SettingsPage({ state }: { state: WorkspaceState }) {
+  const [section, setSection] = useState<Section>('general');
   const sections = [
-    { key: 'general', label: '通用设置', icon: SlidersHorizontalIcon },
-    { key: 'models', label: '模型服务', icon: CpuIcon, count: state.models.length },
-    { key: 'deleted', label: '已归档分析', icon: ArchiveIcon, count: state.deletedConversations.length },
+    { id: 'general' as const, label: '通用设置', icon: SlidersHorizontal },
+    { id: 'models' as const, label: '模型服务', icon: Cpu, count: state.models.length },
+    {
+      id: 'archived' as const,
+      label: '已归档分析',
+      icon: Archive,
+      count: state.archivedConversations.length,
+    },
   ];
+
   return (
-    <div className="settings w-full max-w-280 mx-auto pt-4 pb-10" ref={root}>
-      {onBack && (
-        <div className="mb-4">
-          <Button variant="ghost" icon={<ArrowLeftIcon />} onClick={onBack}>
-            返回分析会话
-          </Button>
-        </div>
-      )}
-      <div className="grid grid-cols-[176px_minmax(0,_1fr)] gap-10 items-start max-[1101px]:grid-cols-[148px_minmax(0,_1fr)] max-[1101px]:gap-6 max-[801px]:grid-cols-1 max-[801px]:gap-6">
-        <nav
-          className="sticky top-0 grid gap-1 max-[801px]:static max-[801px]:flex max-[801px]:flex-wrap max-[801px]:gap-1"
-          aria-label="设置分类"
-        >
-          <span className="pt-1 pr-3 pb-3 pl-3 text-helper text-muted tracking-[0.08em] max-[801px]:hidden">
-            工作台设置
-          </span>
-          {sections.map(({ key, label, icon: Icon, count }) => (
+    <div className="mx-auto flex max-w-6xl gap-10 px-6 py-6 max-md:flex-col max-md:gap-5">
+      <aside className="w-44 shrink-0 max-md:w-full">
+        <h1 className="mt-0 mb-4 px-3 text-xl font-semibold">工作台设置</h1>
+        <nav className="grid gap-1 max-md:flex max-md:flex-wrap">
+          {sections.map(({ id, label, icon: Icon, count }) => (
             <button
-              className="flex gap-2.5 items-center w-full py-3 px-3 border-0 rounded-control bg-transparent text-muted text-left [font:inherit] cursor-pointer hover:bg-page hover:text-ink [&[aria-current]]:bg-accent-soft [&[aria-current]]:text-accent-ink [&[aria-current]]:font-semibold focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:outline-offset-2 max-[801px]:w-auto"
-              key={key}
-              type="button"
-              aria-current={tab === key ? 'page' : undefined}
-              onClick={() => onTab(key)}
+              key={id}
+              onClick={() => setSection(id)}
+              className={clsx(
+                'flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm',
+                section === id ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-page hover:text-ink',
+              )}
             >
-              <Icon />
+              <Icon size={17} />
               <span className="flex-1">{label}</span>
-              {count !== undefined && <small className="min-w-4.5 text-center text-helper">{count}</small>}
+              {count !== undefined && <span className="text-xs">{count}</span>}
             </button>
           ))}
         </nav>
-        <div className="min-w-0">
-          {tab === 'general' && <GeneralSettings />}
-          {tab === 'models' && <ModelSettings state={state} />}
-          {tab === 'deleted' && <DeletedConversations state={state} />}
-        </div>
+      </aside>
+      <div className="min-w-0 flex-1 pb-10">
+        {section === 'general' && <GeneralSettings theme={state.theme} preferences={state.preferences} />}
+        {section === 'models' && <ModelSettings models={state.models} activeModelId={state.activeModelId} />}
+        {section === 'archived' && (
+          <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
+        )}
       </div>
     </div>
   );

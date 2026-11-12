@@ -1,13 +1,24 @@
-import { cx } from '@renderer/utils/cx';
-import { useId, type ReactNode } from 'react';
-import { SunIcon, MoonIcon, ArrowCounterClockwiseIcon, KeyboardIcon } from '@phosphor-icons/react';
-import { Button, Select } from '@renderer/components/ui/index';
-import { useUI } from '@renderer/hooks/useUI';
-import { useTheme } from '@renderer/hooks/useTheme';
-import { usePreferences } from '@renderer/hooks/usePreferences';
-import { defaultPreferences } from '@renderer/data/preferences';
-import { analysisModes } from '../../data/analysisOptions';
-import { errorMessage } from '@renderer/utils/feedback';
+import { Moon, Sun } from '@phosphor-icons/react';
+import clsx from 'clsx';
+import { Tabs } from 'radix-ui';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '../../components/Button';
+import { Modal } from '../../components/Modal';
+import { Select } from '../../components/Select';
+import type { Preferences, ThemeSettings } from '../../types';
+import { errorMessage } from '../../utils';
+
+const defaults: Preferences = { analysisMode: 'direct', sendShortcut: 'enter' };
+
+function SettingGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="mb-5 overflow-hidden rounded-xl border">
+      <h2 className="m-0 border-b bg-page px-5 py-4 text-base font-medium">{title}</h2>
+      <div className="divide-y">{children}</div>
+    </section>
+  );
+}
 
 function SettingRow({
   title,
@@ -16,220 +27,150 @@ function SettingRow({
 }: {
   title: string;
   description: string;
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-6 p-5 [&+&]:border-t [&+&]:border-t-line/65 max-[1101px]:gap-4 max-[1101px]:py-4.5 max-[1101px]:px-4 max-[541px]:items-start max-[541px]:flex-col">
-      <div className="flex-1 min-w-0">
-        <h3 className="mt-0 mr-0 mb-1 ml-0 text-body font-medium">{title}</h3>
-        <p className="m-0 max-w-107.5 text-helper text-muted leading-[1.65]">{description}</p>
+    <div className="flex items-center justify-between gap-6 p-5 max-sm:flex-col max-sm:items-start">
+      <div>
+        <h3 className="m-0 text-sm font-medium">{title}</h3>
+        <p className="mt-1 mb-0 max-w-lg text-xs leading-5 text-muted">{description}</p>
       </div>
-      <div className="shrink-0 max-[541px]:w-full">{children}</div>
+      <div className="shrink-0">{children}</div>
     </div>
   );
 }
 
-export default function GeneralSettings() {
-  const { preferences, updatePreferences } = usePreferences();
-  const { settings, changing, setMode } = useTheme();
-  const { message, confirm } = useUI();
-  const themeName = useId();
-  const modifier = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl';
+export function GeneralSettings({ theme, preferences }: { theme: ThemeSettings; preferences: Preferences }) {
+  const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [error, setError] = useState('');
+
+  const save = async (action: () => Promise<void>) => {
+    setSaving(true);
+    setError('');
+    try {
+      await action();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const update = (value: Preferences) => save(() => window.workbench.settingsSavePreferences(value));
+
   return (
-    <section>
-      <section
-        className="border border-line rounded-card mb-3 overflow-hidden"
-        aria-labelledby="appearance-heading"
-      >
-        <h3
-          id="appearance-heading"
-          className="m-0 py-3 px-5 text-helper font-semibold bg-inset border-b border-b-line"
-        >
-          外观
-        </h3>
+    <div>
+      <div className="mb-5 flex items-center justify-end">
+        <Button variant="primary" disabled={saving} onClick={() => setResetting(true)}>
+          恢复默认偏好
+        </Button>
+      </div>
+      <SettingGroup title="外观">
         <SettingRow title="界面主题" description="选择适合当前环境的配色，图表与导出同步使用。">
-          <div className="flex gap-2.5" role="radiogroup" aria-label="界面主题">
+          <div className="flex gap-3">
             {(
               [
-                { mode: 'light', label: '浅色', icon: SunIcon },
-                { mode: 'dark', label: '深色', icon: MoonIcon },
+                ['light', '浅色', Sun],
+                ['dark', '深色', Moon],
               ] as const
-            ).map(({ mode, label, icon: Icon }) => (
-              <label
+            ).map(([mode, label, Icon]) => (
+              <button
                 key={mode}
-                className={cx(
-                  'relative grid gap-2 w-20 p-1.5 border border-line rounded-button cursor-pointer [&:has(input:focus-visible)]:outline-2 [&:has(input:focus-visible)]:outline-solid [&:has(input:focus-visible)]:outline-accent [&:has(input:focus-visible)]:outline-offset-4 [&:has(input:disabled)]:opacity-60 [&:has(input:disabled)]:cursor-wait',
-                  settings.mode === mode && 'border-accent shadow-[0_0_0_1px_var(--accent)]',
+                aria-label={label}
+                title={label}
+                disabled={saving}
+                onClick={() => void save(() => window.workbench.settingsSaveTheme({ mode }))}
+                className={clsx(
+                  'grid size-12 place-items-center rounded-xl border',
+                  theme.mode === mode ? 'border-accent bg-accent-soft text-accent' : 'bg-surface text-muted',
                 )}
               >
-                <input
-                  className="absolute size-px opacity-0"
-                  type="radio"
-                  name={themeName}
-                  checked={settings.mode === mode}
-                  disabled={changing}
-                  onChange={() => setMode(mode).catch((error) => message.error(errorMessage(error)))}
-                />
-                <span
-                  className={cx(
-                    'grid grid-cols-[15px_1fr] grid-rows-[1fr_1fr] gap-1 p-1.5 h-10.5 rounded-compact border',
-                    mode === 'dark' ? 'bg-[#20262d] border-[#38434e]' : 'bg-[#f1f3f5] border-[#dce1e5]',
-                  )}
-                  aria-hidden="true"
-                >
-                  <i
-                    className={cx(
-                      'row-span-full rounded-mini',
-                      mode === 'dark' ? 'bg-[#36544e]' : 'bg-[#d3dfdc]',
-                    )}
-                  />
-                  <b
-                    className={cx(
-                      'self-center h-1 rounded-mini',
-                      mode === 'dark' ? 'bg-[#56616d]' : 'bg-[#cbd2d8]',
-                    )}
-                  />
-                  <b
-                    className={cx(
-                      'self-center h-1 rounded-mini',
-                      mode === 'dark' ? 'bg-[#56616d]' : 'bg-[#cbd2d8]',
-                    )}
-                  />
-                </span>
-                <span className="flex justify-center items-center gap-1 text-helper">
-                  <Icon />
-                  {label}
-                </span>
-              </label>
+                <Icon size={22} className={mode === 'dark' ? 'text-ink' : undefined} />
+              </button>
             ))}
           </div>
         </SettingRow>
-      </section>
-      <section
-        className="border border-line rounded-card mb-3 overflow-hidden"
-        aria-labelledby="analysis-heading"
-      >
-        <h3
-          id="analysis-heading"
-          className="m-0 py-3 px-5 text-helper font-semibold bg-inset border-b border-b-line"
-        >
-          分析与输入
-        </h3>
+      </SettingGroup>
+
+      <SettingGroup title="分析与输入">
         <SettingRow
           title="分析方式"
-          description="记住最近选择，分析输入框中的切换也会同步保存。两种模式都需要模型支持工具调用；多步探索通常耗时更长、调用更多。"
+          description="直接分析适合明确问题；多步探索会逐步查询，通常更慢、调用更多。"
         >
-          <Select
-            className="min-w-42 max-[1101px]:min-w-35.5 max-[541px]:w-full"
-            aria-label="分析方式"
+          <Tabs.Root
             value={preferences.analysisMode}
-            onChange={(analysisMode) => updatePreferences({ analysisMode })}
-            options={analysisModes.map(({ value, label }) => ({ value, label }))}
-          />
+            onValueChange={(analysisMode) =>
+              void update({ ...preferences, analysisMode: analysisMode as Preferences['analysisMode'] })
+            }
+          >
+            <Tabs.List aria-label="分析方式" className="flex w-42 rounded-lg bg-page p-1">
+              <Tabs.Trigger
+                value="direct"
+                disabled={saving}
+                className="flex-1 rounded-md px-3 py-1.5 text-sm text-muted data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-sm"
+              >
+                直接分析
+              </Tabs.Trigger>
+              <Tabs.Trigger
+                value="loop"
+                disabled={saving}
+                className="flex-1 rounded-md px-3 py-1.5 text-sm text-muted data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-sm"
+              >
+                多步探索
+              </Tabs.Trigger>
+            </Tabs.List>
+          </Tabs.Root>
         </SettingRow>
         <SettingRow
           title="发送快捷键"
           description={
             preferences.sendShortcut === 'enter'
               ? 'Enter 发送，Shift + Enter 换行。'
-              : `${modifier} + Enter 发送，Enter 换行。`
+              : '⌘ / Ctrl + Enter 发送，Enter 换行。'
           }
         >
           <Select
-            className="min-w-42 max-[1101px]:min-w-35.5 max-[541px]:w-full"
             aria-label="发送快捷键"
+            disabled={saving}
             value={preferences.sendShortcut}
-            onChange={(sendShortcut) => updatePreferences({ sendShortcut })}
+            onChange={(sendShortcut) =>
+              void update({ ...preferences, sendShortcut: sendShortcut as Preferences['sendShortcut'] })
+            }
             options={[
               { value: 'enter', label: 'Enter' },
-              { value: 'mod-enter', label: `${modifier} + Enter` },
+              { value: 'mod-enter', label: '⌘ / Ctrl + Enter' },
             ]}
           />
         </SettingRow>
-      </section>
-      <section
-        className="border border-line rounded-card mb-3 overflow-hidden"
-        aria-labelledby="preview-heading"
+      </SettingGroup>
+
+      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      <Modal
+        open={resetting}
+        onOpenChange={setResetting}
+        title="恢复默认偏好"
+        footer={
+          <>
+            <Button onClick={() => setResetting(false)}>取消</Button>
+            <Button
+              variant="primary"
+              disabled={saving}
+              onClick={() =>
+                void save(async () => {
+                  await window.workbench.settingsSavePreferences(defaults);
+                  setResetting(false);
+                  toast.success('使用偏好已恢复默认');
+                })
+              }
+            >
+              恢复默认
+            </Button>
+          </>
+        }
       >
-        <h3
-          id="preview-heading"
-          className="m-0 py-3 px-5 text-helper font-semibold bg-inset border-b border-b-line"
-        >
-          数据预览
-        </h3>
-        <SettingRow
-          title="默认每页行数"
-          description="下次打开数据预览时生效，仍可在表格底部临时调整。行数越多，单次读取的数据越多。"
-        >
-          <Select
-            className="min-w-42 max-[1101px]:min-w-35.5 max-[541px]:w-full"
-            aria-label="默认每页行数"
-            value={preferences.previewPageSize}
-            onChange={(previewPageSize) => updatePreferences({ previewPageSize })}
-            options={([50, 100, 200] as const).map((value) => ({ value, label: `${value} 行` }))}
-          />
-        </SettingRow>
-      </section>
-      <section
-        className="p-5 border border-line rounded-card bg-inset text-helper"
-        aria-labelledby="shortcuts-heading"
-      >
-        <h3
-          className="flex items-center gap-2 mt-0 mr-0 mb-4 ml-0 text-body font-medium"
-          id="shortcuts-heading"
-        >
-          <KeyboardIcon className="text-muted" size={18} aria-hidden="true" />
-          常用快捷键
-        </h3>
-        <dl className="grid grid-cols-2 gap-y-2 gap-x-7 m-0 max-[1101px]:grid-cols-1">
-          {[
-            { label: '搜索所有会话', keys: [modifier, 'K'] },
-            {
-              label: '发送分析问题',
-              keys: preferences.sendShortcut === 'enter' ? ['Enter'] : [modifier, 'Enter'],
-            },
-            {
-              label: '输入框换行',
-              keys: preferences.sendShortcut === 'enter' ? ['Shift', 'Enter'] : ['Enter'],
-            },
-            { label: '关闭弹窗', keys: ['Esc'] },
-          ].map(({ label, keys }) => (
-            <div className="flex justify-between items-center gap-3 min-h-9" key={label}>
-              <dt className="text-muted">{label}</dt>
-              <dd className="flex items-center gap-1 shrink-0 m-0" aria-label={keys.join(' + ')}>
-                {keys.map((key) => (
-                  <kbd
-                    className="font-[family-name:inherit] inline-flex items-center justify-center min-w-7 h-7 px-2 border border-line rounded-compact bg-surface shadow-[0_2px_0_var(--border)] text-helper font-medium whitespace-nowrap"
-                    key={key}
-                  >
-                    {key}
-                  </kbd>
-                ))}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-      <footer className="flex justify-between items-center gap-3 flex-wrap text-muted text-helper mt-3">
-        <span>使用偏好保存在当前设备。</span>
-        <Button
-          size="small"
-          variant="ghost"
-          icon={<ArrowCounterClockwiseIcon />}
-          onClick={() =>
-            confirm({
-              title: '恢复默认使用偏好？',
-              content: '恢复分析方式、发送快捷键和预览行数。不会修改主题、模型服务或数据。',
-              okText: '恢复默认',
-              onOk: () => {
-                if (updatePreferences(defaultPreferences)) message.success('使用偏好已恢复默认');
-              },
-            })
-          }
-        >
-          恢复默认偏好
-        </Button>
-      </footer>
-    </section>
+        <p className="m-0 leading-6 text-muted">仅恢复分析方式和发送快捷键，不修改主题、模型服务或数据。</p>
+      </Modal>
+    </div>
   );
 }

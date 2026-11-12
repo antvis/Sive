@@ -1,22 +1,24 @@
-import { useOutletContext } from 'react-router';
-import type { Dataset, State, AnalysisMode } from '@shared/contracts';
-import type { useWorkspaceNavigation } from '@renderer/hooks/useWorkspaceNavigation';
-import type { useChat } from '@ai-sdk/react';
-import type { AnalysisChat } from '../data/analysisChat';
-import type { AnalysisMessage } from '../data/analysisChat/messages';
+import { useCallback, useEffect, useState } from 'react';
+import type { WorkspaceState } from '../types';
+import { errorMessage } from '../utils';
 
-export type WorkspaceContext = {
-  state: State;
-  session: AnalysisChat;
-  chat: ReturnType<typeof useChat<AnalysisMessage>>;
-  busy: boolean;
-  submitting: boolean;
-  analysisMode: AnalysisMode;
-  setAnalysisMode: (mode: AnalysisMode) => void;
-  navigation: ReturnType<typeof useWorkspaceNavigation>;
-  open: (dataset: Dataset) => void;
-  refresh: () => Promise<void>;
-  openModelSettings: () => void;
-};
+export function useWorkspace() {
+  const [state, setState] = useState<WorkspaceState | null>(null);
+  const [error, setError] = useState('');
 
-export const useWorkspace = () => useOutletContext<WorkspaceContext>();
+  const refresh = useCallback(async () => {
+    try {
+      setState(await window.workbench.workspaceGetState());
+      setError('');
+    } catch (cause) {
+      setError(errorMessage(cause));
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+    return window.workbench.workspaceOnChange(() => void refresh());
+  }, [refresh]);
+
+  return { state, error, refresh };
+}

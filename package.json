@@ -17,11 +17,11 @@
     "check": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "build": "electron-vite build",
     "start": "electron .",
-    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=^/(src|sive-renderer|docs|samples|.git|.github)$",
-    "format": "pnpm lint:fix && prettier --write src sive-renderer electron.vite.config.ts .oxlintrc.json .prettierrc.json package.json",
-    "lint": "oxlint --deny-warnings src sive-renderer electron.vite.config.ts",
+    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=^/(src|docs|samples|.git|.github)$",
+    "format": "pnpm lint:fix && prettier --write src electron.vite.config.ts .oxlintrc.json .prettierrc.json package.json",
+    "lint": "oxlint --deny-warnings src electron.vite.config.ts",
     "lint:fix": "pnpm lint --fix",
-    "format:check": "prettier --check src sive-renderer electron.vite.config.ts .oxlintrc.json .prettierrc.json package.json"
+    "format:check": "prettier --check src electron.vite.config.ts .oxlintrc.json .prettierrc.json package.json"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.84",

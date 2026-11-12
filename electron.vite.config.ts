@@ -32,10 +32,10 @@ export default defineConfig(({ command }) => ({
     },
   },
   renderer: {
-    root: 'sive-renderer',
+    root: 'src/renderer',
     publicDir: resolve('assets'),
     resolve: {
-      alias: { '@renderer': resolve('sive-renderer'), '@assets': resolve('assets') },
+      alias: { '@assets': resolve('assets') },
     },
     base: './',
     plugins: [react(), tailwindcss()],
@@ -44,7 +44,7 @@ export default defineConfig(({ command }) => ({
       outDir: resolve('dist'),
       minify: true,
       chunkSizeWarningLimit: 1600,
-      rolldownOptions: { input: resolve('sive-renderer/index.html') },
+      rolldownOptions: { input: resolve('src/renderer/index.html') },
     },
   },
 }));

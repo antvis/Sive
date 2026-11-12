@@ -1,14 +1,9 @@
-/// <reference types="vite/client" />
-import type { API } from '@shared/contracts';
-
-declare module 'react' {
-  interface CSSProperties {
-    [property: `--${string}`]: string | number | undefined;
-  }
-}
+import type { WorkbenchApi } from '../preload/api';
 
 declare global {
   interface Window {
-    workbench: API;
+    workbench: WorkbenchApi;
   }
 }
+
+export {};
