@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
-import type { ModelTestProgress, WorkbenchApi } from './api';
+import type { AnalysisTaskEvent, ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
   workspaceGetState: () => ipcRenderer.invoke('workspaceGetState'),
@@ -27,6 +27,16 @@ const api = {
   },
   modelActivate: (id, model) => ipcRenderer.invoke('modelActivate', id, model),
   modelDelete: (id) => ipcRenderer.invoke('modelDelete', id),
+  analysisStart: (input) => ipcRenderer.invoke('analysisStart', input),
+  analysisCancel: (taskId) => ipcRenderer.invoke('analysisCancel', taskId),
+  analysisGetMessages: (conversationId) => ipcRenderer.invoke('analysisGetMessages', conversationId),
+  analysisOnTaskChange: (callback) => {
+    const listener = (_event: IpcRendererEvent, progress: AnalysisTaskEvent) => callback(progress);
+    ipcRenderer.on('analysis:task-change', listener);
+    return () => ipcRenderer.removeListener('analysis:task-change', listener);
+  },
+  conversationRename: (id, title) => ipcRenderer.invoke('conversationRename', id, title),
+  conversationArchive: (id) => ipcRenderer.invoke('conversationArchive', id),
   conversationRestore: (id) => ipcRenderer.invoke('conversationRestore', id),
   conversationPurge: (ids) => ipcRenderer.invoke('conversationPurge', ids),
 } satisfies WorkbenchApi;

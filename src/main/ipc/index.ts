@@ -115,11 +115,34 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('analysisSave', (event, input) => {
-    const result = services.analysis.save(objectInput(input));
+  ipcMain.handle('analysisStart', (event, input) => {
+    const request = objectInput<{
+      datasetId: string;
+      question: string;
+      strategy: 'direct' | 'loop';
+      conversationId?: string;
+    }>(input);
+    const result = services.analysis.start(request, services.model.getDefaultModelConfig(), (progress) =>
+      event.sender.send('analysis:task-change', progress),
+    );
     changed(event);
     return result;
   });
+
+  ipcMain.handle('analysisCancel', async (event, taskId) => {
+    const task = await services.analysis.cancel(text(taskId));
+    event.sender.send('analysis:task-change', {
+      taskId,
+      datasetId: task?.datasetId,
+      conversationId: task?.conversationId,
+      status: 'cancelled',
+      stage: '已取消',
+    });
+  });
+
+  ipcMain.handle('analysisGetMessages', (_event, conversationId) =>
+    services.analysis.getMessages(text(conversationId)),
+  );
 
   ipcMain.handle('analysisGetRun', (_event, id) => services.analysis.getRun(text(id)));
 

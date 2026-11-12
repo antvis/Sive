@@ -1,4 +1,5 @@
 import type { Schema, Semantic, SuggestResult } from '@antv/ava';
+import type { messages } from '../main/db/schema/messages';
 
 export type ThemeSettings = { mode: 'light' | 'dark' };
 
@@ -56,6 +57,24 @@ export type DatasetSummary = {
 
 export type DatasetDetail = DatasetSummary & { schema: Schema; semantic: Semantic };
 
+export type AnalysisMessage = typeof messages.$inferSelect;
+
+export type AnalysisStartInput = {
+  datasetId: string;
+  question: string;
+  strategy: 'direct' | 'loop';
+  conversationId?: string;
+};
+
+export type AnalysisTaskEvent = {
+  taskId: string;
+  datasetId: string;
+  conversationId: string;
+  status: 'running' | 'done' | 'error' | 'cancelled';
+  stage?: string;
+  error?: string;
+};
+
 export type WorkspaceState = {
   conversations: Conversation[];
   archivedConversations: Conversation[];
@@ -84,6 +103,12 @@ export type WorkbenchApi = {
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;
   modelActivate(id: string, model?: string): Promise<void>;
   modelDelete(id: string): Promise<void>;
+  analysisStart(input: AnalysisStartInput): Promise<{ taskId: string; conversationId: string }>;
+  analysisCancel(taskId: string): Promise<void>;
+  analysisGetMessages(conversationId: string): Promise<AnalysisMessage[]>;
+  analysisOnTaskChange(callback: (event: AnalysisTaskEvent) => void): () => void;
+  conversationRename(id: string, title: string): Promise<void>;
+  conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;
   conversationPurge(ids: string[]): Promise<void>;
 };

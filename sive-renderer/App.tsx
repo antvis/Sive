@@ -12,6 +12,7 @@ import { WelcomePage } from './pages/WelcomePage';
 export default function App() {
   const [page, setPage] = useState<AppPage>('welcome');
   const [analysisDatasetId, setAnalysisDatasetId] = useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [openDatasetIds, setOpenDatasetIds] = useState<string[]>([]);
   const { state, error, refresh } = useWorkspace();
   const datasetCount = state?.datasets.length ?? 0;
@@ -20,10 +21,16 @@ export default function App() {
     const dataset = state?.datasets.find((item) => item.id === id);
     return dataset ? [dataset] : [];
   });
+  const conversationsFor = (datasetId: string) =>
+    (state?.conversations ?? [])
+      .filter((conversation) => conversation.datasetId === datasetId)
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const latestConversationId = (datasetId: string) => conversationsFor(datasetId)[0]?.id ?? null;
 
   const openDataset = (id: string) => {
     setOpenDatasetIds((current) => (current.includes(id) ? current : [...current, id]));
     setAnalysisDatasetId(id);
+    setActiveConversationId(latestConversationId(id));
     setPage('analysis');
   };
 
@@ -32,12 +39,14 @@ export default function App() {
     setOpenDatasetIds(remaining);
     if (!remaining.length) {
       setAnalysisDatasetId(null);
+      setActiveConversationId(null);
       setPage('datasets');
       return;
     }
     if (analysisDatasetId === id) {
       const next = remaining[remaining.length - 1] ?? null;
       setAnalysisDatasetId(next);
+      setActiveConversationId(next ? latestConversationId(next) : null);
       if (page === 'analysis') setPage(next ? 'analysis' : 'datasets');
     }
   };
@@ -57,6 +66,7 @@ export default function App() {
       return;
     setOpenDatasetIds((current) => current.filter((id) => id !== analysisDatasetId));
     setAnalysisDatasetId(null);
+    setActiveConversationId(null);
     if (page === 'analysis') setPage('datasets');
   }, [state, analysisDatasetId, page]);
 
@@ -66,8 +76,23 @@ export default function App() {
       hasDatasets={datasetCount > 0}
       datasetTabs={datasetTabs}
       activeDatasetId={analysisDatasetId}
+      conversations={analysisDatasetId ? conversationsFor(analysisDatasetId) : []}
+      activeConversationId={activeConversationId}
       onDatasetSelect={openDataset}
       onDatasetClose={closeDataset}
+      onConversationSelect={(id) => {
+        setActiveConversationId(id);
+        setPage('analysis');
+      }}
+      onConversationCreate={() => {
+        setActiveConversationId(null);
+        setPage('analysis');
+      }}
+      onConversationArchive={(id) => {
+        if (id !== activeConversationId || !analysisDatasetId) return;
+        const next = conversationsFor(analysisDatasetId).find((conversation) => conversation.id !== id);
+        setActiveConversationId(next?.id ?? null);
+      }}
       onNavigate={setPage}
     >
       {!state && !error && <div className="grid h-full place-items-center text-muted">正在加载工作台…</div>}
@@ -89,8 +114,11 @@ export default function App() {
       {state && page === 'analysis' && analysisDatasetId && (
         <AnalysisPage
           datasetId={analysisDatasetId}
+          conversationId={activeConversationId}
+          onConversationChange={setActiveConversationId}
           onBack={() => {
             setAnalysisDatasetId(null);
+            setActiveConversationId(null);
             setPage('datasets');
           }}
           models={state.models}

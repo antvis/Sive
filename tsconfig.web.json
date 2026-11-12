@@ -9,5 +9,5 @@
       "@assets/*": ["./assets/*"]
     }
   },
-  "include": ["sive-renderer", "src/preload/api.ts"]
+  "include": ["sive-renderer", "src/preload/api.ts", "src/main/db/schema/messages.ts"]
 }

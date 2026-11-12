@@ -79,15 +79,14 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                     disabled={busy}
                     onClick={() => setDeleting(conversation)}
                   />
-                  <Button
+                  <IconButton
+                    icon={ArrowCounterClockwise}
+                    label={`恢复 ${conversation.title}`}
                     disabled={busy}
                     onClick={() =>
                       void perform(() => window.workbench.conversationRestore(conversation.id), '会话已恢复')
                     }
-                  >
-                    <ArrowCounterClockwise size={15} />
-                    恢复
-                  </Button>
+                  />
                 </div>
               ))}
             </div>

@@ -8,13 +8,23 @@ import { DatasetPanel } from './DatasetPanel';
 
 type Props = {
   datasetId: string;
+  conversationId: string | null;
+  onConversationChange: (id: string) => void;
   onBack: () => void;
   models: ModelProfile[];
   activeModelId: string;
   preferences: Preferences;
 };
 
-export function AnalysisPage({ datasetId, onBack, models, activeModelId, preferences }: Props) {
+export function AnalysisPage({
+  datasetId,
+  conversationId,
+  onConversationChange,
+  onBack,
+  models,
+  activeModelId,
+  preferences,
+}: Props) {
   const [conversationWidth] = useState(() => readWidth('sive.conversation-width', 380));
   return (
     <Group orientation="horizontal" className="h-full min-h-0 overflow-hidden">
@@ -28,6 +38,8 @@ export function AnalysisPage({ datasetId, onBack, models, activeModelId, prefere
       >
         <ConversationPanel
           datasetId={datasetId}
+          conversationId={conversationId}
+          onConversationChange={onConversationChange}
           onBack={onBack}
           models={models}
           activeModelId={activeModelId}

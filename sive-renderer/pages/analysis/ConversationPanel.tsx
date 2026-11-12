@@ -1,15 +1,24 @@
 import { ArrowLeft, Sparkle } from '@phosphor-icons/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Select } from '../../components/Select';
-import type { ModelProfile, Preferences, SuggestResult } from '../../types';
+import type {
+  AnalysisMessage,
+  AnalysisTaskEvent,
+  ModelProfile,
+  Preferences,
+  SuggestResult,
+} from '../../types';
 import { errorMessage } from '../../utils';
+import { AnalysisMessageView } from './AnalysisMessage';
 
 type Props = {
   datasetId: string;
+  conversationId: string | null;
+  onConversationChange: (id: string) => void;
   onBack: () => void;
   models: ModelProfile[];
   activeModelId: string;
@@ -18,10 +27,22 @@ type Props = {
 
 const modelValue = (providerId: string, model: string) => JSON.stringify([providerId, model]);
 
-export function ConversationPanel({ datasetId, onBack, models, activeModelId, preferences }: Props) {
+export function ConversationPanel({
+  datasetId,
+  conversationId,
+  onConversationChange,
+  onBack,
+  models,
+  activeModelId,
+  preferences,
+}: Props) {
   const [question, setQuestion] = useState('');
+  const [messages, setMessages] = useState<AnalysisMessage[]>([]);
+  const [activeTask, setActiveTask] = useState<AnalysisTaskEvent | null>(null);
+  const [sending, setSending] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [error, setError] = useState('');
   const activeProvider = models.find((model) => model.id === activeModelId);
   const activeModel = activeProvider?.model ?? '';
@@ -32,14 +53,44 @@ export function ConversationPanel({ datasetId, onBack, models, activeModelId, pr
     })),
   );
 
+  const currentTask = activeTask?.conversationId === conversationId ? activeTask : null;
+
+  const loadMessages = useCallback(
+    async (id: string | null = conversationId) => {
+      if (!id) {
+        setMessages([]);
+        setHistoryLoading(false);
+        return;
+      }
+      setMessages(await window.workbench.analysisGetMessages(id));
+      setHistoryLoading(false);
+    },
+    [conversationId],
+  );
+
+  useEffect(() => {
+    setActiveTask(null);
+    setQuestion('');
+    setError('');
+  }, [datasetId]);
+
+  useEffect(() => {
+    setHistoryLoading(true);
+    setMessages([]);
+    loadMessages().catch((cause) => {
+      setError(errorMessage(cause));
+      setHistoryLoading(false);
+    });
+  }, [loadMessages]);
+
   useEffect(() => {
     let live = true;
     if (!activeModelId) {
-      setLoading(false);
+      setSuggestionsLoading(false);
       setSuggestions([]);
       return;
     }
-    setLoading(true);
+    setSuggestionsLoading(true);
     setError('');
     window.workbench
       .datasetSuggest(datasetId)
@@ -50,12 +101,62 @@ export function ConversationPanel({ datasetId, onBack, models, activeModelId, pr
         if (live) setError(errorMessage(cause));
       })
       .finally(() => {
-        if (live) setLoading(false);
+        if (live) setSuggestionsLoading(false);
       });
     return () => {
       live = false;
     };
   }, [datasetId, activeModelId, activeModel]);
+
+  useEffect(() => {
+    return window.workbench.analysisOnTaskChange((event) => {
+      if (event.datasetId !== datasetId) return;
+      setActiveTask(event.status === 'running' ? event : null);
+      if (event.status !== 'running' && event.conversationId === conversationId) {
+        if (event.error) toast.error(event.error);
+        loadMessages().catch((cause) => toast.error(errorMessage(cause)));
+      }
+    });
+  }, [datasetId, conversationId, loadMessages]);
+
+  const start = async () => {
+    if (!question.trim() || !activeModelId || currentTask || sending) return;
+    setSending(true);
+    setError('');
+    try {
+      const result = await window.workbench.analysisStart({
+        datasetId,
+        question: question.trim(),
+        strategy: preferences.analysisMode,
+        conversationId: conversationId ?? undefined,
+      });
+      onConversationChange(result.conversationId);
+      setActiveTask({
+        taskId: result.taskId,
+        datasetId,
+        conversationId: result.conversationId,
+        status: 'running',
+        stage: '准备分析',
+      });
+      setQuestion('');
+      await loadMessages(result.conversationId);
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const cancel = async () => {
+    if (!currentTask) return;
+    try {
+      await window.workbench.analysisCancel(currentTask.taskId);
+      setActiveTask(null);
+      await loadMessages();
+    } catch (cause) {
+      toast.error(errorMessage(cause));
+    }
+  };
 
   const changeModel = (value: string) => {
     const [id, model] = JSON.parse(value) as [string, string];
@@ -68,6 +169,17 @@ export function ConversationPanel({ datasetId, onBack, models, activeModelId, pr
       .catch((cause) => toast.error(errorMessage(cause)));
   };
 
+  const onQuestionKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const send =
+      preferences.sendShortcut === 'enter'
+        ? event.key === 'Enter' && !event.shiftKey
+        : event.key === 'Enter' && (event.metaKey || event.ctrlKey);
+    if (send && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      void start();
+    }
+  };
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex h-12 shrink-0 items-center border-b px-4">
@@ -75,35 +187,47 @@ export function ConversationPanel({ datasetId, onBack, models, activeModelId, pr
         <span className="ml-1 text-sm font-medium">AI 对话</span>
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-5">
-        <div className="mx-auto max-w-xl pt-8">
-          <span className="grid size-10 place-items-center rounded-xl bg-accent-soft text-accent">
-            <Sparkle size={22} />
-          </span>
-          <h1 className="mt-4 mb-2 text-xl font-semibold">向数据提问，发现新的洞察</h1>
-          <p className="m-0 text-sm leading-6 text-muted">选择一个推荐问题，或输入你关心的问题。</p>
-          <div className="mt-6 grid gap-2">
-            {loading && <p className="text-sm text-muted">正在生成推荐问题…</p>}
-            {!activeModelId && <p className="text-sm text-muted">请先在设置中配置默认模型服务。</p>}
-            {error && <p className="m-0 text-sm text-danger">{error}</p>}
-            {!loading &&
-              suggestions.map((suggestion) => (
-                <button
-                  key={suggestion.query}
-                  type="button"
-                  className="rounded-xl bg-page px-4 py-3 text-left text-sm leading-6 text-muted transition-colors hover:bg-accent-soft"
-                  onClick={() => setQuestion(suggestion.query)}
-                >
-                  {suggestion.query}
-                </button>
-              ))}
+        {historyLoading ? (
+          <p className="text-sm text-muted">正在加载会话…</p>
+        ) : messages.length ? (
+          <div className="mx-auto grid max-w-2xl gap-5">
+            {messages.map((message) => (
+              <AnalysisMessageView key={message.id} message={message} activeTask={currentTask} />
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="mx-auto max-w-xl pt-8">
+            <span className="grid size-10 place-items-center rounded-xl bg-accent-soft text-accent">
+              <Sparkle size={22} />
+            </span>
+            <h1 className="mt-4 mb-2 text-xl font-semibold">向数据提问，发现新的洞察</h1>
+            <p className="m-0 text-sm leading-6 text-muted">选择一个推荐问题，或输入你关心的问题。</p>
+            <div className="mt-6 grid gap-2">
+              {suggestionsLoading && <p className="text-sm text-muted">正在生成推荐问题…</p>}
+              {!activeModelId && <p className="text-sm text-muted">请先在设置中配置默认模型服务。</p>}
+              {error && <p className="m-0 text-sm text-danger">{error}</p>}
+              {!suggestionsLoading &&
+                suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.query}
+                    type="button"
+                    className="rounded-xl bg-page px-4 py-3 text-left text-sm leading-6 text-muted transition-colors hover:bg-accent-soft"
+                    onClick={() => setQuestion(suggestion.query)}
+                  >
+                    {suggestion.query}
+                  </button>
+                ))}
+            </div>
+          </div>
+        )}
+        {error && messages.length > 0 && <p className="mt-4 text-sm text-danger">{error}</p>}
       </div>
       <div className="shrink-0 border-t p-4">
         <textarea
           className="min-h-24 w-full resize-none rounded-xl bg-page p-3 text-sm leading-6 outline-none focus:bg-accent-soft"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
+          onKeyDown={onQuestionKeyDown}
           placeholder="输入你的分析问题…"
           aria-label="分析问题"
         />
@@ -113,7 +237,7 @@ export function ConversationPanel({ datasetId, onBack, models, activeModelId, pr
             value={activeProvider ? modelValue(activeProvider.id, activeModel) : ''}
             onChange={changeModel}
             options={options}
-            disabled={!models.length}
+            disabled={!models.length || !!currentTask}
             className="w-36 shrink-0"
             compact
           />
@@ -121,21 +245,34 @@ export function ConversationPanel({ datasetId, onBack, models, activeModelId, pr
             <Tabs.List aria-label="分析方式" className="flex rounded-lg bg-page p-1">
               <Tabs.Trigger
                 value="direct"
+                disabled={!!currentTask}
                 className="rounded-md px-2 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
               >
                 直接分析
               </Tabs.Trigger>
               <Tabs.Trigger
                 value="loop"
+                disabled={!!currentTask}
                 className="rounded-md px-2 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
               >
                 多步探索
               </Tabs.Trigger>
             </Tabs.List>
           </Tabs.Root>
-          <Button className="ml-auto shrink-0" variant="primary" disabled title="分析功能待接入">
-            发送
-          </Button>
+          {currentTask ? (
+            <Button className="ml-auto shrink-0" variant="secondary" onClick={() => void cancel()}>
+              停止
+            </Button>
+          ) : (
+            <Button
+              className="ml-auto shrink-0"
+              variant="primary"
+              disabled={!question.trim() || !activeModelId || sending}
+              onClick={() => void start()}
+            >
+              {sending ? '提交中…' : '发送'}
+            </Button>
+          )}
         </div>
       </div>
     </div>
