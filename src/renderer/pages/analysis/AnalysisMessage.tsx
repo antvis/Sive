@@ -6,6 +6,7 @@ import {
   CircleNotch,
   Columns,
   Database,
+  FileCsv,
   MagnifyingGlass,
   Tag,
   Wrench,
@@ -229,16 +230,21 @@ function toolContent(toolName: string, output: unknown): ReactNode {
       { label: '列数', value: formatMetric(source.columnCount) },
     ];
     return (
-      <div className="rounded-lg border bg-surface p-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-ink">{source.name}</span>
-          <span className="text-xs text-muted">{source.sourceType.toUpperCase()}</span>
+      <div className="rounded-lg bg-page p-4">
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-8 shrink-0 place-items-center rounded-md bg-[#25804d14] text-[#25804d]">
+            <FileCsv size={18} />
+          </span>
+          <span className="min-w-0 break-words text-sm font-medium text-ink">{source.name}</span>
+          <span className="shrink-0 text-xs text-muted">
+            {source.sourceType.replace(/-file$/i, '').toUpperCase()}
+          </span>
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-3">
+        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
           {stats.map((stat) => (
-            <div key={stat.label}>
-              <div className="text-xs text-muted">{stat.label}</div>
-              <div className="mt-0.5 text-sm text-ink/80">{stat.value}</div>
+            <div key={stat.label} className="flex items-baseline gap-1.5 text-xs">
+              <span className="text-muted">{stat.label}</span>
+              <span className="text-ink/80">{stat.value}</span>
             </div>
           ))}
         </div>
