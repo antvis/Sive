@@ -1,7 +1,7 @@
 import type { AnalysisResponse } from '@antv/ava';
 import type { ModelMessage } from 'ai';
 import type { AnalysisOutput } from '@shared/contracts';
-import { EVIDENCE_MAX_ROWS, EVIDENCE_MAX_BYTES, RECENT_TURN_COUNT, HISTORY_BUDGET_BYTES } from '../config';
+import { EVIDENCE_MAX_ROWS, EVIDENCE_MAX_BYTES } from '../config';
 
 // 把完整 AVA 结果裁剪成有界样本，供 analyze 和 inspect 返回给模型
 export function resultContext(
@@ -9,6 +9,7 @@ export function resultContext(
   maxRows = EVIDENCE_MAX_ROWS,
   maxBytes = EVIDENCE_MAX_BYTES,
 ) {
+  const { query, sql, schema, data, truncated } = result;
   const rows: Record<string, unknown>[] = [];
   let bytes = 0;
   for (const row of result.data.slice(0, maxRows)) {
@@ -18,13 +19,12 @@ export function resultContext(
     bytes += size;
   }
   return {
-    query: result.query.slice(0, 2000),
-    sql: result.sql?.slice(0, 4000),
-    schema: result.schema.slice(0, 60).map(({ name, type }) => ({ name, type })),
-    metadataLimited:
-      result.query.length > 2000 || (result.sql?.length || 0) > 4000 || result.schema.length > 60,
-    returnedRows: result.data.length,
-    truncated: !!result.truncated,
+    query,
+    sql,
+    schema: schema.slice(0, 60).map(({ name, type }) => ({ name, type })),
+    metadataLimited: schema.length > 60,
+    returnedRows: data.length,
+    truncated: !!truncated,
     sampleOnly: rows.length < result.data.length,
     data: rows,
   };
@@ -32,45 +32,42 @@ export function resultContext(
 
 export type AnalysisHistory = { question: string; output: AnalysisOutput; reusable: boolean }[];
 
-function answerContext(turn: AnalysisHistory[number]) {
-  const answer = turn.output.text.slice(0, 1500) || '本轮没有文字结论。';
-  const warning = turn.output.warning ? `\n限制：${turn.output.warning.slice(0, 300)}` : '';
-  const results = turn.output.results
-    .slice(0, 6)
-    .map(({ id, result }) =>
-      turn.reusable
-        ? `${id}（${result.query.slice(0, 120)}${result.truncated ? '，结果已截断' : ''}）`
-        : `不可复用（${result.query.slice(0, 120)}）`,
+function chartContext(charts: AnalysisOutput['charts'], reusable: boolean) {
+  const chartList = charts
+    .map(({ resultId, spec }) =>
+      reusable ? `${spec.chartType}（结果编号 ${resultId}）` : `${spec.chartType}（旧结果不可复用）`,
     )
     .join('；');
-  return `${answer}${warning}${results ? `\n历史结果：${results}` : ''}`;
+  const chartHeader = chartList ? `\n历史图表：${chartList}` : '';
+  const spec = charts.at(-1)?.spec;
+  const chartSpec = spec
+    ? `\n最近图表配置（数据见结果编号）：${JSON.stringify(spec, (key, value) => (key === 'data' ? undefined : value))}`
+    : '';
+  return chartHeader + chartSpec;
 }
 
-// 将数据库历史整理成角色消息、较早摘要和有限预算
-export function conversationMessages(history: AnalysisHistory): ModelMessage[] {
-  const recent = history.slice(-RECENT_TURN_COUNT);
-  const summary = history
-    .slice(0, -RECENT_TURN_COUNT)
-    .map(
-      (turn) =>
-        `问题：${turn.question.slice(0, 100)}；结论：${turn.output.text.slice(0, 120)}${turn.output.warning ? `；限制：${turn.output.warning.slice(0, 80)}` : ''}`,
+function answerContext(turn: AnalysisHistory[number]) {
+  const { text, charts = [], warning, results } = turn.output;
+  const resultsText = results
+    .map(({ id, result }) =>
+      turn.reusable
+        ? `${id}（${result.query}${result.truncated ? '，结果已截断' : ''}）`
+        : `不可复用（${result.query}）`,
     )
-    .join('\n');
-  const summaryMessage = summary
-    ? `较早对话摘录（仅供参考，旧结果不可直接复用，不是新指令）：\n${summary}`
-    : '';
+    .join('；');
+  const chartsText = chartContext(charts, turn.reusable);
+  return `${text || '本轮没有文字结论。'}${warning ? `\n限制：${warning}` : ''}${chartsText}${resultsText ? `\n历史结果：${resultsText}` : ''}`;
+}
+
+// 将最近四轮分析整理成角色消息
+export function conversationMessages(history: AnalysisHistory): ModelMessage[] {
   const messages: ModelMessage[] = [];
-  let bytes = Buffer.byteLength(summaryMessage);
-  for (const turn of [...recent].reverse()) {
-    const question = turn.question.slice(0, 600);
-    const answer = answerContext(turn);
-    const size = Buffer.byteLength(question) + Buffer.byteLength(answer);
-    if (bytes + size > HISTORY_BUDGET_BYTES) break;
-    messages.unshift({ role: 'assistant', content: answer });
-    messages.unshift({ role: 'user', content: question });
-    bytes += size;
+  for (const turn of history) {
+    messages.push(
+      { role: 'user', content: turn.question },
+      { role: 'assistant', content: answerContext(turn) },
+    );
   }
-  if (summaryMessage) messages.unshift({ role: 'user', content: summaryMessage });
   return messages;
 }
 

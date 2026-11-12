@@ -28,10 +28,6 @@ export const QUERY_OPTIONS = {
 
 export const RECENT_TURN_COUNT = 4;
 
-export const HISTORY_EXCERPT_COUNT = 4;
-
-export const HISTORY_BUDGET_BYTES = 16000;
-
 export const EVIDENCE_MAX_ROWS = 50;
 
 export const EVIDENCE_MAX_BYTES = 12000;

@@ -96,31 +96,6 @@ export class MessageRepo {
       .reverse();
   }
 
-  recentAnalysisExcerpts(conversationId: string, offset: number, limit: number) {
-    return this.db
-      .select({
-        question,
-        text: sql<string>`coalesce(json_extract(${messages.content}, '$.output.text'), '')`,
-        warning: sql<string>`coalesce(json_extract(${messages.content}, '$.output.warning'), '')`,
-      })
-      .from(messages)
-      .innerJoin(conversations, eq(conversations.id, messages.conversationId))
-      .innerJoin(users, precedingUser)
-      .where(
-        and(
-          assistant,
-          isNull(conversations.deletedAt),
-          eq(messages.conversationId, conversationId),
-          eq(messages.status, 'done'),
-        ),
-      )
-      .orderBy(desc(messages.sequence))
-      .limit(limit)
-      .offset(offset)
-      .all()
-      .reverse();
-  }
-
   listAnalysesByStatus(statuses: MessageInsert['status'][]) {
     return this.analysisQuery(inArray(messages.status, statuses)).all();
   }

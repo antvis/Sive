@@ -17,7 +17,7 @@ import type { DatasetService } from '../data/DatasetService';
 import { timestamp } from '../../utils/time';
 import { businessSemantic } from '../../ai/semantics';
 import type { AnalysisHistory } from '../../ai/context';
-import { RECENT_TURN_COUNT, HISTORY_EXCERPT_COUNT } from '../../config';
+import { RECENT_TURN_COUNT } from '../../config';
 
 const active = (status: Task['status']) => status === 'running' || status === 'cancelling';
 
@@ -143,14 +143,7 @@ export class AnalysisRecordService {
   history(conversationId: string, source: StoredDataset): AnalysisHistory {
     const rows = this.data.messages.recentAnalyses(conversationId, RECENT_TURN_COUNT);
     if (rows.length) this.assertRunSource(rows[rows.length - 1].id, source);
-    const older = this.data.messages
-      .recentAnalysisExcerpts(conversationId, RECENT_TURN_COUNT, HISTORY_EXCERPT_COUNT)
-      .map((row) => ({
-        question: row.question,
-        output: { text: row.text, results: [], charts: [], warning: row.warning || undefined },
-        reusable: false,
-      }));
-    const recent = rows.flatMap((row) => {
+    return rows.flatMap((row) => {
       const output = 'output' in row.content ? row.content.output : undefined;
       if (!output) return [];
       const options = row.analysisOptions;
@@ -162,7 +155,6 @@ export class AnalysisRecordService {
           (!!options.dataVersion && options.dataVersion === this.datasets.dataVersion(source)));
       return [{ question: row.question, output, reusable }];
     });
-    return [...older, ...recent];
   }
 
   assertRunSource(id: string, source: StoredDataset) {
