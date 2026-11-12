@@ -162,7 +162,7 @@ export default function Layout() {
       onSidebarOpenChange={setSidebarOpen}
       sidebar={
         <aside
-          className="sidebar mac:relative mac:pt-12 mac:before:content-[''] mac:before:absolute mac:before:top-0 mac:before:inset-x-0 mac:before:h-9 mac:before:[-webkit-app-region:drag] w-full h-full min-w-0 min-h-0 overflow-hidden flex flex-col py-5 px-3 bg-page"
+          className="sidebar mac:relative mac:pt-12 mac:before:content-[''] mac:before:absolute mac:before:top-0 mac:before:inset-x-0 mac:before:h-9 mac:before:[-webkit-app-region:drag] w-full h-full min-w-0 min-h-0 overflow-hidden flex flex-col py-5 pl-3 bg-page"
           id="workspace-sidebar"
           inert={!sidebarOpen}
           aria-hidden={!sidebarOpen}
