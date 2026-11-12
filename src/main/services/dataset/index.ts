@@ -85,8 +85,9 @@ export class DatasetService {
     });
     try {
       await ava.source(dataset.sourceConfig);
-      await ava.schema();
-      await ava.profile({ metrics: ['row_count'] });
+      await ava.schema({}, () => dataset.schema);
+      await ava.profile({}, () => dataset.profile);
+      await ava.semantic({}, () => dataset.semantic);
       return await ava.suggest(3);
     } finally {
       await ava.dispose();
