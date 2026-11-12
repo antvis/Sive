@@ -1,0 +1,19 @@
+src/main/services/dataset/index.ts
+  s_e71fdd0e482f36::t_d470faddc245bf 88-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cfb030cd4b4e7c4772030047693ef70e2c4d6000",
+  "prompts": {},
+  "sessions": {
+    "s_e71fdd0e482f36": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "cbd12b09-1086-4af9-99e4-b7d99105607d",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
