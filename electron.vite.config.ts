@@ -8,7 +8,7 @@ delete process.env.ELECTRON_RUN_AS_NODE;
 
 export default defineConfig(({ command }) => ({
   main: {
-    resolve: { alias: { '@main': resolve('src/main') } },
+    resolve: { alias: { '@main': resolve('src/main'), '@shared': resolve('src/shared') } },
     build: {
       outDir: 'dist-electron',
       // Watch rebuilds must preserve the preload bundle in this shared directory.
@@ -20,6 +20,7 @@ export default defineConfig(({ command }) => ({
     },
   },
   preload: {
+    resolve: { alias: { '@shared': resolve('src/shared') } },
     build: {
       outDir: 'dist-electron',
       // Main and preload share this directory; keep the main build intact.
@@ -35,7 +36,7 @@ export default defineConfig(({ command }) => ({
     root: 'src/renderer',
     publicDir: resolve('assets'),
     resolve: {
-      alias: { '@assets': resolve('assets') },
+      alias: { '@assets': resolve('assets'), '@shared': resolve('src/shared') },
     },
     base: './',
     plugins: [react(), tailwindcss()],

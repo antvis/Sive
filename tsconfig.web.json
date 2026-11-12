@@ -5,8 +5,9 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
     "paths": {
-      "@assets/*": ["./assets/*"]
+      "@assets/*": ["./assets/*"],
+      "@shared/*": ["./src/shared/*"]
     }
   },
-  "include": ["src/renderer", "src/preload/api.ts", "src/main/db/schema/messages.ts"]
+  "include": ["src/renderer", "src/shared"]
 }

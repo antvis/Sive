@@ -1,15 +1,5 @@
 import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
-import type { AnalysisResponse, VisualizeResponse } from '@antv/ava';
-import type { TextStreamPart, ToolSet } from 'ai';
-
-export type MessageContent = {
-  question?: string;
-  stage?: string;
-  error?: string;
-} & Partial<AnalysisResponse> & {
-    chartHtml?: VisualizeResponse['html'];
-    parts?: TextStreamPart<ToolSet>[];
-  };
+import type { MessageContent } from '@shared/messages';
 
 export const messages = sqliteTable(
   'messages',

@@ -12,5 +12,5 @@ export type {
   Preferences,
   ThemeSettings,
   WorkspaceState,
-} from '../preload/api';
+} from '@shared/api';
 export type { Semantic, SuggestResult } from '@antv/ava';

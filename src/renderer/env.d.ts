@@ -1,4 +1,4 @@
-import type { WorkbenchApi } from '../preload/api';
+import type { WorkbenchApi } from '@shared/api';
 
 declare global {
   interface Window {
