@@ -1,0 +1,92 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+}
+
+:root {
+  color-scheme: light;
+  --page: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #243039;
+  --muted: #687682;
+  --line: #dde3e8;
+  --accent: #177c72;
+  --accent-soft: #e7f2f0;
+  --danger: #c64646;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-synthesis: none;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #15191e;
+  --surface: #20262d;
+  --ink: #edf1f5;
+  --muted: #a4afba;
+  --line: #38434e;
+  --accent: #63b7ac;
+  --accent-soft: #243b39;
+  --danger: #f08a88;
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--line);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  min-width: 800px;
+  min-height: 100vh;
+  background: var(--page);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.brand-logo {
+  width: 28px;
+  height: 28px;
+}
+
+[data-theme='dark'] .brand-logo {
+  filter: invert(1);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--line);
+}

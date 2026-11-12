@@ -1,0 +1,56 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript"],
+  "jsPlugins": ["@stylistic/eslint-plugin"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "@stylistic/padding-line-between-statements": [
+      "error",
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": [
+          "function",
+          "class",
+          "export",
+          {
+            "selector": "VariableDeclaration:has(VariableDeclarator > :matches(ArrowFunctionExpression, FunctionExpression))"
+          }
+        ]
+      }
+    ],
+    "@stylistic/lines-between-class-members": [
+      "error",
+      "always",
+      {
+        "exceptAfterOverload": true
+      }
+    ],
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true,
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "ignorePatterns": ["node_modules/**", "dist/**", "dist-electron/**", "release/**", "coverage/**"],
+  "overrides": [
+    {
+      "files": ["src/shared/inputSchemas.ts", "src/main/services/export/exportAnalysis.ts"],
+      "rules": {
+        "eslint/no-control-regex": "off"
+      }
+    },
+    {
+      "files": ["src/main/ava/index.ts"],
+      "rules": {
+        "eslint/no-unsafe-finally": "off"
+      }
+    }
+  ]
+}
