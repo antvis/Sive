@@ -1,4 +1,5 @@
 import type { Schema, Semantic, SuggestResult } from '@antv/ava';
+import type { TextStreamPart, ToolSet } from 'ai';
 import type { messages } from '../main/db/schema/messages';
 
 export type ThemeSettings = { mode: 'light' | 'dark' };
@@ -73,6 +74,7 @@ export type AnalysisTaskEvent = {
   status: 'running' | 'done' | 'error' | 'cancelled';
   stage?: string;
   error?: string;
+  part?: TextStreamPart<ToolSet>;
 };
 
 export type WorkspaceState = {

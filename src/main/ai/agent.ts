@@ -1,35 +1,34 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA } from '@antv/ava';
-import type { DataSourceConfig, Semantic } from '@antv/ava';
 import { ToolLoopAgent } from 'ai';
-import type { ModelMessage, ToolSet } from 'ai';
+import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
 import { createTools } from './tools';
+import type { ToolContext } from './tools';
 
 type ModelConfig = { baseURL: string; model: string; apiKey?: string };
 
 type CreateAgentInput = {
-  sourceConfig: DataSourceConfig;
-  semantic: Semantic;
+  dataset: ToolContext;
   model: ModelConfig;
   history: ModelMessage[];
 };
 
-type GenerateInput = {
+type StreamInput = {
   question: string;
   strategy: 'direct' | 'loop';
   abortSignal: AbortSignal;
+  onPart: (part: TextStreamPart<ToolSet>) => void;
 };
 
 type AnalysisAgent = {
-  generate(input: GenerateInput): ReturnType<ToolLoopAgent<never, ToolSet>['generate']>;
+  stream(input: StreamInput): ReturnType<ToolLoopAgent<never, ToolSet>['stream']>;
 };
 
 const INSTRUCTIONS =
-  '你是数据分析助手。使用 analyze 获取真实数据结论，必要时使用 visualize 创建图表。根据用户问题直接回答，不要编造数据。';
+  '你是数据分析助手。首次提问时必须依次调用 source、schema、profile、semantic 完成数据准备，后续轮次不要重复初始化。准备完成后使用 analyze 获取真实数据结论，必要时使用 visualize 创建图表。根据用户问题直接回答，不要编造数据。';
 
 export async function createAnalysisAgent({
-  sourceConfig,
-  semantic,
+  dataset,
   model,
   history,
 }: CreateAgentInput): Promise<AnalysisAgent> {
@@ -39,26 +38,23 @@ export async function createAnalysisAgent({
     llm: { model: languageModel },
     engine: { type: 'duckdb', memoryLimit: '1024MB' },
   });
-  await ava.source(sourceConfig);
-  await ava.schema();
-  await ava.profile({ metrics: ['row_count'] });
-  await ava.semantic({}, () => semantic);
-
   const messages = [...history];
-  const options = { maxSteps: 3 };
+  const options = { maxSteps: 7 };
   const agent = new ToolLoopAgent({
     model: languageModel,
     instructions: INSTRUCTIONS,
-    tools: createTools(ava),
+    tools: createTools(ava, dataset),
     stopWhen: ({ steps }) => steps.length >= options.maxSteps,
   });
-
   return {
-    async generate({ question, strategy, abortSignal }) {
+    async stream({ question, strategy, abortSignal, onPart }) {
       messages.push({ role: 'user', content: question });
-      options.maxSteps = strategy === 'loop' ? 8 : 3;
-      const result = await agent.generate({ messages, abortSignal });
-      messages.push(...result.responseMessages);
+      options.maxSteps = strategy === 'loop' ? 12 : 7;
+      const result = await agent.stream({ messages, abortSignal });
+      for await (const part of result.stream) {
+        if (['text-delta', 'tool-call', 'tool-result', 'tool-error'].includes(part.type)) onPart(part);
+      }
+      messages.push(...(await result.responseMessages));
       return result;
     },
   };

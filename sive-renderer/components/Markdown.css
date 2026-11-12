@@ -1,0 +1,136 @@
+.markdown-body {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.75;
+}
+
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body pre,
+.markdown-body table {
+  margin: 0 0 12px;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  margin: 16px 0 8px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.markdown-body h1 {
+  font-size: 18px;
+}
+
+.markdown-body h2 {
+  font-size: 16px;
+}
+
+.markdown-body h3 {
+  font-size: 14px;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 20px;
+}
+
+.markdown-body a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.markdown-body code {
+  border-radius: 4px;
+  background: var(--page);
+  padding: 2px 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.markdown-body pre {
+  max-width: 100%;
+  overflow: auto;
+  border-radius: 8px;
+  background: var(--page);
+  padding: 12px;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 12px;
+}
+
+.markdown-body table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border-bottom: 1px solid var(--line);
+  padding: 8px;
+  text-align: left;
+}
+
+.markdown-body th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.markdown-body blockquote {
+  margin: 0 0 12px;
+  border-left: 3px solid var(--line);
+  padding-left: 12px;
+  color: var(--muted);
+}
+
+.hljs-keyword,
+.hljs-built_in,
+.hljs-literal {
+  color: #8250df;
+}
+
+.hljs-string,
+.hljs-attr,
+.hljs-attribute {
+  color: #0a7d55;
+}
+
+.hljs-number {
+  color: #b26a00;
+}
+
+.hljs-comment {
+  color: var(--muted);
+}
+
+:root[data-theme='dark'] .hljs-keyword,
+:root[data-theme='dark'] .hljs-built_in,
+:root[data-theme='dark'] .hljs-literal {
+  color: #d2a8ff;
+}
+
+:root[data-theme='dark'] .hljs-string,
+:root[data-theme='dark'] .hljs-attr,
+:root[data-theme='dark'] .hljs-attribute {
+  color: #7ee2b8;
+}
+
+:root[data-theme='dark'] .hljs-number {
+  color: #ffca85;
+}

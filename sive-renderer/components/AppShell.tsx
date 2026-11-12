@@ -116,10 +116,13 @@ function ConversationItem({
         <button
           type="button"
           title={conversation.title}
-          className="min-w-0 flex-1 truncate px-3 py-2 text-left text-sm"
+          className="min-w-0 flex-1 px-3 py-2 text-left text-sm"
           onClick={onSelect}
         >
-          {conversation.title}
+          <span className="block truncate">{conversation.title}</span>
+          <time className="mt-1 block text-xs text-muted" dateTime={conversation.updatedAt}>
+            {new Date(conversation.updatedAt).toLocaleString('zh-CN')}
+          </time>
         </button>
       )}
       {!editing && (
@@ -183,7 +186,7 @@ export function AppShell({
             </span>
           </div>
           <button
-            className={itemClass(page === 'analysis' && !activeConversationId)}
+            className={itemClass(false)}
             disabled={!activeDatasetId}
             title={activeDatasetId ? '新建分析' : '请先打开数据集'}
             onClick={onConversationCreate}

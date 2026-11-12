@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { AnalysisResponse, VisualizeResponse } from '@antv/ava';
-import type { ModelMessage } from 'ai';
+import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
 import { createAnalysisAgent } from '../../ai';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
@@ -22,6 +21,7 @@ type TaskEvent = {
   status: 'running' | 'done' | 'error' | 'cancelled';
   stage?: string;
   error?: string;
+  part?: TextStreamPart<ToolSet>;
 };
 type Task = { conversationId: string; datasetId: string; controller: AbortController };
 type Emit = (event: TaskEvent) => void;
@@ -127,12 +127,7 @@ export class AnalysisService {
             ? { role: 'user', content: content.question ?? '' }
             : { role: 'assistant', content: content.text ?? content.query ?? '' };
         });
-      return createAnalysisAgent({
-        sourceConfig: dataset.sourceConfig,
-        semantic: dataset.semantic,
-        model,
-        history,
-      });
+      return createAnalysisAgent({ dataset, model, history });
     })().catch((error) => {
       this.agents.delete(conversationId);
       throw error;
@@ -155,21 +150,24 @@ export class AnalysisService {
       emit({ ...eventBase, status: 'running', stage: '正在加载会话' });
       const agent = await agentPromise;
       emit({ ...eventBase, status: 'running', stage: '正在分析数据' });
-      const result = await agent.generate({
+      const parts: TextStreamPart<ToolSet>[] = [];
+      const result = await agent.stream({
         question,
         strategy,
         abortSignal: controller.signal,
+        onPart: (part) => {
+          const previous = parts.at(-1);
+          if (part.type === 'text-delta' && previous?.type === 'text-delta' && previous.id === part.id) {
+            parts[parts.length - 1] = { ...previous, text: previous.text + part.text };
+          } else {
+            parts.push(part);
+          }
+          emit({ ...eventBase, status: 'running', part });
+        },
       });
-      const toolResults = result.steps.flatMap((step) => step.toolResults);
-      const analysis = toolResults.filter((item) => item.toolName === 'analyze').at(-1)?.output as
-        AnalysisResponse | undefined;
-      const visualization = toolResults.filter((item) => item.toolName === 'visualize').at(-1)?.output as
-        VisualizeResponse | null | undefined;
       this.repositories.messages.update(taskId, {
         status: 'done',
-        content: analysis
-          ? { ...analysis, chartHtml: visualization?.html }
-          : { text: result.text, query: question, data: [], schema: [] },
+        content: { text: await result.text, query: question, parts },
       });
       this.repositories.conversations.update(task.conversationId, {});
       emit({ ...eventBase, status: 'done' });
