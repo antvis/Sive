@@ -5,6 +5,7 @@ import { registerIpc } from './ipc';
 import { createServices } from './services';
 
 let database: DBConnection | undefined;
+const iconPath = path.join(__dirname, '../assets/sive.png');
 
 function createWindow() {
   const window = new BrowserWindow({
@@ -13,6 +14,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'Sive',
+    icon: iconPath,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     trafficLightPosition: { x: 16, y: 16 },
     autoHideMenuBar: true,
@@ -30,6 +32,7 @@ function createWindow() {
 }
 
 async function initialize() {
+  if (process.platform === 'darwin') app.dock?.setIcon(iconPath);
   database = await DBConnection.connect(app.getPath('userData'));
   registerIpc(createServices(database));
   createWindow();

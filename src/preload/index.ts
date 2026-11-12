@@ -9,7 +9,11 @@ const api = {
     ipcRenderer.on('workspace:changed', listener);
     return () => ipcRenderer.removeListener('workspace:changed', listener);
   },
-  datasetImportCsv: () => ipcRenderer.invoke('datasetImportCsv'),
+  datasetImportCsv: (lastDirectory) => ipcRenderer.invoke('datasetImportCsv', lastDirectory),
+  datasetGet: (id) => ipcRenderer.invoke('datasetGet', id),
+  datasetPreview: (id) => ipcRenderer.invoke('datasetPreview', id),
+  datasetSuggest: (id) => ipcRenderer.invoke('datasetSuggest', id),
+  datasetSaveSemantic: (id, semantic) => ipcRenderer.invoke('datasetSaveSemantic', id, semantic),
   datasetRename: (id, name) => ipcRenderer.invoke('datasetRename', id, name),
   datasetDelete: (id) => ipcRenderer.invoke('datasetDelete', id),
   settingsSaveTheme: (theme) => ipcRenderer.invoke('settingsSaveTheme', theme),

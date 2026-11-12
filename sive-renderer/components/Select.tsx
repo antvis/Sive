@@ -1,5 +1,6 @@
 import { CaretDown } from '@phosphor-icons/react';
 import clsx from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 type SelectProps = {
   value: string;
@@ -7,6 +8,7 @@ type SelectProps = {
   options: { value: string; label: string }[];
   disabled?: boolean;
   compact?: boolean;
+  className?: string;
   'aria-label': string;
 };
 
@@ -16,10 +18,11 @@ export function Select({
   options,
   disabled,
   compact,
+  className,
   'aria-label': ariaLabel,
 }: SelectProps) {
   return (
-    <div className="relative w-42 max-sm:w-full">
+    <div className={twMerge('relative w-42 max-sm:w-full', className)}>
       <select
         aria-label={ariaLabel}
         className={clsx(

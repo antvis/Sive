@@ -1,3 +1,5 @@
+import type { Schema, Semantic, SuggestResult } from '@antv/ava';
+
 export type ThemeSettings = { mode: 'light' | 'dark' };
 
 export type Preferences = {
@@ -52,6 +54,8 @@ export type DatasetSummary = {
   columnCount: number;
 };
 
+export type DatasetDetail = DatasetSummary & { schema: Schema; semantic: Semantic };
+
 export type WorkspaceState = {
   conversations: Conversation[];
   archivedConversations: Conversation[];
@@ -66,7 +70,11 @@ export type WorkspaceState = {
 export type WorkbenchApi = {
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
-  datasetImportCsv(): Promise<DatasetSummary | null>;
+  datasetImportCsv(lastDirectory?: string): Promise<(DatasetSummary & { directory: string }) | null>;
+  datasetGet(id: string): Promise<DatasetDetail | null>;
+  datasetPreview(id: string): Promise<Record<string, unknown>[]>;
+  datasetSuggest(id: string): Promise<SuggestResult[]>;
+  datasetSaveSemantic(id: string, semantic: Semantic): Promise<void>;
   datasetRename(id: string, name: string): Promise<void>;
   datasetDelete(id: string): Promise<void>;
   settingsSaveTheme(theme: ThemeSettings): Promise<void>;

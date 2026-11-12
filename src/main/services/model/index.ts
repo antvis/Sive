@@ -48,6 +48,20 @@ export class ModelService {
     }));
   }
 
+  getDefaultModelConfig() {
+    const active = this.repositories.settings.getActiveModel();
+    if (!active.providerId) throw new Error('请先在设置中配置默认模型服务。');
+    const provider = required(
+      this.repositories.modelProviders.get(active.providerId),
+      '默认模型服务不存在。',
+    );
+    const model =
+      active.model && provider.modelNames.includes(active.model) ? active.model : provider.modelNames[0];
+    if (!model) throw new Error('默认模型服务没有可用模型。');
+    const apiKey = provider.encryptedKey ? decrypt(provider.encryptedKey) : undefined;
+    return { baseURL: provider.baseUrl, model, apiKey };
+  }
+
   async listAvailable(input: ModelConnectionInput) {
     const baseURL = modelURL(input.baseURL);
     const apiKey = this.resolveApiKey({ ...input, baseURL });

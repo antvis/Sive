@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { statSync } from 'node:fs';
 import path from 'node:path';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA } from '@antv/ava';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
 import type { Repositories } from '../../db/repository';
@@ -55,13 +56,56 @@ export class DatasetService {
     return row ? toSummary(row) : undefined;
   }
 
+  getDetail(id: string) {
+    const row = this.get(id);
+    return row ? { ...toSummary(row), schema: row.schema, semantic: row.semantic } : undefined;
+  }
+
+  async preview(id: string) {
+    const dataset = required(this.get(id), '数据源不存在或已删除。');
+    const ava = new AVA({ llm: { model: 'preview-only' } });
+    try {
+      await ava.source(dataset.sourceConfig);
+      const result = await ava.query('SELECT * FROM data', { maxRows: 100 });
+      return result.data;
+    } finally {
+      await ava.dispose();
+    }
+  }
+
+  async suggest(id: string, config: { baseURL: string; model: string; apiKey?: string }) {
+    const dataset = required(this.get(id), '数据源不存在或已删除。');
+    const provider = createOpenAICompatible({ name: 'sive', baseURL: config.baseURL, apiKey: config.apiKey });
+    const ava = new AVA({
+      llm: { model: provider.chatModel(config.model) },
+      engine: {
+        type: 'duckdb',
+        memoryLimit: '1024MB',
+      },
+    });
+    try {
+      await ava.source(dataset.sourceConfig);
+      await ava.schema();
+      await ava.profile({ metrics: ['row_count'] });
+      return await ava.suggest(3);
+    } finally {
+      await ava.dispose();
+    }
+  }
+
   async importCsv(filePath: string) {
     const sourceConfig: DataSourceConfig = { type: 'csv-file', options: { path: filePath } };
-    const ava = new AVA({ llm: { model: 'data-loading-only' } });
+    const ava = new AVA({
+      llm: { model: 'data-loading-only' },
+      engine: {
+        type: 'duckdb',
+        memoryLimit: '1024MB',
+      },
+    });
     try {
       await ava.source(sourceConfig);
       const schema = await ava.schema();
-      const profile = await ava.profile();
+      const profile = await ava.profile({ metrics: ['row_count'] });
       return this.save({
         name: path.basename(filePath, path.extname(filePath)),
         sourceConfig,

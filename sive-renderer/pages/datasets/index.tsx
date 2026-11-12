@@ -14,7 +14,15 @@ function formatFileSize(value?: number) {
   return `${(value / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function DatasetCard({ dataset }: { dataset: DatasetSummary }) {
+function DatasetCard({
+  dataset,
+  onOpen,
+  onDelete,
+}: {
+  dataset: DatasetSummary;
+  onOpen: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
   const [action, setAction] = useState<'rename' | 'delete' | null>(null);
   const [name, setName] = useState(dataset.name);
   const [busy, setBusy] = useState(false);
@@ -54,6 +62,7 @@ function DatasetCard({ dataset }: { dataset: DatasetSummary }) {
     setBusy(true);
     try {
       await window.workbench.datasetDelete(dataset.id);
+      onDelete(dataset.id);
       setAction(null);
       toast.success('数据源已删除');
     } catch (cause) {
@@ -64,7 +73,10 @@ function DatasetCard({ dataset }: { dataset: DatasetSummary }) {
   };
 
   return (
-    <article className="group rounded-2xl bg-surface p-5 shadow-[0_3px_12px] shadow-ink/8 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px] hover:shadow-ink/10">
+    <article
+      className="group cursor-pointer rounded-2xl bg-surface p-5 shadow-[0_3px_12px] shadow-ink/8 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px] hover:shadow-ink/10"
+      onClick={() => onOpen(dataset.id)}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#25804d14] text-[#25804d]">
@@ -76,6 +88,7 @@ function DatasetCard({ dataset }: { dataset: DatasetSummary }) {
               value={name}
               disabled={busy}
               autoFocus
+              onClick={(event) => event.stopPropagation()}
               onFocus={(e) => e.currentTarget.select()}
               onChange={(e) => setName(e.target.value)}
               onBlur={() => void saveName()}
@@ -90,7 +103,16 @@ function DatasetCard({ dataset }: { dataset: DatasetSummary }) {
               aria-label="数据源名称"
             />
           ) : (
-            <h2 className="m-0 min-w-0 truncate text-base font-semibold">{dataset.name}</h2>
+            <button
+              type="button"
+              className="m-0 min-w-0 truncate text-left text-base font-semibold"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpen(dataset.id);
+              }}
+            >
+              {dataset.name}
+            </button>
           )}
         </div>
         {action !== 'rename' && (
@@ -98,13 +120,21 @@ function DatasetCard({ dataset }: { dataset: DatasetSummary }) {
             <IconButton
               icon={PencilSimple}
               label={`重命名 ${dataset.name}`}
-              onClick={() => {
+              onClick={(event) => {
+                event.stopPropagation();
                 renameCancelled.current = false;
                 setName(dataset.name);
                 setAction('rename');
               }}
             />
-            <IconButton icon={Trash} label={`删除 ${dataset.name}`} onClick={() => setAction('delete')} />
+            <IconButton
+              icon={Trash}
+              label={`删除 ${dataset.name}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                setAction('delete');
+              }}
+            />
           </div>
         )}
       </div>
@@ -149,9 +179,19 @@ function DatasetCard({ dataset }: { dataset: DatasetSummary }) {
   );
 }
 
-export function DatasetsPage({ datasets, onAdd }: { datasets: DatasetSummary[]; onAdd: () => void }) {
+export function DatasetsPage({
+  datasets,
+  onAdd,
+  onOpen,
+  onDelete,
+}: {
+  datasets: DatasetSummary[];
+  onAdd: () => void;
+  onOpen: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
   return (
-    <div className="mx-auto max-w-266 px-6 pt-8 pb-12">
+    <div className="w-full px-6 pt-8 pb-12">
       <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="m-0 text-[26px] leading-[1.35] font-semibold tracking-[-0.03em]">数据源</h1>
@@ -164,7 +204,7 @@ export function DatasetsPage({ datasets, onAdd }: { datasets: DatasetSummary[]; 
       </header>
       <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
         {datasets.map((dataset) => (
-          <DatasetCard key={dataset.id} dataset={dataset} />
+          <DatasetCard key={dataset.id} dataset={dataset} onOpen={onOpen} onDelete={onDelete} />
         ))}
       </div>
     </div>

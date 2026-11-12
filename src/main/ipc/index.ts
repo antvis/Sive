@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
@@ -39,10 +40,11 @@ export function registerIpc(services: Services) {
     revision,
   }));
 
-  ipcMain.handle('datasetImportCsv', async (event) => {
+  ipcMain.handle('datasetImportCsv', async (event, lastDirectory) => {
     const window = BrowserWindow.fromWebContents(event.sender);
     const options = {
       title: '选择 CSV 文件',
+      defaultPath: typeof lastDirectory === 'string' && lastDirectory ? lastDirectory : undefined,
       properties: ['openFile' as const],
       filters: [{ name: 'CSV 文件', extensions: ['csv'] }],
     };
@@ -55,8 +57,16 @@ export function registerIpc(services: Services) {
     const dataset = await services.dataset.importCsv(filePath);
     const summary = services.dataset.getSummary(dataset.id);
     changed(event);
-    return summary ?? null;
+    return summary ? { ...summary, directory: path.dirname(filePath) } : null;
   });
+
+  ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(text(id)));
+
+  ipcMain.handle('datasetPreview', (_event, id) => services.dataset.preview(text(id)));
+
+  ipcMain.handle('datasetSuggest', (_event, id) =>
+    services.dataset.suggest(text(id), services.model.getDefaultModelConfig()),
+  );
 
   ipcMain.handle('datasetSave', (event, input) => {
     const result = services.dataset.save(objectInput<DatasetSaveInput>(input));

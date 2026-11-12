@@ -42,8 +42,15 @@
   border-color: var(--line);
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
+  overflow: hidden;
   min-width: 800px;
   min-height: 100vh;
   background: var(--page);

@@ -1,5 +1,6 @@
 export type {
   Conversation,
+  DatasetDetail,
   DatasetSummary,
   ModelConnectionInput,
   ModelInput,
@@ -9,3 +10,4 @@ export type {
   ThemeSettings,
   WorkspaceState,
 } from '../src/preload/api';
+export type { Semantic, SuggestResult } from '@antv/ava';
