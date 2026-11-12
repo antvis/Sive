@@ -1,0 +1,29 @@
+src/renderer/env.d.ts
+  s_0853dbf02f8b8a::t_a9209c914aa28d 1
+tsconfig.web.json
+  s_0853dbf02f8b8a::t_52489a01680df5 11
+package.json
+  s_0853dbf02f8b8a::t_c04a927934cda3 20
+  s_0853dbf02f8b8a::t_cc66ee2b3cf258 21-22,24
+src/renderer/types.ts
+  s_0853dbf02f8b8a::t_9242f3bae117c7 15
+electron.vite.config.ts
+  s_0853dbf02f8b8a::t_31580fdb63dcd8 35,47
+  s_0853dbf02f8b8a::t_182f2f97de73b1 38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ee459199db885e4dbe5335486471528114ffcfbf",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
