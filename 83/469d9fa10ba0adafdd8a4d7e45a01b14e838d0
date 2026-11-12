@@ -1,0 +1,100 @@
+src/main/ipc/index.ts
+  s_0853dbf02f8b8a::t_8ff95cda45b44f 125,133-140,143-145
+  s_0853dbf02f8b8a::t_8efa384f1543c1 118-124,126-127,132,141-142
+  s_0853dbf02f8b8a::t_d79a97b42657e1 146
+src/main/ai/tools.ts
+  s_0853dbf02f8b8a::t_d9213422594c37 1,3-5,7-24
+  s_0853dbf02f8b8a::t_250ad3c8283955 6
+  s_0853dbf02f8b8a::t_0aadbb071b5b89 2
+sive-renderer/types.ts
+  s_0853dbf02f8b8a::t_202ed725b2364f 2-4
+src/main/ai/agent.ts
+  s_0853dbf02f8b8a::t_1ebc55b347de3a 24
+  s_0853dbf02f8b8a::t_703dd83ac963cd 1-4,6-23,25-65
+  s_0853dbf02f8b8a::t_d2ba749d92bba6 5
+sive-renderer/components/AppShell.tsx
+  s_0853dbf02f8b8a::t_9fe095fc98d195 206,210,212-216
+  s_0853dbf02f8b8a::t_895354be672160 1,3,6-7,9
+  s_0853dbf02f8b8a::t_80e50b33fda6c2 25
+  s_0853dbf02f8b8a::t_f5b4daf7e5ff6a 35-148
+  s_0853dbf02f8b8a::t_701e5c0cb1b63d 8,19-20,23-24,154-155,158-159
+  s_0853dbf02f8b8a::t_1b68434012d9f1 160
+  s_0853dbf02f8b8a::t_8ac050d6701d6a 175,185-190,205,207-209,211,217-223
+src/main/ai/index.ts
+  s_0853dbf02f8b8a::t_e32ff11f489f0a 1
+src/main/services/analysis/index.ts
+  s_0853dbf02f8b8a::t_b31568a3e21459 186
+  s_0853dbf02f8b8a::t_a70720b7ac5917 109
+  s_0853dbf02f8b8a::t_2c6608cef106a7 165,167
+  s_0853dbf02f8b8a::t_faf05037ba137f 155,157,175
+  s_0853dbf02f8b8a::t_a71fc9c67ef3e7 21,39-41
+  s_0853dbf02f8b8a::t_8cd615cad4aa31 1-4,7-20,22-27,30-38,42-102,104-108,112-141,144-152,154,156,158-164,166,168-174,176-185,187-192
+  s_0853dbf02f8b8a::t_9c9fc2f3fc111a 153
+src/main/db/repository/message-repo.ts
+  s_0853dbf02f8b8a::t_9e5bff7d4733bf 1
+  s_0853dbf02f8b8a::t_63201e3a0cc8ff 6
+  s_0853dbf02f8b8a::t_04b239a4da803f 45-53
+src/preload/api.ts
+  s_0853dbf02f8b8a::t_565f9d4f050532 60
+  s_0853dbf02f8b8a::t_30593f99f1a75c 108
+  s_0853dbf02f8b8a::t_181320c053217f 2
+  s_0853dbf02f8b8a::t_78305ba380c2a3 72
+  s_0853dbf02f8b8a::t_f0a739e39f941e 71
+  s_0853dbf02f8b8a::t_418643b53f10ee 106-107,109
+  s_0853dbf02f8b8a::t_2346cdef138e78 61-70,73-77
+  s_0853dbf02f8b8a::t_eae8838627a129 110-111
+src/preload/index.ts
+  s_0853dbf02f8b8a::t_3a72a69a1779d1 32
+  s_0853dbf02f8b8a::t_a6e635152f8481 30-31,33-37
+  s_0853dbf02f8b8a::t_930f2de79fc3f9 3
+  s_0853dbf02f8b8a::t_ae6b4dc3a9f556 38-39
+src/main/db/schema/messages.ts
+  s_0853dbf02f8b8a::t_78e1ae25d760d6 2-3
+  s_0853dbf02f8b8a::t_e04c94900b5e73 4-8
+  s_0853dbf02f8b8a::t_2c0bac126c0bdb 31
+sive-renderer/pages/analysis/ConversationPanel.tsx
+  s_0853dbf02f8b8a::t_123e9fa9090525 8-14
+  s_0853dbf02f8b8a::t_f0a60b5ff22184 56-74,80,84
+  s_0853dbf02f8b8a::t_ccab28202e8144 262
+  s_0853dbf02f8b8a::t_94296ca99ed5d2 123,133-140,142,151,153,155
+  s_0853dbf02f8b8a::t_2fcb13287dc46b 195
+  s_0853dbf02f8b8a::t_4fbef24d4398ce 20-21,30-38
+  s_0853dbf02f8b8a::t_8c5948578cf42b 240,248,255
+  s_0853dbf02f8b8a::t_1841e3a2197c78 2,16,40-43,45,75-79,81-83,85,89,93,104,111-114,116,118-119,121-122,124-132,141,143-150,152,154,156-160,172-182,190-194,196,198-223,230,263-275
+  s_0853dbf02f8b8a::t_37eb208bd64ad0 115,117,120
+sive-renderer/pages/analysis/AnalysisMessage.tsx
+  s_0853dbf02f8b8a::t_d332ef405b3b32 48
+  s_0853dbf02f8b8a::t_ccbe5ebd92d734 45
+  s_0853dbf02f8b8a::t_4e6246c996cde8 1-9,17-37,43-44,46-47,49-72,78-90,94-98
+  s_0853dbf02f8b8a::t_123e9fa9090525 10-16,38-42,73-77,91-93
+tsconfig.web.json
+  s_0853dbf02f8b8a::t_995b3d04432f42 12
+sive-renderer/App.tsx
+  s_0853dbf02f8b8a::t_74aaf1e312c1de 15,24-28,33
+  s_0853dbf02f8b8a::t_e9c09fa50e473e 42,49
+  s_0853dbf02f8b8a::t_bcc9c716237de9 69
+  s_0853dbf02f8b8a::t_cd7711214753e9 79-80,83-90
+  s_0853dbf02f8b8a::t_444cd3b93b0401 91-95
+  s_0853dbf02f8b8a::t_49425cec3e8df7 117-118,121
+sive-renderer/pages/analysis/index.tsx
+  s_0853dbf02f8b8a::t_6717afccb254f3 41-42
+  s_0853dbf02f8b8a::t_192874638e1c49 11-12,19-27
+sive-renderer/pages/settings/ArchivedConversations.tsx
+  s_0853dbf02f8b8a::t_7e7b30b1e37dfb 82-84,89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "83469d9fa10ba0adafdd8a4d7e45a01b14e838d0",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
