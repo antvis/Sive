@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowLeft, Sparkle } from '@phosphor-icons/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
@@ -47,6 +47,13 @@ export function ConversationPanel({
   const currentLocation = useRef(location);
   currentLocation.current = location;
   const [messages, setMessages] = useState<AnalysisMessage[]>([]);
+  const messageQuestions = useMemo(() => {
+    let question = '';
+    return messages.map((message) => {
+      if (message.role === 'user') question = message.content.question ?? '';
+      return question;
+    });
+  }, [messages]);
   const [activeTask, setActiveTask] = useState<AnalysisTaskEvent | null>(null);
   const [stream, setStream] = useState<{ taskId: string; parts: StreamPart[] } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -231,10 +238,11 @@ export function ConversationPanel({
             <p className="text-sm text-muted">正在加载会话…</p>
           ) : messages.length ? (
             <div className="grid w-full min-w-0 gap-5">
-              {messages.map((message) => (
+              {messages.map((message, index) => (
                 <AnalysisMessageView
                   key={message.id}
                   message={message}
+                  question={messageQuestions[index]}
                   savedMessageIds={savedMessageIds}
                   activeTask={currentTask}
                   streamParts={message.id === stream?.taskId ? stream.parts : []}

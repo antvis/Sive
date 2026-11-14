@@ -1,14 +1,19 @@
 import path from 'node:path';
-import { ipcMain } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
+import { z } from 'zod';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
 import type { DatasetPreviewOptions } from '@shared/api';
 import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
 import { LOCAL_FILE_FORMATS } from '@shared/api';
 import { selectLocalFile } from './selectLocalFile';
+import { exportResult } from '../services/export';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
+
+const exportTargetSchema = z.object({ kind: z.enum(['analysis', 'snippet']), id: z.string().min(1) });
+const exportFormatSchema = z.enum(['html', 'pdf', 'png']);
 
 function text(value: unknown) {
   if (typeof value !== 'string' || !value.trim()) throw new Error('文本不能为空。');
@@ -27,10 +32,21 @@ function stringList(value: unknown) {
 
 export function registerIpc(services: Services) {
   let revision = 0;
+
   const changed = (event: IpcMainInvokeEvent) => {
     revision += 1;
     event.sender.send(WORKSPACE_CHANGED_CHANNEL);
   };
+
+  ipcMain.handle('resultExport', (event, target, format) => {
+    const input = exportTargetSchema.parse(target);
+    const exportFormat = exportFormatSchema.parse(format);
+    return exportResult(
+      BrowserWindow.fromWebContents(event.sender)!,
+      services.resultDocument(input),
+      exportFormat,
+    );
+  });
 
   ipcMain.handle('workspaceGetState', () => ({
     conversations: services.conversation.list(),
