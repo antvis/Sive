@@ -1,7 +1,6 @@
 import path from 'node:path';
 import { ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
 import type { DatasetPreviewOptions } from '@shared/api';
@@ -116,8 +115,8 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('datasetSaveSemantic', (event, id, semantic, metrics) => {
-    services.dataset.saveSemantic(text(id), objectInput<Semantic>(semantic), metrics);
+  ipcMain.handle('datasetSaveSemantic', async (event, id, semantic) => {
+    await services.dataset.saveSemantic(text(id), semantic);
     changed(event);
   });
 

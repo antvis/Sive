@@ -5,18 +5,14 @@ import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Select } from '../../components/Select';
-import type {
-  AnalysisMessage,
-  AnalysisTaskEvent,
-  ModelProfile,
-  Preferences,
-  SuggestResult,
-} from '../../types';
+import type { AnalysisMessage, AnalysisTaskEvent, ModelProfile, Preferences } from '../../types';
 import { errorMessage } from '../../utils';
 import { AnalysisMessageView } from './AnalysisMessage';
+import { DatasetQuestions } from './DatasetQuestions';
 
 type Props = {
   datasetId: string;
+  datasetUpdatedAt?: string;
   conversationId: string | null;
   savedMessageIds: string[];
   onConversationChange: (id: string) => void;
@@ -31,6 +27,7 @@ type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 
 export function ConversationPanel({
   datasetId,
+  datasetUpdatedAt,
   conversationId,
   savedMessageIds,
   onConversationChange,
@@ -47,8 +44,6 @@ export function ConversationPanel({
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [sending, setSending] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
-  const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [error, setError] = useState('');
   const activeProvider = models.find((model) => model.id === activeModelId);
   const activeModel = activeProvider?.model ?? '';
@@ -108,31 +103,6 @@ export function ConversationPanel({
       setHistoryLoading(false);
     });
   }, [loadMessages]);
-
-  useEffect(() => {
-    let live = true;
-    if (!activeModelId) {
-      setSuggestionsLoading(false);
-      setSuggestions([]);
-      return;
-    }
-    setSuggestionsLoading(true);
-    setError('');
-    window.workbench
-      .datasetSuggest(datasetId)
-      .then((result) => {
-        if (live) setSuggestions(result);
-      })
-      .catch((cause) => {
-        if (live) setError(errorMessage(cause));
-      })
-      .finally(() => {
-        if (live) setSuggestionsLoading(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [datasetId, activeModelId, activeModel]);
 
   useEffect(() => {
     return window.workbench.analysisOnTaskChange((event) => {
@@ -260,20 +230,22 @@ export function ConversationPanel({
               <h1 className="mt-4 mb-2 text-xl font-semibold">向数据提问，发现新的洞察</h1>
               <p className="m-0 text-sm leading-6 text-muted">选择一个推荐问题，或输入你关心的问题。</p>
               <div className="mt-6 grid gap-2">
-                {suggestionsLoading && <p className="text-sm text-muted">正在生成推荐问题…</p>}
-                {!activeModelId && <p className="text-sm text-muted">请先在设置中配置默认模型服务。</p>}
+                {activeProvider ? (
+                  <DatasetQuestions
+                    key={JSON.stringify([
+                      datasetId,
+                      datasetUpdatedAt,
+                      activeModelId,
+                      activeModel,
+                      activeProvider.updatedAt,
+                    ])}
+                    datasetId={datasetId}
+                    onSelect={setQuestion}
+                  />
+                ) : (
+                  <p className="text-sm text-muted">请先在设置中配置默认模型服务。</p>
+                )}
                 {error && <p className="m-0 text-sm text-danger">{error}</p>}
-                {!suggestionsLoading &&
-                  suggestions.map((suggestion) => (
-                    <button
-                      key={suggestion.query}
-                      type="button"
-                      className="rounded-xl bg-page px-4 py-3 text-left text-sm leading-6 text-muted transition-colors hover:bg-accent-soft"
-                      onClick={() => setQuestion(suggestion.query)}
-                    >
-                      {suggestion.query}
-                    </button>
-                  ))}
               </div>
             </div>
           )}

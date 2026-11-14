@@ -161,7 +161,7 @@ export function DatasetPanel({
   }, [datasetId, reload]);
 
   const saveSemantic = async () => {
-    if (!detail || saving) return;
+    if (!detail || saving || description === (detail.semantic.description ?? '')) return;
     setSaving(true);
     try {
       const semantic = { ...detail.semantic, description };
@@ -314,13 +314,19 @@ export function DatasetPanel({
         <label className="grid gap-2 text-sm">
           数据集业务说明
           <textarea
+            disabled={saving}
             className="min-h-48 resize-none rounded-xl bg-page p-3 text-sm leading-6 outline-none focus:bg-accent-soft"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="描述数据集中的业务概念、字段含义和分析注意事项…"
           />
         </label>
-        <Button className="mt-4" variant="primary" disabled={saving} onClick={() => void saveSemantic()}>
+        <Button
+          className="mt-4"
+          variant="primary"
+          disabled={saving || description === (detail.semantic.description ?? '')}
+          onClick={() => void saveSemantic()}
+        >
           {saving ? '保存中…' : '保存语义'}
         </Button>
       </Tabs.Content>
