@@ -11,25 +11,32 @@ import { required } from '../../util';
 import type { DatasetSaveInput } from '../types';
 import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
+import { checkLocalFile, localFilePath, localSource } from '../../util/localFile';
 
 type DatasetRow = typeof datasets.$inferSelect;
 
 function toSummary(row: DatasetRow) {
   let fileSize: number | undefined;
-  if (row.sourceConfig.type === 'csv-file') {
+  const filePath = localFilePath(row.sourceConfig);
+  let fileUnavailable = false;
+  if (filePath) {
     try {
-      fileSize = statSync(row.sourceConfig.options.path).size;
+      fileSize = statSync(filePath).size;
     } catch {
-      fileSize = undefined;
+      fileUnavailable = true;
     }
   }
-  const rowCount = row.profile.models[0]?.metrics.row_count;
+  const rowCount = row.profile.models.find((model) => model.name === row.schema.models[0]?.name)?.metrics
+    .row_count;
   return {
     id: row.id,
     name: row.name,
     sourceType: row.sourceType,
     updatedAt: row.updatedAt,
     fileSize,
+    localFile: Boolean(filePath),
+    fileUnavailable,
+    tableCount: row.schema.models.length,
     rowCount: typeof rowCount === 'number' ? rowCount : undefined,
     columnCount: row.schema.models[0]?.columns.length ?? 0,
   };
@@ -39,6 +46,7 @@ export class DatasetService {
   constructor(
     private database: DBConnection,
     private repositories: Repositories,
+    private withSourceUpdate: (id: string, update: () => Promise<DatasetRow>) => Promise<DatasetRow>,
   ) {}
 
   list() {
@@ -60,7 +68,43 @@ export class DatasetService {
 
   getDetail(id: string) {
     const row = this.get(id);
-    return row ? { ...toSummary(row), schema: row.schema, semantic: row.semantic } : undefined;
+    return row ? { ...toSummary(row), schema: row.schema, semantic: row.semantic } : null;
+  }
+
+  getLocalFile(id: string) {
+    const row = required(this.get(id), '数据源不存在或已删除。');
+    return required(localFilePath(row.sourceConfig), '只有本地文件支持刷新或重新定位。');
+  }
+
+  refresh(id: string) {
+    return this.withSourceUpdate(id, () => this.replaceSource(id));
+  }
+
+  relocate(id: string, file: string) {
+    return this.withSourceUpdate(id, () => this.replaceSource(id, file));
+  }
+
+  private async replaceSource(id: string, file?: string) {
+    const original = required(this.get(id), '数据源不存在或已删除。');
+    required(localFilePath(original.sourceConfig), '只有本地文件支持刷新或重新定位。');
+    let sourceConfig = structuredClone(original.sourceConfig);
+    if (file !== undefined) {
+      const next = localSource(file);
+      if (next.type === sourceConfig.type && 'path' in sourceConfig.options)
+        sourceConfig.options.path = path.resolve(file);
+      else sourceConfig = next;
+    }
+    const refreshed = await this.readSource(sourceConfig);
+    return this.database.write(() => {
+      required(this.get(id), '数据源不存在或已删除。');
+      return required(
+        this.repositories.datasets.update(id, {
+          ...refreshed,
+          sourceType: refreshed.sourceConfig.type,
+        }),
+        '数据源保存失败。',
+      );
+    });
   }
 
   async preview(
@@ -89,6 +133,8 @@ export class DatasetService {
     const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
     const ava = new AVA({ llm: { model: 'preview-only' } });
     try {
+      const file = localFilePath(dataset.sourceConfig);
+      if (file) await checkLocalFile(file);
       await ava.source(dataset.sourceConfig);
       const result = await ava.query(
         `SELECT * FROM ${identifier(model.name)}${order} LIMIT ${limit + 1} OFFSET ${offset}`,
@@ -111,6 +157,8 @@ export class DatasetService {
       },
     });
     try {
+      const file = localFilePath(dataset.sourceConfig);
+      if (file) await checkLocalFile(file);
       await ava.source(dataset.sourceConfig);
       await ava.schema({}, () => dataset.schema);
       await ava.profile({}, () => dataset.profile);
@@ -121,8 +169,14 @@ export class DatasetService {
     }
   }
 
-  async importCsv(filePath: string) {
-    const sourceConfig: DataSourceConfig = { type: 'csv-file', options: { path: filePath } };
+  async importLocal(filePath: string) {
+    const inspected = await this.readSource(localSource(filePath));
+    return this.save({ ...inspected, name: path.basename(filePath, path.extname(filePath)) });
+  }
+
+  private async readSource(sourceConfig: DataSourceConfig) {
+    const file = localFilePath(sourceConfig);
+    if (file) await checkLocalFile(file);
     const ava = new AVA({
       llm: { model: 'data-loading-only' },
       engine: {
@@ -134,12 +188,12 @@ export class DatasetService {
       await ava.source(sourceConfig);
       const schema = await ava.schema();
       const profile = await ava.profile({ metrics: ['row_count'] });
-      return this.save({
-        name: path.basename(filePath, path.extname(filePath)),
+      if (!schema.models.length) throw new Error('未发现可读取的数据表。');
+      return {
         sourceConfig,
         schema,
         profile,
-      });
+      };
     } finally {
       await ava.dispose();
     }

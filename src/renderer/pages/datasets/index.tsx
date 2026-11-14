@@ -1,9 +1,21 @@
-import { Columns, Database, FileCsv, FileText, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import {
+  Columns,
+  Database,
+  FileCode,
+  FileCsv,
+  FileText,
+  PencilSimple,
+  Plus,
+  Stack,
+  Table,
+  Trash,
+} from '@phosphor-icons/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Modal } from '../../components/Modal';
+import { DatasetFileActions } from '../../components/DatasetFileActions';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
 
@@ -27,6 +39,22 @@ function DatasetCard({
   const [name, setName] = useState(dataset.name);
   const [busy, setBusy] = useState(false);
   const renameCancelled = useRef(false);
+  const SourceIcon =
+    dataset.sourceType === 'excel'
+      ? Table
+      : dataset.sourceType === 'json-file'
+        ? FileCode
+        : dataset.sourceType === 'parquet'
+          ? Stack
+          : FileCsv;
+  const sourceLabel =
+    dataset.sourceType === 'excel'
+      ? 'Excel'
+      : dataset.sourceType === 'json-file'
+        ? 'JSON'
+        : dataset.sourceType === 'parquet'
+          ? 'Parquet'
+          : 'CSV';
   const stats = [
     { label: '数据量', value: formatFileSize(dataset.fileSize), icon: FileText },
     { label: '行数', value: dataset.rowCount?.toLocaleString('zh-CN') ?? '—', icon: Database },
@@ -80,7 +108,7 @@ function DatasetCard({
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#25804d14] text-[#25804d]">
-            <FileCsv size={26} weight="duotone" />
+            <SourceIcon size={26} weight="duotone" />
           </span>
           {action === 'rename' ? (
             <input
@@ -153,9 +181,19 @@ function DatasetCard({
         ))}
       </div>
       <footer className="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-muted">
-        <FileCsv size={14} className="text-[#25804d]" aria-label="CSV 文件" />
+        <SourceIcon size={14} className="text-[#25804d]" aria-label={`${sourceLabel} 文件`} />
+        <span>
+          {sourceLabel}
+          {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}
+        </span>
         <span>更新于 {dataset.updatedAt.slice(0, 10)}</span>
+        {dataset.localFile && (
+          <div className="ml-auto">
+            <DatasetFileActions datasetId={dataset.id} />
+          </div>
+        )}
       </footer>
+      {dataset.fileUnavailable && <p className="mt-2 mb-0 text-xs text-danger">文件不可用，请重新定位。</p>}
       <Modal
         open={action === 'delete'}
         onOpenChange={(open) => {

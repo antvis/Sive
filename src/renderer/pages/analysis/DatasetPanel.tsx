@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
 import { Button } from '../../components/Button';
 import { DataGrid } from '../../components/DataGrid';
+import { DatasetFileActions } from '../../components/DatasetFileActions';
 import { Select } from '../../components/Select';
 import type { DatasetDetail, Preferences } from '../../types';
 import { errorMessage } from '../../utils';
@@ -119,6 +120,7 @@ export function DatasetPanel({
   defaultPageSize?: Preferences['previewPageSize'];
 }) {
   const [detail, setDetail] = useState<DatasetDetail | null>(null);
+  const [reload, setReload] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [description, setDescription] = useState('');
@@ -154,7 +156,7 @@ export function DatasetPanel({
     return () => {
       live = false;
     };
-  }, [datasetId]);
+  }, [datasetId, reload]);
 
   const saveSemantic = async () => {
     if (!detail || saving) return;
@@ -215,10 +217,13 @@ export function DatasetPanel({
           <span className="min-w-0 truncate">
             {model ? `${model.name} · ${columns.length} 个字段` : '没有可预览的数据表'}
           </span>
+          {detail.localFile && (
+            <DatasetFileActions datasetId={datasetId} onUpdated={() => setReload((value) => value + 1)} />
+          )}
         </div>
         {model && (
           <DataPreview
-            key={JSON.stringify([model.name, pageSize])}
+            key={JSON.stringify([model.name, pageSize, reload])}
             datasetId={datasetId}
             model={model}
             pageSize={pageSize}

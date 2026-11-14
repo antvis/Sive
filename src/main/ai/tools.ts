@@ -3,6 +3,7 @@ import { tool } from 'ai';
 import type { ToolSet } from 'ai';
 import { z } from 'zod';
 import type { AnalysisResponse, AVA, DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
+import { localFilePath } from '../util/localFile';
 
 export type ToolContext = {
   name: string;
@@ -23,9 +24,10 @@ export function createTools(ava: AVA, context: ToolContext): ToolSet {
       execute: async () => {
         await ava.source(context.sourceConfig);
         let fileSize: number | undefined;
-        if (context.sourceConfig.type === 'csv-file') {
+        const file = localFilePath(context.sourceConfig);
+        if (file) {
           try {
-            fileSize = statSync(context.sourceConfig.options.path).size;
+            fileSize = statSync(file).size;
           } catch {
             fileSize = undefined;
           }
@@ -33,7 +35,8 @@ export function createTools(ava: AVA, context: ToolContext): ToolSet {
         return {
           name: context.name,
           sourceType: context.sourceType,
-          rowCount: context.profile.models[0]?.metrics.row_count,
+          rowCount: context.profile.models.find((model) => model.name === context.schema.models[0]?.name)
+            ?.metrics.row_count,
           columnCount: context.schema.models[0]?.columns.length ?? 0,
           fileSize,
         };

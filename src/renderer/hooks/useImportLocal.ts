@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '../utils';
+import type { LocalFileFormat } from '@shared/api';
 
 const DIRECTORY_KEY = 'sive.last-import-directory';
 
-export function useImportCsv() {
+export function useImportLocal() {
   const [importing, setImporting] = useState(false);
 
-  const importCsv = async () => {
+  const importLocal = async (format?: LocalFileFormat) => {
     if (importing) return;
     setImporting(true);
     try {
-      const dataset = await window.workbench.datasetImportCsv(
+      const dataset = await window.workbench.datasetImportLocal(
+        format,
         localStorage.getItem(DIRECTORY_KEY) ?? undefined,
       );
       if (dataset) {
@@ -25,5 +27,5 @@ export function useImportCsv() {
     }
   };
 
-  return { importing, importCsv };
+  return { importing, importLocal };
 }
