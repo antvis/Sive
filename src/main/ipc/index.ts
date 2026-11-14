@@ -4,8 +4,9 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
-import type { DatasetPreviewOptions } from '@shared/api';
+import type { DatasetPreviewOptions, LocalFileFormat } from '@shared/api';
 import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
+import { LOCAL_FILE_FORMATS } from '@shared/api';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -24,8 +25,31 @@ function stringList(value: unknown) {
   return value.map(text);
 }
 
+async function selectLocalFile(
+  event: IpcMainInvokeEvent,
+  { title, defaultPath, format }: { title: string; defaultPath?: string; format?: LocalFileFormat },
+) {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+    title,
+    defaultPath,
+    properties: ['openFile'],
+    filters: [
+      {
+        name: format ? `${format.toUpperCase()} 文件` : '数据文件',
+        extensions: format ? [format] : [...LOCAL_FILE_FORMATS],
+      },
+    ],
+  });
+  if (result.canceled) return null;
+  const file = result.filePaths[0];
+  if (format && path.extname(file).toLowerCase() !== `.${format}`)
+    throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
+  return file;
+}
+
 export function registerIpc(services: Services) {
   let revision = 0;
+
   const changed = (event: IpcMainInvokeEvent) => {
     revision += 1;
     event.sender.send(WORKSPACE_CHANGED_CHANNEL);
@@ -43,24 +67,36 @@ export function registerIpc(services: Services) {
     revision,
   }));
 
-  ipcMain.handle('datasetImportCsv', async (event, lastDirectory) => {
-    const window = BrowserWindow.fromWebContents(event.sender);
-    const options = {
-      title: '选择 CSV 文件',
+  ipcMain.handle('datasetImportLocal', async (event, format, lastDirectory) => {
+    if (format !== undefined && !LOCAL_FILE_FORMATS.includes(format)) throw new Error('不支持的文件格式。');
+    const filePath = await selectLocalFile(event, {
+      title: '选择数据文件',
       defaultPath: typeof lastDirectory === 'string' && lastDirectory ? lastDirectory : undefined,
-      properties: ['openFile' as const],
-      filters: [{ name: 'CSV 文件', extensions: ['csv'] }],
-    };
-    const result = window
-      ? await dialog.showOpenDialog(window, options)
-      : await dialog.showOpenDialog(options);
-    const filePath = result.filePaths[0];
-    if (result.canceled || !filePath) return null;
-    if (!filePath.toLowerCase().endsWith('.csv')) throw new Error('请选择 CSV 文件。');
-    const dataset = await services.dataset.importCsv(filePath);
+      format,
+    });
+    if (!filePath) return null;
+    const dataset = await services.dataset.importLocal(filePath);
     const summary = services.dataset.getSummary(dataset.id);
     changed(event);
     return summary ? { ...summary, directory: path.dirname(filePath) } : null;
+  });
+
+  ipcMain.handle('datasetRelocate', async (event, input) => {
+    const id = text(input);
+    const file = await selectLocalFile(event, {
+      title: '重新定位数据文件',
+      defaultPath: services.dataset.getLocalFile(id),
+    });
+    if (!file) return false;
+    await services.dataset.relocate(id, file);
+    changed(event);
+    return true;
+  });
+
+  ipcMain.handle('datasetRefresh', async (event, input) => {
+    const id = text(input);
+    await services.dataset.refresh(id);
+    changed(event);
   });
 
   ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(text(id)));
