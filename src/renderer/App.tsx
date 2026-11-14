@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
-import type { AppPage } from './components/AppShell';
+import { WorkspaceSearch } from './components/WorkspaceSearch';
 import { Button } from './components/Button';
 import { useWorkspace } from './hooks/useWorkspace';
+import { useWorkspaceNavigation } from './hooks/useWorkspaceNavigation';
+import { draftKey } from './utils/workspaceNavigation';
 import { AnalysisPage } from './pages/analysis';
 import { DatasetsPage } from './pages/datasets';
 import { SettingsPage } from './pages/settings';
@@ -11,65 +13,36 @@ import { SnippetsPage } from './pages/snippets';
 import { WelcomePage } from './pages/WelcomePage';
 
 export default function App() {
-  const [page, setPage] = useState<AppPage>('welcome');
-  const [analysisDatasetId, setAnalysisDatasetId] = useState<string | null>(null);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [openDatasetIds, setOpenDatasetIds] = useState<string[]>([]);
   const { state, error, refresh } = useWorkspace();
+  const navigation = useWorkspaceNavigation(state);
+  const {
+    page,
+    activeDatasetId: analysisDatasetId,
+    activeConversationId,
+    datasetTabs,
+    openDataset,
+    closeDataset,
+    conversationsFor,
+    navigate: setPage,
+  } = navigation;
+  const [searchOpen, setSearchOpen] = useState(false);
   const datasetCount = state?.datasets.length ?? 0;
-  const previousDatasetCount = useRef<number | undefined>(undefined);
-  const datasetTabs = openDatasetIds.flatMap((id) => {
-    const dataset = state?.datasets.find((item) => item.id === id);
-    return dataset ? [dataset] : [];
-  });
-  const conversationsFor = (datasetId: string) =>
-    (state?.conversations ?? [])
-      .filter((conversation) => conversation.datasetId === datasetId)
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-  const latestConversationId = (datasetId: string) => conversationsFor(datasetId)[0]?.id ?? null;
-
-  const openDataset = (id: string) => {
-    setOpenDatasetIds((current) => (current.includes(id) ? current : [...current, id]));
-    setAnalysisDatasetId(id);
-    setActiveConversationId(latestConversationId(id));
-    setPage('analysis');
-  };
-
-  const closeDataset = (id: string) => {
-    const remaining = openDatasetIds.filter((item) => item !== id);
-    setOpenDatasetIds(remaining);
-    if (!remaining.length) {
-      setAnalysisDatasetId(null);
-      setActiveConversationId(null);
-      setPage('datasets');
-      return;
-    }
-    if (analysisDatasetId === id) {
-      const next = remaining[remaining.length - 1] ?? null;
-      setAnalysisDatasetId(next);
-      setActiveConversationId(next ? latestConversationId(next) : null);
-      if (page === 'analysis') setPage(next ? 'analysis' : 'datasets');
-    }
-  };
 
   useEffect(() => {
     document.documentElement.dataset.theme = state?.theme.mode ?? 'light';
   }, [state?.theme.mode]);
 
   useEffect(() => {
-    const previous = previousDatasetCount.current;
-    if (datasetCount > 0 && (previous === undefined || datasetCount > previous)) setPage('datasets');
-    previousDatasetCount.current = datasetCount;
-  }, [datasetCount]);
-
-  useEffect(() => {
-    if (!state || !analysisDatasetId || state.datasets.some((dataset) => dataset.id === analysisDatasetId))
-      return;
-    setOpenDatasetIds((current) => current.filter((id) => id !== analysisDatasetId));
-    setAnalysisDatasetId(null);
-    setActiveConversationId(null);
-    if (page === 'analysis') setPage('datasets');
-  }, [state, analysisDatasetId, page]);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.isComposing || event.keyCode === 229 || event.altKey || event.shiftKey) return;
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <AppShell
@@ -81,21 +54,22 @@ export default function App() {
       activeConversationId={activeConversationId}
       onDatasetSelect={openDataset}
       onDatasetClose={closeDataset}
-      onConversationSelect={(id) => {
-        setActiveConversationId(id);
-        setPage('analysis');
-      }}
+      onSearch={() => setSearchOpen(true)}
+      onConversationSelect={navigation.selectConversation}
       onConversationCreate={() => {
-        setActiveConversationId(null);
-        setPage('analysis');
-      }}
-      onConversationArchive={(id) => {
-        if (id !== activeConversationId || !analysisDatasetId) return;
-        const next = conversationsFor(analysisDatasetId).find((conversation) => conversation.id !== id);
-        setActiveConversationId(next?.id ?? null);
+        if (analysisDatasetId) openDataset(analysisDatasetId, null);
       }}
       onNavigate={setPage}
     >
+      {state && searchOpen && (
+        <WorkspaceSearch
+          datasets={state.datasets}
+          conversations={state.conversations}
+          onClose={() => setSearchOpen(false)}
+          onDatasetSelect={openDataset}
+          onConversationSelect={navigation.selectConversation}
+        />
+      )}
       {!state && !error && <div className="grid h-full place-items-center text-muted">正在加载工作台…</div>}
       {!state && error && (
         <div className="grid h-full place-content-center justify-items-center gap-4">
@@ -117,12 +91,14 @@ export default function App() {
           datasetId={analysisDatasetId}
           datasetUpdatedAt={state.datasets.find((dataset) => dataset.id === analysisDatasetId)?.updatedAt}
           conversationId={activeConversationId}
-          onConversationChange={setActiveConversationId}
-          onBack={() => {
-            setAnalysisDatasetId(null);
-            setActiveConversationId(null);
-            setPage('datasets');
-          }}
+          question={navigation.drafts[draftKey(analysisDatasetId, activeConversationId)] ?? ''}
+          onQuestionChange={(question) =>
+            navigation.setDraft(analysisDatasetId, activeConversationId, question)
+          }
+          onConversationChange={(id, submitted) =>
+            navigation.completeStart(analysisDatasetId, activeConversationId, id, submitted)
+          }
+          onBack={() => setPage('datasets')}
           savedMessageIds={state.snippets.map((snippet) => snippet.messageId)}
           models={state.models}
           activeModelId={state.activeModelId}
