@@ -23,6 +23,10 @@ import { IconButton } from '../../components/IconButton';
 import { Markdown, SqlBlock } from '../../components/Markdown';
 import { Visualization } from '../../components/Visualization';
 import { errorMessage } from '../../utils';
+import { documentMarkdown, messageDocument } from '@shared/results';
+import { CopyButton } from '../../components/CopyButton';
+import { ExportButton } from '../../components/ExportButton';
+import { ResultTable } from './ResultTable';
 
 type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 type ToolCallPart = Extract<StreamPart, { type: 'tool-call' }>;
@@ -53,13 +57,6 @@ const toolIcons = {
   analyze: MagnifyingGlass,
   visualize: ChartLineUp,
 };
-
-function cellText(value: unknown) {
-  if (value === null || value === undefined) return '—';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  return JSON.stringify(value);
-}
 
 function formatFileSize(value?: number) {
   if (value === undefined) return '—';
@@ -173,44 +170,8 @@ function visualizationSummary(visualization: VisualizeResponse | null | undefine
     table: '数据表格',
   };
   const chartName = chartNames[visualization.chartType] ?? visualization.chartType;
-  const title = visualization.config.title;
+  const title = typeof visualization.config === 'string' ? '' : visualization.config.title;
   return `已根据分析结果生成${typeof title === 'string' && title ? `“${title}”` : ''}${chartName}。`;
-}
-
-function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {
-  const { data = [], schema: columns = [] } = analysis;
-  if (!data.length) return null;
-  return (
-    <div className="max-w-full overflow-auto rounded-md bg-page p-2">
-      <table className="w-full border-collapse text-xs">
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column.name} className="border-b px-2 py-2 text-left font-medium text-muted">
-                {column.name}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.slice(0, 20).map((row, index) => (
-            <tr key={index}>
-              {columns.map((column) => (
-                <td
-                  key={column.name}
-                  className="max-w-48 truncate border-b px-2 py-2 text-ink/80"
-                  title={cellText(row[column.name])}
-                >
-                  {cellText(row[column.name])}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {data.length > 20 && <p className="mt-2 mb-0 text-xs text-muted">仅展示前 20 行</p>}
-    </div>
-  );
 }
 
 function Chart({ html }: { html?: string }) {
@@ -220,6 +181,7 @@ function Chart({ html }: { html?: string }) {
       title="分析图表"
       srcDoc={html}
       sandbox="allow-scripts"
+      loading="lazy"
       className="block h-80 w-full max-w-full rounded-md border-0 bg-page"
     />
   );
@@ -275,15 +237,13 @@ function toolContent(toolName: string, output: unknown, chartAction?: ReactNode)
           </div>
         )}
         {analysis.sql && <SqlBlock code={analysis.sql} />}
-        <AnalysisTable analysis={analysis} />
+        <ResultTable analysis={analysis} />
       </div>
     );
   }
   if (toolName === 'visualize') {
     const visualization = output as VisualizationResult | null | undefined;
-    const spec = visualization
-      ? (visualization.spec ?? { ...visualization.config, type: visualization.chartType })
-      : undefined;
+    const spec = visualization ? (visualization.spec ?? visualization.config) : undefined;
     return (
       <div className="grid min-w-0 gap-3">
         <p className="m-0 text-sm leading-6 text-muted">{visualizationSummary(visualization)}</p>
@@ -468,15 +428,18 @@ export function AnalysisMessageView({
   activeTask,
   streamParts = [],
   savedMessageIds = [],
+  question = '',
 }: {
   message: AnalysisMessage;
   activeTask?: AnalysisTaskEvent | null;
   streamParts?: StreamPart[];
   savedMessageIds?: string[];
+  question?: string;
 }) {
   if (message.role === 'user') {
     return (
-      <div className="flex justify-end">
+      <div className="flex items-start justify-end gap-1">
+        <CopyButton label="复制问题" text={message.content.question ?? ''} />
         <p className="m-0 min-w-0 max-w-[85%] rounded-xl bg-accent-soft px-4 py-3 text-sm leading-6 break-words whitespace-pre-wrap">
           {message.content.question}
         </p>
@@ -497,8 +460,19 @@ export function AnalysisMessageView({
 
   const running = message.status === 'running' || message.status === 'cancelling';
   const parts = running ? streamParts : (message.content.parts ?? []);
+  const actions = !running && (
+    <div className="flex items-center gap-1">
+      <CopyButton label="复制 Markdown" text={() => documentMarkdown(messageDocument(message, question))} />
+      <ExportButton target={{ kind: 'analysis', id: message.id }} />
+    </div>
+  );
   if (parts.length) {
-    return <StreamContent parts={parts} messageId={message.id} savedMessageIds={savedMessageIds} />;
+    return (
+      <div className="grid min-w-0 gap-2">
+        <StreamContent parts={parts} messageId={message.id} savedMessageIds={savedMessageIds} />
+        {actions}
+      </div>
+    );
   }
   if (running) {
     return (
@@ -510,9 +484,13 @@ export function AnalysisMessageView({
 
   return (
     <div className="grid min-w-0 gap-4">
-      {message.content.text && <Markdown>{message.content.text}</Markdown>}
+      {(message.content.markdown || message.content.text) && (
+        <Markdown>{message.content.markdown || message.content.text || ''}</Markdown>
+      )}
+      {message.content.sql && <SqlBlock code={message.content.sql} />}
       <Chart html={message.content.chartHtml} />
-      <AnalysisTable analysis={message.content} />
+      <ResultTable analysis={message.content} />
+      {actions}
     </div>
   );
 }

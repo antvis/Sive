@@ -3,8 +3,10 @@ import type { TextStreamPart, ToolSet } from 'ai';
 import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
 import type { MySQLConnection, MySQLInput } from './mysql';
+import type { ExportFormat, ResultTarget } from './results';
 
 export type { AnalysisMessage } from './messages';
+
 export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './snippets';
 
 export type ThemeSettings = { mode: 'light' | 'dark' };
@@ -111,6 +113,7 @@ export type WorkspaceState = {
 };
 
 export type WorkbenchApi = {
+  resultExport(target: ResultTarget, format: ExportFormat): Promise<boolean>;
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
   datasetImportLocal(

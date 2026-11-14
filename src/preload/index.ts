@@ -3,6 +3,7 @@ import type { IpcRendererEvent } from 'electron';
 import type { AnalysisTaskEvent, ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
+  resultExport: (target, format) => ipcRenderer.invoke('resultExport', target, format),
   workspaceGetState: () => ipcRenderer.invoke('workspaceGetState'),
   workspaceOnChange: (callback: () => void) => {
     const listener = () => callback();

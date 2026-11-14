@@ -8,6 +8,7 @@ import { Markdown } from '../../components/Markdown';
 import { Modal } from '../../components/Modal';
 import { Visualization } from '../../components/Visualization';
 import { errorMessage } from '../../utils';
+import { ExportButton } from '../../components/ExportButton';
 
 function SnippetCard({ snippet, onDelete }: { snippet: Snippet; onDelete: () => void }) {
   const [editing, setEditing] = useState(false);
@@ -48,6 +49,7 @@ function SnippetCard({ snippet, onDelete }: { snippet: Snippet; onDelete: () => 
           </time>
           {!editing && (
             <div className="flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+              <ExportButton target={{ kind: 'snippet', id: snippet.messageId }} />
               <IconButton
                 icon={PencilSimple}
                 label="编辑 Snippet"
