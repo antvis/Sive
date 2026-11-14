@@ -1,13 +1,12 @@
 import path from 'node:path';
-import { ipcMain } from 'electron';
+import { BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
-import type { DatasetPreviewOptions } from '@shared/api';
+import type { DatasetPreviewOptions, LocalFileFormat } from '@shared/api';
 import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
 import { LOCAL_FILE_FORMATS } from '@shared/api';
-import { selectLocalFile } from './selectLocalFile';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -26,8 +25,31 @@ function stringList(value: unknown) {
   return value.map(text);
 }
 
+async function selectLocalFile(
+  event: IpcMainInvokeEvent,
+  { title, defaultPath, format }: { title: string; defaultPath?: string; format?: LocalFileFormat },
+) {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+    title,
+    defaultPath,
+    properties: ['openFile'],
+    filters: [
+      {
+        name: format ? `${format.toUpperCase()} 文件` : '数据文件',
+        extensions: format ? [format] : [...LOCAL_FILE_FORMATS],
+      },
+    ],
+  });
+  if (result.canceled) return null;
+  const file = result.filePaths[0];
+  if (format && path.extname(file).toLowerCase() !== `.${format}`)
+    throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
+  return file;
+}
+
 export function registerIpc(services: Services) {
   let revision = 0;
+
   const changed = (event: IpcMainInvokeEvent) => {
     revision += 1;
     event.sender.send(WORKSPACE_CHANGED_CHANNEL);
