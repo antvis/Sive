@@ -4,6 +4,7 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
+import type { DatasetPreviewOptions } from '@shared/api';
 import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
@@ -64,7 +65,13 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(text(id)));
 
-  ipcMain.handle('datasetPreview', (_event, id) => services.dataset.preview(text(id)));
+  ipcMain.handle('datasetPreview', (_event, id, table, options) =>
+    services.dataset.preview(
+      text(id),
+      table,
+      options === undefined ? undefined : objectInput<DatasetPreviewOptions>(options),
+    ),
+  );
 
   ipcMain.handle('datasetSuggest', (_event, id) =>
     services.dataset.suggest(text(id), services.model.getDefaultModelConfig()),

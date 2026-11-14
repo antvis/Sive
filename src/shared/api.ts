@@ -8,10 +8,21 @@ export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpd
 
 export type ThemeSettings = { mode: 'light' | 'dark' };
 
+export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
+
 export type Preferences = {
   analysisMode: 'direct' | 'loop';
   sendShortcut: 'enter' | 'mod-enter';
+  previewPageSize: (typeof PREVIEW_PAGE_SIZES)[number];
 };
+
+export const DEFAULT_PREFERENCES: Preferences = {
+  analysisMode: 'direct',
+  sendShortcut: 'enter',
+  previewPageSize: 100,
+};
+
+export type DatasetPreviewOptions = { offset: number; limit: number };
 
 export type ModelConnectionInput = {
   baseURL: string;
@@ -96,7 +107,12 @@ export type WorkbenchApi = {
   workspaceOnChange(callback: () => void): () => void;
   datasetImportCsv(lastDirectory?: string): Promise<(DatasetSummary & { directory: string }) | null>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
-  datasetPreview(id: string): Promise<Record<string, unknown>[]>;
+  // Returns up to limit + 1 rows so the preview can determine whether another page exists.
+  datasetPreview(
+    id: string,
+    table?: string,
+    options?: DatasetPreviewOptions,
+  ): Promise<Record<string, unknown>[]>;
   datasetSuggest(id: string): Promise<SuggestResult[]>;
   datasetSaveSemantic(id: string, semantic: Semantic): Promise<void>;
   datasetRename(id: string, name: string): Promise<void>;
