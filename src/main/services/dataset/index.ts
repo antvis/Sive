@@ -9,6 +9,8 @@ import type { DBConnection } from '../../db/repository/db-connection';
 import type { datasets } from '../../db/schema/datasets';
 import { required } from '../../util';
 import type { DatasetSaveInput } from '../types';
+import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
+import type { DatasetPreviewOptions } from '@shared/api';
 
 type DatasetRow = typeof datasets.$inferSelect;
 
@@ -61,12 +63,37 @@ export class DatasetService {
     return row ? { ...toSummary(row), schema: row.schema, semantic: row.semantic } : undefined;
   }
 
-  async preview(id: string) {
+  async preview(
+    id: string,
+    table?: string,
+    options: DatasetPreviewOptions = { offset: 0, limit: DEFAULT_PREFERENCES.previewPageSize },
+  ) {
     const dataset = required(this.get(id), '数据源不存在或已删除。');
+    const model = required(
+      table === undefined
+        ? dataset.schema.models[0]
+        : dataset.schema.models.find((item) => item.name === table),
+      '数据表不存在。',
+    );
+    const { offset, limit } = options;
+    if (
+      !Number.isSafeInteger(offset) ||
+      offset < 0 ||
+      !PREVIEW_PAGE_SIZES.some((size) => size === limit) ||
+      !Number.isSafeInteger(offset + limit + 1)
+    )
+      throw new Error('无效的预览分页参数。');
+
+    const identifier = (name: string) => `"${name.replace(/"/g, '""')}"`;
+    const keys = typeof model.primaryKey === 'string' ? [model.primaryKey] : (model.primaryKey ?? []);
+    const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
     const ava = new AVA({ llm: { model: 'preview-only' } });
     try {
       await ava.source(dataset.sourceConfig);
-      const result = await ava.query('SELECT * FROM data', { maxRows: 100 });
+      const result = await ava.query(
+        `SELECT * FROM ${identifier(model.name)}${order} LIMIT ${limit + 1} OFFSET ${offset}`,
+        { maxRows: limit + 1 },
+      );
       return result.data;
     } finally {
       await ava.dispose();

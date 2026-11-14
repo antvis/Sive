@@ -51,7 +51,7 @@ export function AnalysisPage({
       </Panel>
       <ResizeHandle />
       <Panel id="dataset" minSize="40%" className="h-full min-h-0 min-w-0 flex-1">
-        <DatasetPanel datasetId={datasetId} />
+        <DatasetPanel key={datasetId} datasetId={datasetId} defaultPageSize={preferences.previewPageSize} />
       </Panel>
     </Group>
   );
