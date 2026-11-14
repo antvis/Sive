@@ -9,7 +9,7 @@ import type { Conversation, DatasetSummary } from '../types';
 import { IconButton } from './IconButton';
 import { ResizeHandle } from './ResizeHandle';
 
-export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'settings';
+export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
 
 type AppShellProps = PropsWithChildren<{
   page: AppPage;
@@ -201,7 +201,7 @@ export function AppShell({
             <Database size={17} />
             数据源
           </button>
-          <button className={itemClass(false)} disabled title="分析功能接入后可用">
+          <button className={itemClass(page === 'snippets')} onClick={() => onNavigate('snippets')}>
             <Lightbulb size={17} />
             洞察 Snippet
           </button>
@@ -280,7 +280,13 @@ export function AppShell({
               </div>
             ) : (
               <span className="text-xs text-muted">
-                {page === 'settings' ? '设置' : page === 'analysis' ? '数据分析' : '数据源'}
+                {page === 'settings'
+                  ? '设置'
+                  : page === 'snippets'
+                    ? '洞察 Snippet'
+                    : page === 'analysis'
+                      ? '数据分析'
+                      : '数据源'}
               </span>
             )}
           </header>

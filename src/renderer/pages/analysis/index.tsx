@@ -9,6 +9,7 @@ import { DatasetPanel } from './DatasetPanel';
 type Props = {
   datasetId: string;
   conversationId: string | null;
+  savedMessageIds: string[];
   onConversationChange: (id: string) => void;
   onBack: () => void;
   models: ModelProfile[];
@@ -19,6 +20,7 @@ type Props = {
 export function AnalysisPage({
   datasetId,
   conversationId,
+  savedMessageIds,
   onConversationChange,
   onBack,
   models,
@@ -39,6 +41,7 @@ export function AnalysisPage({
         <ConversationPanel
           datasetId={datasetId}
           conversationId={conversationId}
+          savedMessageIds={savedMessageIds}
           onConversationChange={onConversationChange}
           onBack={onBack}
           models={models}

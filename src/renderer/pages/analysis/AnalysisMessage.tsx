@@ -8,6 +8,7 @@ import {
   Database,
   FileCsv,
   MagnifyingGlass,
+  PushPin,
   Tag,
   Wrench,
   XCircle,
@@ -15,11 +16,17 @@ import {
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { AnalysisResponse, Profile, Schema, Semantic, VisualizeResponse } from '@antv/ava';
+import type { SnippetContent } from '@shared/snippets';
+import { toast } from 'sonner';
 import type { AnalysisMessage, AnalysisTaskEvent } from '../../types';
+import { IconButton } from '../../components/IconButton';
 import { Markdown, SqlBlock } from '../../components/Markdown';
+import { Visualization } from '../../components/Visualization';
+import { errorMessage } from '../../utils';
 
 type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 type ToolCallPart = Extract<StreamPart, { type: 'tool-call' }>;
+type VisualizationResult = VisualizeResponse & Partial<SnippetContent>;
 
 type SourceResult = {
   name: string;
@@ -218,7 +225,7 @@ function Chart({ html }: { html?: string }) {
   );
 }
 
-function toolContent(toolName: string, output: unknown): ReactNode {
+function toolContent(toolName: string, output: unknown, chartAction?: ReactNode): ReactNode {
   if (toolName === 'source') {
     const source = output as SourceResult;
     const stats = [
@@ -273,18 +280,34 @@ function toolContent(toolName: string, output: unknown): ReactNode {
     );
   }
   if (toolName === 'visualize') {
-    const visualization = output as VisualizeResponse | null | undefined;
+    const visualization = output as VisualizationResult | null | undefined;
+    const spec = visualization
+      ? (visualization.spec ?? { ...visualization.config, type: visualization.chartType })
+      : undefined;
     return (
       <div className="grid min-w-0 gap-3">
         <p className="m-0 text-sm leading-6 text-muted">{visualizationSummary(visualization)}</p>
-        <Chart html={visualization?.html} />
+        <div className="group/chart relative min-w-0 max-w-full overflow-hidden">
+          {spec ? <Visualization spec={spec} /> : <Chart html={visualization?.html} />}
+          {chartAction}
+        </div>
       </div>
     );
   }
   return null;
 }
 
-function ToolCallView({ call, parts }: { call: ToolCallPart; parts: StreamPart[] }) {
+function ToolCallView({
+  call,
+  parts,
+  messageId,
+  savedMessageIds,
+}: {
+  call: ToolCallPart;
+  parts: StreamPart[];
+  messageId: string;
+  savedMessageIds: string[];
+}) {
   const result = parts.find(
     (part) =>
       (part.type === 'tool-result' || part.type === 'tool-error') && part.toolCallId === call.toolCallId,
@@ -293,6 +316,7 @@ function ToolCallView({ call, parts }: { call: ToolCallPart; parts: StreamPart[]
   const [expanded, setExpanded] = useState(
     !result || call.toolName === 'analyze' || call.toolName === 'visualize',
   );
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setExpanded(!resultType || call.toolName === 'analyze' || call.toolName === 'visualize');
@@ -313,7 +337,52 @@ function ToolCallView({ call, parts }: { call: ToolCallPart; parts: StreamPart[]
       summary = visualizationSummary(result.output as VisualizeResponse | null | undefined);
     }
   }
-  const content = result?.type === 'tool-result' ? toolContent(call.toolName, result.output) : null;
+  const snippet =
+    call.toolName === 'visualize' && result?.type === 'tool-result'
+      ? (result.output as Partial<SnippetContent> | null | undefined)
+      : undefined;
+  const canSave = Boolean(snippet?.question && snippet.spec && typeof snippet.summary === 'string');
+  const saved = savedMessageIds.includes(messageId);
+
+  const saveSnippet = async () => {
+    if (!snippet?.question || !snippet.spec || typeof snippet.summary !== 'string' || saved || saving) return;
+    setSaving(true);
+    try {
+      await window.workbench.snippetSave({
+        messageId,
+        question: snippet.question,
+        spec: snippet.spec,
+        summary: snippet.summary,
+      });
+      toast.success('Snippet 已保存');
+    } catch (cause) {
+      toast.error(errorMessage(cause));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const content =
+    result?.type === 'tool-result'
+      ? toolContent(
+          call.toolName,
+          result.output,
+          canSave ? (
+            <IconButton
+              icon={PushPin}
+              weight={saved ? 'fill' : 'regular'}
+              label={saved ? '已保存 Snippet' : saving ? '保存中…' : '保存 Snippet'}
+              disabled={saved || saving}
+              className={`absolute top-2 right-2 rounded-full bg-surface/90 shadow-sm transition-opacity ${
+                saved
+                  ? 'text-accent opacity-100 disabled:opacity-100'
+                  : 'opacity-0 group-hover/chart:opacity-100 group-focus-within/chart:opacity-100'
+              }`}
+              onClick={() => void saveSnippet()}
+            />
+          ) : undefined,
+        )
+      : null;
 
   return (
     <div className="group min-w-0">
@@ -353,7 +422,15 @@ function ToolCallView({ call, parts }: { call: ToolCallPart; parts: StreamPart[]
   );
 }
 
-function StreamContent({ parts }: { parts: StreamPart[] }) {
+function StreamContent({
+  parts,
+  messageId,
+  savedMessageIds,
+}: {
+  parts: StreamPart[];
+  messageId: string;
+  savedMessageIds: string[];
+}) {
   const blocks: ReactNode[] = [];
   for (let index = 0; index < parts.length; index += 1) {
     const part = parts[index];
@@ -372,7 +449,15 @@ function StreamContent({ parts }: { parts: StreamPart[] }) {
         </div>,
       );
     } else if (part.type === 'tool-call') {
-      blocks.push(<ToolCallView key={part.toolCallId} call={part} parts={parts} />);
+      blocks.push(
+        <ToolCallView
+          key={part.toolCallId}
+          call={part}
+          parts={parts}
+          messageId={messageId}
+          savedMessageIds={savedMessageIds}
+        />,
+      );
     }
   }
   return <div className="grid min-w-0 gap-2">{blocks}</div>;
@@ -382,10 +467,12 @@ export function AnalysisMessageView({
   message,
   activeTask,
   streamParts = [],
+  savedMessageIds = [],
 }: {
   message: AnalysisMessage;
   activeTask?: AnalysisTaskEvent | null;
   streamParts?: StreamPart[];
+  savedMessageIds?: string[];
 }) {
   if (message.role === 'user') {
     return (
@@ -410,7 +497,9 @@ export function AnalysisMessageView({
 
   const running = message.status === 'running' || message.status === 'cancelling';
   const parts = running ? streamParts : (message.content.parts ?? []);
-  if (parts.length) return <StreamContent parts={parts} />;
+  if (parts.length) {
+    return <StreamContent parts={parts} messageId={message.id} savedMessageIds={savedMessageIds} />;
+  }
   if (running) {
     return (
       <p className="m-0 text-sm text-muted">

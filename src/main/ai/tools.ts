@@ -65,7 +65,18 @@ export function createTools(ava: AVA, context: ToolContext): ToolSet {
     visualize: tool({
       description: 'Create a visualization for the latest analysis result. Call analyze first.',
       inputSchema: z.object({}),
-      execute: async () => (latest ? ava.visualize(latest) : null),
+      execute: async () => {
+        if (!latest) return null;
+        const analysis = latest;
+        const visualization = await ava.visualize(analysis);
+        if (!visualization) return null;
+        return {
+          ...visualization,
+          question: analysis.query,
+          summary: analysis.text,
+          spec: { ...visualization.config, type: visualization.chartType },
+        };
+      },
     }),
   };
 }

@@ -37,6 +37,9 @@ const api = {
   },
   conversationRename: (id, title) => ipcRenderer.invoke('conversationRename', id, title),
   conversationArchive: (id) => ipcRenderer.invoke('conversationArchive', id),
+  snippetSave: (input) => ipcRenderer.invoke('snippetSave', input),
+  snippetUpdate: (messageId, input) => ipcRenderer.invoke('snippetUpdate', messageId, input),
+  snippetRemove: (messageId) => ipcRenderer.invoke('snippetRemove', messageId),
   conversationRestore: (id) => ipcRenderer.invoke('conversationRestore', id),
   conversationPurge: (ids) => ipcRenderer.invoke('conversationPurge', ids),
 } satisfies WorkbenchApi;
