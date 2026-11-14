@@ -48,7 +48,7 @@ function SnippetCard({ snippet, onDelete }: { snippet: Snippet; onDelete: () => 
             })}
           </time>
           {!editing && (
-            <div className="flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+            <div className="flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 has-[[data-state=open]]:opacity-100 has-[:disabled]:opacity-100">
               <ExportButton target={{ kind: 'snippet', id: snippet.messageId }} />
               <IconButton
                 icon={PencilSimple}

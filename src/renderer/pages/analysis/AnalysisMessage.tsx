@@ -438,11 +438,17 @@ export function AnalysisMessageView({
 }) {
   if (message.role === 'user') {
     return (
-      <div className="flex items-start justify-end gap-1">
-        <CopyButton label="复制问题" text={message.content.question ?? ''} />
-        <p className="m-0 min-w-0 max-w-[85%] rounded-xl bg-accent-soft px-4 py-3 text-sm leading-6 break-words whitespace-pre-wrap">
-          {message.content.question}
-        </p>
+      <div className="flex justify-end">
+        <div className="group/question flex min-w-0 max-w-[85%] flex-col items-end gap-1">
+          <p className="m-0 min-w-0 rounded-xl bg-accent-soft px-4 py-3 text-sm leading-6 break-words whitespace-pre-wrap">
+            {message.content.question}
+          </p>
+          <CopyButton
+            label="复制问题"
+            text={message.content.question ?? ''}
+            className="opacity-0 transition-opacity group-hover/question:opacity-100 group-focus-within/question:opacity-100"
+          />
+        </div>
       </div>
     );
   }
@@ -461,14 +467,14 @@ export function AnalysisMessageView({
   const running = message.status === 'running' || message.status === 'cancelling';
   const parts = running ? streamParts : (message.content.parts ?? []);
   const actions = !running && (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover/answer:opacity-100 group-focus-within/answer:opacity-100 has-[[data-state=open]]:opacity-100 has-[:disabled]:opacity-100">
       <CopyButton label="复制 Markdown" text={() => documentMarkdown(messageDocument(message, question))} />
       <ExportButton target={{ kind: 'analysis', id: message.id }} />
     </div>
   );
   if (parts.length) {
     return (
-      <div className="grid min-w-0 gap-2">
+      <div className="group/answer grid min-w-0 gap-2">
         <StreamContent parts={parts} messageId={message.id} savedMessageIds={savedMessageIds} />
         {actions}
       </div>
@@ -483,7 +489,7 @@ export function AnalysisMessageView({
   }
 
   return (
-    <div className="grid min-w-0 gap-4">
+    <div className="group/answer grid min-w-0 gap-4">
       {(message.content.markdown || message.content.text) && (
         <Markdown>{message.content.markdown || message.content.text || ''}</Markdown>
       )}

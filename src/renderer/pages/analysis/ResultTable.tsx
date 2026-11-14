@@ -21,12 +21,16 @@ export function ResultTable({ analysis }: { analysis: Partial<AnalysisResponse> 
   const current = Math.min(page, pages - 1);
   const offset = current * pageSize;
   return (
-    <div className="min-w-0 overflow-hidden rounded-lg border">
+    <div className="group/result min-w-0 overflow-hidden rounded-lg border">
       <div className="flex items-center justify-between px-3 py-1 text-xs text-muted">
         <span>
           已返回结果 · {rows.length} 行 · 仅排序当前页{analysis.truncated ? ' · 查询结果已截断' : ''}
         </span>
-        <CopyButton label="复制全部结果数据" text={() => tableTSV(names, rows)} />
+        <CopyButton
+          label="复制全部结果数据"
+          text={() => tableTSV(names, rows)}
+          className="opacity-0 transition-opacity group-hover/result:opacity-100 group-focus-within/result:opacity-100"
+        />
       </div>
       <div className="flex max-h-80 min-h-0 flex-col overflow-auto">
         <DataGrid rows={rows.slice(offset, offset + pageSize)} columns={columns} resetKey={offset} />

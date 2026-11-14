@@ -26,7 +26,7 @@ export function SqlBlock({ code }: { code: string }) {
   const [expanded, setExpanded] = useState(false);
   const html = useMemo(() => hljs.highlight(code, { language: 'sql' }).value, [code]);
   return (
-    <div className="min-w-0 rounded-md bg-page">
+    <div className="group/sql min-w-0 rounded-md bg-page">
       <div className="flex items-center gap-1 pr-3 text-xs text-muted">
         <button
           type="button"
@@ -38,7 +38,11 @@ export function SqlBlock({ code }: { code: string }) {
           <CaretRight size={14} className={`shrink-0 ${expanded ? 'rotate-90' : ''}`} />
           <span>SQL</span>
         </button>
-        <CopyButton label="复制 SQL" text={code} />
+        <CopyButton
+          label="复制 SQL"
+          text={code}
+          className="opacity-0 transition-opacity group-hover/sql:opacity-100 group-focus-within/sql:opacity-100"
+        />
       </div>
       {expanded && (
         <pre className="m-0 max-w-full overflow-auto p-3 pt-0 text-xs leading-5 whitespace-pre-wrap text-ink/80">

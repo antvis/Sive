@@ -3,7 +3,15 @@ import { toast } from 'sonner';
 import { IconButton } from './IconButton';
 import { errorMessage } from '../utils';
 
-export function CopyButton({ label, text }: { label: string; text: string | (() => string) }) {
+export function CopyButton({
+  label,
+  text,
+  className,
+}: {
+  label: string;
+  text: string | (() => string);
+  className?: string;
+}) {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(typeof text === 'function' ? text() : text);
@@ -12,5 +20,5 @@ export function CopyButton({ label, text }: { label: string; text: string | (() 
       toast.error(errorMessage(cause));
     }
   };
-  return <IconButton icon={Copy} label={label} tooltip onClick={() => void copy()} />;
+  return <IconButton icon={Copy} label={label} tooltip className={className} onClick={() => void copy()} />;
 }
