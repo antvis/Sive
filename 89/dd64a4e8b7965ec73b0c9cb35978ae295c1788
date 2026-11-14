@@ -1,0 +1,110 @@
+src/renderer/components/Visualization.tsx
+  s_0853dbf02f8b8a::t_cec0c9dc10feb5 3,12-29
+  s_0853dbf02f8b8a::t_7388e3b79b4848 1-2,4-11,30-31,33
+  s_0853dbf02f8b8a::t_8cc9ff65c23837 32
+src/renderer/pages/snippets/index.tsx
+  s_0853dbf02f8b8a::t_489ac943b93342 1
+  s_0853dbf02f8b8a::t_afd37312fb4b4e 120,127-128
+  s_0853dbf02f8b8a::t_f6bc4b7fd23202 124
+  s_0853dbf02f8b8a::t_6edeed885d5f8c 108
+  s_0853dbf02f8b8a::t_9ae0850061252c 22-25
+  s_0853dbf02f8b8a::t_355729d9884922 4,7,9,11,133,154,203-205
+  s_0853dbf02f8b8a::t_facd51f81e9a95 66-79,82-96
+  s_0853dbf02f8b8a::t_238f4b93fc375b 121
+  s_0853dbf02f8b8a::t_191ffaa515841b 151-153
+  s_0853dbf02f8b8a::t_f863ecf2e50bfc 106-107,109-110
+  s_0853dbf02f8b8a::t_febb548afda808 104
+  s_0853dbf02f8b8a::t_24ada1fad77f7a 122-123,126
+  s_0853dbf02f8b8a::t_49618bf0f92d7c 125
+  s_0853dbf02f8b8a::t_2d9785c8923239 155-167,184
+  s_0853dbf02f8b8a::t_faf9221af27f93 2-3,5-6,8,10,12-21,26-35,37,39-65,80-81,97-100,117-119,129-132,134-150,185-202
+  s_0853dbf02f8b8a::t_caafd441f215e2 38
+  s_0853dbf02f8b8a::t_f74a47b3d86de2 113
+  s_0853dbf02f8b8a::t_c36186c49891fa 168-183
+  s_0853dbf02f8b8a::t_d6332056080c89 115-116
+  s_0853dbf02f8b8a::t_b336650478fb90 36
+  s_0853dbf02f8b8a::t_09ed3aeb669556 102-103,105,111-112,114
+  s_0853dbf02f8b8a::t_857038856ea0fb 101
+src/renderer/pages/analysis/index.tsx
+  s_0853dbf02f8b8a::t_86247e2fd21128 12,23
+  s_0853dbf02f8b8a::t_6e34f154995d96 44
+src/main/ipc/index.ts
+  s_0853dbf02f8b8a::t_a53f04f95ec353 162-163
+  s_0853dbf02f8b8a::t_6f0a5e17279321 5
+  s_0853dbf02f8b8a::t_a8692294c97208 37
+  s_0853dbf02f8b8a::t_30e4bba36e7697 151-152,154
+src/renderer/components/IconButton.tsx
+  s_0853dbf02f8b8a::t_4245f4824e3c93 9
+  s_0853dbf02f8b8a::t_8530849fa2ab66 38
+  s_0853dbf02f8b8a::t_7dfb05c0494193 1
+  s_0853dbf02f8b8a::t_6e9846356906c0 18
+src/main/services/snippet/index.ts
+  s_0853dbf02f8b8a::t_ec303e6c5e41e7 2
+  s_0853dbf02f8b8a::t_dc4e30126e5ffa 1,13-14,17-32
+  s_0853dbf02f8b8a::t_24506be743aedd 35,37-43
+  s_0853dbf02f8b8a::t_31a77a9d064efd 33-34
+src/renderer/App.tsx
+  s_0853dbf02f8b8a::t_9c943c964d7ea6 131
+  s_0853dbf02f8b8a::t_799d270ce0b901 10
+  s_0853dbf02f8b8a::t_2be8955e70cdab 125
+src/renderer/pages/analysis/ConversationPanel.tsx
+  s_0853dbf02f8b8a::t_08170cdea36cb3 21
+  s_0853dbf02f8b8a::t_e22cb2c5a8d81b 249
+  s_0853dbf02f8b8a::t_54e6c7c2cd7095 35
+src/main/db/schema/snippets.ts
+  s_0853dbf02f8b8a::t_ee3a69f474c3f5 19
+  s_0853dbf02f8b8a::t_f05c87103732de 2
+src/renderer/components/AppShell.tsx
+  s_0853dbf02f8b8a::t_c26bbd3a8968e8 12
+  s_0853dbf02f8b8a::t_01bcef57fec56d 283-289
+  s_0853dbf02f8b8a::t_bed7f88a9d9a15 204
+package.json
+  s_0853dbf02f8b8a::t_23e3efcc4c7b1a 45
+src/main/ai/tools.ts
+  s_0853dbf02f8b8a::t_77490ebaacb87b 72,77
+  s_0853dbf02f8b8a::t_63d0ce3c03f009 68-71,73-76,78-79
+src/shared/snippets.ts
+  s_0853dbf02f8b8a::t_28143e50d73c56 1-12,15-24
+  s_0853dbf02f8b8a::t_c4e1a1244519de 13-14
+src/shared/api.ts
+  s_0853dbf02f8b8a::t_616e2fb00b2188 86
+  s_0853dbf02f8b8a::t_c5f747c219717a 4,7
+  s_0853dbf02f8b8a::t_29fb87acefb265 115
+  s_0853dbf02f8b8a::t_5acca5185e1bb4 116-117
+src/renderer/pages/analysis/AnalysisMessage.tsx
+  s_0853dbf02f8b8a::t_06f01d347708d9 292-293
+  s_0853dbf02f8b8a::t_e191f91650cd21 470,475
+  s_0853dbf02f8b8a::t_401707115d8471 22
+  s_0853dbf02f8b8a::t_dae0a9517edad8 425-433
+  s_0853dbf02f8b8a::t_05fa0a46bdc9a5 290
+  s_0853dbf02f8b8a::t_1e8fed65adadf5 500-502
+  s_0853dbf02f8b8a::t_b110f6236658e8 452-460
+  s_0853dbf02f8b8a::t_939bee98035016 365-371,374-385
+  s_0853dbf02f8b8a::t_4e84a0d1056e59 372-373
+  s_0853dbf02f8b8a::t_c604da42bf49d7 284-286,291
+  s_0853dbf02f8b8a::t_33c13d7bb6c8c3 228
+  s_0853dbf02f8b8a::t_902262c75f9fd5 283
+  s_0853dbf02f8b8a::t_45f8ce8b98ac74 11
+  s_0853dbf02f8b8a::t_a9323e14a4d74d 29
+  s_0853dbf02f8b8a::t_46da14d65c1a3c 300-310,319,340-364
+  s_0853dbf02f8b8a::t_a00d4ed7a68e25 19-20,24-25
+src/preload/index.ts
+  s_0853dbf02f8b8a::t_a377bb0d0d5446 41-42
+  s_0853dbf02f8b8a::t_4d855355001942 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "89dd64a4e8b7965ec73b0c9cb35978ae295c1788",
+  "prompts": {},
+  "sessions": {
+    "s_0853dbf02f8b8a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "b8f3e17a-54b4-4f7b-933d-ac8a27f7f577",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
