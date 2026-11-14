@@ -115,6 +115,7 @@ export default function App() {
       {state && page === 'analysis' && analysisDatasetId && (
         <AnalysisPage
           datasetId={analysisDatasetId}
+          datasetUpdatedAt={state.datasets.find((dataset) => dataset.id === analysisDatasetId)?.updatedAt}
           conversationId={activeConversationId}
           onConversationChange={setActiveConversationId}
           onBack={() => {

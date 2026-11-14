@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { statSync } from 'node:fs';
 import path from 'node:path';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { AVA } from '@antv/ava';
-import type { DataSourceConfig, Semantic } from '@antv/ava';
+import { AVA, semanticOutputSchema } from '@antv/ava';
+import type { DataSourceConfig } from '@antv/ava';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { datasets } from '../../db/schema/datasets';
@@ -281,10 +281,12 @@ export class DatasetService {
     this.database.write(() => this.repositories.datasets.remove(id));
   }
 
-  saveSemantic(id: string, semantic: Semantic, metrics?: unknown) {
-    this.database.write(() => {
-      required(this.repositories.datasets.get(id), '数据源不存在或已删除。');
-      this.repositories.datasets.update(id, { semantic, metrics });
-    });
+  async saveSemantic(id: string, input: unknown) {
+    const semantic = semanticOutputSchema.parse(input);
+    await this.withSourceUpdate(id, async () =>
+      this.database.write(() =>
+        required(this.repositories.datasets.update(id, { semantic }), '数据源不存在或已删除。'),
+      ),
+    );
   }
 }
