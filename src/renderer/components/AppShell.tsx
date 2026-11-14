@@ -1,16 +1,26 @@
-import { Archive, Database, GearSix, Lightbulb, PencilSimple, Plus, X } from '@phosphor-icons/react';
+import {
+  Archive,
+  Database,
+  GearSix,
+  Lightbulb,
+  MagnifyingGlass,
+  PencilSimple,
+  Plus,
+  SidebarSimple,
+  X,
+} from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { Group, Panel } from 'react-resizable-panels';
 import { toast } from 'sonner';
-import { errorMessage, readWidth, saveWidth } from '../utils';
+import { errorMessage } from '../utils';
+import { usePanelLayout } from '../hooks/usePanelLayout';
+import type { AppPage } from '../utils/workspaceNavigation';
 import { getDatasetSource } from '../utils/dataSource';
 import type { Conversation, DatasetSummary } from '../types';
 import { IconButton } from './IconButton';
 import { ResizeHandle } from './ResizeHandle';
-
-export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
 
 type AppShellProps = PropsWithChildren<{
   page: AppPage;
@@ -23,7 +33,7 @@ type AppShellProps = PropsWithChildren<{
   onDatasetClose: (id: string) => void;
   onConversationSelect: (id: string) => void;
   onConversationCreate: () => void;
-  onConversationArchive: (id: string) => void;
+  onSearch: () => void;
   onNavigate: (page: AppPage) => void;
 }>;
 
@@ -37,12 +47,10 @@ function ConversationItem({
   conversation,
   active,
   onSelect,
-  onArchive,
 }: {
   conversation: Conversation;
   active: boolean;
   onSelect: () => void;
-  onArchive: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(conversation.title);
@@ -78,7 +86,6 @@ function ConversationItem({
     setBusy(true);
     try {
       await window.workbench.conversationArchive(conversation.id);
-      onArchive();
       toast.success('分析任务已归档');
     } catch (cause) {
       toast.error(errorMessage(cause));
@@ -161,22 +168,61 @@ export function AppShell({
   onDatasetClose,
   onConversationSelect,
   onConversationCreate,
-  onConversationArchive,
+  onSearch,
   onNavigate,
   children,
 }: AppShellProps) {
-  const [sidebarWidth] = useState(() => readWidth('sive.sidebar-width', 210));
+  const sidebar = usePanelLayout('sive.sidebar-width', 210);
+  const searchShortcut = navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl K';
+  const sidebarActions = (
+    <div className="flex shrink-0 items-center [-webkit-app-region:no-drag]">
+      <IconButton
+        icon={SidebarSimple}
+        ref={sidebar.toggleButtonRef}
+        className="h-7 w-7"
+        label={sidebar.collapsed ? '展开侧栏' : '收起侧栏'}
+        tooltip
+        aria-expanded={!sidebar.collapsed}
+        onClick={sidebar.toggle}
+      />
+      <IconButton
+        icon={MagnifyingGlass}
+        className="h-7 w-7"
+        label="搜索数据源和会话"
+        onClick={onSearch}
+        tooltip={
+          <>
+            搜索
+            <kbd className="rounded-md bg-white/20 px-1.5 py-0.5 font-sans text-xs">{searchShortcut}</kbd>
+          </>
+        }
+      />
+    </div>
+  );
   return (
-    <Group orientation="horizontal" className="h-screen overflow-hidden bg-page">
+    <Group
+      orientation="horizontal"
+      className={clsx('h-screen overflow-hidden bg-page', sidebar.transitionClassName)}
+      onPointerDownCapture={sidebar.finishTransition}
+    >
       <Panel
         id="app-sidebar"
-        defaultSize={sidebarWidth}
+        panelRef={sidebar.panelRef}
+        collapsible
+        collapsedSize={0}
+        defaultSize={sidebar.defaultSize}
         minSize={160}
         maxSize={280}
         className="h-full min-h-0"
-        onResize={(size) => saveWidth('sive.sidebar-width', size.inPixels)}
+        onResize={sidebar.onResize}
       >
-        <aside className="flex h-full min-h-0 flex-col overflow-hidden px-3 pt-12 pb-5">
+        <aside
+          inert={sidebar.collapsed}
+          className="relative flex h-full min-h-0 flex-col overflow-hidden px-3 pt-12 pb-5"
+        >
+          <div className="absolute inset-x-0 top-0 flex h-[46px] items-center justify-end px-3 [-webkit-app-region:drag]">
+            {!sidebar.collapsed && sidebarActions}
+          </div>
           <div className="mb-6 px-2">
             <div className="flex items-center gap-2">
               <img className="brand-logo" src="./sive.svg" alt="" />
@@ -216,7 +262,6 @@ export function AppShell({
                     conversation={conversation}
                     active={conversation.id === activeConversationId}
                     onSelect={() => onConversationSelect(conversation.id)}
-                    onArchive={() => onConversationArchive(conversation.id)}
                   />
                 ))}
                 {!conversations.length && <p className="m-0 px-3 py-2 text-xs text-muted">暂无分析任务</p>}
@@ -231,12 +276,17 @@ export function AppShell({
           </button>
         </aside>
       </Panel>
-      <ResizeHandle />
+      {!sidebar.collapsed && <ResizeHandle />}
       <Panel id="workspace-content" minSize="50%" className="h-full min-h-0 min-w-0 flex-1">
         <main className="flex h-full min-w-0 flex-col bg-surface">
-          <header className="flex h-9 shrink-0 items-center bg-page px-3 [-webkit-app-region:drag]">
+          <header className="flex h-[46px] shrink-0 items-center bg-page px-3 [-webkit-app-region:drag]">
+            {sidebar.collapsed && <div className="ml-16">{sidebarActions}</div>}
             {datasetTabs.length ? (
-              <div className="flex h-full items-center gap-1 overflow-x-auto [-webkit-app-region:no-drag]">
+              <div
+                role="tablist"
+                aria-label="已打开的数据源"
+                className="flex h-full items-center gap-1 overflow-x-auto [-webkit-app-region:no-drag]"
+              >
                 {datasetTabs.map((dataset) => {
                   const active = activeDatasetId === dataset.id;
                   const { icon: SourceIcon } = getDatasetSource(dataset.sourceType);
@@ -250,11 +300,41 @@ export function AppShell({
                     >
                       <button
                         type="button"
+                        role="tab"
+                        aria-selected={active && page === 'analysis'}
+                        tabIndex={active ? 0 : -1}
+                        title={dataset.name}
                         className={clsx(
                           'flex h-full min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 pr-7 text-left text-xs [-webkit-app-region:no-drag]',
                           active ? 'bg-surface text-ink' : 'text-muted hover:bg-surface/60',
                         )}
                         onClick={() => onDatasetSelect(dataset.id)}
+                        onKeyDown={(event) => {
+                          if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+                          const index = datasetTabs.findIndex((item) => item.id === dataset.id);
+                          let next: number;
+                          if (event.key === 'ArrowRight') next = (index + 1) % datasetTabs.length;
+                          else if (event.key === 'ArrowLeft')
+                            next = (index - 1 + datasetTabs.length) % datasetTabs.length;
+                          else if (event.key === 'Home') next = 0;
+                          else if (event.key === 'End') next = datasetTabs.length - 1;
+                          else if (event.key === 'Delete') {
+                            event.preventDefault();
+                            const sibling = index === datasetTabs.length - 1 ? index - 1 : index + 1;
+                            event.currentTarget
+                              .closest('[role="tablist"]')
+                              ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+                              [sibling]?.focus();
+                            onDatasetClose(dataset.id);
+                            return;
+                          } else return;
+                          event.preventDefault();
+                          onDatasetSelect(datasetTabs[next].id);
+                          event.currentTarget
+                            .closest('[role="tablist"]')
+                            ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+                            [next]?.focus();
+                        }}
                       >
                         <SourceIcon size={14} className="shrink-0 text-[#25804d]" aria-hidden />
                         <span className="min-w-0 truncate">{dataset.name}</span>

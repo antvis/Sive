@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowLeft, Sparkle } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
@@ -14,8 +15,11 @@ type Props = {
   datasetId: string;
   datasetUpdatedAt?: string;
   conversationId: string | null;
+  question: string;
+  onQuestionChange: (question: string) => void;
+  toolbar?: ReactNode;
   savedMessageIds: string[];
-  onConversationChange: (id: string) => void;
+  onConversationChange: (id: string, submitted: string) => void;
   onBack: () => void;
   models: ModelProfile[];
   activeModelId: string;
@@ -29,6 +33,9 @@ export function ConversationPanel({
   datasetId,
   datasetUpdatedAt,
   conversationId,
+  question,
+  onQuestionChange: setQuestion,
+  toolbar,
   savedMessageIds,
   onConversationChange,
   onBack,
@@ -36,7 +43,9 @@ export function ConversationPanel({
   activeModelId,
   preferences,
 }: Props) {
-  const [question, setQuestion] = useState('');
+  const location = JSON.stringify([datasetId, conversationId]);
+  const currentLocation = useRef(location);
+  currentLocation.current = location;
   const [messages, setMessages] = useState<AnalysisMessage[]>([]);
   const [activeTask, setActiveTask] = useState<AnalysisTaskEvent | null>(null);
   const [stream, setStream] = useState<{ taskId: string; parts: StreamPart[] } | null>(null);
@@ -81,27 +90,36 @@ export function ConversationPanel({
         setHistoryLoading(false);
         return;
       }
-      setMessages(await window.workbench.analysisGetMessages(id));
-      setHistoryLoading(false);
+      const result = await window.workbench.analysisGetMessages(id);
+      if (currentLocation.current === JSON.stringify([datasetId, id])) {
+        setMessages(result);
+        setHistoryLoading(false);
+      }
     },
-    [conversationId],
+    [datasetId, conversationId],
   );
 
   useEffect(() => {
     setActiveTask(null);
     setStream(null);
-    setQuestion('');
     setError('');
   }, [datasetId]);
 
   useEffect(() => {
+    let live = true;
     setHistoryLoading(true);
     setMessages([]);
+    setSending(false);
+    setError('');
     setShowScrollToBottom(false);
     loadMessages().catch((cause) => {
+      if (!live) return;
       setError(errorMessage(cause));
       setHistoryLoading(false);
     });
+    return () => {
+      live = false;
+    };
   }, [loadMessages]);
 
   useEffect(() => {
@@ -145,7 +163,8 @@ export function ConversationPanel({
         strategy: preferences.analysisMode,
         conversationId: conversationId ?? undefined,
       });
-      onConversationChange(result.conversationId);
+      onConversationChange(result.conversationId, question);
+      if (currentLocation.current !== location) return;
       setActiveTask({
         taskId: result.taskId,
         datasetId,
@@ -153,12 +172,11 @@ export function ConversationPanel({
         status: 'running',
         stage: '准备分析',
       });
-      setQuestion('');
       await loadMessages(result.conversationId);
     } catch (cause) {
-      setError(errorMessage(cause));
+      if (currentLocation.current === location) setError(errorMessage(cause));
     } finally {
-      setSending(false);
+      if (currentLocation.current === location) setSending(false);
     }
   };
 
@@ -190,7 +208,7 @@ export function ConversationPanel({
       preferences.sendShortcut === 'enter'
         ? event.key === 'Enter' && !event.shiftKey
         : event.key === 'Enter' && (event.metaKey || event.ctrlKey);
-    if (send && !event.nativeEvent.isComposing) {
+    if (send && !event.nativeEvent.isComposing && event.keyCode !== 229) {
       event.preventDefault();
       void start();
     }
@@ -201,6 +219,7 @@ export function ConversationPanel({
       <div className="flex h-12 shrink-0 items-center border-b px-4">
         <IconButton icon={ArrowLeft} label="返回数据源" onClick={onBack} />
         <span className="ml-1 text-sm font-medium">AI 对话</span>
+        {toolbar}
       </div>
       <div className="relative min-h-0 flex-1">
         <div

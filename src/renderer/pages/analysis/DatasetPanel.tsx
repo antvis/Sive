@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
 import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
@@ -115,9 +116,11 @@ function DataPreview({
 export function DatasetPanel({
   datasetId,
   defaultPageSize = DEFAULT_PREFERENCES.previewPageSize,
+  toolbar,
 }: {
   datasetId: string;
   defaultPageSize?: Preferences['previewPageSize'];
+  toolbar?: ReactNode;
 }) {
   const [detail, setDetail] = useState<DatasetDetail | null>(null);
   const [reload, setReload] = useState(0);
@@ -175,8 +178,17 @@ export function DatasetPanel({
     }
   };
 
-  if (loading) return <div className="grid h-full place-items-center text-muted">正在加载数据集…</div>;
-  if (error) return <div className="grid h-full place-items-center p-6 text-center text-danger">{error}</div>;
+  if (loading || error)
+    return (
+      <div className="flex h-full flex-col">
+        <div className="flex h-12 shrink-0 items-center justify-end border-b px-4">{toolbar}</div>
+        <div
+          className={`grid flex-1 place-items-center p-6 text-center ${error ? 'text-danger' : 'text-muted'}`}
+        >
+          {error || '正在加载数据集…'}
+        </div>
+      </div>
+    );
   if (!detail) return null;
   const model = detail.schema.models.find((item) => item.name === table) ?? detail.schema.models[0];
   const columns = model?.columns ?? [];
@@ -192,56 +204,59 @@ export function DatasetPanel({
 
   return (
     <Tabs.Root defaultValue="data" className="flex h-full min-h-0 flex-col">
-      <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
-        <Tabs.List aria-label="数据集信息" className="flex rounded-lg bg-page p-1">
-          <Tabs.Trigger
-            value="data"
-            className="rounded-md px-3 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
-          >
-            数据
-          </Tabs.Trigger>
-          <Tabs.Trigger
-            value="fields"
-            className="rounded-md px-3 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
-          >
-            字段
-          </Tabs.Trigger>
-          <Tabs.Trigger
-            value="semantic"
-            className="rounded-md px-3 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
-          >
-            语义层
-          </Tabs.Trigger>
-        </Tabs.List>
-        {detail.schema.models.length > 1 && (
-          <div className="flex min-w-0 items-center gap-2">
-            <input
-              aria-label="搜索数据表"
-              placeholder="搜索数据表"
-              value={tableSearch}
-              onChange={(event) => setTableSearch(event.target.value)}
-              className="w-28 rounded-md border bg-page px-2 py-1 text-xs outline-none focus:border-accent"
-            />
-            {tables.length ? (
-              <Select
-                compact
-                aria-label="选择数据表"
-                value={tables.some((item) => item.name === model.name) ? model.name : ''}
-                onChange={(value) => {
-                  if (value) setTable(value);
-                }}
-                options={[
-                  ...(!tables.some((item) => item.name === model.name)
-                    ? [{ value: '', label: '请选择数据表' }]
-                    : []),
-                  ...tables.map((item) => ({ value: item.name, label: item.name })),
-                ]}
+      <div className="flex min-h-12 shrink-0 items-center gap-2 border-b px-4 py-2">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2">
+          <Tabs.List aria-label="数据集信息" className="flex rounded-lg bg-page p-1">
+            <Tabs.Trigger
+              value="data"
+              className="rounded-md px-3 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
+            >
+              数据
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="fields"
+              className="rounded-md px-3 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
+            >
+              字段
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="semantic"
+              className="rounded-md px-3 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
+            >
+              语义层
+            </Tabs.Trigger>
+          </Tabs.List>
+          {detail.schema.models.length > 1 && (
+            <div className="flex min-w-0 items-center gap-2">
+              <input
+                aria-label="搜索数据表"
+                placeholder="搜索数据表"
+                value={tableSearch}
+                onChange={(event) => setTableSearch(event.target.value)}
+                className="w-28 rounded-md border bg-page px-2 py-1 text-xs outline-none focus:border-accent"
               />
-            ) : (
-              <span className="text-xs text-muted">无匹配数据表</span>
-            )}
-          </div>
-        )}
+              {tables.length ? (
+                <Select
+                  compact
+                  aria-label="选择数据表"
+                  value={tables.some((item) => item.name === model.name) ? model.name : ''}
+                  onChange={(value) => {
+                    if (value) setTable(value);
+                  }}
+                  options={[
+                    ...(!tables.some((item) => item.name === model.name)
+                      ? [{ value: '', label: '请选择数据表' }]
+                      : []),
+                    ...tables.map((item) => ({ value: item.name, label: item.name })),
+                  ]}
+                />
+              ) : (
+                <span className="text-xs text-muted">无匹配数据表</span>
+              )}
+            </div>
+          )}
+        </div>
+        {toolbar && <div className="shrink-0">{toolbar}</div>}
       </div>
       <Tabs.Content value="data" className="flex min-h-0 flex-1 flex-col">
         <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-2 text-xs text-muted">
