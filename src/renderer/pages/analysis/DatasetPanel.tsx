@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
 import { Button } from '../../components/Button';
 import { DataGrid } from '../../components/DataGrid';
-import { DatasetFileActions } from '../../components/DatasetFileActions';
+import { DatasetSourceActions } from '../../components/DatasetSourceActions';
 import { Select } from '../../components/Select';
 import type { DatasetDetail, Preferences } from '../../types';
 import { errorMessage } from '../../utils';
@@ -126,6 +126,8 @@ export function DatasetPanel({
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [table, setTable] = useState('');
+  const [tableSearch, setTableSearch] = useState('');
+  const [fieldSearch, setFieldSearch] = useState('');
   const [pageSize, setPageSize] = useState<number>(defaultPageSize);
 
   useEffect(() => {
@@ -178,6 +180,15 @@ export function DatasetPanel({
   if (!detail) return null;
   const model = detail.schema.models.find((item) => item.name === table) ?? detail.schema.models[0];
   const columns = model?.columns ?? [];
+  const tables = detail.schema.models.filter((item) =>
+    item.name.toLocaleLowerCase().includes(tableSearch.trim().toLocaleLowerCase()),
+  );
+  const fields = columns.filter((column) =>
+    column.name.toLocaleLowerCase().includes(fieldSearch.trim().toLocaleLowerCase()),
+  );
+  const primaryKey = typeof model?.primaryKey === 'string' ? [model.primaryKey] : (model?.primaryKey ?? []);
+  const relationships =
+    detail.schema.relationships?.filter((item) => model && item.models.includes(model.name)) ?? [];
 
   return (
     <Tabs.Root defaultValue="data" className="flex h-full min-h-0 flex-col">
@@ -203,13 +214,33 @@ export function DatasetPanel({
           </Tabs.Trigger>
         </Tabs.List>
         {detail.schema.models.length > 1 && (
-          <Select
-            compact
-            aria-label="选择数据表"
-            value={model.name}
-            onChange={setTable}
-            options={detail.schema.models.map((item) => ({ value: item.name, label: item.name }))}
-          />
+          <div className="flex min-w-0 items-center gap-2">
+            <input
+              aria-label="搜索数据表"
+              placeholder="搜索数据表"
+              value={tableSearch}
+              onChange={(event) => setTableSearch(event.target.value)}
+              className="w-28 rounded-md border bg-page px-2 py-1 text-xs outline-none focus:border-accent"
+            />
+            {tables.length ? (
+              <Select
+                compact
+                aria-label="选择数据表"
+                value={tables.some((item) => item.name === model.name) ? model.name : ''}
+                onChange={(value) => {
+                  if (value) setTable(value);
+                }}
+                options={[
+                  ...(!tables.some((item) => item.name === model.name)
+                    ? [{ value: '', label: '请选择数据表' }]
+                    : []),
+                  ...tables.map((item) => ({ value: item.name, label: item.name })),
+                ]}
+              />
+            ) : (
+              <span className="text-xs text-muted">无匹配数据表</span>
+            )}
+          </div>
         )}
       </div>
       <Tabs.Content value="data" className="flex min-h-0 flex-1 flex-col">
@@ -217,9 +248,12 @@ export function DatasetPanel({
           <span className="min-w-0 truncate">
             {model ? `${model.name} · ${columns.length} 个字段` : '没有可预览的数据表'}
           </span>
-          {detail.localFile && (
-            <DatasetFileActions datasetId={datasetId} onUpdated={() => setReload((value) => value + 1)} />
-          )}
+          <DatasetSourceActions
+            datasetId={datasetId}
+            sourceType={detail.sourceType}
+            localFile={detail.localFile}
+            onUpdated={() => setReload((value) => value + 1)}
+          />
         </div>
         {model && (
           <DataPreview
@@ -232,22 +266,49 @@ export function DatasetPanel({
         )}
       </Tabs.Content>
       <Tabs.Content value="fields" className="min-h-0 flex-1 overflow-auto p-4">
-        <table className="w-full border-collapse text-sm">
+        <input
+          aria-label="搜索字段"
+          placeholder="搜索字段"
+          value={fieldSearch}
+          onChange={(event) => setFieldSearch(event.target.value)}
+          className="mb-3 w-full rounded-lg border bg-page px-3 py-2 text-sm outline-none focus:border-accent"
+        />
+        <table className="w-full table-fixed border-collapse text-sm">
           <thead>
             <tr className="border-b text-left text-xs text-muted">
-              <th className="py-2 font-medium">字段名</th>
-              <th className="py-2 font-medium">数据类型</th>
+              <th className="w-2/5 py-2 pr-3 font-medium">字段名</th>
+              <th className="w-2/5 py-2 pr-3 font-medium">数据类型</th>
+              <th className="py-2 font-medium">约束</th>
             </tr>
           </thead>
           <tbody>
-            {columns.map((column) => (
+            {fields.map((column) => (
               <tr key={column.name} className="border-b last:border-0">
-                <td className="py-3">{column.name}</td>
-                <td className="py-3 text-muted">{column.type}</td>
+                <td className="py-3 pr-3 break-all">{column.name}</td>
+                <td className="py-3 pr-3 break-all text-muted">{column.type}</td>
+                <td className="py-3 text-xs text-muted">
+                  {[primaryKey.includes(column.name) && '主键', column.notNull && '非空']
+                    .filter(Boolean)
+                    .join(' · ') || '—'}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {!fields.length && <p className="text-sm text-muted">没有匹配的字段</p>}
+        {!!relationships.length && (
+          <section className="mt-5 text-sm">
+            <h3 className="text-sm font-medium">外键关系</h3>
+            <ul className="space-y-2 pl-4">
+              {relationships.map((relation) => (
+                <li key={relation.name}>
+                  <span>{relation.name}</span>
+                  <code className="mt-1 block break-all text-xs text-muted">{relation.condition}</code>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </Tabs.Content>
       <Tabs.Content value="semantic" className="min-h-0 flex-1 overflow-auto p-5">
         <label className="grid gap-2 text-sm">
