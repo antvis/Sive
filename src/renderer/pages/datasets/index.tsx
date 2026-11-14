@@ -1,10 +1,10 @@
-import { Columns, Database, FileText, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { Columns, Database, FileText, PencilSimple, Plus, Table, Trash } from '@phosphor-icons/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Modal } from '../../components/Modal';
-import { DatasetFileActions } from '../../components/DatasetFileActions';
+import { DatasetSourceActions } from '../../components/DatasetSourceActions';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
 import { getDatasetSource } from '../../utils/dataSource';
@@ -31,7 +31,9 @@ function DatasetCard({
   const renameCancelled = useRef(false);
   const { icon: SourceIcon, label: sourceLabel } = getDatasetSource(dataset.sourceType);
   const stats = [
-    { label: '数据量', value: formatFileSize(dataset.fileSize), icon: FileText },
+    dataset.localFile
+      ? { label: '数据量', value: formatFileSize(dataset.fileSize), icon: FileText }
+      : { label: '数据表', value: String(dataset.tableCount ?? 0), icon: Table },
     { label: '行数', value: dataset.rowCount?.toLocaleString('zh-CN') ?? '—', icon: Database },
     { label: '列数', value: dataset.columnCount.toLocaleString('zh-CN'), icon: Columns },
   ];
@@ -162,11 +164,13 @@ function DatasetCard({
           {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}
         </span>
         <span>更新于 {dataset.updatedAt.slice(0, 10)}</span>
-        {dataset.localFile && (
-          <div className="ml-auto">
-            <DatasetFileActions datasetId={dataset.id} />
-          </div>
-        )}
+        <div className="ml-auto">
+          <DatasetSourceActions
+            datasetId={dataset.id}
+            sourceType={dataset.sourceType}
+            localFile={dataset.localFile}
+          />
+        </div>
       </footer>
       {dataset.fileUnavailable && <p className="mt-2 mb-0 text-xs text-danger">文件不可用，请重新定位。</p>}
       <Modal

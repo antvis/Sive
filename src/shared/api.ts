@@ -2,6 +2,7 @@ import type { Schema, Semantic, SuggestResult } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
 import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
+import type { MySQLConnection, MySQLInput } from './mysql';
 
 export type { AnalysisMessage } from './messages';
 export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './snippets';
@@ -118,6 +119,9 @@ export type WorkbenchApi = {
   ): Promise<(DatasetSummary & { directory: string }) | null>;
   datasetRelocate(id: string): Promise<boolean>;
   datasetRefresh(id: string): Promise<void>;
+  datasetMySQLGet(id: string): Promise<MySQLConnection>;
+  datasetMySQLTest(input: MySQLInput): Promise<void>;
+  datasetMySQLSave(input: MySQLInput): Promise<void>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
   datasetPreview(

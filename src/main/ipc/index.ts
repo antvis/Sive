@@ -79,6 +79,15 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(text(id)));
 
+  ipcMain.handle('datasetMySQLGet', (_event, id) => services.dataset.getMySQL(text(id)));
+
+  ipcMain.handle('datasetMySQLTest', (_event, input) => services.dataset.testMySQL(input));
+
+  ipcMain.handle('datasetMySQLSave', async (event, input) => {
+    await services.dataset.saveMySQL(input);
+    changed(event);
+  });
+
   ipcMain.handle('datasetPreview', (_event, id, table, options) =>
     services.dataset.preview(
       text(id),

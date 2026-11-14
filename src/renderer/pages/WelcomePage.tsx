@@ -1,10 +1,19 @@
 import { Database, FileCode, FileCsv, FileText, Files, Lightning, Stack, Table } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
+import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useImportLocal } from '../hooks/useImportLocal';
 import type { LocalFileFormat } from '@shared/api';
+import { getSourceEditor } from '../components/sourceEditors';
 
-type Source = { name: string; description: string; color: string; icon: Icon; format?: LocalFileFormat };
+type Source = {
+  name: string;
+  description: string;
+  color: string;
+  icon: Icon;
+  format?: LocalFileFormat;
+  connection?: string;
+};
 
 const groups: { title: string; icon: Icon; sources: Source[] }[] = [
   {
@@ -36,7 +45,13 @@ const groups: { title: string; icon: Icon; sources: Source[] }[] = [
     title: '数据库',
     icon: Database,
     sources: [
-      { name: 'MySQL', description: '开源关系型数据库', color: '#28769a', icon: Database },
+      {
+        name: 'MySQL',
+        description: '连接数据库并浏览数据表',
+        color: '#28769a',
+        icon: Database,
+        connection: 'mysql',
+      },
       { name: 'PostgreSQL', description: '开源对象关系型数据库', color: '#687682', icon: Database },
       { name: 'SQLite', description: '轻量级本地文件数据库', color: '#687682', icon: Database },
       { name: 'MongoDB', description: '面向文档的 NoSQL 数据库', color: '#687682', icon: Stack },
@@ -62,12 +77,13 @@ function SourceCard({
   importing: boolean;
   onImport: () => void;
 }) {
-  const { name, description, color, icon: SourceIcon, format } = source;
-  const action = !format ? '待接入' : importing ? '正在导入…' : '选择文件';
+  const { name, description, color, icon: SourceIcon, format, connection } = source;
+  const canConnect = Boolean(connection && getSourceEditor(connection));
+  const action = canConnect ? '配置连接' : !format ? '待接入' : importing ? '正在导入…' : '选择文件';
   return (
     <button
       type="button"
-      disabled={!format || importing}
+      disabled={(!format && !canConnect) || importing}
       onClick={onImport}
       aria-label={`${name}：${description}。${action}`}
       className="group relative grid h-28 w-full min-w-0 rounded-[14px] border bg-surface px-4 py-3 text-left text-ink shadow-[0_2px_4px] shadow-ink/3 transition-[border-color,box-shadow] hover:border-[var(--source-color)] hover:shadow-[0_4px_12px] focus-visible:border-[var(--source-color)] focus-visible:outline-none disabled:opacity-60"
@@ -91,7 +107,7 @@ function SourceCard({
       >
         <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
         <small className="text-xs text-muted">{description}</small>
-        <span className="mt-0.5 text-xs" style={{ color: format ? color : undefined }}>
+        <span className="mt-0.5 text-xs" style={{ color: format || canConnect ? color : undefined }}>
           {action}
         </span>
       </span>
@@ -101,6 +117,8 @@ function SourceCard({
 
 export function WelcomePage() {
   const { importing, importLocal } = useImportLocal();
+  const [connectionType, setConnectionType] = useState('');
+  const Editor = getSourceEditor(connectionType);
 
   return (
     <div className="mx-auto max-w-266 px-6 pt-8 pb-12" aria-busy={importing}>
@@ -123,13 +141,16 @@ export function WelcomePage() {
                   key={source.name}
                   source={source}
                   importing={importing}
-                  onImport={() => void importLocal(source.format)}
+                  onImport={() =>
+                    source.connection ? setConnectionType(source.connection) : void importLocal(source.format)
+                  }
                 />
               ))}
             </div>
           </section>
         ))}
       </div>
+      {Editor && <Editor onClose={() => setConnectionType('')} />}
     </div>
   );
 }
