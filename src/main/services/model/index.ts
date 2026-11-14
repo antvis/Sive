@@ -15,21 +15,24 @@ function modelURL(value: string) {
   return value.replace(/\/+$/, '');
 }
 
+function normalizeModelIds(ids: string[]) {
+  return [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+}
+
 export class ModelService {
   constructor(
     private database: DBConnection,
     private repositories: Repositories,
   ) {}
 
-  private resolveApiKey(input: ModelConnectionInput) {
-    if (input.apiKey) return input.apiKey;
-    if (!input.credentialSourceId) return '';
+  private resolveEncryptedKey(input: ModelConnectionInput) {
+    if (input.apiKey || !input.credentialSourceId) return null;
     const source = required(
       this.repositories.modelProviders.get(input.credentialSourceId),
       '凭据来源不存在。',
     );
-    if (source.baseUrl !== input.baseURL) throw new Error('服务地址已修改，请重新填写密钥。');
-    return source.encryptedKey ? decrypt(source.encryptedKey) : '';
+    if (modelURL(source.baseUrl) !== input.baseURL) throw new Error('服务地址已修改，请重新填写密钥。');
+    return source.encryptedKey;
   }
 
   list() {
@@ -64,7 +67,8 @@ export class ModelService {
 
   async listAvailable(input: ModelConnectionInput) {
     const baseURL = modelURL(input.baseURL);
-    const apiKey = this.resolveApiKey({ ...input, baseURL });
+    const encryptedKey = this.resolveEncryptedKey({ ...input, baseURL });
+    const apiKey = input.apiKey || (encryptedKey ? decrypt(encryptedKey) : undefined);
     const response = await fetch(`${baseURL}/models`, {
       headers: { Accept: 'application/json', ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}) },
       signal: AbortSignal.timeout(10_000),
@@ -77,8 +81,8 @@ export class ModelService {
     return [
       ...new Set(
         body.data.flatMap((item) =>
-          item && typeof item === 'object' && 'id' in item && typeof item.id === 'string' && item.id
-            ? [item.id]
+          item && typeof item === 'object' && 'id' in item && typeof item.id === 'string' && item.id.trim()
+            ? [item.id.trim()]
             : [],
         ),
       ),
@@ -86,18 +90,35 @@ export class ModelService {
   }
 
   async test(input: ModelInput, report: (progress: ModelTestProgress) => void) {
-    if (!input.modelIds.length) throw new Error('请至少选择一个模型。');
+    const modelIds = normalizeModelIds(input.modelIds);
+    if (!modelIds.length) throw new Error('请至少选择一个模型。');
     const baseURL = modelURL(input.baseURL);
-    const apiKey = this.resolveApiKey({ ...input, baseURL });
-    const provider = createOpenAICompatible({ name: 'sive', baseURL, apiKey: apiKey || undefined });
-    let cursor = 0;
-    let completed = 0;
+    const existing = input.id
+      ? required(this.repositories.modelProviders.get(input.id), '模型服务不存在。')
+      : undefined;
+    const encryptedKey = this.resolveEncryptedKey({ ...input, baseURL });
+    const reusable =
+      existing &&
+      !input.apiKey &&
+      modelURL(existing.baseUrl) === baseURL &&
+      existing.encryptedKey === encryptedKey;
+    const pending = reusable ? modelIds.filter((id) => !existing.modelNames.includes(id)) : modelIds;
+    let completed = modelIds.length - pending.length;
     const active = new Set<string>();
-    const progress = () => report({ completed, total: input.modelIds.length, active: [...active] });
+
+    const progress = () => report({ completed, total: modelIds.length, active: [...active] });
+
+    progress();
+    if (!pending.length) return;
+
+    const apiKey = input.apiKey || (encryptedKey ? decrypt(encryptedKey) : undefined);
+    const provider = createOpenAICompatible({ name: 'sive', baseURL, apiKey });
+    const abort = new AbortController();
+    let cursor = 0;
 
     const worker = async () => {
-      while (cursor < input.modelIds.length) {
-        const modelId = input.modelIds[cursor++];
+      while (!abort.signal.aborted && cursor < pending.length) {
+        const modelId = pending[cursor++];
         active.add(modelId);
         progress();
         try {
@@ -106,42 +127,39 @@ export class ModelService {
             prompt: 'Reply with OK.',
             maxOutputTokens: 32,
             maxRetries: 0,
+            abortSignal: abort.signal,
             timeout: 30_000,
           });
+          completed += 1;
+        } catch (error) {
+          abort.abort(error);
+          throw abort.signal.reason;
         } finally {
           active.delete(modelId);
-          completed += 1;
           progress();
         }
       }
     };
 
-    const results = await Promise.allSettled(
-      Array.from({ length: Math.min(3, input.modelIds.length) }, worker),
-    );
+    const results = await Promise.allSettled(Array.from({ length: Math.min(3, pending.length) }, worker));
     const failed = results.find((result) => result.status === 'rejected');
     if (failed) throw failed.reason;
   }
 
   save(input: ModelInput) {
+    const baseURL = modelURL(input.baseURL);
     const now = new Date().toISOString();
     this.database.write(() => {
       const existing = input.id
         ? required(this.repositories.modelProviders.get(input.id), '模型服务不存在。')
         : undefined;
-      let encryptedKey: string | null = null;
-      if (input.apiKey) encryptedKey = encrypt(input.apiKey);
-      else if (input.credentialSourceId) {
-        const source = required(
-          this.repositories.modelProviders.get(input.credentialSourceId),
-          '凭据来源不存在。',
-        );
-        if (source.baseUrl === input.baseURL) encryptedKey = source.encryptedKey;
-      }
+      const encryptedKey = input.apiKey
+        ? encrypt(input.apiKey)
+        : this.resolveEncryptedKey({ ...input, baseURL });
       const values = {
         name: input.name.trim(),
-        modelNames: input.modelIds,
-        baseUrl: input.baseURL,
+        modelNames: normalizeModelIds(input.modelIds),
+        baseUrl: baseURL,
         encryptedKey,
         updatedAt: now,
       };
