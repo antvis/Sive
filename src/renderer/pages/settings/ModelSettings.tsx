@@ -156,6 +156,9 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
               disabled={saving}
             />
           </div>
+          <p className="m-0 text-xs leading-5 text-muted">
+            地址和密钥未变时，仅测试新增模型；只修改服务名称无需重复测试。
+          </p>
         </fieldset>
         {progress && (
           <div className="mt-4 rounded-lg bg-accent-soft p-3 text-xs leading-5 text-accent" role="status">
