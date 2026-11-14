@@ -1,15 +1,4 @@
-import {
-  Columns,
-  Database,
-  FileCode,
-  FileCsv,
-  FileText,
-  PencilSimple,
-  Plus,
-  Stack,
-  Table,
-  Trash,
-} from '@phosphor-icons/react';
+import { Columns, Database, FileText, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
@@ -18,6 +7,7 @@ import { Modal } from '../../components/Modal';
 import { DatasetFileActions } from '../../components/DatasetFileActions';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
+import { getDatasetSource } from '../../utils/dataSource';
 
 function formatFileSize(value?: number) {
   if (value === undefined) return '—';
@@ -39,22 +29,7 @@ function DatasetCard({
   const [name, setName] = useState(dataset.name);
   const [busy, setBusy] = useState(false);
   const renameCancelled = useRef(false);
-  const SourceIcon =
-    dataset.sourceType === 'excel'
-      ? Table
-      : dataset.sourceType === 'json-file'
-        ? FileCode
-        : dataset.sourceType === 'parquet'
-          ? Stack
-          : FileCsv;
-  const sourceLabel =
-    dataset.sourceType === 'excel'
-      ? 'Excel'
-      : dataset.sourceType === 'json-file'
-        ? 'JSON'
-        : dataset.sourceType === 'parquet'
-          ? 'Parquet'
-          : 'CSV';
+  const { icon: SourceIcon, label: sourceLabel } = getDatasetSource(dataset.sourceType);
   const stats = [
     { label: '数据量', value: formatFileSize(dataset.fileSize), icon: FileText },
     { label: '行数', value: dataset.rowCount?.toLocaleString('zh-CN') ?? '—', icon: Database },
@@ -181,7 +156,7 @@ function DatasetCard({
         ))}
       </div>
       <footer className="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-muted">
-        <SourceIcon size={14} className="text-[#25804d]" aria-label={`${sourceLabel} 文件`} />
+        <SourceIcon size={14} className="text-[#25804d]" aria-label={sourceLabel} />
         <span>
           {sourceLabel}
           {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}

@@ -1,10 +1,11 @@
-import { Archive, Database, FileCsv, GearSix, Lightbulb, PencilSimple, Plus, X } from '@phosphor-icons/react';
+import { Archive, Database, GearSix, Lightbulb, PencilSimple, Plus, X } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { Group, Panel } from 'react-resizable-panels';
 import { toast } from 'sonner';
 import { errorMessage, readWidth, saveWidth } from '../utils';
+import { getDatasetSource } from '../utils/dataSource';
 import type { Conversation, DatasetSummary } from '../types';
 import { IconButton } from './IconButton';
 import { ResizeHandle } from './ResizeHandle';
@@ -238,6 +239,7 @@ export function AppShell({
               <div className="flex h-full items-center gap-1 overflow-x-auto [-webkit-app-region:no-drag]">
                 {datasetTabs.map((dataset) => {
                   const active = activeDatasetId === dataset.id;
+                  const { icon: SourceIcon } = getDatasetSource(dataset.sourceType);
                   return (
                     <div
                       key={dataset.id}
@@ -254,7 +256,7 @@ export function AppShell({
                         )}
                         onClick={() => onDatasetSelect(dataset.id)}
                       >
-                        <FileCsv size={14} className="shrink-0 text-[#25804d]" aria-hidden />
+                        <SourceIcon size={14} className="shrink-0 text-[#25804d]" aria-hidden />
                         <span className="min-w-0 truncate">{dataset.name}</span>
                       </button>
                       <button
