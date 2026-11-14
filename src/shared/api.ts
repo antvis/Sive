@@ -1,8 +1,10 @@
 import type { Schema, Semantic, SuggestResult } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
 import type { AnalysisMessage } from './messages';
+import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
 
 export type { AnalysisMessage } from './messages';
+export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './snippets';
 
 export type ThemeSettings = { mode: 'light' | 'dark' };
 
@@ -81,6 +83,7 @@ export type WorkspaceState = {
   conversations: Conversation[];
   archivedConversations: Conversation[];
   datasets: DatasetSummary[];
+  snippets: Snippet[];
   models: ModelProfile[];
   activeModelId: string;
   theme: ThemeSettings;
@@ -109,6 +112,9 @@ export type WorkbenchApi = {
   analysisCancel(taskId: string): Promise<void>;
   analysisGetMessages(conversationId: string): Promise<AnalysisMessage[]>;
   analysisOnTaskChange(callback: (event: AnalysisTaskEvent) => void): () => void;
+  snippetSave(input: SnippetSaveInput): Promise<Snippet>;
+  snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
+  snippetRemove(messageId: string): Promise<void>;
   conversationRename(id: string, title: string): Promise<void>;
   conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;

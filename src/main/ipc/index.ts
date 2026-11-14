@@ -2,6 +2,7 @@ import path from 'node:path';
 import { BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
+import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
 import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
 
@@ -33,6 +34,7 @@ export function registerIpc(services: Services) {
     conversations: services.conversation.list(),
     archivedConversations: services.conversation.listArchived(),
     datasets: services.dataset.listSummaries(),
+    snippets: services.snippet.list(),
     models: services.model.list(),
     activeModelId: services.settings.getActiveModel().providerId,
     theme: services.settings.getTheme(),
@@ -146,9 +148,10 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('analysisGetRun', (_event, id) => services.analysis.getRun(text(id)));
 
-  ipcMain.handle('snippetSave', (event, runId) => {
-    services.snippet.save(text(runId));
+  ipcMain.handle('snippetSave', (event, input) => {
+    const result = services.snippet.save(objectInput<SnippetSaveInput>(input));
     changed(event);
+    return result;
   });
 
   ipcMain.handle('snippetRemove', (event, runId) => {
@@ -156,8 +159,8 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('snippetRename', (event, runId, title) => {
-    services.snippet.rename(text(runId), text(title));
+  ipcMain.handle('snippetUpdate', (event, messageId, input) => {
+    services.snippet.update(text(messageId), objectInput<SnippetUpdateInput>(input));
     changed(event);
   });
 

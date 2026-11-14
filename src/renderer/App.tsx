@@ -7,6 +7,7 @@ import { useWorkspace } from './hooks/useWorkspace';
 import { AnalysisPage } from './pages/analysis';
 import { DatasetsPage } from './pages/datasets';
 import { SettingsPage } from './pages/settings';
+import { SnippetsPage } from './pages/snippets';
 import { WelcomePage } from './pages/WelcomePage';
 
 export default function App() {
@@ -121,11 +122,13 @@ export default function App() {
             setActiveConversationId(null);
             setPage('datasets');
           }}
+          savedMessageIds={state.snippets.map((snippet) => snippet.messageId)}
           models={state.models}
           activeModelId={state.activeModelId}
           preferences={state.preferences}
         />
       )}
+      {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
       {state && page === 'settings' && <SettingsPage state={state} />}
       <Toaster
         theme={state?.theme.mode ?? 'light'}

@@ -18,6 +18,7 @@ import { AnalysisMessageView } from './AnalysisMessage';
 type Props = {
   datasetId: string;
   conversationId: string | null;
+  savedMessageIds: string[];
   onConversationChange: (id: string) => void;
   onBack: () => void;
   models: ModelProfile[];
@@ -31,6 +32,7 @@ type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 export function ConversationPanel({
   datasetId,
   conversationId,
+  savedMessageIds,
   onConversationChange,
   onBack,
   models,
@@ -244,6 +246,7 @@ export function ConversationPanel({
                 <AnalysisMessageView
                   key={message.id}
                   message={message}
+                  savedMessageIds={savedMessageIds}
                   activeTask={currentTask}
                   streamParts={message.id === stream?.taskId ? stream.parts : []}
                 />
