@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { MySQLDialog } from './datasets/datasetDialogs/MySQLDialog';
 import { useImportLocal } from '../hooks/useImportLocal';
 import { DATA_SOURCE_GROUPS } from '../utils/dataSource';
 import type { DatasetSource } from '../utils/dataSource';
@@ -12,12 +14,12 @@ function SourceCard({
   importing: boolean;
   onImport: () => void;
 }) {
-  const { label: name, description, color, icon: SourceIcon, format } = source;
-  const action = !format ? '待接入' : importing ? '正在导入…' : '选择文件';
+  const { label: name, description, color, icon: SourceIcon, format, enable } = source;
+  const action = !enable ? '待接入' : !format ? '配置连接' : importing ? '正在导入…' : '选择文件';
   return (
     <button
       type="button"
-      disabled={!format || importing}
+      disabled={!enable || importing}
       onClick={onImport}
       aria-label={`${name}：${description}。${action}`}
       className="group relative grid h-28 w-full min-w-0 rounded-[14px] border bg-surface px-4 py-3 text-left text-ink shadow-[0_2px_4px] shadow-ink/3 transition-[border-color,box-shadow] hover:border-[var(--source-color)] hover:shadow-[0_4px_12px] focus-visible:border-[var(--source-color)] focus-visible:outline-none disabled:opacity-60"
@@ -41,7 +43,7 @@ function SourceCard({
       >
         <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
         <small className="text-xs text-muted">{description}</small>
-        <span className="mt-0.5 text-xs" style={{ color: format ? color : undefined }}>
+        <span className="mt-0.5 text-xs" style={{ color: enable ? color : undefined }}>
           {action}
         </span>
       </span>
@@ -51,6 +53,7 @@ function SourceCard({
 
 export function WelcomePage() {
   const { importing, importLocal } = useImportLocal();
+  const [connectingMySQL, setConnectingMySQL] = useState(false);
 
   return (
     <div className="mx-auto max-w-266 px-6 pt-8 pb-12" aria-busy={importing}>
@@ -73,13 +76,16 @@ export function WelcomePage() {
                   key={source.type}
                   source={source}
                   importing={importing}
-                  onImport={() => void importLocal(source.format)}
+                  onImport={() =>
+                    source.type === 'mysql' ? setConnectingMySQL(true) : void importLocal(source.format)
+                  }
                 />
               ))}
             </div>
           </section>
         ))}
       </div>
+      {connectingMySQL && <MySQLDialog onClose={() => setConnectingMySQL(false)} />}
     </div>
   );
 }

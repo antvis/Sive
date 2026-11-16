@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { statSync } from 'node:fs';
-import path from 'node:path';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA } from '@antv/ava';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
@@ -8,10 +7,9 @@ import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { datasets } from '../../db/schema/datasets';
 import { required } from '../../util';
-import type { DatasetSaveInput } from '../types';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
-import { checkLocalFile, localFilePath, localSource } from '../../util/localFile';
+import { checkLocalFile, localFilePath } from '../../util/localFile';
 
 type DatasetRow = typeof datasets.$inferSelect;
 
@@ -60,25 +58,33 @@ export class DatasetService {
     return this.repositories.datasets.get(id);
   }
 
-  getSummary(id: string) {
-    const row = this.get(id);
-    return row ? toSummary(row) : undefined;
-  }
-
   getDetail(id: string) {
     const row = this.get(id);
-    return row
-      ? { ...toSummary(row), schema: row.schema, profile: row.profile, semantic: row.semantic }
-      : null;
+    if (!row) return null;
+    let sourceConfig = row.sourceConfig;
+    if (sourceConfig.type === 'mysql') {
+      const { host, port, database, user } = sourceConfig.options;
+      sourceConfig = { type: 'mysql', options: { host, port, database, user } };
+    }
+    return {
+      ...toSummary(row),
+      sourceConfig,
+      schema: row.schema,
+      profile: row.profile,
+      semantic: row.semantic,
+    };
   }
 
   async refresh(id: string) {
     const original = required(this.get(id), '数据源不存在或已删除。');
-    required(localFilePath(original.sourceConfig), '只有本地文件支持刷新。');
     const refreshed = await this.readSource(original.sourceConfig);
     return this.database.write(() =>
       required(this.repositories.datasets.update(id, refreshed), '数据源不存在或已删除。'),
     );
+  }
+
+  async test(sourceConfig: DataSourceConfig) {
+    await this.readSource(sourceConfig);
   }
 
   async preview(
@@ -105,7 +111,10 @@ export class DatasetService {
     const identifier = (name: string) => `"${name.replace(/"/g, '""')}"`;
     const keys = typeof model.primaryKey === 'string' ? [model.primaryKey] : (model.primaryKey ?? []);
     const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
-    const ava = new AVA({ llm: { model: 'preview-only' } });
+    const ava = new AVA({
+      llm: { model: 'preview-only' },
+      engine: { type: 'duckdb', queryTimeoutMs: 30000 },
+    });
     try {
       const file = localFilePath(dataset.sourceConfig);
       if (file) await checkLocalFile(file);
@@ -143,11 +152,6 @@ export class DatasetService {
     }
   }
 
-  async importLocal(filePath: string) {
-    const inspected = await this.readSource(localSource(filePath));
-    return this.save({ ...inspected, name: path.basename(filePath, path.extname(filePath)) });
-  }
-
   private async readSource(sourceConfig: DataSourceConfig) {
     const file = localFilePath(sourceConfig);
     if (file) await checkLocalFile(file);
@@ -173,24 +177,23 @@ export class DatasetService {
     }
   }
 
-  save(input: DatasetSaveInput) {
+  async save(name: string, sourceConfig: DataSourceConfig, id?: string) {
+    const inspected = await this.readSource(sourceConfig);
     const now = new Date().toISOString();
     const values = {
-      name: input.name.trim(),
-      sourceType: input.sourceConfig.type,
-      sourceConfig: input.sourceConfig,
-      schema: input.schema,
-      profile: input.profile,
-      semantic: input.semantic ?? {},
-      metrics: input.metrics,
+      ...inspected,
+      name: name.trim(),
+      sourceType: sourceConfig.type,
       updatedAt: now,
     };
     return this.database.write(() => {
-      if (input.id) {
-        required(this.repositories.datasets.get(input.id), '数据源不存在或已删除。');
-        return required(this.repositories.datasets.update(input.id, values), '数据源保存失败。');
-      }
-      return this.repositories.datasets.insert({ ...values, id: randomUUID(), createdAt: now });
+      if (id) return required(this.repositories.datasets.update(id, values), '数据源不存在或已删除。');
+      return this.repositories.datasets.insert({
+        ...values,
+        id: randomUUID(),
+        semantic: {},
+        createdAt: now,
+      });
     });
   }
 

@@ -1,4 +1,4 @@
-import type { Profile, Schema, Semantic, SuggestResult } from '@antv/ava';
+import type { DataSourceConfig, Profile, Schema, Semantic, SuggestResult } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
 import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
@@ -77,7 +77,12 @@ export type DatasetSummary = {
   fileUnavailable?: boolean;
 };
 
-export type DatasetDetail = DatasetSummary & { schema: Schema; profile: Profile; semantic: Semantic };
+export type DatasetDetail = DatasetSummary & {
+  sourceConfig: DataSourceConfig;
+  schema: Schema;
+  profile: Profile;
+  semantic: Semantic;
+};
 
 export type AnalysisStartInput = {
   datasetId: string;
@@ -111,11 +116,13 @@ export type WorkspaceState = {
 export type WorkbenchApi = {
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
-  datasetImportLocal(
+  datasetSelectLocal(
     format?: LocalFileFormat,
     lastDirectory?: string,
-  ): Promise<(DatasetSummary & { directory: string }) | null>;
+  ): Promise<{ name: string; sourceConfig: DataSourceConfig; directory: string } | null>;
   datasetRefresh(id: string): Promise<void>;
+  datasetTest(sourceConfig: DataSourceConfig): Promise<void>;
+  datasetSave(name: string, sourceConfig: DataSourceConfig, id?: string): Promise<void>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
   datasetPreview(
