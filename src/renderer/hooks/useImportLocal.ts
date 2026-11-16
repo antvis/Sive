@@ -12,11 +12,12 @@ export function useImportLocal() {
     if (importing) return;
     setImporting(true);
     try {
-      const dataset = await window.workbench.datasetImportLocal(
+      const dataset = await window.workbench.datasetSelectLocal(
         format,
         localStorage.getItem(DIRECTORY_KEY) ?? undefined,
       );
       if (dataset) {
+        await window.workbench.datasetSave(dataset.name, dataset.sourceConfig);
         localStorage.setItem(DIRECTORY_KEY, dataset.directory);
         toast.success(`已添加数据源“${dataset.name}”`);
       }

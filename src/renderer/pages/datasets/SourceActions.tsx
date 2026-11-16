@@ -5,15 +5,7 @@ import { IconButton } from '../../components/IconButton';
 import { errorMessage } from '../../utils';
 import { MySQLDialog } from './datasetDialogs/MySQLDialog';
 
-export function SourceActions({
-  datasetId,
-  sourceType,
-  onUpdated,
-}: {
-  datasetId: string;
-  sourceType: string;
-  onUpdated?: () => void;
-}) {
+export function SourceActions({ datasetId, sourceType }: { datasetId: string; sourceType: string }) {
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
 
@@ -22,7 +14,6 @@ export function SourceActions({
     setBusy(true);
     try {
       await window.workbench.datasetRefresh(datasetId);
-      onUpdated?.();
       toast.success('数据源已刷新');
     } catch (error) {
       toast.error(errorMessage(error));
@@ -42,7 +33,7 @@ export function SourceActions({
           onClick={() => setEditing(true)}
         />
       )}
-      {editing && <MySQLDialog datasetId={datasetId} onClose={() => setEditing(false)} onSaved={onUpdated} />}
+      {editing && <MySQLDialog datasetId={datasetId} onClose={() => setEditing(false)} />}
     </div>
   );
 }

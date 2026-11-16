@@ -27,13 +27,6 @@ export const DEFAULT_PREFERENCES: Preferences = {
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
 
-export type MySQLInput = Pick<
-  Extract<DataSourceConfig, { type: 'mysql' }>['options'],
-  'host' | 'port' | 'database' | 'user' | 'password'
-> & { id?: string; name: string };
-
-export type MySQLConnection = Omit<MySQLInput, 'password'> & { hasPassword: boolean };
-
 export type ModelConnectionInput = {
   baseURL: string;
   apiKey?: string;
@@ -84,7 +77,12 @@ export type DatasetSummary = {
   fileUnavailable?: boolean;
 };
 
-export type DatasetDetail = DatasetSummary & { schema: Schema; profile: Profile; semantic: Semantic };
+export type DatasetDetail = DatasetSummary & {
+  sourceConfig: DataSourceConfig;
+  schema: Schema;
+  profile: Profile;
+  semantic: Semantic;
+};
 
 export type AnalysisStartInput = {
   datasetId: string;
@@ -118,14 +116,13 @@ export type WorkspaceState = {
 export type WorkbenchApi = {
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
-  datasetImportLocal(
+  datasetSelectLocal(
     format?: LocalFileFormat,
     lastDirectory?: string,
-  ): Promise<(DatasetSummary & { directory: string }) | null>;
+  ): Promise<{ name: string; sourceConfig: DataSourceConfig; directory: string } | null>;
   datasetRefresh(id: string): Promise<void>;
-  datasetMySQLGet(id: string): Promise<MySQLConnection>;
-  datasetMySQLTest(input: MySQLInput): Promise<void>;
-  datasetMySQLSave(input: MySQLInput): Promise<void>;
+  datasetTest(sourceConfig: DataSourceConfig): Promise<void>;
+  datasetSave(name: string, sourceConfig: DataSourceConfig, id?: string): Promise<void>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
   datasetPreview(

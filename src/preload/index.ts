@@ -9,12 +9,11 @@ const api = {
     ipcRenderer.on('workspace:changed', listener);
     return () => ipcRenderer.removeListener('workspace:changed', listener);
   },
-  datasetImportLocal: (format, lastDirectory) =>
-    ipcRenderer.invoke('datasetImportLocal', format, lastDirectory),
+  datasetSelectLocal: (format, lastDirectory) =>
+    ipcRenderer.invoke('datasetSelectLocal', format, lastDirectory),
   datasetRefresh: (id) => ipcRenderer.invoke('datasetRefresh', id),
-  datasetMySQLGet: (id) => ipcRenderer.invoke('datasetMySQLGet', id),
-  datasetMySQLTest: (input) => ipcRenderer.invoke('datasetMySQLTest', input),
-  datasetMySQLSave: (input) => ipcRenderer.invoke('datasetMySQLSave', input),
+  datasetTest: (sourceConfig) => ipcRenderer.invoke('datasetTest', sourceConfig),
+  datasetSave: (name, sourceConfig, id) => ipcRenderer.invoke('datasetSave', name, sourceConfig, id),
   datasetGet: (id) => ipcRenderer.invoke('datasetGet', id),
   datasetPreview: (id, table, options) => ipcRenderer.invoke('datasetPreview', id, table, options),
   datasetSuggest: (id) => ipcRenderer.invoke('datasetSuggest', id),

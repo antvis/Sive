@@ -4,6 +4,7 @@ import type { LocalFileFormat } from '@shared/api';
 
 export type DatasetSource = {
   type: string;
+  enable: boolean;
   label: string;
   description: string;
   color: string;
@@ -18,6 +19,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
     sources: [
       {
         type: 'csv-file',
+        enable: true,
         label: 'CSV 文件',
         description: '本地 CSV 文件',
         color: '#25804d',
@@ -26,6 +28,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'json-file',
+        enable: true,
         label: 'JSON 文件',
         description: '本地 JSON 文件',
         color: '#8054b6',
@@ -34,6 +37,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'excel',
+        enable: true,
         label: 'Excel',
         description: '支持多个工作表的 XLSX 文件',
         color: '#18734b',
@@ -42,6 +46,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'parquet',
+        enable: true,
         label: 'Parquet',
         description: '面向分析的列式数据文件',
         color: '#a66a1c',
@@ -50,6 +55,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'csv',
+        enable: false,
         label: 'CSV 内容',
         description: '直接提供 CSV 文本内容',
         color: '#25804d',
@@ -57,6 +63,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'json',
+        enable: false,
         label: 'JSON 数据',
         description: '直接提供结构化 JSON 数据',
         color: '#8054b6',
@@ -64,6 +71,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'text',
+        enable: false,
         label: '文本',
         description: '通过模型从文本中提取结构化数据',
         color: '#687682',
@@ -77,6 +85,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
     sources: [
       {
         type: 'mysql',
+        enable: true,
         label: 'MySQL',
         description: '连接数据库并浏览数据表',
         color: '#28769a',
@@ -84,6 +93,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'postgresql',
+        enable: false,
         label: 'PostgreSQL',
         description: '开源对象关系型数据库',
         color: '#687682',
@@ -91,6 +101,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'sqlite',
+        enable: false,
         label: 'SQLite',
         description: '轻量级本地文件数据库',
         color: '#687682',
@@ -98,6 +109,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'mongodb',
+        enable: false,
         label: 'MongoDB',
         description: '面向文档的 NoSQL 数据库',
         color: '#687682',
@@ -105,6 +117,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'clickhouse',
+        enable: false,
         label: 'ClickHouse',
         description: '面向实时分析的列式数据库',
         color: '#687682',
@@ -118,6 +131,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
     sources: [
       {
         type: 'supabase',
+        enable: false,
         label: 'Supabase',
         description: '基于 PostgreSQL 的云端数据库',
         color: '#687682',
@@ -125,6 +139,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'feishu-bitable',
+        enable: false,
         label: '飞书多维表格',
         description: '飞书中的协作表格与业务数据',
         color: '#687682',

@@ -1,12 +1,13 @@
 import path from 'node:path';
 import { BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { Semantic } from '@antv/ava';
+import type { DataSourceConfig, Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
-import type { DatasetPreviewOptions, MySQLInput } from '@shared/api';
+import type { DatasetPreviewOptions } from '@shared/api';
 import type { ModelInput, Preferences, ThemeSettings } from '../services/types';
 import { LOCAL_FILE_FORMATS } from '@shared/api';
+import { localSource } from '../util/localFile';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -45,7 +46,7 @@ export function registerIpc(services: Services) {
     revision,
   }));
 
-  ipcMain.handle('datasetImportLocal', async (event, format, lastDirectory) => {
+  ipcMain.handle('datasetSelectLocal', async (event, format, lastDirectory) => {
     if (format !== undefined && !LOCAL_FILE_FORMATS.includes(format)) throw new Error('不支持的文件格式。');
     const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
       title: '选择数据文件',
@@ -62,10 +63,11 @@ export function registerIpc(services: Services) {
     const filePath = result.filePaths[0];
     if (format && path.extname(filePath).toLowerCase() !== `.${format}`)
       throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
-    const dataset = await services.dataset.importLocal(filePath);
-    const summary = services.dataset.getSummary(dataset.id);
-    changed(event);
-    return summary ? { ...summary, directory: path.dirname(filePath) } : null;
+    return {
+      name: path.basename(filePath, path.extname(filePath)).trim(),
+      sourceConfig: localSource(filePath),
+      directory: path.dirname(filePath),
+    };
   });
 
   ipcMain.handle('datasetRefresh', async (event, input) => {
@@ -81,18 +83,17 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(text(id)));
 
-  ipcMain.handle('datasetMySQLGet', (_event, id) => services.dataset.getMySQL(text(id)));
-
-  ipcMain.handle('datasetMySQLTest', (_event, input) =>
-    services.dataset.testMySQL(objectInput<MySQLInput>(input)),
+  ipcMain.handle('datasetTest', (_event, sourceConfig) =>
+    services.dataset.test(objectInput<DataSourceConfig>(sourceConfig)),
   );
 
-  ipcMain.handle('datasetMySQLSave', async (event, input) => {
-    const connection = objectInput<MySQLInput>(input);
-    const id = connection.id;
+  ipcMain.handle('datasetSave', async (event, name, sourceConfig, inputId) => {
+    const id = inputId === undefined ? undefined : text(inputId);
+    const datasetName = text(name);
+    const source = objectInput<DataSourceConfig>(sourceConfig);
     if (id) await services.analysis.beginDatasetUpdate(id);
     try {
-      await services.dataset.saveMySQL(connection);
+      await services.dataset.save(datasetName, source, id);
     } finally {
       if (id) services.analysis.endDatasetUpdate(id);
     }

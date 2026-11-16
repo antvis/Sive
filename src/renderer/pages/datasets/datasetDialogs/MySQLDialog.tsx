@@ -1,19 +1,11 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import type { MySQLInput } from '@shared/api';
+import type { DataSourceConfig } from '@antv/ava';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { errorMessage } from '../../../utils';
 
-export function MySQLDialog({
-  datasetId,
-  onClose,
-  onSaved,
-}: {
-  datasetId?: string;
-  onClose: () => void;
-  onSaved?: () => void;
-}) {
+export function MySQLDialog({ datasetId, onClose }: { datasetId?: string; onClose: () => void }) {
   const formId = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const [form, setForm] = useState({
@@ -24,8 +16,6 @@ export function MySQLDialog({
     user: '',
     password: '',
   });
-  const [hasPassword, setHasPassword] = useState(false);
-  const [clearPassword, setClearPassword] = useState(false);
   const [loading, setLoading] = useState(Boolean(datasetId));
   const [busy, setBusy] = useState<'test' | 'save' | null>(null);
   const [error, setError] = useState('');
@@ -35,18 +25,20 @@ export function MySQLDialog({
     if (!datasetId) return;
     let live = true;
     window.workbench
-      .datasetMySQLGet(datasetId)
+      .datasetGet(datasetId)
       .then((connection) => {
         if (!live) return;
+        if (!connection) throw new Error('数据源不存在或已删除。');
+        if (connection.sourceConfig.type !== 'mysql') throw new Error('只有 MySQL 数据源支持此操作。');
+        const { host, port = 3306, database, user = '' } = connection.sourceConfig.options;
         setForm({
           name: connection.name,
-          host: connection.host,
-          port: String(connection.port ?? 3306),
-          database: connection.database,
-          user: connection.user ?? '',
+          host,
+          port: String(port),
+          database,
+          user,
           password: '',
         });
-        setHasPassword(connection.hasPassword);
       })
       .catch((cause) => {
         if (live) setError(errorMessage(cause));
@@ -63,21 +55,22 @@ export function MySQLDialog({
     if (busy || loading || !formRef.current?.reportValidity()) return;
     setError('');
     setTested(false);
-    const input: MySQLInput = {
-      ...form,
-      id: datasetId,
-      port: Number(form.port),
-      password: clearPassword ? '' : form.password || (datasetId ? undefined : ''),
+    const { name, ...options } = form;
+    const sourceConfig: DataSourceConfig = {
+      type: 'mysql',
+      options: {
+        ...options,
+        port: Number(form.port),
+      },
     };
     setBusy(action);
     try {
       if (action === 'test') {
-        await window.workbench.datasetMySQLTest(input);
+        await window.workbench.datasetTest(sourceConfig);
         setTested(true);
       } else {
-        await window.workbench.datasetMySQLSave(input);
+        await window.workbench.datasetSave(name, sourceConfig, datasetId);
         toast.success(datasetId ? 'MySQL 连接已更新' : 'MySQL 数据源已添加');
-        onSaved?.();
         onClose();
       }
     } catch (cause) {
@@ -206,8 +199,7 @@ export function MySQLDialog({
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                disabled={clearPassword}
-                placeholder={hasPassword ? '留空保留已保存的密码' : undefined}
+                placeholder={datasetId ? '请重新填写密码，无密码可留空' : undefined}
                 className="min-w-0 rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
                 value={form.password}
                 onChange={(event) => {
@@ -216,19 +208,6 @@ export function MySQLDialog({
                 }}
               />
             </label>
-            {hasPassword && (
-              <label className="flex items-center gap-2 text-xs text-muted">
-                <input
-                  type="checkbox"
-                  checked={clearPassword}
-                  onChange={(event) => {
-                    setClearPassword(event.target.checked);
-                    setTested(false);
-                  }}
-                />
-                清空已保存的密码
-              </label>
-            )}
           </fieldset>
         </form>
       )}
