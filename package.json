@@ -47,6 +47,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electron/osx-sign": "^2.7.2",
     "@electron/packager": "18.4.4",
     "@phosphor-icons/react": "^2.1.10",
     "@stylistic/eslint-plugin": "5.10.0",
