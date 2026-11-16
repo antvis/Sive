@@ -1,0 +1,44 @@
+README.zh-CN.md
+  s_7ad3bb41db384f::t_fd12a3e3470a1e 1
+  s_7ad3bb41db384f::t_2f448365607f5b 71-88
+  s_7ad3bb41db384f::t_38532f875d45d5 68-70
+  s_7ad3bb41db384f::t_c58ef3a4a9fe10 89-91
+assets/logos/vscode-icons-LICENSE.txt
+  s_7ad3bb41db384f::t_e0e6f24230bbd4 1-3
+  s_7ad3bb41db384f::t_1c560253dbb4c9 4-6
+assets/logos/sql-server.svg
+  s_7ad3bb41db384f::t_d4a1c33f4127e1 1
+README.md
+  s_7ad3bb41db384f::t_d6cce40cb298aa 69-86
+  s_7ad3bb41db384f::t_6bb44921831be7 15
+  s_7ad3bb41db384f::t_9d4df2458ff6e7 11-12,16-19,21-22,24-25,27,96,98-100,103-107,109-110,112-115
+  s_7ad3bb41db384f::t_5fa7f9fd88a9f4 1
+  s_7ad3bb41db384f::t_20cfeef9320ce0 13-14
+  s_7ad3bb41db384f::t_ad8ea4c17a3e7d 20
+  s_7ad3bb41db384f::t_083a87251837e9 23
+  s_7ad3bb41db384f::t_18894c852fea4f 26
+  s_7ad3bb41db384f::t_665af7b809b15d 28-30,66-68
+  s_7ad3bb41db384f::t_5b6f3d0de54596 87-89,93-95
+  s_7ad3bb41db384f::t_51636f8ed067a6 97
+  s_7ad3bb41db384f::t_43640bb61dcf73 101-102
+  s_7ad3bb41db384f::t_7baa127341277c 108
+  s_7ad3bb41db384f::t_19aa734b1ddeaa 111
+assets/logos/tencent-docs.svg
+  s_7ad3bb41db384f::t_d4a1c33f4127e1 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e8dfbfe279cbad2bf40a170e63e4bac4c8328329",
+  "prompts": {},
+  "sessions": {
+    "s_7ad3bb41db384f": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "8c04f585-32d4-45d9-81c0-e9e076fdddd9",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
