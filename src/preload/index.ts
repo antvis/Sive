@@ -11,7 +11,7 @@ const api = {
   },
   datasetImportCsv: (lastDirectory) => ipcRenderer.invoke('datasetImportCsv', lastDirectory),
   datasetGet: (id) => ipcRenderer.invoke('datasetGet', id),
-  datasetPreview: (id) => ipcRenderer.invoke('datasetPreview', id),
+  datasetPreview: (id, table, options) => ipcRenderer.invoke('datasetPreview', id, table, options),
   datasetSuggest: (id) => ipcRenderer.invoke('datasetSuggest', id),
   datasetSaveSemantic: (id, semantic) => ipcRenderer.invoke('datasetSaveSemantic', id, semantic),
   datasetRename: (id, name) => ipcRenderer.invoke('datasetRename', id, name),

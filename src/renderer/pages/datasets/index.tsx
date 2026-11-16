@@ -1,5 +1,5 @@
 import { Columns, Database, FileCsv, FileText, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
@@ -190,6 +190,33 @@ export function DatasetsPage({
   onOpen: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const [query, setQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(24);
+  const footer = useRef<HTMLDivElement>(null);
+  const filtered = useMemo(
+    () =>
+      datasets.filter((dataset) =>
+        dataset.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+      ),
+    [datasets, query],
+  );
+  const hasMore = visibleCount < filtered.length;
+
+  useEffect(() => {
+    const node = footer.current;
+    if (!node || !hasMore) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        setVisibleCount((count) => count + 24);
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [visibleCount, hasMore, query]);
+
   return (
     <div className="w-full px-6 pt-8 pb-12">
       <header className="flex items-center justify-between gap-4">
@@ -202,11 +229,37 @@ export function DatasetsPage({
           添加数据源
         </Button>
       </header>
+      <div className="mt-6 flex items-center justify-between gap-4">
+        <input
+          type="search"
+          aria-label="搜索数据源"
+          placeholder="按名称搜索数据源…"
+          className="w-72 max-w-full rounded-lg border bg-surface px-3 py-2 text-sm"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setVisibleCount(24);
+          }}
+        />
+        <span className="text-xs text-muted">
+          已显示 {Math.min(visibleCount, filtered.length)} / {filtered.length} 个
+        </span>
+      </div>
       <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
-        {datasets.map((dataset) => (
+        {filtered.slice(0, visibleCount).map((dataset) => (
           <DatasetCard key={dataset.id} dataset={dataset} onOpen={onOpen} onDelete={onDelete} />
         ))}
       </div>
+      {!filtered.length && (
+        <p className="py-10 text-center text-sm text-muted">
+          {datasets.length ? '没有匹配的数据源' : '还没有数据源，点击“添加数据源”开始。'}
+        </p>
+      )}
+      {hasMore && (
+        <div ref={footer} className="mt-6 flex justify-center">
+          <Button onClick={() => setVisibleCount((count) => count + 24)}>显示更多数据源</Button>
+        </div>
+      )}
     </div>
   );
 }
