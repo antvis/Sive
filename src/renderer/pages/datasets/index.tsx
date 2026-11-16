@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Modal } from '../../components/Modal';
-import { DatasetFileActions } from '../../components/DatasetFileActions';
+import { DatasetRefreshButton } from '../../components/DatasetRefreshButton';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
 import { getDatasetSource } from '../../utils/dataSource';
@@ -164,11 +164,13 @@ function DatasetCard({
         <span>更新于 {dataset.updatedAt.slice(0, 10)}</span>
         {dataset.localFile && (
           <div className="ml-auto">
-            <DatasetFileActions datasetId={dataset.id} />
+            <DatasetRefreshButton datasetId={dataset.id} />
           </div>
         )}
       </footer>
-      {dataset.fileUnavailable && <p className="mt-2 mb-0 text-xs text-danger">文件不可用，请重新定位。</p>}
+      {dataset.fileUnavailable && (
+        <p className="mt-2 mb-0 text-xs text-danger">文件不可用，请检查原文件或重新导入。</p>
+      )}
       <Modal
         open={action === 'delete'}
         onOpenChange={(open) => {

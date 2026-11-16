@@ -1,22 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
-import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
+import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import { Button } from '../../components/Button';
 import { DataGrid } from '../../components/DataGrid';
-import { DatasetFileActions } from '../../components/DatasetFileActions';
+import { DatasetRefreshButton } from '../../components/DatasetRefreshButton';
 import { Select } from '../../components/Select';
-import type { DatasetDetail, Preferences } from '../../types';
+import type { DatasetDetail } from '../../types';
 import { errorMessage } from '../../utils';
 
 function DataPreview({
   datasetId,
   model,
+  profile,
   pageSize,
   onPageSizeChange,
 }: {
   datasetId: string;
   model: DatasetDetail['schema']['models'][number];
+  profile: DatasetDetail['profile']['models'][number] | undefined;
   pageSize: number;
   onPageSizeChange: (size: number) => void;
 }) {
@@ -50,7 +52,7 @@ function DataPreview({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <DataGrid rows={rows} columns={model.columns} resetKey={offset} />
+        <DataGrid rows={rows} columns={model.columns} profile={profile} resetKey={offset} />
         {loading ? (
           <div
             className="absolute inset-0 grid place-items-center bg-surface text-sm text-muted"
@@ -112,13 +114,7 @@ function DataPreview({
   );
 }
 
-export function DatasetPanel({
-  datasetId,
-  defaultPageSize = DEFAULT_PREFERENCES.previewPageSize,
-}: {
-  datasetId: string;
-  defaultPageSize?: Preferences['previewPageSize'];
-}) {
+export function DatasetPanel({ datasetId }: { datasetId: string }) {
   const [detail, setDetail] = useState<DatasetDetail | null>(null);
   const [reload, setReload] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -126,11 +122,7 @@ export function DatasetPanel({
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [table, setTable] = useState('');
-  const [pageSize, setPageSize] = useState<number>(defaultPageSize);
-
-  useEffect(() => {
-    setPageSize(defaultPageSize);
-  }, [defaultPageSize]);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PREVIEW_PAGE_SIZE);
 
   useEffect(() => {
     let live = true;
@@ -218,7 +210,7 @@ export function DatasetPanel({
             {model ? `${model.name} · ${columns.length} 个字段` : '没有可预览的数据表'}
           </span>
           {detail.localFile && (
-            <DatasetFileActions datasetId={datasetId} onUpdated={() => setReload((value) => value + 1)} />
+            <DatasetRefreshButton datasetId={datasetId} onUpdated={() => setReload((value) => value + 1)} />
           )}
         </div>
         {model && (
@@ -226,6 +218,7 @@ export function DatasetPanel({
             key={JSON.stringify([model.name, pageSize, reload])}
             datasetId={datasetId}
             model={model}
+            profile={detail.profile.models.find((item) => item.name === model.name)}
             pageSize={pageSize}
             onPageSizeChange={setPageSize}
           />

@@ -33,8 +33,8 @@ export async function checkLocalFile(file: string) {
     const code = (error as NodeJS.ErrnoException).code;
     throw new Error(
       code === 'ENOENT' || code === 'ENOTDIR'
-        ? '源文件不存在，可能已移动、改名或删除。请重新定位文件。'
-        : '无法读取源文件，请检查文件权限或重新定位文件。',
+        ? '源文件不存在，可能已移动、改名或删除。请检查原文件或重新导入。'
+        : '无法读取源文件，请检查文件权限。',
     );
   }
 }

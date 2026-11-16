@@ -5,10 +5,9 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { Modal } from '../../components/Modal';
-import { Select } from '../../components/Select';
 import type { Preferences, ThemeSettings } from '../../types';
 import { errorMessage } from '../../utils';
-import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
+import { DEFAULT_PREFERENCES } from '@shared/api';
 
 function SettingGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -121,41 +120,6 @@ export function GeneralSettings({ theme, preferences }: { theme: ThemeSettings; 
             </Tabs.List>
           </Tabs.Root>
         </SettingRow>
-        <SettingRow
-          title="发送快捷键"
-          description={
-            preferences.sendShortcut === 'enter'
-              ? 'Enter 发送，Shift + Enter 换行。'
-              : '⌘ / Ctrl + Enter 发送，Enter 换行。'
-          }
-        >
-          <Select
-            aria-label="发送快捷键"
-            disabled={saving}
-            value={preferences.sendShortcut}
-            onChange={(sendShortcut) =>
-              void update({ ...preferences, sendShortcut: sendShortcut as Preferences['sendShortcut'] })
-            }
-            options={[
-              { value: 'enter', label: 'Enter' },
-              { value: 'mod-enter', label: '⌘ / Ctrl + Enter' },
-            ]}
-          />
-        </SettingRow>
-      </SettingGroup>
-
-      <SettingGroup title="数据预览">
-        <SettingRow title="每页行数" description="设置打开数据预览时的默认行数，也可在预览中临时调整。">
-          <Select
-            aria-label="默认预览行数"
-            disabled={saving}
-            value={String(preferences.previewPageSize)}
-            onChange={(size) =>
-              void update({ ...preferences, previewPageSize: Number(size) as Preferences['previewPageSize'] })
-            }
-            options={PREVIEW_PAGE_SIZES.map((size) => ({ value: String(size), label: `${size} 行 / 页` }))}
-          />
-        </SettingRow>
       </SettingGroup>
 
       {error && <p className="mt-0 text-xs text-danger">{error}</p>}
@@ -182,9 +146,7 @@ export function GeneralSettings({ theme, preferences }: { theme: ThemeSettings; 
           </>
         }
       >
-        <p className="m-0 leading-6 text-muted">
-          恢复分析方式、发送快捷键和预览行数，不修改主题、模型服务或数据。
-        </p>
+        <p className="m-0 leading-6 text-muted">恢复分析方式，不修改主题、模型服务或数据。</p>
       </Modal>
     </div>
   );

@@ -9,7 +9,7 @@ import type { DBConnection } from '../../db/repository/db-connection';
 import type { datasets } from '../../db/schema/datasets';
 import { required } from '../../util';
 import type { DatasetSaveInput } from '../types';
-import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
+import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
 import { checkLocalFile, localFilePath, localSource } from '../../util/localFile';
 
@@ -68,41 +68,18 @@ export class DatasetService {
 
   getDetail(id: string) {
     const row = this.get(id);
-    return row ? { ...toSummary(row), schema: row.schema, semantic: row.semantic } : null;
-  }
-
-  getLocalFile(id: string) {
-    const row = required(this.get(id), '数据源不存在或已删除。');
-    return required(localFilePath(row.sourceConfig), '只有本地文件支持刷新或重新定位。');
+    return row
+      ? { ...toSummary(row), schema: row.schema, profile: row.profile, semantic: row.semantic }
+      : null;
   }
 
   refresh(id: string) {
-    return this.withSourceUpdate(id, () => this.replaceSource(id));
-  }
-
-  relocate(id: string, file: string) {
-    return this.withSourceUpdate(id, () => this.replaceSource(id, file));
-  }
-
-  private async replaceSource(id: string, file?: string) {
-    const original = required(this.get(id), '数据源不存在或已删除。');
-    required(localFilePath(original.sourceConfig), '只有本地文件支持刷新或重新定位。');
-    let sourceConfig = structuredClone(original.sourceConfig);
-    if (file !== undefined) {
-      const next = localSource(file);
-      if (next.type === sourceConfig.type && 'path' in sourceConfig.options)
-        sourceConfig.options.path = path.resolve(file);
-      else sourceConfig = next;
-    }
-    const refreshed = await this.readSource(sourceConfig);
-    return this.database.write(() => {
-      required(this.get(id), '数据源不存在或已删除。');
-      return required(
-        this.repositories.datasets.update(id, {
-          ...refreshed,
-          sourceType: refreshed.sourceConfig.type,
-        }),
-        '数据源保存失败。',
+    return this.withSourceUpdate(id, async () => {
+      const original = required(this.get(id), '数据源不存在或已删除。');
+      required(localFilePath(original.sourceConfig), '只有本地文件支持刷新。');
+      const refreshed = await this.readSource(original.sourceConfig);
+      return this.database.write(() =>
+        required(this.repositories.datasets.update(id, refreshed), '数据源不存在或已删除。'),
       );
     });
   }
@@ -110,7 +87,7 @@ export class DatasetService {
   async preview(
     id: string,
     table?: string,
-    options: DatasetPreviewOptions = { offset: 0, limit: DEFAULT_PREFERENCES.previewPageSize },
+    options: DatasetPreviewOptions = { offset: 0, limit: DEFAULT_PREVIEW_PAGE_SIZE },
   ) {
     const dataset = required(this.get(id), '数据源不存在或已删除。');
     const model = required(

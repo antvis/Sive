@@ -4,7 +4,7 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
-import type { DatasetPreviewOptions, LocalFileFormat } from '@shared/api';
+import type { DatasetPreviewOptions } from '@shared/api';
 import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
 import { LOCAL_FILE_FORMATS } from '@shared/api';
 
@@ -23,28 +23,6 @@ function objectInput<T>(value: unknown): T {
 function stringList(value: unknown) {
   if (!Array.isArray(value)) throw new Error('输入参数无效。');
   return value.map(text);
-}
-
-async function selectLocalFile(
-  event: IpcMainInvokeEvent,
-  { title, defaultPath, format }: { title: string; defaultPath?: string; format?: LocalFileFormat },
-) {
-  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
-    title,
-    defaultPath,
-    properties: ['openFile'],
-    filters: [
-      {
-        name: format ? `${format.toUpperCase()} 文件` : '数据文件',
-        extensions: format ? [format] : [...LOCAL_FILE_FORMATS],
-      },
-    ],
-  });
-  if (result.canceled) return null;
-  const file = result.filePaths[0];
-  if (format && path.extname(file).toLowerCase() !== `.${format}`)
-    throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
-  return file;
 }
 
 export function registerIpc(services: Services) {
@@ -69,28 +47,25 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetImportLocal', async (event, format, lastDirectory) => {
     if (format !== undefined && !LOCAL_FILE_FORMATS.includes(format)) throw new Error('不支持的文件格式。');
-    const filePath = await selectLocalFile(event, {
+    const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
       title: '选择数据文件',
       defaultPath: typeof lastDirectory === 'string' && lastDirectory ? lastDirectory : undefined,
-      format,
+      properties: ['openFile'],
+      filters: [
+        {
+          name: format ? `${format.toUpperCase()} 文件` : '数据文件',
+          extensions: format ? [format] : [...LOCAL_FILE_FORMATS],
+        },
+      ],
     });
-    if (!filePath) return null;
+    if (result.canceled) return null;
+    const filePath = result.filePaths[0];
+    if (format && path.extname(filePath).toLowerCase() !== `.${format}`)
+      throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
     const dataset = await services.dataset.importLocal(filePath);
     const summary = services.dataset.getSummary(dataset.id);
     changed(event);
     return summary ? { ...summary, directory: path.dirname(filePath) } : null;
-  });
-
-  ipcMain.handle('datasetRelocate', async (event, input) => {
-    const id = text(input);
-    const file = await selectLocalFile(event, {
-      title: '重新定位数据文件',
-      defaultPath: services.dataset.getLocalFile(id),
-    });
-    if (!file) return false;
-    await services.dataset.relocate(id, file);
-    changed(event);
-    return true;
   });
 
   ipcMain.handle('datasetRefresh', async (event, input) => {

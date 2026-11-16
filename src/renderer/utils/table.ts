@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
-
-export type TableColumn = { name: string; type?: string };
+import type { Profile } from '@antv/ava';
 
 export function tableValue(value: unknown): string {
   if (value == null) return '—';
@@ -16,22 +15,21 @@ function numericValue(value: unknown) {
   return number.isFinite() ? number : null;
 }
 
-export function isNumericColumn(column: TableColumn) {
-  return (
-    /^(?:(?:U)?(?:TINY|SMALL|MEDIUM|BIG|HUGE)?INT(?:EGER)?|INT\d+|UINT\d+|DECIMAL|NUMERIC|NUMBER|FLOAT\d*|DOUBLE(?: PRECISION)?|REAL)(?:\b|\()/i.test(
-      column.type ?? '',
-    ) && !/[[\]<>]/.test(column.type ?? '')
-  );
-}
-
-export function compareTableValues(a: unknown, b: unknown, numeric: boolean, descending: boolean) {
+export function compareTableColumn(
+  a: unknown,
+  b: unknown,
+  column: Profile['models'][number]['columns'][number] | undefined,
+  descending: boolean,
+) {
   const direction = descending ? -1 : 1;
-  if (numeric) {
-    const left = numericValue(a),
-      right = numericValue(b);
+
+  if (column?.properties.logicalType === 'numeric') {
+    const [left, right] = [numericValue(a), numericValue(b)];
+
     if (!left || !right) return left ? -1 : right ? 1 : 0;
     return left.comparedTo(right)! * direction;
   }
+
   // Nulls stay at the end in both directions.
   if (a == null || b == null) return a == null ? (b == null ? 0 : 1) : -1;
   return tableValue(a).localeCompare(tableValue(b), 'zh-CN') * direction;
