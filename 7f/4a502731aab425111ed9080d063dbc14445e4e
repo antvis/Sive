@@ -1,0 +1,57 @@
+tests/main/db/repository/conversation-repo.test.ts
+  s_99e81ae5ae6c8d::t_657c55043577a8 1-74
+tests/helpers/db.ts
+  s_99e81ae5ae6c8d::t_1cf4d02da57168 1-17
+package.json
+  s_1dc6c08a1f1ae9::t_c361c0d680379e 78-80
+  s_99e81ae5ae6c8d::t_6b0951d03d2a0a 62
+  s_1dc6c08a1f1ae9::t_137fc2d40d7e69 24-25
+  s_99e81ae5ae6c8d::t_a2319582dfe35e 20
+  s_1dc6c08a1f1ae9::t_60f5d6c31001a8 66
+  s_1dc6c08a1f1ae9::t_c2a32e46b4026f 65
+  s_1dc6c08a1f1ae9::t_b4ebe747a03d13 22-23
+.husky/pre-commit
+  s_1dc6c08a1f1ae9::t_d0d0ebc22526f0 1-2
+tests/main/util/credentials.test.ts
+  s_99e81ae5ae6c8d::t_c80ec7073f3663 1-49
+tests/main/db/repository/dataset-repo.test.ts
+  s_99e81ae5ae6c8d::t_07ed049be3acb3 1-81
+tests/main/db/repository/setting-repo.test.ts
+  s_99e81ae5ae6c8d::t_9a4f0e7ef6bceb 3,6,10-11,14
+.github/workflows/build.yml
+  s_1dc6c08a1f1ae9::t_80d0b5fe4195b9 9-16,20-27
+  s_1dc6c08a1f1ae9::t_98ab8982356f18 2-8,17-18
+  s_1dc6c08a1f1ae9::t_8c89f5addf022d 1
+  s_1dc6c08a1f1ae9::t_91efaa67b9639b 19
+  s_1dc6c08a1f1ae9::t_90a1af928c6f75 28-30
+tests/main/db/repository/snippet-repo.test.ts
+  s_99e81ae5ae6c8d::t_f32a3d2f799b9a 1-75
+tests/main/db/repository/model-provider-repo.test.ts
+  s_99e81ae5ae6c8d::t_a33c6b5982fed7 1-64
+tests/main/db/repository/message-repo.test.ts
+  s_99e81ae5ae6c8d::t_eb32e73df3c67c 1-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7f4a502731aab425111ed9080d063dbc14445e4e",
+  "prompts": {},
+  "sessions": {
+    "s_1dc6c08a1f1ae9": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "019f817d-3f6d-4db8-97a4-7e69ca306748",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_99e81ae5ae6c8d": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "224b7211-9d53-4cf9-9df2-ca5b4880d5cd",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
