@@ -25,7 +25,6 @@ export class SnippetService {
         messageId: input.messageId,
         title: input.question,
         content: { question: input.question, spec: input.spec, summary: input.summary },
-        isVisible: 1,
         createdAt: now,
         updatedAt: now,
       });

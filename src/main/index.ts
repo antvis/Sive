@@ -34,7 +34,11 @@ function createWindow() {
 async function initialize() {
   if (process.platform === 'darwin') app.dock?.setIcon(iconPath);
   database = await DBConnection.connect(app.getPath('userData'));
-  registerIpc(createServices(database));
+
+  const services = createServices(database);
+  services.analysis.recoverAfterRestart();
+
+  registerIpc(services);
   createWindow();
 }
 

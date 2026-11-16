@@ -6,6 +6,7 @@ import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
 import type { DatasetPreviewOptions } from '@shared/api';
 import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
+import { LOCAL_FILE_FORMATS } from '@shared/api';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -44,24 +45,38 @@ export function registerIpc(services: Services) {
     revision,
   }));
 
-  ipcMain.handle('datasetImportCsv', async (event, lastDirectory) => {
-    const window = BrowserWindow.fromWebContents(event.sender);
-    const options = {
-      title: '选择 CSV 文件',
+  ipcMain.handle('datasetImportLocal', async (event, format, lastDirectory) => {
+    if (format !== undefined && !LOCAL_FILE_FORMATS.includes(format)) throw new Error('不支持的文件格式。');
+    const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+      title: '选择数据文件',
       defaultPath: typeof lastDirectory === 'string' && lastDirectory ? lastDirectory : undefined,
-      properties: ['openFile' as const],
-      filters: [{ name: 'CSV 文件', extensions: ['csv'] }],
-    };
-    const result = window
-      ? await dialog.showOpenDialog(window, options)
-      : await dialog.showOpenDialog(options);
+      properties: ['openFile'],
+      filters: [
+        {
+          name: format ? `${format.toUpperCase()} 文件` : '数据文件',
+          extensions: format ? [format] : [...LOCAL_FILE_FORMATS],
+        },
+      ],
+    });
+    if (result.canceled) return null;
     const filePath = result.filePaths[0];
-    if (result.canceled || !filePath) return null;
-    if (!filePath.toLowerCase().endsWith('.csv')) throw new Error('请选择 CSV 文件。');
-    const dataset = await services.dataset.importCsv(filePath);
+    if (format && path.extname(filePath).toLowerCase() !== `.${format}`)
+      throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
+    const dataset = await services.dataset.importLocal(filePath);
     const summary = services.dataset.getSummary(dataset.id);
     changed(event);
     return summary ? { ...summary, directory: path.dirname(filePath) } : null;
+  });
+
+  ipcMain.handle('datasetRefresh', async (event, input) => {
+    const id = text(input);
+    await services.analysis.beginDatasetUpdate(id);
+    try {
+      await services.dataset.refresh(id);
+    } finally {
+      services.analysis.endDatasetUpdate(id);
+    }
+    changed(event);
   });
 
   ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(text(id)));
@@ -78,12 +93,6 @@ export function registerIpc(services: Services) {
     services.dataset.suggest(text(id), services.model.getDefaultModelConfig()),
   );
 
-  ipcMain.handle('datasetSave', (event, input) => {
-    const result = services.dataset.save(objectInput<DatasetSaveInput>(input));
-    changed(event);
-    return result;
-  });
-
   ipcMain.handle('datasetRename', (event, id, name) => {
     services.dataset.rename(text(id), text(name));
     changed(event);
@@ -97,12 +106,6 @@ export function registerIpc(services: Services) {
   ipcMain.handle('datasetSaveSemantic', (event, id, semantic, metrics) => {
     services.dataset.saveSemantic(text(id), objectInput<Semantic>(semantic), metrics);
     changed(event);
-  });
-
-  ipcMain.handle('conversationCreate', (event, datasetId) => {
-    const result = services.conversation.create(text(datasetId));
-    changed(event);
-    return result;
   });
 
   ipcMain.handle('conversationRename', (event, id, title) => {
@@ -153,8 +156,6 @@ export function registerIpc(services: Services) {
   ipcMain.handle('analysisGetMessages', (_event, conversationId) =>
     services.analysis.getMessages(text(conversationId)),
   );
-
-  ipcMain.handle('analysisGetRun', (_event, id) => services.analysis.getRun(text(id)));
 
   ipcMain.handle('snippetSave', (event, input) => {
     const result = services.snippet.save(objectInput<SnippetSaveInput>(input));
