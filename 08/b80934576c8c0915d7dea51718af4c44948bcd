@@ -1,0 +1,26 @@
+tests/main/util/assert.test.ts
+  s_99e81ae5ae6c8d::t_706f438c55c7d8 1-19
+package.json
+  s_99e81ae5ae6c8d::t_bdca7340e36c40 74-75
+  s_99e81ae5ae6c8d::t_1dacca50e52aef 20
+tests/main/db/repository/setting-repo.test.ts
+  s_99e81ae5ae6c8d::t_a4aaa227e659c0 5-6
+  s_99e81ae5ae6c8d::t_56d091fb291f16 2-4
+  s_99e81ae5ae6c8d::t_218a073e2a98d0 7-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "08b80934576c8c0915d7dea51718af4c44948bcd",
+  "prompts": {},
+  "sessions": {
+    "s_99e81ae5ae6c8d": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "224b7211-9d53-4cf9-9df2-ca5b4880d5cd",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
