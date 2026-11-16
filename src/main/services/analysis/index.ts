@@ -41,6 +41,10 @@ export class AnalysisService {
     return this.repositories.messages.listByConversationId(conversationId);
   }
 
+  recoverAfterRestart() {
+    this.repositories.messages.interruptRunning();
+  }
+
   getRun(id: string) {
     return required(this.repositories.messages.get(id), '分析记录不存在。');
   }

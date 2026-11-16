@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { messages } from '../schema';
 import type { DBConnection } from './db-connection';
 
@@ -49,6 +49,14 @@ export class MessageRepo {
       .where(and(eq(messages.id, id), isNull(messages.deletedAt)))
       .returning()
       .get();
+  }
+
+  interruptRunning() {
+    this.db
+      .update(messages)
+      .set({ status: 'interrupted', updatedAt: new Date().toISOString() })
+      .where(and(inArray(messages.status, ['running', 'cancelling']), isNull(messages.deletedAt)))
+      .run();
   }
 
   removeByConversationId(conversationId: string) {
