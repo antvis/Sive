@@ -11,11 +11,13 @@ import { errorMessage } from '../../utils';
 function DataPreview({
   datasetId,
   model,
+  profile,
   pageSize,
   onPageSizeChange,
 }: {
   datasetId: string;
   model: DatasetDetail['schema']['models'][number];
+  profile: DatasetDetail['profile']['models'][number] | undefined;
   pageSize: number;
   onPageSizeChange: (size: number) => void;
 }) {
@@ -49,7 +51,7 @@ function DataPreview({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <DataGrid rows={rows} columns={model.columns} resetKey={offset} />
+        <DataGrid rows={rows} columns={model.columns} profile={profile} resetKey={offset} />
         {loading ? (
           <div
             className="absolute inset-0 grid place-items-center bg-surface text-sm text-muted"
@@ -211,6 +213,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             key={JSON.stringify([model.name, pageSize])}
             datasetId={datasetId}
             model={model}
+            profile={detail.profile.models.find((item) => item.name === model.name)}
             pageSize={pageSize}
             onPageSizeChange={setPageSize}
           />

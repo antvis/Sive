@@ -1,7 +1,7 @@
 import { ArrowsDownUp, CaretDown, CaretUp } from '@phosphor-icons/react';
+import type { Profile, QueryColumn } from '@antv/ava';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { compareTableValues, isNumericColumn, tableValue } from '../utils/table';
-import type { TableColumn } from '../utils/table';
+import { compareTableColumn, tableValue } from '../utils/table';
 
 const MIN_WIDTH = 80;
 const MAX_WIDTH = 1000;
@@ -10,10 +10,12 @@ const DEFAULT_WIDTH = 160;
 export function DataGrid({
   rows,
   columns,
+  profile,
   resetKey,
 }: {
   rows: Record<string, unknown>[];
-  columns: TableColumn[];
+  columns: QueryColumn[];
+  profile: Profile['models'][number] | undefined;
   resetKey: number;
 }) {
   const [sorting, setSorting] = useState<{ name: string; descending: boolean } | null>(null);
@@ -22,16 +24,11 @@ export function DataGrid({
   const viewport = useRef<HTMLDivElement>(null);
   const visible = useMemo(() => {
     if (!sorting) return rows;
-    const column = columns.find((item) => item.name === sorting.name);
+    const column = profile?.columns.find((column) => column.name === sorting.name);
     return [...rows].sort((a, b) =>
-      compareTableValues(
-        a[sorting.name],
-        b[sorting.name],
-        !!column && isNumericColumn(column),
-        sorting.descending,
-      ),
+      compareTableColumn(a[sorting.name], b[sorting.name], column, sorting.descending),
     );
-  }, [rows, columns, sorting]);
+  }, [rows, profile, sorting]);
 
   useEffect(() => {
     setSorting(null);

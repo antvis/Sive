@@ -1,4 +1,4 @@
-import type { Schema, Semantic, SuggestResult } from '@antv/ava';
+import type { Profile, Schema, Semantic, SuggestResult } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
 import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
@@ -69,7 +69,7 @@ export type DatasetSummary = {
   columnCount: number;
 };
 
-export type DatasetDetail = DatasetSummary & { schema: Schema; semantic: Semantic };
+export type DatasetDetail = DatasetSummary & { schema: Schema; profile: Profile; semantic: Semantic };
 
 export type AnalysisStartInput = {
   datasetId: string;

@@ -60,7 +60,9 @@ export class DatasetService {
 
   getDetail(id: string) {
     const row = this.get(id);
-    return row ? { ...toSummary(row), schema: row.schema, semantic: row.semantic } : undefined;
+    return row
+      ? { ...toSummary(row), schema: row.schema, profile: row.profile, semantic: row.semantic }
+      : undefined;
   }
 
   async preview(
