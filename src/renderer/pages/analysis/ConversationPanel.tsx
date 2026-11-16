@@ -216,10 +216,7 @@ export function ConversationPanel({
   };
 
   const onQuestionKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const send =
-      preferences.sendShortcut === 'enter'
-        ? event.key === 'Enter' && !event.shiftKey
-        : event.key === 'Enter' && (event.metaKey || event.ctrlKey);
+    const send = event.key === 'Enter' && !event.shiftKey;
     if (send && !event.nativeEvent.isComposing) {
       event.preventDefault();
       void start();

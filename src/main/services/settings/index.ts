@@ -36,7 +36,6 @@ export class SettingsService {
     const saved = this.repositories.settings.get(PREFERENCES_KEY)?.value as Partial<Preferences> | undefined;
     return {
       analysisMode: saved?.analysisMode ?? DEFAULT_PREFERENCES.analysisMode,
-      sendShortcut: saved?.sendShortcut ?? DEFAULT_PREFERENCES.sendShortcut,
     };
   }
 

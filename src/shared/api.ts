@@ -14,12 +14,10 @@ export const DEFAULT_PREVIEW_PAGE_SIZE = 100;
 
 export type Preferences = {
   analysisMode: 'direct' | 'loop';
-  sendShortcut: 'enter' | 'mod-enter';
 };
 
 export const DEFAULT_PREFERENCES: Preferences = {
   analysisMode: 'direct',
-  sendShortcut: 'enter',
 };
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
