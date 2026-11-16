@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { IconButton } from '../../components/IconButton';
 import { errorMessage } from '../../utils';
-import { MySQLDialog } from './datasetDialogs/MySQLDialog';
+import { findDatasetSource } from '../../utils/dataSource';
 
 export function SourceActions({ datasetId, sourceType }: { datasetId: string; sourceType: string }) {
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
+  const source = findDatasetSource(sourceType);
+  const Dialog = source?.enable && source.action.type === 'connection' ? source.action.Dialog : undefined;
 
   const refresh = async () => {
     if (busy) return;
@@ -25,15 +27,15 @@ export function SourceActions({ datasetId, sourceType }: { datasetId: string; so
   return (
     <div className="flex shrink-0" onClick={(event) => event.stopPropagation()} aria-busy={busy}>
       <IconButton icon={ArrowsClockwise} label="刷新数据源" disabled={busy} onClick={() => void refresh()} />
-      {sourceType === 'mysql' && (
+      {source && Dialog && (
         <IconButton
           icon={PencilSimple}
-          label="编辑 MySQL 连接"
+          label={`编辑 ${source.label} 连接`}
           disabled={busy}
           onClick={() => setEditing(true)}
         />
       )}
-      {editing && <MySQLDialog datasetId={datasetId} onClose={() => setEditing(false)} />}
+      {editing && Dialog && <Dialog datasetId={datasetId} onClose={() => setEditing(false)} />}
     </div>
   );
 }

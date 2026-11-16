@@ -65,6 +65,9 @@ export class DatasetService {
     if (sourceConfig.type === 'mysql') {
       const { host, port, database, user } = sourceConfig.options;
       sourceConfig = { type: 'mysql', options: { host, port, database, user } };
+    } else if (sourceConfig.type === 'postgresql') {
+      const { host, port, database, user, schema } = sourceConfig.options;
+      sourceConfig = { type: 'postgresql', options: { host, port, database, user, schema } };
     }
     return {
       ...toSummary(row),

@@ -1,13 +1,9 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import type { DataSourceConfig } from '@antv/ava';
-import { Button } from '../../../components/Button';
-import { Modal } from '../../../components/Modal';
-import { errorMessage } from '../../../utils';
+import { useCallback, useState } from 'react';
+import type { DatasetDetail } from '@shared/api';
+import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
+import type { ConnectionDialogProps } from './ConnectionDialog';
 
-export function MySQLDialog({ datasetId, onClose }: { datasetId?: string; onClose: () => void }) {
-  const formId = useId();
-  const formRef = useRef<HTMLFormElement>(null);
+export function MySQLDialog({ datasetId, onClose }: ConnectionDialogProps) {
   const [form, setForm] = useState({
     name: '',
     host: 'localhost',
@@ -16,211 +12,75 @@ export function MySQLDialog({ datasetId, onClose }: { datasetId?: string; onClos
     user: '',
     password: '',
   });
-  const [loading, setLoading] = useState(Boolean(datasetId));
-  const [busy, setBusy] = useState<'test' | 'save' | null>(null);
-  const [error, setError] = useState('');
-  const [tested, setTested] = useState(false);
 
-  useEffect(() => {
-    if (!datasetId) return;
-    let live = true;
-    window.workbench
-      .datasetGet(datasetId)
-      .then((connection) => {
-        if (!live) return;
-        if (!connection) throw new Error('数据源不存在或已删除。');
-        if (connection.sourceConfig.type !== 'mysql') throw new Error('只有 MySQL 数据源支持此操作。');
-        const { host, port = 3306, database, user = '' } = connection.sourceConfig.options;
-        setForm({
-          name: connection.name,
-          host,
-          port: String(port),
-          database,
-          user,
-          password: '',
-        });
-      })
-      .catch((cause) => {
-        if (live) setError(errorMessage(cause));
-      })
-      .finally(() => {
-        if (live) setLoading(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [datasetId]);
+  const loadConnection = useCallback((connection: DatasetDetail) => {
+    const { sourceConfig } = connection;
+    if (sourceConfig.type !== 'mysql') throw new Error('只有 MySQL 数据源支持此操作。');
+    const { host, port = 3306, database, user = '' } = sourceConfig.options;
+    setForm({
+      name: connection.name,
+      host,
+      port: String(port),
+      database,
+      user,
+      password: '',
+    });
+  }, []);
 
-  const submit = async (action: 'test' | 'save') => {
-    if (busy || loading || !formRef.current?.reportValidity()) return;
-    setError('');
-    setTested(false);
-    const { name, ...options } = form;
-    const sourceConfig: DataSourceConfig = {
-      type: 'mysql',
-      options: {
-        ...options,
-        port: Number(form.port),
-      },
-    };
-    setBusy(action);
-    try {
-      if (action === 'test') {
-        await window.workbench.datasetTest(sourceConfig);
-        setTested(true);
-      } else {
-        await window.workbench.datasetSave(name, sourceConfig, datasetId);
-        toast.success(datasetId ? 'MySQL 连接已更新' : 'MySQL 数据源已添加');
-        onClose();
-      }
-    } catch (cause) {
-      setError(errorMessage(cause));
-    } finally {
-      setBusy(null);
-    }
-  };
+  const { name, ...options } = form;
 
   return (
-    <Modal
-      open
-      onOpenChange={(open) => {
-        if (!open && !busy) onClose();
-      }}
-      title={datasetId ? '编辑 MySQL 连接' : '连接 MySQL'}
-      footer={
-        <>
-          <Button disabled={loading || !!busy} onClick={() => submit('test')}>
-            {busy === 'test' ? '正在测试…' : '测试连接'}
-          </Button>
-          <Button type="submit" form={formId} variant="primary" disabled={loading || !!busy}>
-            {busy === 'save' ? '正在保存…' : '保存连接'}
-          </Button>
-        </>
-      }
+    <ConnectionDialog
+      datasetId={datasetId}
+      onClose={onClose}
+      label="MySQL"
+      name={name}
+      sourceConfig={{ type: 'mysql', options: { ...options, port: Number(form.port) } }}
+      onLoad={loadConnection}
     >
-      {loading ? (
-        <p className="text-sm text-muted">正在读取连接…</p>
-      ) : (
-        <form
-          id={formId}
-          ref={formRef}
-          onSubmit={(event) => {
-            event.preventDefault();
-            submit('save');
-          }}
-          className="grid gap-3"
-        >
-          <fieldset disabled={!!busy} className="m-0 grid gap-3 border-0 p-0">
-            <label className="grid gap-1.5 text-sm">
-              数据源名称
-              <input
-                name="name"
-                type="text"
-                required
-                pattern={'.*\\S.*'}
-                autoComplete="off"
-                className="min-w-0 rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
-                value={form.name}
-                onChange={(event) => {
-                  setForm({ ...form, name: event.target.value });
-                  setTested(false);
-                }}
-              />
-            </label>
-            <label className="grid gap-1.5 text-sm">
-              主机
-              <input
-                name="host"
-                type="text"
-                required
-                pattern={'.*\\S.*'}
-                autoComplete="off"
-                className="min-w-0 rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
-                value={form.host}
-                onChange={(event) => {
-                  setForm({ ...form, host: event.target.value });
-                  setTested(false);
-                }}
-              />
-            </label>
-            <label className="grid gap-1.5 text-sm">
-              端口
-              <input
-                name="port"
-                type="number"
-                required
-                min={1}
-                max={65535}
-                step={1}
-                autoComplete="off"
-                className="min-w-0 rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
-                value={form.port}
-                onChange={(event) => {
-                  setForm({ ...form, port: event.target.value });
-                  setTested(false);
-                }}
-              />
-            </label>
-            <label className="grid gap-1.5 text-sm">
-              数据库
-              <input
-                name="database"
-                type="text"
-                required
-                pattern={'.*\\S.*'}
-                autoComplete="off"
-                className="min-w-0 rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
-                value={form.database}
-                onChange={(event) => {
-                  setForm({ ...form, database: event.target.value });
-                  setTested(false);
-                }}
-              />
-            </label>
-            <label className="grid gap-1.5 text-sm">
-              用户名
-              <input
-                name="user"
-                type="text"
-                required
-                pattern={'.*\\S.*'}
-                autoComplete="off"
-                className="min-w-0 rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
-                value={form.user}
-                onChange={(event) => {
-                  setForm({ ...form, user: event.target.value });
-                  setTested(false);
-                }}
-              />
-            </label>
-            <label className="grid gap-1.5 text-sm">
-              密码
-              <input
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                placeholder={datasetId ? '请重新填写密码，无密码可留空' : undefined}
-                className="min-w-0 rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
-                value={form.password}
-                onChange={(event) => {
-                  setForm({ ...form, password: event.target.value });
-                  setTested(false);
-                }}
-              />
-            </label>
-          </fieldset>
-        </form>
-      )}
-      {error && (
-        <p role="alert" className="mb-0 text-sm text-danger">
-          {error}
-        </p>
-      )}
-      {tested && (
-        <p role="status" className="mb-0 text-sm text-accent">
-          连接成功，数据库结构可读取。
-        </p>
-      )}
-    </Modal>
+      <ConnectionField
+        label="数据源名称"
+        name="name"
+        value={form.name}
+        onValueChange={(value) => setForm({ ...form, name: value })}
+      />
+      <ConnectionField
+        label="主机"
+        name="host"
+        value={form.host}
+        onValueChange={(value) => setForm({ ...form, host: value })}
+      />
+      <ConnectionField
+        label="端口"
+        name="port"
+        type="number"
+        min={1}
+        max={65535}
+        step={1}
+        value={form.port}
+        onValueChange={(value) => setForm({ ...form, port: value })}
+      />
+      <ConnectionField
+        label="数据库"
+        name="database"
+        value={form.database}
+        onValueChange={(value) => setForm({ ...form, database: value })}
+      />
+      <ConnectionField
+        label="用户名"
+        name="user"
+        value={form.user}
+        onValueChange={(value) => setForm({ ...form, user: value })}
+      />
+      <ConnectionField
+        label="密码"
+        name="password"
+        type="password"
+        required={false}
+        placeholder={datasetId ? '请重新填写密码，无密码可留空' : undefined}
+        value={form.password}
+        onValueChange={(value) => setForm({ ...form, password: value })}
+      />
+    </ConnectionDialog>
   );
 }

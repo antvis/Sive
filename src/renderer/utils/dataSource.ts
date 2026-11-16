@@ -1,16 +1,25 @@
 import { Database, FileCode, FileCsv, FileText, Files, Lightning, Stack, Table } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
+import type { ComponentType } from 'react';
 import type { LocalFileFormat } from '@shared/api';
+import { MySQLDialog } from '../pages/datasets/datasetDialogs/MySQLDialog';
+import { PostgreSQLDialog } from '../pages/datasets/datasetDialogs/PostgreSQLDialog';
+import type { ConnectionDialogProps } from '../pages/datasets/datasetDialogs/ConnectionDialog';
+
+export type DatasetSourceAction =
+  | { type: 'file'; format: LocalFileFormat }
+  | { type: 'connection'; Dialog: ComponentType<ConnectionDialogProps> };
 
 export type DatasetSource = {
   type: string;
-  enable: boolean;
   label: string;
   description: string;
   color: string;
   icon: Icon;
-  format?: LocalFileFormat;
-};
+} & (
+  | { enable: false; action?: never; actionLabel?: never }
+  | { enable: true; action: DatasetSourceAction; actionLabel: string }
+);
 
 export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSource[] }[] = [
   {
@@ -24,7 +33,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '本地 CSV 文件',
         color: '#25804d',
         icon: FileCsv,
-        format: 'csv',
+        action: { type: 'file', format: 'csv' },
+        actionLabel: '选择文件',
       },
       {
         type: 'json-file',
@@ -33,7 +43,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '本地 JSON 文件',
         color: '#8054b6',
         icon: FileCode,
-        format: 'json',
+        action: { type: 'file', format: 'json' },
+        actionLabel: '选择文件',
       },
       {
         type: 'excel',
@@ -42,7 +53,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '支持多个工作表的 XLSX 文件',
         color: '#18734b',
         icon: Table,
-        format: 'xlsx',
+        action: { type: 'file', format: 'xlsx' },
+        actionLabel: '选择文件',
       },
       {
         type: 'parquet',
@@ -51,7 +63,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '面向分析的列式数据文件',
         color: '#a66a1c',
         icon: Stack,
-        format: 'parquet',
+        action: { type: 'file', format: 'parquet' },
+        actionLabel: '选择文件',
       },
       {
         type: 'text',
@@ -74,14 +87,18 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '连接数据库并浏览数据表',
         color: '#28769a',
         icon: Database,
+        action: { type: 'connection', Dialog: MySQLDialog },
+        actionLabel: '配置连接',
       },
       {
         type: 'postgresql',
-        enable: false,
+        enable: true,
         label: 'PostgreSQL',
-        description: '开源对象关系型数据库',
-        color: '#687682',
+        description: '连接指定 Schema 并浏览数据表',
+        color: '#336791',
         icon: Database,
+        action: { type: 'connection', Dialog: PostgreSQLDialog },
+        actionLabel: '配置连接',
       },
       {
         type: 'sqlite',
@@ -90,7 +107,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '支持多表浏览的本地 SQLite 数据库',
         color: '#28769a',
         icon: Database,
-        format: 'sqlite',
+        action: { type: 'file', format: 'sqlite' },
+        actionLabel: '选择文件',
       },
       {
         type: 'mongodb',
@@ -136,6 +154,10 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
 
 const sources = DATA_SOURCE_GROUPS.flatMap((group) => group.sources);
 
+export function findDatasetSource(type: string): DatasetSource | undefined {
+  return sources.find((source) => source.type === type);
+}
+
 export function getDatasetSource(type: string): Pick<DatasetSource, 'label' | 'icon'> {
-  return sources.find((source) => source.type === type) ?? { label: type, icon: Database };
+  return findDatasetSource(type) ?? { label: type, icon: Database };
 }
