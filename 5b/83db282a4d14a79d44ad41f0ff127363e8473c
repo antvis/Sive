@@ -1,0 +1,19 @@
+.github/workflows/release.yml
+  s_20babb382e0f6b::t_55d76b2734bb4a 67-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5b83db282a4d14a79d44ad41f0ff127363e8473c",
+  "prompts": {},
+  "sessions": {
+    "s_20babb382e0f6b": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "9b254c68-85f8-4c1e-9ec1-f0a2c6ce59cf",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
