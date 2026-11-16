@@ -64,6 +64,8 @@ An AI-powered **desktop workbench** for data management and analysis, built by t
 
 ## 🔌 Connect Your Data
 
+Sive's data sources are provided entirely by AVA v4. The following data sources are currently supported, and contributions are welcome.
+
 <table width="100%">
   <tr>
     <td align="center" width="12.5%"><img src="./assets/logos/csv.svg" width="32" height="32" alt="CSV" /><br />CSV</td>
