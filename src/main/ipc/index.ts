@@ -26,6 +26,7 @@ function stringList(value: unknown) {
 
 export function registerIpc(services: Services) {
   let revision = 0;
+
   const changed = (event: IpcMainInvokeEvent) => {
     revision += 1;
     event.sender.send(WORKSPACE_CHANGED_CHANNEL);

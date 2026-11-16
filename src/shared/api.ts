@@ -4,6 +4,7 @@ import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
 
 export type { AnalysisMessage } from './messages';
+
 export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './snippets';
 
 export type ThemeSettings = { mode: 'light' | 'dark' };

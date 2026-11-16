@@ -22,10 +22,12 @@ export default function App() {
     const dataset = state?.datasets.find((item) => item.id === id);
     return dataset ? [dataset] : [];
   });
+
   const conversationsFor = (datasetId: string) =>
     (state?.conversations ?? [])
       .filter((conversation) => conversation.datasetId === datasetId)
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
   const latestConversationId = (datasetId: string) => conversationsFor(datasetId)[0]?.id ?? null;
 
   const openDataset = (id: string) => {

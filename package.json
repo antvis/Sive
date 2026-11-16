@@ -20,7 +20,7 @@
     "test:coverage": "vitest run --coverage",
     "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=^/(src|docs|samples|.git|.github)$",
     "tsc": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "lint": "npm run tsc && prettier --check src electron.vite.config.ts .prettierrc.json package.json",
+    "lint": "npm run tsc && oxlint --deny-warnings src electron.vite.config.ts",
     "fix": "prettier --write src electron.vite.config.ts .prettierrc.json package.json",
     "prepare": "husky"
   },
@@ -51,6 +51,7 @@
   "devDependencies": {
     "@electron/packager": "18.4.4",
     "@phosphor-icons/react": "^2.1.10",
+    "@stylistic/eslint-plugin": "5.10.0",
     "@tailwindcss/vite": "^4.3.4",
     "@types/adm-zip": "^0.5.8",
     "@types/better-sqlite3": "9.6.0",
@@ -64,6 +65,7 @@
     "electron-vite": "^6.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.1",
+    "oxlint": "1.93.0",
     "prettier": "^3.9.10",
     "radix-ui": "^1.8.1",
     "react": "^19.3.1",
@@ -76,7 +78,7 @@
     "vitest": "^5.1.0"
   },
   "lint-staged": {
-    "*": "prettier --check --ignore-unknown"
+    "*.{js,jsx,ts,tsx}": "oxlint --deny-warnings"
   },
   "packageManager": "pnpm@10.30.3",
   "config": {
