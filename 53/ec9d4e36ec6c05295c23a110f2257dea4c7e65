@@ -1,0 +1,21 @@
+README.md
+  s_7ad3bb41db384f::t_0245182ea3ca89 67-68
+assets/logos/feishu-bitable.svg
+  s_7ad3bb41db384f::t_828363e595e75f 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "53ec9d4e36ec6c05295c23a110f2257dea4c7e65",
+  "prompts": {},
+  "sessions": {
+    "s_7ad3bb41db384f": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "8c04f585-32d4-45d9-81c0-e9e076fdddd9",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
