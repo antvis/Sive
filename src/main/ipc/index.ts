@@ -4,7 +4,7 @@ import type { IpcMainInvokeEvent } from 'electron';
 import type { Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
-import type { DatasetPreviewOptions } from '@shared/api';
+import type { DatasetPreviewOptions, MySQLInput } from '@shared/api';
 import type { ModelInput, Preferences, ThemeSettings } from '../services/types';
 import { LOCAL_FILE_FORMATS } from '@shared/api';
 
@@ -80,6 +80,24 @@ export function registerIpc(services: Services) {
   });
 
   ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(text(id)));
+
+  ipcMain.handle('datasetMySQLGet', (_event, id) => services.dataset.getMySQL(text(id)));
+
+  ipcMain.handle('datasetMySQLTest', (_event, input) =>
+    services.dataset.testMySQL(objectInput<MySQLInput>(input)),
+  );
+
+  ipcMain.handle('datasetMySQLSave', async (event, input) => {
+    const connection = objectInput<MySQLInput>(input);
+    const id = connection.id;
+    if (id) await services.analysis.beginDatasetUpdate(id);
+    try {
+      await services.dataset.saveMySQL(connection);
+    } finally {
+      if (id) services.analysis.endDatasetUpdate(id);
+    }
+    changed(event);
+  });
 
   ipcMain.handle('datasetPreview', (_event, id, table, options) =>
     services.dataset.preview(

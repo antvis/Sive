@@ -75,7 +75,13 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
     title: '数据库',
     icon: Database,
     sources: [
-      { type: 'mysql', label: 'MySQL', description: '开源关系型数据库', color: '#28769a', icon: Database },
+      {
+        type: 'mysql',
+        label: 'MySQL',
+        description: '连接数据库并浏览数据表',
+        color: '#28769a',
+        icon: Database,
+      },
       {
         type: 'postgresql',
         label: 'PostgreSQL',

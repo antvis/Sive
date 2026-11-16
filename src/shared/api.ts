@@ -1,4 +1,4 @@
-import type { Profile, Schema, Semantic, SuggestResult } from '@antv/ava';
+import type { DataSourceConfig, Profile, Schema, Semantic, SuggestResult } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
 import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
@@ -26,6 +26,13 @@ export const DEFAULT_PREFERENCES: Preferences = {
 };
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
+
+export type MySQLInput = Pick<
+  Extract<DataSourceConfig, { type: 'mysql' }>['options'],
+  'host' | 'port' | 'database' | 'user' | 'password'
+> & { id?: string; name: string };
+
+export type MySQLConnection = Omit<MySQLInput, 'password'> & { hasPassword: boolean };
 
 export type ModelConnectionInput = {
   baseURL: string;
@@ -116,6 +123,9 @@ export type WorkbenchApi = {
     lastDirectory?: string,
   ): Promise<(DatasetSummary & { directory: string }) | null>;
   datasetRefresh(id: string): Promise<void>;
+  datasetMySQLGet(id: string): Promise<MySQLConnection>;
+  datasetMySQLTest(input: MySQLInput): Promise<void>;
+  datasetMySQLSave(input: MySQLInput): Promise<void>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
   datasetPreview(

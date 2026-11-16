@@ -10,7 +10,7 @@ import type { datasets } from '../../db/schema/datasets';
 import { required } from '../../util';
 import type { DatasetSaveInput } from '../types';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
-import type { DatasetPreviewOptions } from '@shared/api';
+import type { DatasetPreviewOptions, MySQLConnection, MySQLInput } from '@shared/api';
 import { checkLocalFile, localFilePath, localSource } from '../../util/localFile';
 
 type DatasetRow = typeof datasets.$inferSelect;
@@ -74,10 +74,46 @@ export class DatasetService {
 
   async refresh(id: string) {
     const original = required(this.get(id), '数据源不存在或已删除。');
-    required(localFilePath(original.sourceConfig), '只有本地文件支持刷新。');
     const refreshed = await this.readSource(original.sourceConfig);
     return this.database.write(() =>
       required(this.repositories.datasets.update(id, refreshed), '数据源不存在或已删除。'),
+    );
+  }
+
+  private mysqlSource(id: string) {
+    const row = required(this.get(id), '数据源不存在或已删除。');
+    if (row.sourceConfig.type !== 'mysql') throw new Error('只有 MySQL 数据源支持此操作。');
+    return row.sourceConfig;
+  }
+
+  getMySQL(id: string): MySQLConnection {
+    const row = required(this.get(id), '数据源不存在或已删除。');
+    const { host, port = 3306, database, user = '', password } = this.mysqlSource(id).options;
+    return { id, name: row.name, host, port, database, user, hasPassword: Boolean(password) };
+  }
+
+  private prepareMySQL({ id, name, password, ...connection }: MySQLInput) {
+    const previous = id ? this.mysqlSource(id) : undefined;
+    const sourceConfig: Extract<DataSourceConfig, { type: 'mysql' }> = {
+      type: 'mysql',
+      options: { ...connection, password: password ?? previous?.options.password ?? '' },
+    };
+    return { id, name: name.trim(), sourceConfig };
+  }
+
+  async testMySQL(input: MySQLInput) {
+    await this.readSource(this.prepareMySQL(input).sourceConfig);
+  }
+
+  async saveMySQL(input: MySQLInput) {
+    const { id, name, sourceConfig } = this.prepareMySQL(input);
+    const inspected = await this.readSource(sourceConfig);
+    if (!id) return this.save({ ...inspected, name });
+    return this.database.write(() =>
+      required(
+        this.repositories.datasets.update(id, { ...inspected, name, sourceType: 'mysql' }),
+        '数据源不存在或已删除。',
+      ),
     );
   }
 
@@ -105,7 +141,10 @@ export class DatasetService {
     const identifier = (name: string) => `"${name.replace(/"/g, '""')}"`;
     const keys = typeof model.primaryKey === 'string' ? [model.primaryKey] : (model.primaryKey ?? []);
     const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
-    const ava = new AVA({ llm: { model: 'preview-only' } });
+    const ava = new AVA({
+      llm: { model: 'preview-only' },
+      engine: { type: 'duckdb', queryTimeoutMs: 30000 },
+    });
     try {
       const file = localFilePath(dataset.sourceConfig);
       if (file) await checkLocalFile(file);
