@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Modal } from '../../components/Modal';
-import { DatasetSourceActions } from '../../components/DatasetSourceActions';
+import { SourceActions } from './SourceActions';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
 import { getDatasetSource } from '../../utils/dataSource';
@@ -165,7 +165,7 @@ function DatasetCard({
         </span>
         <span>更新于 {dataset.updatedAt.slice(0, 10)}</span>
         <div className="ml-auto">
-          <DatasetSourceActions datasetId={dataset.id} sourceType={dataset.sourceType} />
+          <SourceActions datasetId={dataset.id} sourceType={dataset.sourceType} />
         </div>
       </footer>
       {dataset.fileUnavailable && (

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import { Button } from '../../components/Button';
 import { DataGrid } from '../../components/DataGrid';
-import { DatasetSourceActions } from '../../components/DatasetSourceActions';
+import { SourceActions } from '../datasets/SourceActions';
 import { Select } from '../../components/Select';
 import type { DatasetDetail } from '../../types';
 import { errorMessage } from '../../utils';
@@ -240,7 +240,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           <span className="min-w-0 truncate">
             {model ? `${model.name} · ${columns.length} 个字段` : '没有可预览的数据表'}
           </span>
-          <DatasetSourceActions
+          <SourceActions
             datasetId={datasetId}
             sourceType={detail.sourceType}
             onUpdated={() => setReload((value) => value + 1)}

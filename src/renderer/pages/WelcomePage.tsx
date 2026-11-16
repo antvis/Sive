@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
-import { MySQLConnectionDialog } from '../components/datasetDialogs/MySQLConnectionDialog';
+import { MySQLDialog } from './datasets/datasetDialogs/MySQLDialog';
 import { useImportLocal } from '../hooks/useImportLocal';
 import { DATA_SOURCE_GROUPS } from '../utils/dataSource';
 import type { DatasetSource } from '../utils/dataSource';
@@ -85,7 +85,7 @@ export function WelcomePage() {
           </section>
         ))}
       </div>
-      {connectingMySQL && <MySQLConnectionDialog onClose={() => setConnectingMySQL(false)} />}
+      {connectingMySQL && <MySQLDialog onClose={() => setConnectingMySQL(false)} />}
     </div>
   );
 }

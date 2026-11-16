@@ -1,11 +1,11 @@
 import { ArrowsClockwise, PencilSimple } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { IconButton } from './IconButton';
-import { errorMessage } from '../utils';
-import { MySQLConnectionDialog } from './datasetDialogs/MySQLConnectionDialog';
+import { IconButton } from '../../components/IconButton';
+import { errorMessage } from '../../utils';
+import { MySQLDialog } from './datasetDialogs/MySQLDialog';
 
-export function DatasetSourceActions({
+export function SourceActions({
   datasetId,
   sourceType,
   onUpdated,
@@ -42,9 +42,7 @@ export function DatasetSourceActions({
           onClick={() => setEditing(true)}
         />
       )}
-      {editing && (
-        <MySQLConnectionDialog datasetId={datasetId} onClose={() => setEditing(false)} onSaved={onUpdated} />
-      )}
+      {editing && <MySQLDialog datasetId={datasetId} onClose={() => setEditing(false)} onSaved={onUpdated} />}
     </div>
   );
 }
