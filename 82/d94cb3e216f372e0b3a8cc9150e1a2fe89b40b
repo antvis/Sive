@@ -1,0 +1,14 @@
+package.json
+  h_63dffd5e80151f 80-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "82d94cb3e216f372e0b3a8cc9150e1a2fe89b40b",
+  "prompts": {},
+  "humans": {
+    "h_63dffd5e80151f": {
+      "author": "hustcc <i@hust.cc>"
+    }
+  }
+}
