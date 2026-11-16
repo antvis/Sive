@@ -9,7 +9,7 @@ export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpd
 
 export type ThemeSettings = { mode: 'light' | 'dark' };
 
-export const LOCAL_FILE_FORMATS = ['csv', 'json', 'xlsx', 'parquet'] as const;
+export const LOCAL_FILE_FORMATS = ['csv', 'json', 'xlsx', 'parquet', 'sqlite'] as const;
 
 export type LocalFileFormat = (typeof LOCAL_FILE_FORMATS)[number];
 
