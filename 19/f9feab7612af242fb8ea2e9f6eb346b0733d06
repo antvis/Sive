@@ -1,0 +1,38 @@
+src/main/db/schema/index.ts
+  s_1dc6c08a1f1ae9::t_0a13ea8523f56a 2,4,6,8,10
+package.json
+  s_1dc6c08a1f1ae9::t_18993eb0010682 54,68
+  s_1dc6c08a1f1ae9::t_71e916d3f59d21 81
+src/main/services/model/index.ts
+  s_1dc6c08a1f1ae9::t_0a13ea8523f56a 96
+src/main/util/index.ts
+  s_1dc6c08a1f1ae9::t_0a13ea8523f56a 2
+src/renderer/App.tsx
+  s_1dc6c08a1f1ae9::t_0a13ea8523f56a 25,30
+src/shared/api.ts
+  s_1dc6c08a1f1ae9::t_0a13ea8523f56a 7
+src/main/db/index.ts
+  s_1dc6c08a1f1ae9::t_0a13ea8523f56a 2,4,6
+.oxlintrc.json
+  s_1dc6c08a1f1ae9::t_e8511b684f9740 1-56
+src/main/ipc/index.ts
+  s_1dc6c08a1f1ae9::t_0a13ea8523f56a 29
+src/renderer/types.ts
+  s_1dc6c08a1f1ae9::t_0a13ea8523f56a 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "19f9feab7612af242fb8ea2e9f6eb346b0733d06",
+  "prompts": {},
+  "sessions": {
+    "s_1dc6c08a1f1ae9": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "019f817d-3f6d-4db8-97a4-7e69ca306748",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
