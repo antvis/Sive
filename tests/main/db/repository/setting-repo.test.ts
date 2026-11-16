@@ -1,25 +1,17 @@
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { DBConnection } from '../../../../src/main/db/repository/db-connection';
 import { SettingRepo } from '../../../../src/main/db/repository/setting-repo';
+import { createTestDb } from '../../../helpers/db';
 
 describe('SettingRepo', () => {
-  let root: string;
-  let database: DBConnection;
+  let testDb: Awaited<ReturnType<typeof createTestDb>>;
   let repo: SettingRepo;
 
   beforeEach(async () => {
-    root = mkdtempSync(path.join(tmpdir(), 'sive-test-'));
-    database = await DBConnection.connect(root);
-    repo = new SettingRepo(database);
+    testDb = await createTestDb();
+    repo = new SettingRepo(testDb.database);
   });
 
-  afterEach(() => {
-    database.close();
-    rmSync(root, { recursive: true, force: true });
-  });
+  afterEach(() => testDb.close());
 
   it('returns undefined for a missing key', () => {
     expect(repo.get('missing')).toBeUndefined();
