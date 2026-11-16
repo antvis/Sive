@@ -48,13 +48,12 @@ export const SchemaDDL = `
     message_id TEXT NOT NULL UNIQUE,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
-    is_visible INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     deleted_at TEXT
   );
-  CREATE INDEX IF NOT EXISTS idx_snippets_visible
-    ON snippets (is_visible, deleted_at, updated_at DESC, id);
+  CREATE INDEX IF NOT EXISTS idx_snippets_list
+    ON snippets (deleted_at, updated_at DESC, id);
 
   CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,

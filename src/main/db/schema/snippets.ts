@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import type { SnippetContent } from '@shared/snippets';
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const snippets = sqliteTable(
   'snippets',
@@ -18,24 +18,14 @@ export const snippets = sqliteTable(
     // JSON object containing the presentation snapshot.
     content: text('content', { mode: 'json' }).$type<SnippetContent>().notNull(),
 
-    // Whether the snippet is visible in the saved list, stored as 0 or 1.
-    isVisible: integer('is_visible').notNull().default(0),
-
     // Timestamp when the snippet was generated after the reply completed.
     createdAt: text('created_at').notNull(),
 
-    // Timestamp of the last save, visibility, rename, refresh, or soft deletion update.
+    // Timestamp of the last save, rename, refresh, or soft deletion update.
     updatedAt: text('updated_at').notNull(),
 
     // Soft deletion timestamp.
     deletedAt: text('deleted_at'),
   },
-  (table) => [
-    index('idx_snippets_visible').on(
-      table.isVisible,
-      table.deletedAt,
-      sql`${table.updatedAt} DESC`,
-      table.id,
-    ),
-  ],
+  (table) => [index('idx_snippets_list').on(table.deletedAt, sql`${table.updatedAt} DESC`, table.id)],
 );
