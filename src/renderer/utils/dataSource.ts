@@ -30,7 +30,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         type: 'csv-file',
         enable: true,
         label: 'CSV 文件',
-        description: '本地 CSV 文件',
+        description: '逗号分隔的纯文本表格格式',
         color: '#25804d',
         icon: FileCsv,
         action: { type: 'file', format: 'csv' },
@@ -40,7 +40,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         type: 'json-file',
         enable: true,
         label: 'JSON 文件',
-        description: '本地 JSON 文件',
+        description: '轻量级数据交换格式',
         color: '#8054b6',
         icon: FileCode,
         action: { type: 'file', format: 'json' },
@@ -50,7 +50,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         type: 'excel',
         enable: true,
         label: 'Excel',
-        description: '支持多个工作表的 XLSX 文件',
+        description: '支持多个工作表的电子表格格式',
         color: '#18734b',
         icon: Table,
         action: { type: 'file', format: 'xlsx' },
@@ -84,7 +84,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         type: 'mysql',
         enable: true,
         label: 'MySQL',
-        description: '连接数据库并浏览数据表',
+        description: '开源关系型数据库',
         color: '#28769a',
         icon: Database,
         action: { type: 'connection', Dialog: MySQLDialog },
@@ -94,7 +94,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         type: 'postgresql',
         enable: true,
         label: 'PostgreSQL',
-        description: '连接指定 Schema 并浏览数据表',
+        description: '通用对象关系型数据库',
         color: '#336791',
         icon: Database,
         action: { type: 'connection', Dialog: PostgreSQLDialog },
@@ -104,7 +104,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         type: 'sqlite',
         enable: true,
         label: 'SQLite',
-        description: '支持多表浏览的本地 SQLite 数据库',
+        description: '轻量级本地文件数据库，支持多表分析',
         color: '#28769a',
         icon: Database,
         action: { type: 'file', format: 'sqlite' },
@@ -156,8 +156,4 @@ const sources = DATA_SOURCE_GROUPS.flatMap((group) => group.sources);
 
 export function findDatasetSource(type: string): DatasetSource | undefined {
   return sources.find((source) => source.type === type);
-}
-
-export function getDatasetSource(type: string): Pick<DatasetSource, 'label' | 'icon'> {
-  return findDatasetSource(type) ?? { label: type, icon: Database };
 }
