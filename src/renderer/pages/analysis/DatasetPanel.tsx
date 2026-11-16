@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import { Button } from '../../components/Button';
 import { DataGrid } from '../../components/DataGrid';
+import { DatasetRefreshButton } from '../../components/DatasetRefreshButton';
 import { Select } from '../../components/Select';
 import type { DatasetDetail } from '../../types';
 import { errorMessage } from '../../utils';
@@ -115,6 +116,7 @@ function DataPreview({
 
 export function DatasetPanel({ datasetId }: { datasetId: string }) {
   const [detail, setDetail] = useState<DatasetDetail | null>(null);
+  const [reload, setReload] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [description, setDescription] = useState('');
@@ -146,7 +148,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
     return () => {
       live = false;
     };
-  }, [datasetId]);
+  }, [datasetId, reload]);
 
   const saveSemantic = async () => {
     if (!detail || saving) return;
@@ -207,10 +209,13 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           <span className="min-w-0 truncate">
             {model ? `${model.name} · ${columns.length} 个字段` : '没有可预览的数据表'}
           </span>
+          {detail.localFile && (
+            <DatasetRefreshButton datasetId={datasetId} onUpdated={() => setReload((value) => value + 1)} />
+          )}
         </div>
         {model && (
           <DataPreview
-            key={JSON.stringify([model.name, pageSize])}
+            key={JSON.stringify([model.name, pageSize, reload])}
             datasetId={datasetId}
             model={model}
             profile={detail.profile.models.find((item) => item.name === model.name)}

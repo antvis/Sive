@@ -9,7 +9,9 @@ const api = {
     ipcRenderer.on('workspace:changed', listener);
     return () => ipcRenderer.removeListener('workspace:changed', listener);
   },
-  datasetImportCsv: (lastDirectory) => ipcRenderer.invoke('datasetImportCsv', lastDirectory),
+  datasetImportLocal: (format, lastDirectory) =>
+    ipcRenderer.invoke('datasetImportLocal', format, lastDirectory),
+  datasetRefresh: (id) => ipcRenderer.invoke('datasetRefresh', id),
   datasetGet: (id) => ipcRenderer.invoke('datasetGet', id),
   datasetPreview: (id, table, options) => ipcRenderer.invoke('datasetPreview', id, table, options),
   datasetSuggest: (id) => ipcRenderer.invoke('datasetSuggest', id),

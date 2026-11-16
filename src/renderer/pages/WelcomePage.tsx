@@ -1,60 +1,23 @@
-import { Database, FileCode, FileCsv, FileText, Files, Lightning, Stack, Table } from '@phosphor-icons/react';
-import type { Icon } from '@phosphor-icons/react';
 import type { CSSProperties } from 'react';
-import { useImportCsv } from '../hooks/useImportCsv';
+import { useImportLocal } from '../hooks/useImportLocal';
+import { DATA_SOURCE_GROUPS } from '../utils/dataSource';
+import type { DatasetSource } from '../utils/dataSource';
 
-type Source = { name: string; description: string; color: string; icon: Icon; csv?: boolean };
-
-const groups: { title: string; icon: Icon; sources: Source[] }[] = [
-  {
-    title: '文件与文本',
-    icon: Files,
-    sources: [
-      { name: 'CSV 文件', description: '本地 CSV 文件', color: '#25804d', icon: FileCsv, csv: true },
-      { name: 'JSON 文件', description: '本地或远程 JSON 文件', color: '#8054b6', icon: FileCode },
-      { name: 'Excel', description: '支持多个工作表的 XLSX 文件', color: '#18734b', icon: Table },
-      { name: 'Parquet', description: '面向分析的列式数据文件', color: '#a66a1c', icon: Stack },
-      { name: 'CSV 内容', description: '直接提供 CSV 文本内容', color: '#25804d', icon: FileCsv },
-      { name: 'JSON 数据', description: '直接提供结构化 JSON 数据', color: '#8054b6', icon: FileCode },
-      { name: '文本', description: '通过模型从文本中提取结构化数据', color: '#687682', icon: FileText },
-    ],
-  },
-  {
-    title: '数据库',
-    icon: Database,
-    sources: [
-      { name: 'MySQL', description: '开源关系型数据库', color: '#28769a', icon: Database },
-      { name: 'PostgreSQL', description: '开源对象关系型数据库', color: '#687682', icon: Database },
-      { name: 'SQLite', description: '轻量级本地文件数据库', color: '#687682', icon: Database },
-      { name: 'MongoDB', description: '面向文档的 NoSQL 数据库', color: '#687682', icon: Stack },
-      { name: 'ClickHouse', description: '面向实时分析的列式数据库', color: '#687682', icon: Database },
-    ],
-  },
-  {
-    title: 'SaaS 应用',
-    icon: Stack,
-    sources: [
-      { name: 'Supabase', description: '基于 PostgreSQL 的云端数据库', color: '#687682', icon: Lightning },
-      { name: '飞书多维表格', description: '飞书中的协作表格与业务数据', color: '#687682', icon: Table },
-    ],
-  },
-];
-
-function CsvSourceCard({
+function SourceCard({
   source,
   importing,
   onImport,
 }: {
-  source: Source;
+  source: DatasetSource;
   importing: boolean;
   onImport: () => void;
 }) {
-  const { name, description, color, icon: SourceIcon, csv } = source;
-  const action = !csv ? '待接入' : importing ? '正在导入…' : '选择文件';
+  const { label: name, description, color, icon: SourceIcon, format } = source;
+  const action = !format ? '待接入' : importing ? '正在导入…' : '选择文件';
   return (
     <button
       type="button"
-      disabled={!csv || importing}
+      disabled={!format || importing}
       onClick={onImport}
       aria-label={`${name}：${description}。${action}`}
       className="group relative grid h-28 w-full min-w-0 rounded-[14px] border bg-surface px-4 py-3 text-left text-ink shadow-[0_2px_4px] shadow-ink/3 transition-[border-color,box-shadow] hover:border-[var(--source-color)] hover:shadow-[0_4px_12px] focus-visible:border-[var(--source-color)] focus-visible:outline-none disabled:opacity-60"
@@ -78,7 +41,7 @@ function CsvSourceCard({
       >
         <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
         <small className="text-xs text-muted">{description}</small>
-        <span className="mt-0.5 text-xs" style={{ color: csv ? color : undefined }}>
+        <span className="mt-0.5 text-xs" style={{ color: format ? color : undefined }}>
           {action}
         </span>
       </span>
@@ -87,7 +50,7 @@ function CsvSourceCard({
 }
 
 export function WelcomePage() {
-  const { importing, importCsv } = useImportCsv();
+  const { importing, importLocal } = useImportLocal();
 
   return (
     <div className="mx-auto max-w-266 px-6 pt-8 pb-12" aria-busy={importing}>
@@ -98,7 +61,7 @@ export function WelcomePage() {
         </p>
       </header>
       <div className="my-8 grid gap-8">
-        {groups.map(({ title, icon: GroupIcon, sources }) => (
+        {DATA_SOURCE_GROUPS.map(({ title, icon: GroupIcon, sources }) => (
           <section key={title} aria-label={title}>
             <h2 className="mt-0 mr-0 mb-3.5 ml-0 flex items-center gap-2 text-base font-normal tracking-[0.01em]">
               <GroupIcon size={18} className="text-muted" aria-hidden />
@@ -106,11 +69,11 @@ export function WelcomePage() {
             </h2>
             <div className="grid grid-cols-[repeat(auto-fill,min(200px,100%))] gap-4">
               {sources.map((source) => (
-                <CsvSourceCard
-                  key={source.name}
+                <SourceCard
+                  key={source.type}
                   source={source}
                   importing={importing}
-                  onImport={() => void importCsv()}
+                  onImport={() => void importLocal(source.format)}
                 />
               ))}
             </div>

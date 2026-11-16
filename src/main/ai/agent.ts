@@ -22,6 +22,7 @@ type StreamInput = {
 
 type AnalysisAgent = {
   stream(input: StreamInput): ReturnType<ToolLoopAgent<never, ToolSet>['stream']>;
+  dispose(): Promise<void>;
 };
 
 const INSTRUCTIONS =
@@ -47,6 +48,8 @@ export async function createAnalysisAgent({
     stopWhen: ({ steps }) => steps.length >= options.maxSteps,
   });
   return {
+    dispose: () => ava.dispose(),
+
     async stream({ question, strategy, abortSignal, onPart }) {
       messages.push({ role: 'user', content: question });
       options.maxSteps = strategy === 'loop' ? 12 : 7;

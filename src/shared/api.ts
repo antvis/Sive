@@ -4,9 +4,14 @@ import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
 
 export type { AnalysisMessage } from './messages';
+
 export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './snippets';
 
 export type ThemeSettings = { mode: 'light' | 'dark' };
+
+export const LOCAL_FILE_FORMATS = ['csv', 'json', 'xlsx', 'parquet'] as const;
+
+export type LocalFileFormat = (typeof LOCAL_FILE_FORMATS)[number];
 
 export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
 
@@ -67,6 +72,9 @@ export type DatasetSummary = {
   fileSize?: number;
   rowCount?: number;
   columnCount: number;
+  tableCount?: number;
+  localFile: boolean;
+  fileUnavailable?: boolean;
 };
 
 export type DatasetDetail = DatasetSummary & { schema: Schema; profile: Profile; semantic: Semantic };
@@ -103,7 +111,11 @@ export type WorkspaceState = {
 export type WorkbenchApi = {
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
-  datasetImportCsv(lastDirectory?: string): Promise<(DatasetSummary & { directory: string }) | null>;
+  datasetImportLocal(
+    format?: LocalFileFormat,
+    lastDirectory?: string,
+  ): Promise<(DatasetSummary & { directory: string }) | null>;
+  datasetRefresh(id: string): Promise<void>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
   datasetPreview(
