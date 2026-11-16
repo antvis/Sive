@@ -2,15 +2,16 @@ import { Database, FileCode, FileCsv, FileText, Files, Lightning, Stack, Table }
 import type { Icon } from '@phosphor-icons/react';
 import type { LocalFileFormat } from '@shared/api';
 
+export type DatasetSourceAction =
+  { kind: 'file'; format: LocalFileFormat } | { kind: 'mysql' } | { kind: 'inline'; format: 'csv' | 'json' };
+
 export type DatasetSource = {
   type: string;
-  enable: boolean;
   label: string;
   description: string;
   color: string;
   icon: Icon;
-  format?: LocalFileFormat;
-};
+} & ({ enable: false } | { enable: true; actionLabel: string; action: DatasetSourceAction });
 
 export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSource[] }[] = [
   {
@@ -24,7 +25,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '本地 CSV 文件',
         color: '#25804d',
         icon: FileCsv,
-        format: 'csv',
+        actionLabel: '选择文件',
+        action: { kind: 'file', format: 'csv' },
       },
       {
         type: 'json-file',
@@ -33,7 +35,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '本地 JSON 文件',
         color: '#8054b6',
         icon: FileCode,
-        format: 'json',
+        actionLabel: '选择文件',
+        action: { kind: 'file', format: 'json' },
       },
       {
         type: 'excel',
@@ -42,7 +45,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '支持多个工作表的 XLSX 文件',
         color: '#18734b',
         icon: Table,
-        format: 'xlsx',
+        actionLabel: '选择文件',
+        action: { kind: 'file', format: 'xlsx' },
       },
       {
         type: 'parquet',
@@ -51,11 +55,14 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         description: '面向分析的列式数据文件',
         color: '#a66a1c',
         icon: Stack,
-        format: 'parquet',
+        actionLabel: '选择文件',
+        action: { kind: 'file', format: 'parquet' },
       },
       {
         type: 'csv',
-        enable: false,
+        enable: true,
+        actionLabel: '输入内容',
+        action: { kind: 'inline', format: 'csv' },
         label: 'CSV 内容',
         description: '直接提供 CSV 文本内容',
         color: '#25804d',
@@ -63,7 +70,9 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'json',
-        enable: false,
+        enable: true,
+        actionLabel: '输入内容',
+        action: { kind: 'inline', format: 'json' },
         label: 'JSON 数据',
         description: '直接提供结构化 JSON 数据',
         color: '#8054b6',
@@ -86,6 +95,8 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       {
         type: 'mysql',
         enable: true,
+        actionLabel: '配置连接',
+        action: { kind: 'mysql' },
         label: 'MySQL',
         description: '连接数据库并浏览数据表',
         color: '#28769a',
