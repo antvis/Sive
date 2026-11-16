@@ -48,6 +48,9 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetSelectLocal', async (event, format, lastDirectory) => {
     if (format !== undefined && !LOCAL_FILE_FORMATS.includes(format)) throw new Error('不支持的文件格式。');
+    const extensions = (format ? [format] : LOCAL_FILE_FORMATS).flatMap((format) =>
+      format === 'sqlite' ? ['sqlite', 'sqlite3', 'db'] : [format],
+    );
     const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
       title: '选择数据文件',
       defaultPath: typeof lastDirectory === 'string' && lastDirectory ? lastDirectory : undefined,
@@ -55,13 +58,13 @@ export function registerIpc(services: Services) {
       filters: [
         {
           name: format ? `${format.toUpperCase()} 文件` : '数据文件',
-          extensions: format ? [format] : [...LOCAL_FILE_FORMATS],
+          extensions,
         },
       ],
     });
     if (result.canceled) return null;
     const filePath = result.filePaths[0];
-    if (format && path.extname(filePath).toLowerCase() !== `.${format}`)
+    if (format && !extensions.includes(path.extname(filePath).slice(1).toLowerCase()))
       throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
     return {
       name: path.basename(filePath, path.extname(filePath)).trim(),

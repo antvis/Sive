@@ -56,7 +56,7 @@ export function WelcomePage() {
   const [connectingMySQL, setConnectingMySQL] = useState(false);
 
   return (
-    <div className="mx-auto max-w-266 px-6 pt-8 pb-12" aria-busy={importing}>
+    <div className="mx-auto px-6 pt-8 pb-12" aria-busy={importing}>
       <header>
         <h1 className="m-0 text-[26px] leading-[1.35] font-semibold tracking-[-0.03em]">欢迎使用 Sive</h1>
         <p className="mt-3 mb-0 max-w-150 leading-[1.7] text-muted">

@@ -54,22 +54,6 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         format: 'parquet',
       },
       {
-        type: 'csv',
-        enable: false,
-        label: 'CSV 内容',
-        description: '直接提供 CSV 文本内容',
-        color: '#25804d',
-        icon: FileCsv,
-      },
-      {
-        type: 'json',
-        enable: false,
-        label: 'JSON 数据',
-        description: '直接提供结构化 JSON 数据',
-        color: '#8054b6',
-        icon: FileCode,
-      },
-      {
         type: 'text',
         enable: false,
         label: '文本',
@@ -101,11 +85,12 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'sqlite',
-        enable: false,
+        enable: true,
         label: 'SQLite',
-        description: '轻量级本地文件数据库',
-        color: '#687682',
+        description: '支持多表浏览的本地 SQLite 数据库',
+        color: '#28769a',
         icon: Database,
+        format: 'sqlite',
       },
       {
         type: 'mongodb',

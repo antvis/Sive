@@ -3,7 +3,10 @@ import path from 'node:path';
 import type { DataSourceConfig } from '@antv/ava';
 
 export function localFilePath(source: DataSourceConfig) {
-  if (['csv-file', 'json-file', 'parquet', 'excel'].includes(source.type) && 'path' in source.options) {
+  if (
+    ['csv-file', 'json-file', 'parquet', 'excel', 'sqlite'].includes(source.type) &&
+    'path' in source.options
+  ) {
     const file = source.options.path;
     if (typeof file === 'string' && !/^https?:\/\//i.test(file)) return file;
   }
@@ -21,8 +24,12 @@ export function localSource(file: string): DataSourceConfig {
       return { type: 'parquet', options: { path: file } };
     case '.xlsx':
       return { type: 'excel', options: { path: file } };
+    case '.sqlite':
+    case '.sqlite3':
+    case '.db':
+      return { type: 'sqlite', options: { path: file } };
     default:
-      throw new Error('请选择 CSV、JSON、XLSX 或 Parquet 文件。');
+      throw new Error('请选择 CSV、JSON、XLSX、Parquet 或 SQLite 文件。');
   }
 }
 
