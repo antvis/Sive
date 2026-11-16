@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
-import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
+import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import { Button } from '../../components/Button';
 import { DataGrid } from '../../components/DataGrid';
 import { Select } from '../../components/Select';
-import type { DatasetDetail, Preferences } from '../../types';
+import type { DatasetDetail } from '../../types';
 import { errorMessage } from '../../utils';
 
 function DataPreview({
@@ -111,24 +111,14 @@ function DataPreview({
   );
 }
 
-export function DatasetPanel({
-  datasetId,
-  defaultPageSize = DEFAULT_PREFERENCES.previewPageSize,
-}: {
-  datasetId: string;
-  defaultPageSize?: Preferences['previewPageSize'];
-}) {
+export function DatasetPanel({ datasetId }: { datasetId: string }) {
   const [detail, setDetail] = useState<DatasetDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [table, setTable] = useState('');
-  const [pageSize, setPageSize] = useState<number>(defaultPageSize);
-
-  useEffect(() => {
-    setPageSize(defaultPageSize);
-  }, [defaultPageSize]);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PREVIEW_PAGE_SIZE);
 
   useEffect(() => {
     let live = true;

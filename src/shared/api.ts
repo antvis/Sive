@@ -10,16 +10,16 @@ export type ThemeSettings = { mode: 'light' | 'dark' };
 
 export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
 
+export const DEFAULT_PREVIEW_PAGE_SIZE = 100;
+
 export type Preferences = {
   analysisMode: 'direct' | 'loop';
   sendShortcut: 'enter' | 'mod-enter';
-  previewPageSize: (typeof PREVIEW_PAGE_SIZES)[number];
 };
 
 export const DEFAULT_PREFERENCES: Preferences = {
   analysisMode: 'direct',
   sendShortcut: 'enter',
-  previewPageSize: 100,
 };
 
 export type DatasetPreviewOptions = { offset: number; limit: number };

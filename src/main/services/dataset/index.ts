@@ -9,7 +9,7 @@ import type { DBConnection } from '../../db/repository/db-connection';
 import type { datasets } from '../../db/schema/datasets';
 import { required } from '../../util';
 import type { DatasetSaveInput } from '../types';
-import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
+import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
 
 type DatasetRow = typeof datasets.$inferSelect;
@@ -66,7 +66,7 @@ export class DatasetService {
   async preview(
     id: string,
     table?: string,
-    options: DatasetPreviewOptions = { offset: 0, limit: DEFAULT_PREFERENCES.previewPageSize },
+    options: DatasetPreviewOptions = { offset: 0, limit: DEFAULT_PREVIEW_PAGE_SIZE },
   ) {
     const dataset = required(this.get(id), '数据源不存在或已删除。');
     const model = required(

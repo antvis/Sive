@@ -2,7 +2,7 @@ import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { ActiveModel } from '../../db/repository/setting-repo';
 import type { Preferences, ThemeSettings } from '../types';
-import { DEFAULT_PREFERENCES, PREVIEW_PAGE_SIZES } from '@shared/api';
+import { DEFAULT_PREFERENCES } from '@shared/api';
 
 const THEME_KEY = 'theme';
 const PREFERENCES_KEY = 'preferences';
@@ -37,14 +37,10 @@ export class SettingsService {
     return {
       analysisMode: saved?.analysisMode ?? DEFAULT_PREFERENCES.analysisMode,
       sendShortcut: saved?.sendShortcut ?? DEFAULT_PREFERENCES.sendShortcut,
-      previewPageSize:
-        PREVIEW_PAGE_SIZES.find((size) => size === saved?.previewPageSize) ??
-        DEFAULT_PREFERENCES.previewPageSize,
     };
   }
 
   savePreferences(preferences: Preferences) {
-    if (!PREVIEW_PAGE_SIZES.includes(preferences.previewPageSize)) throw new Error('请选择有效的预览行数。');
     this.set(PREFERENCES_KEY, preferences);
   }
 
