@@ -74,7 +74,7 @@ export function createTools(ava: AVA, context: ToolContext): ToolSet {
           ...visualization,
           question: analysis.query,
           summary: analysis.text,
-          spec: { ...visualization.config, type: visualization.chartType },
+          spec: visualization.chartType === 'summary' ? undefined : visualization.config,
         };
       },
     }),
