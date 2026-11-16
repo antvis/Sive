@@ -80,20 +80,16 @@ export class DatasetService {
     );
   }
 
-  private mysqlSource(id: string) {
-    const row = required(this.get(id), '数据源不存在或已删除。');
-    if (row.sourceConfig.type !== 'mysql') throw new Error('只有 MySQL 数据源支持此操作。');
-    return row.sourceConfig;
-  }
-
   getMySQL(id: string): MySQLConnection {
     const row = required(this.get(id), '数据源不存在或已删除。');
-    const { host, port = 3306, database, user = '', password } = this.mysqlSource(id).options;
+    if (row.sourceConfig.type !== 'mysql') throw new Error('只有 MySQL 数据源支持此操作。');
+    const { host, port = 3306, database, user = '', password } = row.sourceConfig.options;
     return { id, name: row.name, host, port, database, user, hasPassword: Boolean(password) };
   }
 
   private prepareMySQL({ id, name, password, ...connection }: MySQLInput) {
-    const previous = id ? this.mysqlSource(id) : undefined;
+    const previous = id ? required(this.get(id), '数据源不存在或已删除。').sourceConfig : undefined;
+    if (previous && previous.type !== 'mysql') throw new Error('只有 MySQL 数据源支持此操作。');
     const sourceConfig: Extract<DataSourceConfig, { type: 'mysql' }> = {
       type: 'mysql',
       options: { ...connection, password: password ?? previous?.options.password ?? '' },
