@@ -9,7 +9,7 @@
   "type": "module",
   "main": "dist-electron/main.cjs",
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=22.14.0"
   },
   "scripts": {
     "electron:install": "install-electron",
