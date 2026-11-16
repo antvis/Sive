@@ -1,0 +1,25 @@
+.github/workflows/release.yml
+  s_20babb382e0f6b::t_14192b453117aa 58
+  s_20babb382e0f6b::t_28631030b532e8 1-11,13-42,72-79,81-84
+  s_20babb382e0f6b::t_595e3bc39c273d 43-57,59-71
+  s_20babb382e0f6b::t_923458bb50c88d 80
+  s_20babb382e0f6b::t_6ad51c9199ad35 12
+package.json
+  s_20babb382e0f6b::t_e883dd45bc4b90 50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "31b0aa924de1c56248574049935da5a04486ae28",
+  "prompts": {},
+  "sessions": {
+    "s_20babb382e0f6b": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "9b254c68-85f8-4c1e-9ec1-f0a2c6ce59cf",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
