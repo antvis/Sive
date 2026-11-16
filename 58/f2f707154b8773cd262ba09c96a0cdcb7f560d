@@ -1,0 +1,27 @@
+src/main/index.ts
+  s_3656f48d4052d3::t_d90da7d432b3b8 38-41
+  s_3656f48d4052d3::t_b68ac4141048bb 37
+src/main/ipc/index.ts
+  s_3656f48d4052d3::t_cdaf62e6c1888b 8
+src/main/services/analysis/index.ts
+  s_3656f48d4052d3::t_d82f3213a12f1f 44-47
+src/main/db/repository/message-repo.ts
+  s_3656f48d4052d3::t_4813da2f3af1a6 1
+  s_3656f48d4052d3::t_e87682c2601a53 54-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "58f2f707154b8773cd262ba09c96a0cdcb7f560d",
+  "prompts": {},
+  "sessions": {
+    "s_3656f48d4052d3": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "2eb14db0-e9fc-4d03-bfcc-e6adc436c650",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
