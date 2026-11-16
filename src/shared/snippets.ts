@@ -17,7 +17,6 @@ export type Snippet = {
   messageId: string;
   title: string;
   content: SnippetContent;
-  isVisible: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

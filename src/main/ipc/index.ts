@@ -93,12 +93,6 @@ export function registerIpc(services: Services) {
     services.dataset.suggest(text(id), services.model.getDefaultModelConfig()),
   );
 
-  ipcMain.handle('datasetSave', (event, input) => {
-    const result = services.dataset.save(objectInput<DatasetSaveInput>(input));
-    changed(event);
-    return result;
-  });
-
   ipcMain.handle('datasetRename', (event, id, name) => {
     services.dataset.rename(text(id), text(name));
     changed(event);
@@ -112,12 +106,6 @@ export function registerIpc(services: Services) {
   ipcMain.handle('datasetSaveSemantic', (event, id, semantic, metrics) => {
     services.dataset.saveSemantic(text(id), objectInput<Semantic>(semantic), metrics);
     changed(event);
-  });
-
-  ipcMain.handle('conversationCreate', (event, datasetId) => {
-    const result = services.conversation.create(text(datasetId));
-    changed(event);
-    return result;
   });
 
   ipcMain.handle('conversationRename', (event, id, title) => {
@@ -168,8 +156,6 @@ export function registerIpc(services: Services) {
   ipcMain.handle('analysisGetMessages', (_event, conversationId) =>
     services.analysis.getMessages(text(conversationId)),
   );
-
-  ipcMain.handle('analysisGetRun', (_event, id) => services.analysis.getRun(text(id)));
 
   ipcMain.handle('snippetSave', (event, input) => {
     const result = services.snippet.save(objectInput<SnippetSaveInput>(input));
