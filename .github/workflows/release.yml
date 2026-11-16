@@ -1,0 +1,84 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin
+            arch: arm64
+          - os: windows-latest
+            platform: win32
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Package
+        run: pnpm run package --platform=${{ matrix.platform }} --arch=${{ matrix.arch }}
+
+      - name: Import signing certificate (macOS)
+        if: matrix.platform == 'darwin'
+        env:
+          MAC_CERTS: ${{ secrets.MAC_CERTS }}
+          MAC_CERTS_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
+        run: |
+          echo "$MAC_CERTS" | base64 --decode > signing.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import signing.p12 -k build.keychain -P "$MAC_CERTS_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+
+      - name: Sign app (macOS)
+        if: matrix.platform == 'darwin'
+        run: pnpm exec electron-osx-sign release/Sive-darwin-arm64/Sive.app
+
+      - name: Notarize app (macOS)
+        if: matrix.platform == 'darwin'
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          echo "$APPLE_API_KEY" | base64 --decode > AuthKey.p8
+          ditto -c -k --keepParent release/Sive-darwin-arm64/Sive.app notarize.zip
+          xcrun notarytool submit notarize.zip --key AuthKey.p8 --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER" --wait
+          xcrun stapler staple release/Sive-darwin-arm64/Sive.app
+
+      - name: Zip app (macOS)
+        if: matrix.platform == 'darwin'
+        run: ditto -c -k --sequesterRsrc --keepParent release/Sive-darwin-arm64/Sive.app release/Sive-macOS-arm64.zip
+
+      - name: Zip app (Windows)
+        if: matrix.platform == 'win32'
+        run: Compress-Archive -Path release/Sive-win32-x64 -DestinationPath release/Sive-Windows-x64.zip
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.zip
+          generate_release_notes: true
