@@ -1,0 +1,14 @@
+src/main/ipc/index.ts
+  h_63dffd5e80151f 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "21edd3a0254614d398c3dbad98e9e2fd315359b6",
+  "prompts": {},
+  "humans": {
+    "h_63dffd5e80151f": {
+      "author": "hustcc <i@hust.cc>"
+    }
+  }
+}
