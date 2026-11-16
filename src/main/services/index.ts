@@ -11,9 +11,7 @@ export function createServices(database: DBConnection) {
   const repositories = createRepositories(database);
 
   const analysis = new AnalysisService(database, repositories);
-  const dataset = new DatasetService(database, repositories, (id, update) =>
-    analysis.withDatasetUpdate(id, update),
-  );
+  const dataset = new DatasetService(database, repositories);
   const conversation = new ConversationService(database, repositories);
   const snippet = new SnippetService(database, repositories);
   const settings = new SettingsService(database, repositories);

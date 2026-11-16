@@ -41,17 +41,21 @@ export class AnalysisService {
     private repositories: Repositories,
   ) {}
 
-  async withDatasetUpdate<T>(datasetId: string, update: () => Promise<T>): Promise<T> {
+  async beginDatasetUpdate(datasetId: string) {
     if (this.updatingDatasets.has(datasetId)) throw new Error('数据源正在更新，请稍后重试。');
     if ([...this.tasks.values()].some((task) => task.datasetId === datasetId))
       throw new Error('该数据源正在分析，请等待分析结束后刷新。');
     this.updatingDatasets.add(datasetId);
     try {
       await this.disposeDatasetAgents(datasetId);
-      return await update();
-    } finally {
-      this.updatingDatasets.delete(datasetId);
+    } catch (error) {
+      this.endDatasetUpdate(datasetId);
+      throw error;
     }
+  }
+
+  endDatasetUpdate(datasetId: string) {
+    this.updatingDatasets.delete(datasetId);
   }
 
   private async disposeDatasetAgents(datasetId: string) {

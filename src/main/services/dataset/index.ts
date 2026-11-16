@@ -46,7 +46,6 @@ export class DatasetService {
   constructor(
     private database: DBConnection,
     private repositories: Repositories,
-    private withSourceUpdate: (id: string, update: () => Promise<DatasetRow>) => Promise<DatasetRow>,
   ) {}
 
   list() {
@@ -73,15 +72,13 @@ export class DatasetService {
       : null;
   }
 
-  refresh(id: string) {
-    return this.withSourceUpdate(id, async () => {
-      const original = required(this.get(id), '数据源不存在或已删除。');
-      required(localFilePath(original.sourceConfig), '只有本地文件支持刷新。');
-      const refreshed = await this.readSource(original.sourceConfig);
-      return this.database.write(() =>
-        required(this.repositories.datasets.update(id, refreshed), '数据源不存在或已删除。'),
-      );
-    });
+  async refresh(id: string) {
+    const original = required(this.get(id), '数据源不存在或已删除。');
+    required(localFilePath(original.sourceConfig), '只有本地文件支持刷新。');
+    const refreshed = await this.readSource(original.sourceConfig);
+    return this.database.write(() =>
+      required(this.repositories.datasets.update(id, refreshed), '数据源不存在或已删除。'),
+    );
   }
 
   async preview(

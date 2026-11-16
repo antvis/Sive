@@ -70,7 +70,12 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetRefresh', async (event, input) => {
     const id = text(input);
-    await services.dataset.refresh(id);
+    await services.analysis.beginDatasetUpdate(id);
+    try {
+      await services.dataset.refresh(id);
+    } finally {
+      services.analysis.endDatasetUpdate(id);
+    }
     changed(event);
   });
 
