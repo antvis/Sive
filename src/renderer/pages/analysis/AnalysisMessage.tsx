@@ -173,7 +173,7 @@ function visualizationSummary(visualization: VisualizeResponse | null | undefine
     table: '数据表格',
   };
   const chartName = chartNames[visualization.chartType] ?? visualization.chartType;
-  const title = visualization.config.title;
+  const title = visualization.chartType === 'summary' ? undefined : visualization.config.title;
   return `已根据分析结果生成${typeof title === 'string' && title ? `“${title}”` : ''}${chartName}。`;
 }
 
@@ -282,7 +282,7 @@ function toolContent(toolName: string, output: unknown, chartAction?: ReactNode)
   if (toolName === 'visualize') {
     const visualization = output as VisualizationResult | null | undefined;
     const spec = visualization
-      ? (visualization.spec ?? { ...visualization.config, type: visualization.chartType })
+      ? (visualization.spec ?? (visualization.chartType === 'summary' ? undefined : visualization.config))
       : undefined;
     return (
       <div className="grid min-w-0 gap-3">

@@ -13,4 +13,5 @@ export type {
   ThemeSettings,
   WorkspaceState,
 } from '@shared/api';
+
 export type { Semantic, SuggestResult } from '@antv/ava';

@@ -5,7 +5,7 @@ import type { Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
 import type { DatasetPreviewOptions } from '@shared/api';
-import type { DatasetSaveInput, ModelInput, Preferences, ThemeSettings } from '../services/types';
+import type { ModelInput, Preferences, ThemeSettings } from '../services/types';
 import { LOCAL_FILE_FORMATS } from '@shared/api';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';

@@ -93,6 +93,7 @@ export class ModelService {
     let cursor = 0;
     let completed = 0;
     const active = new Set<string>();
+
     const progress = () => report({ completed, total: input.modelIds.length, active: [...active] });
 
     const worker = async () => {
