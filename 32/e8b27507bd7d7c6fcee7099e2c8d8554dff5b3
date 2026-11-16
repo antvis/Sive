@@ -1,0 +1,34 @@
+src/renderer/utils/table.ts
+  s_255f199b5325b3::t_7172860381e817 18-23,25-26
+  s_255f199b5325b3::t_404b1a5e41f22a 2
+  s_255f199b5325b3::t_191fb3cf113b23 27-28
+src/shared/api.ts
+  s_255f199b5325b3::t_8ed48d7f076687 1
+  s_255f199b5325b3::t_87fb22176649d7 72
+src/main/services/dataset/index.ts
+  s_255f199b5325b3::t_0d71227ac40622 63-65
+src/renderer/pages/analysis/DatasetPanel.tsx
+  s_255f199b5325b3::t_daf6c71cf76fbe 14,20
+  s_255f199b5325b3::t_b664c0529b29b2 54
+  s_255f199b5325b3::t_894b36a7a9af83 216
+src/renderer/components/DataGrid.tsx
+  s_255f199b5325b3::t_f85cb7cb416cb9 4
+  s_255f199b5325b3::t_6f8db3566d652a 27,29
+  s_255f199b5325b3::t_485228f9e5c653 2,13,17-18,31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "32e8b27507bd7d7c6fcee7099e2c8d8554dff5b3",
+  "prompts": {},
+  "sessions": {
+    "s_255f199b5325b3": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "a4ccf85b-c5ef-4351-9a9d-bf3275614d50",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
