@@ -1,0 +1,14 @@
+src/main/ai/agent.ts
+  h_63dffd5e80151f 48-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1fe5574889999c6fd64d98da457036b5f122d718",
+  "prompts": {},
+  "humans": {
+    "h_63dffd5e80151f": {
+      "author": "hustcc <i@hust.cc>"
+    }
+  }
+}
