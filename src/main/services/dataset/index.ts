@@ -148,7 +148,7 @@ export class DatasetService {
     const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
     const ava = new AVA({
       llm: { model: 'preview-only' },
-      engine: sourceEngine(dataset.sourceConfig, { type: 'duckdb', queryTimeoutMs: 30000 }),
+      engine: sourceEngine(dataset.sourceConfig),
     });
     try {
       const file = localFilePath(dataset.sourceConfig);
@@ -169,7 +169,7 @@ export class DatasetService {
     const provider = createOpenAICompatible({ name: 'sive', baseURL: config.baseURL, apiKey: config.apiKey });
     const ava = new AVA({
       llm: { model: provider.chatModel(config.model) },
-      engine: sourceEngine(dataset.sourceConfig, { type: 'duckdb', memoryLimit: '1024MB' }),
+      engine: sourceEngine(dataset.sourceConfig),
     });
     try {
       const file = localFilePath(dataset.sourceConfig);
@@ -189,7 +189,7 @@ export class DatasetService {
     if (file) await checkLocalFile(file);
     const ava = new AVA({
       llm: { model: 'data-loading-only' },
-      engine: sourceEngine(sourceConfig, { type: 'duckdb', memoryLimit: '1024MB' }),
+      engine: sourceEngine(sourceConfig),
     });
     try {
       await ava.source(sourceConfig);
