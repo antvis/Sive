@@ -1,0 +1,35 @@
+name: Surge PR Preview
+
+on:
+  pull_request:
+    paths:
+      - 'site/**'
+      - '.github/workflows/surge-preview.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: surge-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment:
+      name: surge-preview
+      url: https://${{ steps.preview.outputs.preview_url }}/
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: afc163/surge-preview@v1
+        id: preview
+        with:
+          surge_token: ${{ secrets.SURGE_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dist: site
+          build: test -f site/index.html
+          failOnError: 'true'
