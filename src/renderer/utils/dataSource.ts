@@ -2,7 +2,12 @@ import { Database, FileCode, FileCsv, FileText, Files, Lightning, Stack, Table }
 import type { Icon } from '@phosphor-icons/react';
 import type { ComponentType } from 'react';
 import type { LocalFileFormat } from '@shared/api';
-import { MySQLDialog, PostgreSQLDialog, MongoDBDialog } from '../pages/datasets/datasetDialogs';
+import {
+  MySQLDialog,
+  PostgreSQLDialog,
+  MongoDBDialog,
+  ClickHouseDialog,
+} from '../pages/datasets/datasetDialogs';
 import type { ConnectionDialogProps } from '../pages/datasets/datasetDialogs';
 
 export type DatasetSourceAction =
@@ -121,11 +126,13 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'clickhouse',
-        enable: false,
+        enable: true,
         label: 'ClickHouse',
         description: '面向实时分析的列式数据库',
         color: '#687682',
         icon: Database,
+        action: { type: 'connection', Dialog: ClickHouseDialog },
+        actionLabel: '配置连接',
       },
     ],
   },

@@ -7,3 +7,5 @@ export { MySQLDialog } from './MySQLDialog';
 export { PostgreSQLDialog } from './PostgreSQLDialog';
 
 export { MongoDBDialog } from './MongoDBDialog';
+
+export { ClickHouseDialog } from './ClickHouseDialog';

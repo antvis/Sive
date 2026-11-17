@@ -4,6 +4,7 @@ import { ToolLoopAgent } from 'ai';
 import type { AnalysisStrategyConfig } from '@antv/ava';
 import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
 import type { DuckDBEngineConfig } from '@shared/api';
+import { sourceEngine } from '../util/engine';
 import { createTools } from './tools';
 import type { ToolContext } from './tools';
 
@@ -42,7 +43,7 @@ export async function createAnalysisAgent({
   const languageModel = provider.chatModel(model.model);
   const ava = new AVA({
     llm: { model: languageModel },
-    engine,
+    engine: sourceEngine(dataset.sourceConfig, engine),
   });
   const messages = [...history];
   // This is the default options, but they can be overridden by the `stream` method.
