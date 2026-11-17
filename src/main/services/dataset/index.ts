@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { statSync } from 'node:fs';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA, sourceInputSchema } from '@antv/ava';
-import type { DataSourceConfig, JavaScriptEngine, Semantic } from '@antv/ava';
+import type { DataSourceConfig, JavaScriptEngine, LLMConfig, Semantic } from '@antv/ava';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { datasets } from '../../db/schema/datasets';
@@ -122,10 +122,9 @@ export class DatasetService {
     await this.readSource(sourceConfig);
   }
 
-  async extractText(text: string, config: { baseURL: string; model: string; apiKey?: string }) {
-    const provider = createOpenAICompatible({ name: 'sive', baseURL: config.baseURL, apiKey: config.apiKey });
+  async extractText(text: string, config: LLMConfig) {
     const ava = new AVA({
-      llm: { model: provider.chatModel(config.model), maxRetries: 0 },
+      llm: { ...config, maxRetries: 0 },
       engine: { type: 'javascript' },
     });
     try {
