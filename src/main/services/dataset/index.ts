@@ -104,6 +104,10 @@ export class DatasetService {
         const { projectRef } = sourceConfig.options;
         sourceConfig = { type: 'supabase', options: { projectRef, accessToken: '' } };
         break;
+      case 'feishu-bitable': {
+        const { url, appId } = sourceConfig.options;
+        sourceConfig = { type: 'feishu-bitable', options: { url, appId } };
+        break;
       }
     }
     return {

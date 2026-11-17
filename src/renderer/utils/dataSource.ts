@@ -8,6 +8,7 @@ import {
   MongoDBDialog,
   ClickHouseDialog,
   SupabaseDialog,
+  FeishuBitableDialog,
   TextImportDialog,
 } from '../pages/datasets/datasetDialogs';
 import type { ConnectionDialogProps } from '../pages/datasets/datasetDialogs';
@@ -157,11 +158,13 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'feishu-bitable',
-        enable: false,
+        enable: true,
         label: '飞书多维表格',
         description: '飞书中的协作表格与业务数据',
         color: '#687682',
         icon: Table,
+        action: { type: 'connection', Dialog: FeishuBitableDialog },
+        actionLabel: '配置连接',
       },
     ],
   },
