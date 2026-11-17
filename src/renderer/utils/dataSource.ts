@@ -2,9 +2,8 @@ import { Database, FileCode, FileCsv, FileText, Files, Lightning, Stack, Table }
 import type { Icon } from '@phosphor-icons/react';
 import type { ComponentType } from 'react';
 import type { LocalFileFormat } from '@shared/api';
-import { MySQLDialog } from '../pages/datasets/datasetDialogs/MySQLDialog';
-import { PostgreSQLDialog } from '../pages/datasets/datasetDialogs/PostgreSQLDialog';
-import type { ConnectionDialogProps } from '../pages/datasets/datasetDialogs/ConnectionDialog';
+import { MySQLDialog, PostgreSQLDialog, MongoDBDialog } from '../pages/datasets/datasetDialogs';
+import type { ConnectionDialogProps } from '../pages/datasets/datasetDialogs';
 
 export type DatasetSourceAction =
   | { type: 'file'; format: LocalFileFormat }
@@ -112,11 +111,13 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'mongodb',
-        enable: false,
+        enable: true,
         label: 'MongoDB',
         description: '面向文档的 NoSQL 数据库',
-        color: '#687682',
+        color: '#25804d',
         icon: Stack,
+        action: { type: 'connection', Dialog: MongoDBDialog },
+        actionLabel: '配置连接',
       },
       {
         type: 'clickhouse',
