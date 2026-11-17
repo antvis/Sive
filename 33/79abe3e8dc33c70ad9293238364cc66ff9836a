@@ -1,0 +1,19 @@
+.npmrc
+  s_3b88a6e864b550::t_a612b306f29853 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3379abe3e8dc33c70ad9293238364cc66ff9836a",
+  "prompts": {},
+  "sessions": {
+    "s_3b88a6e864b550": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "4fa3a9e8-6d5c-41ab-ac02-8027e327c863",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
