@@ -1,6 +1,6 @@
-import type { VisualizeResponse } from '@antv/ava';
+import type { ChartConfig } from '@antv/ava';
 
-export type SnippetSpec = VisualizeResponse['config'];
+export type SnippetSpec = ChartConfig;
 
 export type SnippetContent = {
   question: string;
