@@ -6,5 +6,5 @@ export function sourceEngine(
   source: DataSourceConfig,
   duckdb: DuckDBEngineConfig = DEFAULT_PREFERENCES.engine,
 ): EngineConfig {
-  return source.type === 'clickhouse' ? { type: 'clickhouse' } : duckdb;
+  return ['clickhouse', 'supabase'].includes(source.type) ? { type: source.type } : duckdb;
 }

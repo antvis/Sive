@@ -10,6 +10,8 @@ export { MongoDBDialog } from './MongoDBDialog';
 
 export { ClickHouseDialog } from './ClickHouseDialog';
 
+export { SupabaseDialog } from './SupabaseDialog';
+
 export { FeishuBitableDialog } from './FeishuBitableDialog';
 
 export { TextImportDialog } from './TextImportDialog';
