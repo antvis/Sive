@@ -1,0 +1,37 @@
+name: Surge PR Preview
+
+on:
+  pull_request:
+    paths:
+      - 'site/**'
+      - '.github/workflows/surge-preview.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: surge-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      PREVIEW_DOMAIN: antvis-sive-pr-${{ github.event.pull_request.number }}.surge.sh
+    environment:
+      name: surge-preview
+      url: https://${{ env.PREVIEW_DOMAIN }}/
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+      - name: Install Surge
+        run: npm install --global --ignore-scripts surge@0.57.1
+      - name: Publish preview
+        run: surge site "$PREVIEW_DOMAIN"
+        env:
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
