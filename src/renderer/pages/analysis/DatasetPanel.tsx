@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { SidebarSimple, Table } from '@phosphor-icons/react';
+import clsx from 'clsx';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
@@ -7,6 +9,7 @@ import { DataGrid } from '../../components/DataGrid';
 import { Select } from '../../components/Select';
 import type { DatasetDetail } from '../../types';
 import { errorMessage } from '../../utils';
+import { TableNavigator } from './TableNavigator';
 
 function DataPreview({
   datasetId,
@@ -85,7 +88,7 @@ function DataPreview({
                   ? '本页暂无数据，可返回上一页'
                   : '暂无数据'}
         </span>
-        <div className="ml-auto flex shrink-0 items-center gap-2">
+        <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-2">
           <span title="排序只作用于已读取的当前页；数据变化或没有主键时，翻页结果可能变化。">
             仅排序当前页
           </span>
@@ -120,7 +123,10 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [table, setTable] = useState('');
-  const [tableSearch, setTableSearch] = useState('');
+  const [{ compact, open: treeOpen }, setNavigation] = useState({ compact: true, open: false });
+  const root = useRef<HTMLDivElement>(null);
+  const treeToggle = useRef<HTMLButtonElement>(null);
+  const treeId = useId();
   const [fieldSearch, setFieldSearch] = useState('');
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PREVIEW_PAGE_SIZE);
 
@@ -150,6 +156,21 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
     };
   }, [datasetId]);
 
+  useEffect(() => {
+    if (!root.current) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const compact = entry.contentRect.width < 640;
+      setNavigation((current) => (current.compact === compact ? current : { compact, open: !compact }));
+    });
+    observer.observe(root.current);
+    return () => observer.disconnect();
+  }, [loading, error]);
+
+  const closeTree = () => {
+    setNavigation((current) => ({ ...current, open: false }));
+    treeToggle.current?.focus();
+  };
+
   const saveSemantic = async () => {
     if (!detail || saving) return;
     setSaving(true);
@@ -170,9 +191,8 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
   if (!detail) return null;
   const model = detail.schema.models.find((item) => item.name === table) ?? detail.schema.models[0];
   const columns = model?.columns ?? [];
-  const tables = detail.schema.models.filter((item) =>
-    item.name.toLocaleLowerCase().includes(tableSearch.trim().toLocaleLowerCase()),
-  );
+  const multipleTables = detail.schema.models.length > 1;
+  const showTree = multipleTables && treeOpen;
   const fields = columns.filter((column) =>
     column.name.toLocaleLowerCase().includes(fieldSearch.trim().toLocaleLowerCase()),
   );
@@ -181,7 +201,14 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
     detail.schema.relationships?.filter((item) => model && item.models.includes(model.name)) ?? [];
 
   return (
-    <Tabs.Root defaultValue="data" className="flex h-full min-h-0 flex-col">
+    <Tabs.Root
+      ref={root}
+      defaultValue="data"
+      onValueChange={() => {
+        if (compact) setNavigation((current) => ({ ...current, open: false }));
+      }}
+      className="flex h-full min-h-0 min-w-0 flex-col"
+    >
       <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
         <Tabs.List aria-label="数据集信息" className="flex rounded-lg bg-page p-1">
           <Tabs.Trigger
@@ -203,112 +230,136 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             语义层
           </Tabs.Trigger>
         </Tabs.List>
-        {detail.schema.models.length > 1 && (
-          <div className="flex min-w-0 items-center gap-2">
-            <input
-              aria-label="搜索数据表"
-              placeholder="搜索数据表"
-              value={tableSearch}
-              onChange={(event) => setTableSearch(event.target.value)}
-              className="w-28 rounded-md border bg-page px-2 py-1 text-xs outline-none focus:border-accent"
-            />
-            {tables.length ? (
-              <Select
-                compact
-                aria-label="选择数据表"
-                value={tables.some((item) => item.name === model.name) ? model.name : ''}
-                onChange={(value) => {
-                  if (value) setTable(value);
-                }}
-                options={[
-                  ...(!tables.some((item) => item.name === model.name)
-                    ? [{ value: '', label: '请选择数据表' }]
-                    : []),
-                  ...tables.map((item) => ({ value: item.name, label: item.name })),
-                ]}
-              />
-            ) : (
-              <span className="text-xs text-muted">无匹配数据表</span>
+        {multipleTables && (
+          <button
+            ref={treeToggle}
+            type="button"
+            aria-label={showTree ? '收起表结构' : '打开表结构'}
+            aria-expanded={showTree}
+            aria-controls={treeId}
+            onClick={() => setNavigation((current) => ({ ...current, open: !current.open }))}
+            className={clsx(
+              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              showTree ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-page',
             )}
-          </div>
+          >
+            <SidebarSimple size={16} />
+            <span>{detail.schema.models.length} 张表</span>
+          </button>
         )}
       </div>
-      <Tabs.Content value="data" className="flex min-h-0 flex-1 flex-col">
-        <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-2 text-xs text-muted">
-          <span className="min-w-0 truncate">
-            {model ? `${model.name} · ${columns.length} 个字段` : '没有可预览的数据表'}
-          </span>
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        {multipleTables && (
+          <aside
+            id={treeId}
+            hidden={!showTree}
+            aria-label="表结构"
+            className={clsx(
+              'flex min-h-0 min-w-0 flex-col bg-surface hidden:hidden',
+              compact ? 'w-full' : 'w-56 shrink-0 border-r',
+            )}
+            onKeyDown={(event) => {
+              if (compact && event.key === 'Escape') {
+                event.preventDefault();
+                closeTree();
+              }
+            }}
+          >
+            <TableNavigator
+              models={detail.schema.models}
+              selected={model?.name ?? ''}
+              autoFocus={compact && showTree}
+              onSelect={(name) => {
+                setTable(name);
+                setFieldSearch('');
+                if (compact) closeTree();
+              }}
+            />
+          </aside>
+        )}
+        <div hidden={compact && showTree} className="flex min-h-0 min-w-0 flex-1 flex-col hidden:hidden">
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-2 text-xs text-muted">
+            <div className="flex min-w-0 items-center gap-2">
+              <Table size={14} className="shrink-0" />
+              <span className="truncate text-ink" title={model?.name}>
+                {model?.name ?? '没有可预览的数据表'}
+              </span>
+            </div>
+            {model && <span className="shrink-0">{columns.length} 个字段</span>}
+          </div>
+          <Tabs.Content value="data" className="flex min-h-0 flex-1 flex-col">
+            {model && (
+              <DataPreview
+                key={JSON.stringify([model.name, pageSize])}
+                datasetId={datasetId}
+                model={model}
+                profile={detail.profile.models.find((item) => item.name === model.name)}
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+              />
+            )}
+          </Tabs.Content>
+          <Tabs.Content value="fields" className="min-h-0 flex-1 overflow-auto p-4">
+            <input
+              aria-label="搜索字段"
+              placeholder="搜索字段"
+              value={fieldSearch}
+              onChange={(event) => setFieldSearch(event.target.value)}
+              className="mb-3 w-full rounded-lg border bg-page px-3 py-2 text-sm outline-none focus:border-accent"
+            />
+            <table className="w-full table-fixed border-collapse text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs text-muted">
+                  <th className="w-2/5 py-2 pr-3 font-medium">字段名</th>
+                  <th className="w-2/5 py-2 pr-3 font-medium">数据类型</th>
+                  <th className="py-2 font-medium">约束</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fields.map((column) => (
+                  <tr key={column.name} className="border-b last:border-0">
+                    <td className="py-3 pr-3 break-all">{column.name}</td>
+                    <td className="py-3 pr-3 break-all text-muted">{column.type}</td>
+                    <td className="py-3 text-xs text-muted">
+                      {[primaryKey.includes(column.name) && '主键', column.notNull && '非空']
+                        .filter(Boolean)
+                        .join(' · ') || '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!fields.length && <p className="text-sm text-muted">没有匹配的字段</p>}
+            {!!relationships.length && (
+              <section className="mt-5 text-sm">
+                <h3 className="text-sm font-medium">外键关系</h3>
+                <ul className="space-y-2 pl-4">
+                  {relationships.map((relation) => (
+                    <li key={relation.name}>
+                      <span>{relation.name}</span>
+                      <code className="mt-1 block break-all text-xs text-muted">{relation.condition}</code>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </Tabs.Content>
+          <Tabs.Content value="semantic" className="min-h-0 flex-1 overflow-auto p-5">
+            <label className="grid gap-2 text-sm">
+              数据集业务说明
+              <textarea
+                className="min-h-48 resize-none rounded-xl bg-page p-3 text-sm leading-6 outline-none focus:bg-accent-soft"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="描述数据集中的业务概念、字段含义和分析注意事项…"
+              />
+            </label>
+            <Button className="mt-4" variant="primary" disabled={saving} onClick={() => void saveSemantic()}>
+              {saving ? '保存中…' : '保存语义'}
+            </Button>
+          </Tabs.Content>
         </div>
-        {model && (
-          <DataPreview
-            key={JSON.stringify([model.name, pageSize])}
-            datasetId={datasetId}
-            model={model}
-            profile={detail.profile.models.find((item) => item.name === model.name)}
-            pageSize={pageSize}
-            onPageSizeChange={setPageSize}
-          />
-        )}
-      </Tabs.Content>
-      <Tabs.Content value="fields" className="min-h-0 flex-1 overflow-auto p-4">
-        <input
-          aria-label="搜索字段"
-          placeholder="搜索字段"
-          value={fieldSearch}
-          onChange={(event) => setFieldSearch(event.target.value)}
-          className="mb-3 w-full rounded-lg border bg-page px-3 py-2 text-sm outline-none focus:border-accent"
-        />
-        <table className="w-full table-fixed border-collapse text-sm">
-          <thead>
-            <tr className="border-b text-left text-xs text-muted">
-              <th className="w-2/5 py-2 pr-3 font-medium">字段名</th>
-              <th className="w-2/5 py-2 pr-3 font-medium">数据类型</th>
-              <th className="py-2 font-medium">约束</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fields.map((column) => (
-              <tr key={column.name} className="border-b last:border-0">
-                <td className="py-3 pr-3 break-all">{column.name}</td>
-                <td className="py-3 pr-3 break-all text-muted">{column.type}</td>
-                <td className="py-3 text-xs text-muted">
-                  {[primaryKey.includes(column.name) && '主键', column.notNull && '非空']
-                    .filter(Boolean)
-                    .join(' · ') || '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {!fields.length && <p className="text-sm text-muted">没有匹配的字段</p>}
-        {!!relationships.length && (
-          <section className="mt-5 text-sm">
-            <h3 className="text-sm font-medium">外键关系</h3>
-            <ul className="space-y-2 pl-4">
-              {relationships.map((relation) => (
-                <li key={relation.name}>
-                  <span>{relation.name}</span>
-                  <code className="mt-1 block break-all text-xs text-muted">{relation.condition}</code>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-      </Tabs.Content>
-      <Tabs.Content value="semantic" className="min-h-0 flex-1 overflow-auto p-5">
-        <label className="grid gap-2 text-sm">
-          数据集业务说明
-          <textarea
-            className="min-h-48 resize-none rounded-xl bg-page p-3 text-sm leading-6 outline-none focus:bg-accent-soft"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="描述数据集中的业务概念、字段含义和分析注意事项…"
-          />
-        </label>
-        <Button className="mt-4" variant="primary" disabled={saving} onClick={() => void saveSemantic()}>
-          {saving ? '保存中…' : '保存语义'}
-        </Button>
-      </Tabs.Content>
+      </div>
     </Tabs.Root>
   );
 }
