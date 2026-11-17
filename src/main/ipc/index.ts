@@ -1,13 +1,14 @@
 import path from 'node:path';
-import { BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
 import type { DatasetPreviewOptions } from '@shared/api';
-import type { ModelInput, Preferences, ThemeSettings } from '../services/types';
+import type { ModelInput, Preferences } from '../services/types';
 import { LOCAL_FILE_FORMATS } from '@shared/api';
 import { localSource } from '../util/localFile';
+import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -34,17 +35,19 @@ export function registerIpc(services: Services) {
     event.sender.send(WORKSPACE_CHANGED_CHANNEL);
   };
 
-  ipcMain.handle('workspaceGetState', () => ({
-    conversations: services.conversation.list(),
-    archivedConversations: services.conversation.listArchived(),
-    datasets: services.dataset.listSummaries(),
-    snippets: services.snippet.list(),
-    models: services.model.list(),
-    activeModelId: services.settings.getActiveModel().providerId,
-    theme: services.settings.getTheme(),
-    preferences: services.settings.getPreferences(),
-    revision,
-  }));
+  ipcMain.handle('workspaceGetState', () => {
+    const preferences = services.settings.getPreferences();
+    return {
+      conversations: services.conversation.list(),
+      archivedConversations: services.conversation.listArchived(),
+      datasets: services.dataset.listSummaries(),
+      snippets: services.snippet.list(),
+      models: services.model.list(),
+      activeModelId: services.settings.getActiveModel().providerId,
+      preferences,
+      revision,
+    };
+  });
 
   ipcMain.handle('datasetSelectLocal', async (event, format, lastDirectory) => {
     if (format !== undefined && !LOCAL_FILE_FORMATS.includes(format)) throw new Error('不支持的文件格式。');
@@ -151,11 +154,14 @@ export function registerIpc(services: Services) {
     const request = objectInput<{
       datasetId: string;
       question: string;
-      strategy: 'direct' | 'loop';
+      strategy: Preferences['strategy'];
       conversationId?: string;
     }>(input);
-    const result = services.analysis.start(request, services.model.getDefaultModelConfig(), (progress) =>
-      event.sender.send('analysis:task-change', progress),
+    const result = services.analysis.start(
+      request,
+      services.model.getDefaultModelConfig(),
+      services.settings.getPreferences(),
+      (progress) => event.sender.send('analysis:task-change', progress),
     );
     changed(event);
     return result;
@@ -192,15 +198,19 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('settingsSaveTheme', (event, theme) => {
-    services.settings.saveTheme(objectInput<ThemeSettings>(theme));
-    changed(event);
-  });
-
-  ipcMain.handle('settingsSavePreferences', (event, preferences) => {
+  ipcMain.handle('settingsSavePreferences', async (event, preferences) => {
+    await services.analysis.disposeAgents();
     services.settings.savePreferences(objectInput<Preferences>(preferences));
     changed(event);
   });
+
+  ipcMain.handle('systemGetStorageInfo', () => getStorageInfo());
+
+  ipcMain.handle('systemOpen', (_event, type, path) => systemOpen(type, path));
+
+  ipcMain.handle('aboutGetVersion', () => app.getVersion());
+
+  ipcMain.handle('aboutCheckUpdates', () => checkForUpdates());
 
   ipcMain.handle('modelListAvailable', (_event, input) => services.model.listAvailable(objectInput(input)));
 

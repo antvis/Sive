@@ -240,7 +240,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
               </div>
             </div>
 
-            <dl className="mt-4 grid gap-2 text-xs leading-5">
+            <dl className="mt-4 grid gap-2 text-sm leading-5">
               <div className="flex gap-3">
                 <dt className="w-16 shrink-0 text-muted">服务地址</dt>
                 <dd className="m-0 min-w-0 break-all text-ink">{model.baseURL}</dd>
@@ -255,11 +255,11 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
             </dl>
 
             <div className="mt-3 flex items-center justify-between gap-4 border-t pt-3 max-sm:flex-col max-sm:items-start">
-              <span className="text-xs text-muted">
+              <span className="text-sm text-muted">
                 最近更新：{new Date(model.updatedAt).toLocaleString('zh-CN')}
               </span>
               {activeModelId === model.id && (
-                <div className="flex items-center gap-2 text-xs text-muted">
+                <div className="flex items-center gap-2 text-sm text-muted">
                   <span>默认模型</span>
                   <Select
                     compact

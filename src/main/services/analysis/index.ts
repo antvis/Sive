@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
+import type { DuckDBEngineConfig, Preferences } from '@shared/api';
 import { createAnalysisAgent } from '../../ai';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
@@ -14,7 +15,7 @@ type DatasetRow = typeof datasets.$inferSelect;
 type StartInput = {
   datasetId: string;
   question: string;
-  strategy: 'direct' | 'loop';
+  strategy: Preferences['strategy'];
   conversationId?: string;
 };
 type TaskEvent = {
@@ -58,6 +59,12 @@ export class AnalysisService {
     this.updatingDatasets.delete(datasetId);
   }
 
+  async disposeAgents() {
+    const entries = [...this.agents.values()];
+    this.agents.clear();
+    await Promise.all(entries.map(async (entry) => (await entry.promise).dispose()));
+  }
+
   private async disposeDatasetAgents(datasetId: string) {
     const entries = [...this.agents.entries()].filter(([, entry]) => entry.datasetId === datasetId);
     for (const [id] of entries) this.agents.delete(id);
@@ -81,7 +88,7 @@ export class AnalysisService {
     return required(this.repositories.messages.get(id), '分析记录不存在。');
   }
 
-  start(input: StartInput, model: ModelConfig, emit: Emit) {
+  start(input: StartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
     const question = input.question.trim();
     if (!question) throw new Error('请输入分析问题。');
     if (this.updatingDatasets.has(input.datasetId)) throw new Error('数据源正在更新，请稍后重试。');
@@ -102,7 +109,7 @@ export class AnalysisService {
         }),
       );
     if (conversation.datasetId !== dataset.id) throw new Error('会话与数据集不匹配。');
-    const agent = this.getAgent(conversation.id, model, dataset);
+    const agent = this.getAgent(conversation.id, model, dataset, preferences.engine);
     const sequence = this.repositories.messages.nextSequence(conversation.id);
     const taskId = randomUUID();
 
@@ -139,6 +146,7 @@ export class AnalysisService {
       agent,
       question,
       input.strategy,
+      preferences.agent,
       controller,
       emit,
       localFilePath(dataset.sourceConfig),
@@ -154,9 +162,15 @@ export class AnalysisService {
     return { datasetId: task.datasetId, conversationId: task.conversationId };
   }
 
-  private getAgent(conversationId: string, model: ModelConfig, dataset: DatasetRow): AgentPromise {
+  private getAgent(
+    conversationId: string,
+    model: ModelConfig,
+    dataset: DatasetRow,
+    engine: DuckDBEngineConfig,
+  ): AgentPromise {
     const existing = this.agents.get(conversationId);
     if (existing) return existing.promise;
+
     const agent = (async () => {
       const history = this.repositories.messages
         .listByConversationId(conversationId)
@@ -167,7 +181,8 @@ export class AnalysisService {
             ? { role: 'user', content: content.question ?? '' }
             : { role: 'assistant', content: content.text ?? content.query ?? '' };
         });
-      return createAnalysisAgent({ dataset, model, history });
+
+      return createAnalysisAgent({ dataset, model, history, engine });
     })().catch((error) => {
       this.agents.delete(conversationId);
       throw error;
@@ -181,6 +196,7 @@ export class AnalysisService {
     agentPromise: AgentPromise,
     question: string,
     strategy: StartInput['strategy'],
+    agentConfig: Preferences['agent'],
     controller: AbortController,
     emit: Emit,
     file?: string,
@@ -197,6 +213,7 @@ export class AnalysisService {
       const result = await agent.stream({
         question,
         strategy,
+        agent: agentConfig,
         abortSignal: controller.signal,
         onPart: (part) => {
           const previous = parts.at(-1);

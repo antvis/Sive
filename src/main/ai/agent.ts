@@ -1,7 +1,9 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA } from '@antv/ava';
 import { ToolLoopAgent } from 'ai';
+import type { AnalysisStrategyConfig } from '@antv/ava';
 import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
+import type { DuckDBEngineConfig } from '@shared/api';
 import { createTools } from './tools';
 import type { ToolContext } from './tools';
 
@@ -11,11 +13,13 @@ type CreateAgentInput = {
   dataset: ToolContext;
   model: ModelConfig;
   history: ModelMessage[];
+  engine: DuckDBEngineConfig;
 };
 
 type StreamInput = {
   question: string;
-  strategy: 'direct' | 'loop';
+  strategy: AnalysisStrategyConfig;
+  agent: { maxSteps: number };
   abortSignal: AbortSignal;
   onPart: (part: TextStreamPart<ToolSet>) => void;
 };
@@ -32,27 +36,36 @@ export async function createAnalysisAgent({
   dataset,
   model,
   history,
+  engine,
 }: CreateAgentInput): Promise<AnalysisAgent> {
   const provider = createOpenAICompatible({ name: 'sive', baseURL: model.baseURL, apiKey: model.apiKey });
   const languageModel = provider.chatModel(model.model);
   const ava = new AVA({
     llm: { model: languageModel },
-    engine: { type: 'duckdb', memoryLimit: '1024MB' },
+    engine,
   });
   const messages = [...history];
-  const options = { maxSteps: 7 };
+  const options = {
+    agent: { maxSteps: 10 },
+    strategy: { type: 'direct' } as AnalysisStrategyConfig,
+  };
+
   const agent = new ToolLoopAgent({
     model: languageModel,
     instructions: INSTRUCTIONS,
-    tools: createTools(ava, dataset),
-    stopWhen: ({ steps }) => steps.length >= options.maxSteps,
+    tools: createTools(ava, dataset, () => options.strategy),
+    stopWhen: ({ steps }) => steps.length >= options.agent.maxSteps,
   });
+
   return {
     dispose: () => ava.dispose(),
 
-    async stream({ question, strategy, abortSignal, onPart }) {
+    async stream({ question, strategy, agent: agentConfig, abortSignal, onPart }) {
       messages.push({ role: 'user', content: question });
-      options.maxSteps = strategy === 'loop' ? 12 : 7;
+
+      options.strategy = strategy;
+      options.agent = agentConfig;
+
       const result = await agent.stream({ messages, abortSignal });
       for await (const part of result.stream) {
         if (['text-delta', 'tool-call', 'tool-result', 'tool-error'].includes(part.type)) onPart(part);

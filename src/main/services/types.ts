@@ -7,8 +7,6 @@ export type ModelInput = {
   credentialSourceId?: string;
 };
 
-export type ThemeSettings = { mode: 'light' | 'dark' };
-
 export type { Preferences } from '@shared/api';
 
 export type ModelConnectionInput = {

@@ -55,7 +55,7 @@ body {
   min-height: 100vh;
   background: var(--page);
   color: var(--ink);
-  font-size: 14px;
+  font-size: inherit;
 }
 
 button,

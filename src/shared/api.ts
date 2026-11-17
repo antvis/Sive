@@ -1,4 +1,12 @@
-import type { DataSourceConfig, Profile, Schema, Semantic, SuggestResult } from '@antv/ava';
+import type {
+  AnalysisStrategyConfig,
+  DataSourceConfig,
+  EngineConfig,
+  Profile,
+  Schema,
+  Semantic,
+  SuggestResult,
+} from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
 import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
@@ -7,7 +15,7 @@ export type { AnalysisMessage } from './messages';
 
 export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './snippets';
 
-export type ThemeSettings = { mode: 'light' | 'dark' };
+export type DuckDBEngineConfig = Extract<EngineConfig, { type: 'duckdb' }>;
 
 export const LOCAL_FILE_FORMATS = ['csv', 'json', 'xlsx', 'parquet'] as const;
 
@@ -18,12 +26,40 @@ export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
 export const DEFAULT_PREVIEW_PAGE_SIZE = 100;
 
 export type Preferences = {
-  analysisMode: 'direct' | 'loop';
+  theme: { mode: 'light' | 'dark' | 'system'; fontSize: number };
+  agent: { maxSteps: number };
+  strategy: AnalysisStrategyConfig;
+  engine: DuckDBEngineConfig;
 };
 
-export const DEFAULT_PREFERENCES: Preferences = {
-  analysisMode: 'direct',
-};
+export const DEFAULT_PREFERENCES = {
+  theme: { mode: 'light', fontSize: 14 },
+  agent: { maxSteps: 10 },
+  strategy: { type: 'direct' },
+  engine: {
+    type: 'duckdb',
+    memoryLimit: '1GB',
+    threads: 1,
+    queryTimeoutMs: 30000,
+    maxTempDirectorySize: '1GB',
+  },
+} satisfies Preferences;
+
+export function analysisStrategy(
+  type: 'direct' | 'loop',
+  current: AnalysisStrategyConfig,
+): AnalysisStrategyConfig {
+  if (type === 'direct') return { type };
+  return { type, maxSteps: current.type === 'loop' ? current.maxSteps : 12 };
+}
+
+export type CacheInfo = { path: string; usedBytes: number; freeBytes: number };
+
+export type DataStorageInfo = { path: string; directory: string; sizeBytes: number };
+
+export type StorageInfo = { cache: CacheInfo; data: DataStorageInfo };
+
+export type UpdateResult = { currentVersion: string; latestVersion: string; hasUpdate: boolean };
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
 
@@ -87,7 +123,7 @@ export type DatasetDetail = DatasetSummary & {
 export type AnalysisStartInput = {
   datasetId: string;
   question: string;
-  strategy: 'direct' | 'loop';
+  strategy: AnalysisStrategyConfig;
   conversationId?: string;
 };
 
@@ -108,7 +144,6 @@ export type WorkspaceState = {
   snippets: Snippet[];
   models: ModelProfile[];
   activeModelId: string;
-  theme: ThemeSettings;
   preferences: Preferences;
   revision: number;
 };
@@ -134,8 +169,11 @@ export type WorkbenchApi = {
   datasetSaveSemantic(id: string, semantic: Semantic): Promise<void>;
   datasetRename(id: string, name: string): Promise<void>;
   datasetDelete(id: string): Promise<void>;
-  settingsSaveTheme(theme: ThemeSettings): Promise<void>;
   settingsSavePreferences(preferences: Preferences): Promise<void>;
+  systemGetStorageInfo(): Promise<StorageInfo>;
+  systemOpen(type: 'directory' | 'url', path: string): Promise<void>;
+  aboutGetVersion(): Promise<string>;
+  aboutCheckUpdates(): Promise<UpdateResult>;
   modelListAvailable(input: ModelConnectionInput): Promise<string[]>;
   modelSave(input: ModelInput): Promise<void>;
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;

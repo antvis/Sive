@@ -2,7 +2,15 @@ import { statSync } from 'node:fs';
 import { tool } from 'ai';
 import type { ToolSet } from 'ai';
 import { z } from 'zod';
-import type { AnalysisResponse, AVA, DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
+import type {
+  AnalysisResponse,
+  AnalysisStrategyConfig,
+  AVA,
+  DataSourceConfig,
+  Profile,
+  Schema,
+  Semantic,
+} from '@antv/ava';
 import { localFilePath } from '../util/localFile';
 
 export type ToolContext = {
@@ -14,7 +22,11 @@ export type ToolContext = {
   semantic: Semantic;
 };
 
-export function createTools(ava: AVA, context: ToolContext): ToolSet {
+export function createTools(
+  ava: AVA,
+  context: ToolContext,
+  getStrategy: () => AnalysisStrategyConfig,
+): ToolSet {
   let latest: AnalysisResponse | undefined;
 
   return {
@@ -61,7 +73,7 @@ export function createTools(ava: AVA, context: ToolContext): ToolSet {
       description: 'Analyze the loaded dataset and return the actual query, SQL, text conclusion and rows.',
       inputSchema: z.object({ query: z.string().min(1) }),
       execute: async ({ query }) => {
-        latest = await ava.analyze(query);
+        latest = await ava.analyze(query, { strategy: getStrategy() });
         return latest;
       },
     }),
