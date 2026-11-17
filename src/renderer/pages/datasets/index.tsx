@@ -7,7 +7,7 @@ import { Modal } from '../../components/Modal';
 import { SourceActions } from './SourceActions';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
-import { getDatasetSource } from '../../utils/dataSource';
+import { findDatasetSource } from '../../utils/dataSource';
 
 function formatFileSize(value?: number) {
   if (value === undefined) return '—';
@@ -29,7 +29,9 @@ function DatasetCard({
   const [name, setName] = useState(dataset.name);
   const [busy, setBusy] = useState(false);
   const renameCancelled = useRef(false);
-  const { icon: SourceIcon, label: sourceLabel } = getDatasetSource(dataset.sourceType);
+  const source = findDatasetSource(dataset.sourceType);
+  const SourceIcon = source?.icon ?? Database;
+  const sourceLabel = source?.label ?? dataset.sourceType;
   const stats = [
     dataset.localFile
       ? { label: '数据量', value: formatFileSize(dataset.fileSize), icon: FileText }
