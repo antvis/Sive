@@ -198,8 +198,7 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('settingsSavePreferences', async (event, preferences) => {
-    await services.analysis.disposeAgents();
+  ipcMain.handle('settingsSavePreferences', (event, preferences) => {
     services.settings.savePreferences(objectInput<Preferences>(preferences));
     changed(event);
   });

@@ -31,7 +31,14 @@ type Task = { conversationId: string; datasetId: string; controller: AbortContro
 type Emit = (event: TaskEvent) => void;
 
 export class AnalysisService {
-  private agents = new Map<string, { datasetId: string; promise: AgentPromise }>();
+  // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
+  // This allows for efficient retrieval and management of agents during analysis tasks.
+  // When the engine key changes, the existing agent is disposed of and a new one is created to ensure that the analysis uses the correct engine configuration.
+  private agents = new Map<string, {
+    datasetId: string;
+    engineKey: string;
+    agent: AgentPromise,
+  }>();
 
   private tasks = new Map<string, Task>();
 
@@ -59,18 +66,10 @@ export class AnalysisService {
     this.updatingDatasets.delete(datasetId);
   }
 
-  async disposeAgents() {
-    const entries = [...this.agents.values()];
-    this.agents.clear();
-    await Promise.all(entries.map(async (entry) => (await entry.promise).dispose()));
-  }
-
   private async disposeDatasetAgents(datasetId: string) {
     const entries = [...this.agents.entries()].filter(([, entry]) => entry.datasetId === datasetId);
     for (const [id] of entries) this.agents.delete(id);
-    const results = await Promise.allSettled(
-      entries.map(async ([, entry]) => (await entry.promise).dispose()),
-    );
+    const results = await Promise.allSettled(entries.map(async ([, entry]) => (await entry.agent).dispose()));
     const failed = results.find((result) => result.status === 'rejected');
     if (failed) throw failed.reason;
   }
@@ -168,8 +167,15 @@ export class AnalysisService {
     dataset: DatasetRow,
     engine: DuckDBEngineConfig,
   ): AgentPromise {
+    const engineKey = JSON.stringify(engine);
     const existing = this.agents.get(conversationId);
-    if (existing) return existing.promise;
+    if (existing?.engineKey === engineKey) return existing.agent;
+    // If the engine key has changed, dispose of the existing agent and create a new one, ensuring that the analysis uses the correct engine configuration,
+    //  and keep the old agent in the map until the new one is created to avoid race conditions, or interupting an ongoing analysis task that is using the old agent.
+    if (existing) {
+      this.agents.delete(conversationId);
+      void existing.agent.then((agent) => agent.dispose()).catch(() => {});
+    }
 
     const agent = (async () => {
       const history = this.repositories.messages
@@ -187,7 +193,7 @@ export class AnalysisService {
       this.agents.delete(conversationId);
       throw error;
     });
-    this.agents.set(conversationId, { datasetId: dataset.id, promise: agent });
+    this.agents.set(conversationId, { datasetId: dataset.id, engineKey, agent });
     return agent;
   }
 
