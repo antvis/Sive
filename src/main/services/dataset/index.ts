@@ -62,12 +62,30 @@ export class DatasetService {
     const row = this.get(id);
     if (!row) return null;
     let sourceConfig = row.sourceConfig;
-    if (sourceConfig.type === 'mysql') {
-      const { host, port, database, user } = sourceConfig.options;
-      sourceConfig = { type: 'mysql', options: { host, port, database, user } };
-    } else if (sourceConfig.type === 'postgresql') {
-      const { host, port, database, user, schema } = sourceConfig.options;
-      sourceConfig = { type: 'postgresql', options: { host, port, database, user, schema } };
+    switch (sourceConfig.type) {
+      case 'mysql':
+      case 'postgresql': {
+        const { host, port, database, user } = sourceConfig.options;
+        sourceConfig = {
+          type: sourceConfig.type,
+          options: {
+            host,
+            port,
+            database,
+            user,
+            ...(sourceConfig.type === 'postgresql' ? { schema: sourceConfig.options.schema } : {}),
+          },
+        };
+        break;
+      }
+      case 'mongodb': {
+        const { host, port, database, user, authSource, tls, ssl } = sourceConfig.options;
+        sourceConfig = {
+          type: 'mongodb',
+          options: { host, port, database, user, authSource, tls: tls || ssl },
+        };
+        break;
+      }
     }
     return {
       ...toSummary(row),
