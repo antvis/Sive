@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: surge-preview-${{ github.event.pull_request.number }}
@@ -17,21 +18,18 @@ jobs:
   preview:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    env:
-      PREVIEW_DOMAIN: antvis-sive-pr-${{ github.event.pull_request.number }}.surge.sh
     environment:
       name: surge-preview
-      url: https://${{ env.PREVIEW_DOMAIN }}/
+      url: https://${{ steps.preview.outputs.preview_url }}/
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: afc163/surge-preview@bf90a5a86111f6311ca42f0a5a0f80fb0fb03cec # v1
+        id: preview
         with:
-          node-version: 22.14.0
-      - name: Install Surge
-        run: npm install --global --ignore-scripts surge@0.57.1
-      - name: Publish preview
-        run: surge site "$PREVIEW_DOMAIN"
-        env:
-          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+          surge_token: ${{ secrets.SURGE_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dist: site
+          build: test -f site/index.html
+          failOnError: 'true'
