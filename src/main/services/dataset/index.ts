@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { statSync } from 'node:fs';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { AVA } from '@antv/ava';
-import type { DataSourceConfig, Semantic } from '@antv/ava';
+import { AVA, sourceInputSchema } from '@antv/ava';
+import type { DataSourceConfig, JavaScriptEngine, LLMConfig, Semantic } from '@antv/ava';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { datasets } from '../../db/schema/datasets';
@@ -120,6 +120,23 @@ export class DatasetService {
 
   async test(sourceConfig: DataSourceConfig) {
     await this.readSource(sourceConfig);
+  }
+
+  async extractText(text: string, config: LLMConfig) {
+    const ava = new AVA({
+      llm: { ...config, maxRetries: 0 },
+      engine: { type: 'javascript' },
+    });
+    try {
+      await ava.source({ type: 'text', options: { text } });
+      const data: Record<string, unknown>[] = (ava.engine as JavaScriptEngine).getData() ?? [];
+      sourceInputSchema.parse({ type: 'json', options: { data } });
+      if (!data.length || !data.some((row) => Object.keys(row).length))
+        throw new Error('未提取到可用数据，请补充文本内容后重试。');
+      return data;
+    } finally {
+      await ava.dispose();
+    }
   }
 
   async preview(

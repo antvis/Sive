@@ -7,11 +7,13 @@ import {
   PostgreSQLDialog,
   MongoDBDialog,
   ClickHouseDialog,
+  TextImportDialog,
 } from '../pages/datasets/datasetDialogs';
 import type { ConnectionDialogProps } from '../pages/datasets/datasetDialogs';
 
 export type DatasetSourceAction =
   | { type: 'file'; format: LocalFileFormat }
+  | { type: 'import'; Dialog: ComponentType<{ onClose: () => void }> }
   | { type: 'connection'; Dialog: ComponentType<ConnectionDialogProps> };
 
 export type DatasetSource = {
@@ -72,11 +74,13 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       },
       {
         type: 'text',
-        enable: false,
+        enable: true,
         label: '文本',
         description: '通过模型从文本中提取结构化数据',
         color: '#687682',
         icon: FileText,
+        action: { type: 'import', Dialog: TextImportDialog },
+        actionLabel: '提取数据',
       },
     ],
   },

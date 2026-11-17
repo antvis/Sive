@@ -157,6 +157,7 @@ export type WorkbenchApi = {
   ): Promise<{ name: string; sourceConfig: DataSourceConfig; directory: string } | null>;
   datasetRefresh(id: string): Promise<void>;
   datasetTest(sourceConfig: DataSourceConfig): Promise<void>;
+  datasetExtractText(text: string): Promise<Record<string, unknown>[]>;
   datasetSave(name: string, sourceConfig: DataSourceConfig, id?: string): Promise<void>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
