@@ -281,9 +281,7 @@ function toolContent(toolName: string, output: unknown, chartAction?: ReactNode)
   }
   if (toolName === 'visualize') {
     const visualization = output as VisualizationResult | null | undefined;
-    const spec = visualization
-      ? (visualization.spec ?? (visualization.chartType === 'summary' ? undefined : visualization.config))
-      : undefined;
+    const spec = visualization?.spec ?? visualization?.config;
     return (
       <div className="grid min-w-0 gap-3">
         <p className="m-0 text-sm leading-6 text-muted">{visualizationSummary(visualization)}</p>

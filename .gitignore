@@ -1,16 +1,27 @@
+# Dependencies
 node_modules/
+pnpm-lock.yaml
+
+# Build and test outputs
 dist/
 dist-electron/
 release/
+coverage/
+*.tsbuildinfo
+
+# Local configuration and secrets
 .env*
 !.env.example
-.DS_Store
-*.log
+*.key
+
+# Local databases and logs
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
 *.duckdb
-*.key
-coverage/
-*.tsbuildinfo
-pnpm-lock.yaml
+*.log
+
+# OS and editor files
+.DS_Store
+.history
+.lh

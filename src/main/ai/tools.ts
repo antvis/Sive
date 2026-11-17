@@ -89,7 +89,7 @@ export function createTools(
           ...visualization,
           question: analysis.query,
           summary: analysis.text,
-          spec: visualization.chartType === 'summary' ? undefined : visualization.config,
+          spec: visualization.config,
         };
       },
     }),

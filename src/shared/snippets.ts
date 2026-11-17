@@ -1,6 +1,6 @@
-import type { ChartConfig, ChartType } from '@antv/ava';
+import type { ChartConfig } from '@antv/ava';
 
-export type SnippetSpec = ChartConfig & { type: ChartType };
+export type SnippetSpec = ChartConfig;
 
 export type SnippetContent = {
   question: string;
