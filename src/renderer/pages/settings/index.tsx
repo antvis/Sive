@@ -1,24 +1,28 @@
-import { Archive, Cpu, SlidersHorizontal } from '@phosphor-icons/react';
+import { Archive, ChartLineUp, Cpu, Info, SlidersHorizontal } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { useState } from 'react';
 import type { WorkspaceState } from '../../types';
+import { AboutSettings } from './AboutSettings';
+import { AnalysisSettings } from './AnalysisSettings';
 import { ArchivedConversations } from './ArchivedConversations';
 import { GeneralSettings } from './GeneralSettings';
 import { ModelSettings } from './ModelSettings';
 
-type Section = 'general' | 'models' | 'archived';
+type Section = 'general' | 'analysis' | 'models' | 'archived' | 'about';
 
 export function SettingsPage({ state }: { state: WorkspaceState }) {
   const [section, setSection] = useState<Section>('general');
   const sections = [
-    { id: 'general' as const, label: '通用设置', icon: SlidersHorizontal },
-    { id: 'models' as const, label: '模型服务', icon: Cpu, count: state.models.length },
+    { id: 'general' as const, label: '通用', icon: SlidersHorizontal },
+    { id: 'analysis' as const, label: '分析配置', icon: ChartLineUp },
+    { id: 'models' as const, label: '模型配置', icon: Cpu, count: state.models.length },
     {
       id: 'archived' as const,
       label: '已归档分析',
       icon: Archive,
       count: state.archivedConversations.length,
     },
+    { id: 'about' as const, label: '关于项目', icon: Info },
   ];
 
   return (
@@ -43,11 +47,13 @@ export function SettingsPage({ state }: { state: WorkspaceState }) {
         </nav>
       </aside>
       <div className="min-w-0 flex-1 pb-10">
-        {section === 'general' && <GeneralSettings theme={state.theme} preferences={state.preferences} />}
+        {section === 'general' && <GeneralSettings preferences={state.preferences} />}
+        {section === 'analysis' && <AnalysisSettings preferences={state.preferences} />}
         {section === 'models' && <ModelSettings models={state.models} activeModelId={state.activeModelId} />}
         {section === 'archived' && (
           <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
         )}
+        {section === 'about' && <AboutSettings />}
       </div>
     </div>
   );

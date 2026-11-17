@@ -134,10 +134,7 @@ export class DatasetService {
     const provider = createOpenAICompatible({ name: 'sive', baseURL: config.baseURL, apiKey: config.apiKey });
     const ava = new AVA({
       llm: { model: provider.chatModel(config.model) },
-      engine: {
-        type: 'duckdb',
-        memoryLimit: '1024MB',
-      },
+      engine: { type: 'duckdb', memoryLimit: '1024MB' },
     });
     try {
       const file = localFilePath(dataset.sourceConfig);
@@ -157,10 +154,7 @@ export class DatasetService {
     if (file) await checkLocalFile(file);
     const ava = new AVA({
       llm: { model: 'data-loading-only' },
-      engine: {
-        type: 'duckdb',
-        memoryLimit: '1024MB',
-      },
+      engine: { type: 'duckdb', memoryLimit: '1024MB' },
     });
     try {
       await ava.source(sourceConfig);

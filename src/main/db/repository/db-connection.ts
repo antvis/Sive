@@ -4,7 +4,7 @@ import SQLite from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { SchemaDDL } from '../ddl';
 
-const DB_FILE_NAME = 'workspace.sqlite';
+export const DB_FILE_NAME = 'workspace.sqlite';
 
 /**
  * A service for managing a SQLite database connection and performing operations on it.

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
+import type { DuckDBEngineConfig, Preferences } from '@shared/api';
 import { createAnalysisAgent } from '../../ai';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
@@ -14,7 +15,7 @@ type DatasetRow = typeof datasets.$inferSelect;
 type StartInput = {
   datasetId: string;
   question: string;
-  strategy: 'direct' | 'loop';
+  strategy: Preferences['strategy'];
   conversationId?: string;
 };
 type TaskEvent = {
@@ -30,7 +31,14 @@ type Task = { conversationId: string; datasetId: string; controller: AbortContro
 type Emit = (event: TaskEvent) => void;
 
 export class AnalysisService {
-  private agents = new Map<string, { datasetId: string; promise: AgentPromise }>();
+  // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
+  // This allows for efficient retrieval and management of agents during analysis tasks.
+  // When the engine key changes, the existing agent is disposed of and a new one is created to ensure that the analysis uses the correct engine configuration.
+  private agents = new Map<string, {
+    datasetId: string;
+    engineKey: string;
+    agent: AgentPromise,
+  }>();
 
   private tasks = new Map<string, Task>();
 
@@ -61,9 +69,7 @@ export class AnalysisService {
   private async disposeDatasetAgents(datasetId: string) {
     const entries = [...this.agents.entries()].filter(([, entry]) => entry.datasetId === datasetId);
     for (const [id] of entries) this.agents.delete(id);
-    const results = await Promise.allSettled(
-      entries.map(async ([, entry]) => (await entry.promise).dispose()),
-    );
+    const results = await Promise.allSettled(entries.map(async ([, entry]) => (await entry.agent).dispose()));
     const failed = results.find((result) => result.status === 'rejected');
     if (failed) throw failed.reason;
   }
@@ -81,7 +87,7 @@ export class AnalysisService {
     return required(this.repositories.messages.get(id), '分析记录不存在。');
   }
 
-  start(input: StartInput, model: ModelConfig, emit: Emit) {
+  start(input: StartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
     const question = input.question.trim();
     if (!question) throw new Error('请输入分析问题。');
     if (this.updatingDatasets.has(input.datasetId)) throw new Error('数据源正在更新，请稍后重试。');
@@ -102,7 +108,7 @@ export class AnalysisService {
         }),
       );
     if (conversation.datasetId !== dataset.id) throw new Error('会话与数据集不匹配。');
-    const agent = this.getAgent(conversation.id, model, dataset);
+    const agent = this.getAgent(conversation.id, model, dataset, preferences.engine);
     const sequence = this.repositories.messages.nextSequence(conversation.id);
     const taskId = randomUUID();
 
@@ -139,6 +145,7 @@ export class AnalysisService {
       agent,
       question,
       input.strategy,
+      preferences.agent,
       controller,
       emit,
       localFilePath(dataset.sourceConfig),
@@ -154,9 +161,22 @@ export class AnalysisService {
     return { datasetId: task.datasetId, conversationId: task.conversationId };
   }
 
-  private getAgent(conversationId: string, model: ModelConfig, dataset: DatasetRow): AgentPromise {
+  private getAgent(
+    conversationId: string,
+    model: ModelConfig,
+    dataset: DatasetRow,
+    engine: DuckDBEngineConfig,
+  ): AgentPromise {
+    const engineKey = JSON.stringify(engine);
     const existing = this.agents.get(conversationId);
-    if (existing) return existing.promise;
+    if (existing?.engineKey === engineKey) return existing.agent;
+    // If the engine key has changed, dispose of the existing agent and create a new one, ensuring that the analysis uses the correct engine configuration,
+    //  and keep the old agent in the map until the new one is created to avoid race conditions, or interupting an ongoing analysis task that is using the old agent.
+    if (existing) {
+      this.agents.delete(conversationId);
+      void existing.agent.then((agent) => agent.dispose()).catch(() => {});
+    }
+
     const agent = (async () => {
       const history = this.repositories.messages
         .listByConversationId(conversationId)
@@ -167,12 +187,13 @@ export class AnalysisService {
             ? { role: 'user', content: content.question ?? '' }
             : { role: 'assistant', content: content.text ?? content.query ?? '' };
         });
-      return createAnalysisAgent({ dataset, model, history });
+
+      return createAnalysisAgent({ dataset, model, history, engine });
     })().catch((error) => {
       this.agents.delete(conversationId);
       throw error;
     });
-    this.agents.set(conversationId, { datasetId: dataset.id, promise: agent });
+    this.agents.set(conversationId, { datasetId: dataset.id, engineKey, agent });
     return agent;
   }
 
@@ -181,6 +202,7 @@ export class AnalysisService {
     agentPromise: AgentPromise,
     question: string,
     strategy: StartInput['strategy'],
+    agentConfig: Preferences['agent'],
     controller: AbortController,
     emit: Emit,
     file?: string,
@@ -197,6 +219,7 @@ export class AnalysisService {
       const result = await agent.stream({
         question,
         strategy,
+        agent: agentConfig,
         abortSignal: controller.signal,
         onPart: (part) => {
           const previous = parts.at(-1);

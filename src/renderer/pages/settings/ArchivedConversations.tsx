@@ -60,16 +60,16 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
       <div className="grid gap-5">
         {[...groups].map(([datasetId, items]) => (
           <section key={datasetId}>
-            <h3 className="mt-0 mb-2 text-sm font-medium">
+            <h3 className="mt-0 mb-2 text-base font-medium">
               {sourceName(datasetId)}
-              <span className="ml-2 text-xs font-normal text-muted">{items.length} 个分析会话</span>
+              <span className="ml-2 text-sm font-normal text-muted">{items.length} 个分析会话</span>
             </h3>
             <div className="rounded-xl border px-4">
               {items.map((conversation) => (
                 <div key={conversation.id} className="flex items-center gap-3 border-t py-4 first:border-t-0">
                   <div className="min-w-0 flex-1">
-                    <strong className="block truncate text-sm font-medium">{conversation.title}</strong>
-                    <time className="mt-1 block text-xs text-muted">
+                    <strong className="block truncate text-base font-medium">{conversation.title}</strong>
+                    <time className="mt-1 block text-sm text-muted">
                       归档于 {new Date(conversation.archivedAt!).toLocaleString('zh-CN')}
                     </time>
                   </div>

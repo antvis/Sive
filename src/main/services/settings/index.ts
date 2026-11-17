@@ -1,12 +1,23 @@
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { ActiveModel } from '../../db/repository/setting-repo';
-import type { Preferences, ThemeSettings } from '../types';
-import { DEFAULT_PREFERENCES } from '@shared/api';
+import type { Preferences } from '../types';
+import { DEFAULT_PREFERENCES } from '../../../shared/api';
+import type { DuckDBEngineConfig } from '../../../shared/api';
 
+// 主题风格
 const THEME_KEY = 'theme';
-const PREFERENCES_KEY = 'preferences';
+// Agent 设置
+const AGENT_KEY = 'agent';
+// 分析策略
+const STRATEGY_KEY = 'strategy';
+// DuckDB 引擎配置
+const ENGINE_KEY = 'engine';
 
+/**
+ * Store several types of configurations separately,
+ *  and finally query and return them to the front end.
+ */
 export class SettingsService {
   constructor(
     private database: DBConnection,
@@ -22,25 +33,27 @@ export class SettingsService {
     });
   }
 
-  getTheme(): ThemeSettings {
-    return (
-      (this.repositories.settings.get(THEME_KEY)?.value as ThemeSettings | undefined) ?? { mode: 'light' }
-    );
-  }
-
-  saveTheme(theme: ThemeSettings) {
-    this.set(THEME_KEY, theme);
-  }
-
   getPreferences(): Preferences {
-    const saved = this.repositories.settings.get(PREFERENCES_KEY)?.value as Partial<Preferences> | undefined;
+    const theme = this.repositories.settings.get(THEME_KEY)?.value as
+      Partial<Preferences['theme']> | undefined;
+    const agent = this.repositories.settings.get(AGENT_KEY)?.value as Preferences['agent'] | undefined;
+    const strategy = this.repositories.settings.get(STRATEGY_KEY)?.value as
+      Preferences['strategy'] | undefined;
+    const engine = this.repositories.settings.get(ENGINE_KEY)?.value as
+      Partial<DuckDBEngineConfig> | undefined;
     return {
-      analysisMode: saved?.analysisMode ?? DEFAULT_PREFERENCES.analysisMode,
+      theme: { ...DEFAULT_PREFERENCES.theme, ...theme },
+      agent: { ...DEFAULT_PREFERENCES.agent, ...agent },
+      strategy: { ...DEFAULT_PREFERENCES.strategy, ...strategy },
+      engine: { ...DEFAULT_PREFERENCES.engine, ...engine },
     };
   }
 
   savePreferences(preferences: Preferences) {
-    this.set(PREFERENCES_KEY, preferences);
+    this.set(THEME_KEY, preferences.theme);
+    this.set(AGENT_KEY, preferences.agent);
+    this.set(STRATEGY_KEY, preferences.strategy);
+    this.set(ENGINE_KEY, preferences.engine);
   }
 
   getActiveModel(): ActiveModel {

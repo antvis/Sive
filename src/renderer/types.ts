@@ -10,7 +10,6 @@ export type {
   ModelProfile,
   ModelTestProgress,
   Preferences,
-  ThemeSettings,
   WorkspaceState,
 } from '@shared/api';
 

@@ -12,6 +12,9 @@ import { WelcomePage } from './pages/WelcomePage';
 
 export default function App() {
   const [page, setPage] = useState<AppPage>('welcome');
+  const [systemDark, setSystemDark] = useState(
+    () => window.matchMedia('(prefers-color-scheme: dark)').matches,
+  );
   const [analysisDatasetId, setAnalysisDatasetId] = useState<string | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [openDatasetIds, setOpenDatasetIds] = useState<string[]>([]);
@@ -54,9 +57,28 @@ export default function App() {
     }
   };
 
+  const theme =
+    state?.preferences.theme.mode === 'system'
+      ? systemDark
+        ? 'dark'
+        : 'light'
+      : (state?.preferences.theme.mode ?? 'light');
+
   useEffect(() => {
-    document.documentElement.dataset.theme = state?.theme.mode ?? 'light';
-  }, [state?.theme.mode]);
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const update = () => setSystemDark(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${state?.preferences.theme.fontSize ?? 14}px`;
+  }, [state?.preferences.theme.fontSize]);
 
   useEffect(() => {
     const previous = previousDatasetCount.current;
@@ -133,7 +155,7 @@ export default function App() {
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
       {state && page === 'settings' && <SettingsPage state={state} />}
       <Toaster
-        theme={state?.theme.mode ?? 'light'}
+        theme={theme}
         position="bottom-right"
         visibleToasts={1}
         toastOptions={{

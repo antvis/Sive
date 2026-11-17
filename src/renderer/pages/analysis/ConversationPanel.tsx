@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowLeft, Sparkle } from '@phosphor-icons/react';
+import { analysisStrategy } from '@shared/api';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
@@ -172,7 +173,7 @@ export function ConversationPanel({
       const result = await window.workbench.analysisStart({
         datasetId,
         question: question.trim(),
-        strategy: preferences.analysisMode,
+        strategy: preferences.strategy,
         conversationId: conversationId ?? undefined,
       });
       onConversationChange(result.conversationId);
@@ -209,9 +210,12 @@ export function ConversationPanel({
     window.workbench.modelActivate(id, model).catch((cause) => toast.error(errorMessage(cause)));
   };
 
-  const changeMode = (analysisMode: string) => {
+  const changeMode = (type: string) => {
     window.workbench
-      .settingsSavePreferences({ ...preferences, analysisMode: analysisMode as Preferences['analysisMode'] })
+      .settingsSavePreferences({
+        ...preferences,
+        strategy: analysisStrategy(type as 'direct' | 'loop', preferences.strategy),
+      })
       .catch((cause) => toast.error(errorMessage(cause)));
   };
 
@@ -306,7 +310,7 @@ export function ConversationPanel({
             className="w-36 shrink-0"
             compact
           />
-          <Tabs.Root className="shrink-0" value={preferences.analysisMode} onValueChange={changeMode}>
+          <Tabs.Root className="shrink-0" value={preferences.strategy.type} onValueChange={changeMode}>
             <Tabs.List aria-label="分析方式" className="flex rounded-lg bg-page p-1">
               <Tabs.Trigger
                 value="direct"
