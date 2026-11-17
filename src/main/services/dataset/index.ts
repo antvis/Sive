@@ -100,6 +100,11 @@ export class DatasetService {
         };
         break;
       }
+      case 'feishu-bitable': {
+        const { url, appId } = sourceConfig.options;
+        sourceConfig = { type: 'feishu-bitable', options: { url, appId } };
+        break;
+      }
     }
     return {
       ...toSummary(row),
