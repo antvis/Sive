@@ -10,6 +10,7 @@ import { required } from '../../util';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
+import { sourceEngine } from '../../util/engine';
 
 type DatasetRow = typeof datasets.$inferSelect;
 
@@ -86,6 +87,19 @@ export class DatasetService {
         };
         break;
       }
+      case 'clickhouse': {
+        const { url, database, username } = sourceConfig.options;
+        const address = new URL(required(url, 'ClickHouse 连接地址缺失。'));
+        address.username = '';
+        address.password = '';
+        address.search = '';
+        address.hash = '';
+        sourceConfig = {
+          type: 'clickhouse',
+          options: { url: address.toString(), database, username },
+        };
+        break;
+      }
     }
     return {
       ...toSummary(row),
@@ -134,7 +148,7 @@ export class DatasetService {
     const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
     const ava = new AVA({
       llm: { model: 'preview-only' },
-      engine: { type: 'duckdb', queryTimeoutMs: 30000 },
+      engine: sourceEngine(dataset.sourceConfig),
     });
     try {
       const file = localFilePath(dataset.sourceConfig);
@@ -155,7 +169,7 @@ export class DatasetService {
     const provider = createOpenAICompatible({ name: 'sive', baseURL: config.baseURL, apiKey: config.apiKey });
     const ava = new AVA({
       llm: { model: provider.chatModel(config.model) },
-      engine: { type: 'duckdb', memoryLimit: '1024MB' },
+      engine: sourceEngine(dataset.sourceConfig),
     });
     try {
       const file = localFilePath(dataset.sourceConfig);
@@ -175,7 +189,7 @@ export class DatasetService {
     if (file) await checkLocalFile(file);
     const ava = new AVA({
       llm: { model: 'data-loading-only' },
-      engine: { type: 'duckdb', memoryLimit: '1024MB' },
+      engine: sourceEngine(sourceConfig),
     });
     try {
       await ava.source(sourceConfig);
