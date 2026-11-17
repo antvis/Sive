@@ -18,7 +18,7 @@
     "start": "electron .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=^/(src|docs|samples|.git|.github)$",
+    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=\"^/(src|docs|samples|site|.git|.github)$\"",
     "tsc": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "lint": "npm run tsc && oxlint --deny-warnings src electron.vite.config.ts",
     "fix": "prettier --write src electron.vite.config.ts .prettierrc.json package.json",
