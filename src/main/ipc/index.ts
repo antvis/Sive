@@ -93,6 +93,10 @@ export function registerIpc(services: Services) {
     services.dataset.test(objectInput<DataSourceConfig>(sourceConfig)),
   );
 
+  ipcMain.handle('datasetExtractText', (_event, input) =>
+    services.dataset.extractText(text(input), services.model.getDefaultModelConfig()),
+  );
+
   ipcMain.handle('datasetSave', async (event, name, sourceConfig, inputId) => {
     const id = inputId === undefined ? undefined : text(inputId);
     const datasetName = text(name);

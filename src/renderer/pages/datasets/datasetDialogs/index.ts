@@ -9,3 +9,5 @@ export { PostgreSQLDialog } from './PostgreSQLDialog';
 export { MongoDBDialog } from './MongoDBDialog';
 
 export { ClickHouseDialog } from './ClickHouseDialog';
+
+export { TextImportDialog } from './TextImportDialog';

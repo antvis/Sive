@@ -13,6 +13,7 @@ const api = {
     ipcRenderer.invoke('datasetSelectLocal', format, lastDirectory),
   datasetRefresh: (id) => ipcRenderer.invoke('datasetRefresh', id),
   datasetTest: (sourceConfig) => ipcRenderer.invoke('datasetTest', sourceConfig),
+  datasetExtractText: (text) => ipcRenderer.invoke('datasetExtractText', text),
   datasetSave: (name, sourceConfig, id) => ipcRenderer.invoke('datasetSave', name, sourceConfig, id),
   datasetGet: (id) => ipcRenderer.invoke('datasetGet', id),
   datasetPreview: (id, table, options) => ipcRenderer.invoke('datasetPreview', id, table, options),

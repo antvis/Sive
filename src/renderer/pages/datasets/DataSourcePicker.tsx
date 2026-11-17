@@ -53,9 +53,10 @@ function SourceCard({
 
 export function DataSourcePicker() {
   const { importing, importLocal } = useImportLocal();
-  const [connection, setConnection] = useState<Extract<DatasetSourceAction, { type: 'connection' }> | null>(
-    null,
-  );
+  const [connection, setConnection] = useState<Extract<
+    DatasetSourceAction,
+    { type: 'connection' | 'import' }
+  > | null>(null);
   const [importingType, setImportingType] = useState<string | null>(null);
   const Dialog = connection?.Dialog;
 
@@ -64,6 +65,7 @@ export function DataSourcePicker() {
     const { action } = source;
     switch (action.type) {
       case 'connection':
+      case 'import':
         setConnection(action);
         return;
       case 'file':
