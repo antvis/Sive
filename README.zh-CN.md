@@ -10,7 +10,7 @@
 
 <div align="center">
 
-[![官网](https://img.shields.io/badge/官网-sive.antv.vision-1f6feb)](https://sive.antv.vision)
+[![官网](https://img.shields.io/badge/官网-antv.vision-1f6feb)](https://antv.vision/Sive/)
 [![下载](https://img.shields.io/badge/下载-Releases-2ea44f)](https://github.com/antvis/Sive/releases)
 [![build](https://github.com/antvis/Sive/actions/workflows/build.yml/badge.svg)](https://github.com/antvis/Sive/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)

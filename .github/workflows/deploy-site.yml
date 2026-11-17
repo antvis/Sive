@@ -3,7 +3,7 @@ name: Deploy Sive site
 on:
   push:
     branches:
-      - codex/sive-site-deploy
+      - main
     paths:
       - 'site/**'
       - '.github/workflows/deploy-site.yml'
@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/codex/sive-site-deploy'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

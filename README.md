@@ -10,7 +10,7 @@
 
 <div align="center">
 
-[![Website](https://img.shields.io/badge/website-sive.antv.vision-1f6feb)](https://sive.antv.vision)
+[![Website](https://img.shields.io/badge/website-antv.vision-1f6feb)](https://antv.vision/Sive/)
 [![Download](https://img.shields.io/badge/download-Releases-2ea44f)](https://github.com/antvis/Sive/releases)
 [![build](https://github.com/antvis/Sive/actions/workflows/build.yml/badge.svg)](https://github.com/antvis/Sive/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
