@@ -45,6 +45,10 @@ export async function createAnalysisAgent({
     engine,
   });
   const messages = [...history];
+  // This is the default options, but they can be overridden by the `stream` method.
+  // The `strategy` option is passed to the tools, and the `agent` option is used to control the agent's behavior.
+  // The `maxSteps` option controls how many steps the agent can take before stopping.
+  // The AVA tool execution reads the current strategy through **closure**.
   const options = {
     agent: { maxSteps: 10 },
     strategy: { type: 'direct' } as AnalysisStrategyConfig,
