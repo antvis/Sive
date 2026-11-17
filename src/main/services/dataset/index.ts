@@ -100,6 +100,11 @@ export class DatasetService {
         };
         break;
       }
+      case 'supabase': {
+        const { projectRef } = sourceConfig.options;
+        sourceConfig = { type: 'supabase', options: { projectRef, accessToken: '' } };
+        break;
+      }
     }
     return {
       ...toSummary(row),

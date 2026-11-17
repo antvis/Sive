@@ -7,6 +7,7 @@ import {
   PostgreSQLDialog,
   MongoDBDialog,
   ClickHouseDialog,
+  SupabaseDialog,
   TextImportDialog,
 } from '../pages/datasets/datasetDialogs';
 import type { ConnectionDialogProps } from '../pages/datasets/datasetDialogs';
@@ -146,11 +147,13 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
     sources: [
       {
         type: 'supabase',
-        enable: false,
+        enable: true,
         label: 'Supabase',
         description: '基于 PostgreSQL 的云端数据库',
         color: '#687682',
         icon: Lightning,
+        action: { type: 'connection', Dialog: SupabaseDialog },
+        actionLabel: '配置连接',
       },
       {
         type: 'feishu-bitable',
