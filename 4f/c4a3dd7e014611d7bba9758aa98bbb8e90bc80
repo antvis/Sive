@@ -1,0 +1,28 @@
+src/main/ipc/index.ts
+  s_9bce9d72a3c6a5::t_4c9c8ab27be0e9 201
+src/main/services/analysis/index.ts
+  s_9bce9d72a3c6a5::t_42dea71e65abd5 37-39,41
+  s_9bce9d72a3c6a5::t_b6946bc6a6c448 172,177
+  s_9bce9d72a3c6a5::t_6263471e34dd66 170,175-176,178
+  s_9bce9d72a3c6a5::t_1c67a51a4154ea 196
+  s_9bce9d72a3c6a5::t_24f28b7ad93c63 72
+  s_9bce9d72a3c6a5::t_248f9e16708b56 34-36
+  s_9bce9d72a3c6a5::t_346799d49992c7 40
+  s_9bce9d72a3c6a5::t_acd714bd16f9cd 173-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4fc4a3dd7e014611d7bba9758aa98bbb8e90bc80",
+  "prompts": {},
+  "sessions": {
+    "s_9bce9d72a3c6a5": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "d904c3d6-54e0-4c35-b921-63deb96c808b",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
