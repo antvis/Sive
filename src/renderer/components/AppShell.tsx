@@ -16,10 +16,8 @@ import type { PropsWithChildren } from 'react';
 import { Group, Panel } from 'react-resizable-panels';
 import { toast } from 'sonner';
 import { errorMessage, readWidth, saveWidth } from '../utils';
-import { findDatasetSource } from '../utils/dataSource';
 import type { AnalysisMessage, Conversation, DatasetSummary } from '../types';
 import { DataSourceLogo } from './DataSourceLogo';
-import type { Conversation, DatasetSummary } from '../types';
 import { IconButton } from './IconButton';
 import { ResizeHandle } from './ResizeHandle';
 
