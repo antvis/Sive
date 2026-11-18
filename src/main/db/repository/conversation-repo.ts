@@ -19,20 +19,20 @@ export class ConversationRepo {
   }
 
   list() {
-    return this.withMessages()
+    return this.selectWithReplyState()
       .where(and(isNull(conversations.deletedAt), isNull(conversations.archivedAt)))
       .orderBy(desc(conversations.createdAt), desc(conversations.id))
       .all();
   }
 
   listArchived() {
-    return this.withMessages()
+    return this.selectWithReplyState()
       .where(and(isNull(conversations.deletedAt), isNotNull(conversations.archivedAt)))
       .orderBy(desc(conversations.archivedAt), desc(conversations.id))
       .all();
   }
 
-  private withMessages() {
+  private selectWithReplyState() {
     const latest = this.db
       .select({
         conversationId: messages.conversationId,
