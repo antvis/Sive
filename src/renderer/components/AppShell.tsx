@@ -3,47 +3,33 @@ import clsx from 'clsx';
 import { useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { Group, Panel } from 'react-resizable-panels';
+import { NavLink, useMatch } from 'react-router';
 import { toast } from 'sonner';
+import { analysisPath, routePaths } from '../router/paths';
 import { errorMessage, readWidth, saveWidth } from '../utils';
 import { DataSourceLogo } from './DataSourceLogo';
 import type { Conversation, DatasetSummary } from '../types';
 import { IconButton } from './IconButton';
 import { ResizeHandle } from './ResizeHandle';
 
-export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
-
 type AppShellProps = PropsWithChildren<{
-  page: AppPage;
-  hasDatasets: boolean;
   datasetTabs: DatasetSummary[];
   activeDatasetId: string | null;
   conversations: Conversation[];
-  activeConversationId: string | null;
   onDatasetSelect: (id: string) => void;
   onDatasetClose: (id: string) => void;
-  onConversationSelect: (id: string) => void;
   onConversationCreate: () => void;
-  onConversationArchive: (id: string) => void;
-  onNavigate: (page: AppPage) => void;
 }>;
 
 const itemClass = (active: boolean) =>
   clsx(
-    'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm',
+    'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left [font:inherit]',
     active ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-surface hover:text-ink',
   );
 
-function ConversationItem({
-  conversation,
-  active,
-  onSelect,
-  onArchive,
-}: {
-  conversation: Conversation;
-  active: boolean;
-  onSelect: () => void;
-  onArchive: () => void;
-}) {
+function ConversationItem({ conversation }: { conversation: Conversation }) {
+  const path = analysisPath(conversation.datasetId, conversation.id);
+  const active = Boolean(useMatch(path));
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(conversation.title);
   const [busy, setBusy] = useState(false);
@@ -78,7 +64,6 @@ function ConversationItem({
     setBusy(true);
     try {
       await window.workbench.conversationArchive(conversation.id);
-      onArchive();
       toast.success('分析任务已归档');
     } catch (cause) {
       toast.error(errorMessage(cause));
@@ -114,17 +99,17 @@ function ConversationItem({
           }}
         />
       ) : (
-        <button
-          type="button"
+        <NavLink
+          to={path}
+          end
           title={conversation.title}
-          className="min-w-0 flex-1 px-3 py-2 text-left text-sm"
-          onClick={onSelect}
+          className="min-w-0 flex-1 px-3 py-2 text-left [font:inherit]"
         >
           <span className="block truncate">{conversation.title}</span>
           <time className="mt-1 block text-xs text-muted" dateTime={conversation.updatedAt}>
             {new Date(conversation.updatedAt).toLocaleString('zh-CN')}
           </time>
-        </button>
+        </NavLink>
       )}
       {!editing && (
         <div className="flex shrink-0 pr-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
@@ -151,21 +136,18 @@ function ConversationItem({
 }
 
 export function AppShell({
-  page,
-  hasDatasets,
   datasetTabs,
   activeDatasetId,
   conversations,
-  activeConversationId,
   onDatasetSelect,
   onDatasetClose,
-  onConversationSelect,
   onConversationCreate,
-  onConversationArchive,
-  onNavigate,
   children,
 }: AppShellProps) {
   const [sidebarWidth] = useState(() => readWidth('sive.sidebar-width', 210));
+  const isAnalysis = Boolean(useMatch(routePaths.analysis));
+  const isSettings = Boolean(useMatch(routePaths.settings));
+  const isSnippets = Boolean(useMatch(routePaths.snippets));
   return (
     <Group orientation="horizontal" className="h-screen overflow-hidden bg-page">
       <Panel
@@ -195,29 +177,20 @@ export function AppShell({
             <Plus size={17} />
             新建分析
           </button>
-          <button
-            className={itemClass(page === 'welcome' || page === 'datasets' || page === 'analysis')}
-            onClick={() => onNavigate(hasDatasets ? 'datasets' : 'welcome')}
-          >
+          <NavLink to={routePaths.datasets} className={({ isActive }) => itemClass(isActive)}>
             <Database size={17} />
             数据源
-          </button>
-          <button className={itemClass(page === 'snippets')} onClick={() => onNavigate('snippets')}>
+          </NavLink>
+          <NavLink to={routePaths.snippets} end className={({ isActive }) => itemClass(isActive)}>
             <Lightbulb size={17} />
             洞察 Snippet
-          </button>
+          </NavLink>
           {activeDatasetId ? (
             <section className="mt-8 flex min-h-0 flex-1 flex-col">
               <h2 className="m-0 mb-2 px-3 text-xs font-normal text-muted">分析任务</h2>
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {conversations.map((conversation) => (
-                  <ConversationItem
-                    key={conversation.id}
-                    conversation={conversation}
-                    active={conversation.id === activeConversationId}
-                    onSelect={() => onConversationSelect(conversation.id)}
-                    onArchive={() => onConversationArchive(conversation.id)}
-                  />
+                  <ConversationItem key={conversation.id} conversation={conversation} />
                 ))}
                 {!conversations.length && <p className="m-0 px-3 py-2 text-xs text-muted">暂无分析任务</p>}
               </div>
@@ -225,10 +198,10 @@ export function AppShell({
           ) : (
             <div className="flex-1" />
           )}
-          <button className={itemClass(page === 'settings')} onClick={() => onNavigate('settings')}>
+          <NavLink to={routePaths.settings} end className={({ isActive }) => itemClass(isActive)}>
             <GearSix size={17} />
             设置
-          </button>
+          </NavLink>
         </aside>
       </Panel>
       <ResizeHandle />
@@ -281,17 +254,11 @@ export function AppShell({
               </div>
             ) : (
               <span className="text-xs text-muted">
-                {page === 'settings'
-                  ? '设置'
-                  : page === 'snippets'
-                    ? '洞察 Snippet'
-                    : page === 'analysis'
-                      ? '数据分析'
-                      : '数据源'}
+                {isSettings ? '设置' : isSnippets ? '洞察 Snippet' : isAnalysis ? '数据分析' : '数据源'}
               </span>
             )}
           </header>
-          <div className={clsx('min-h-0 flex-1', page === 'analysis' ? 'overflow-hidden' : 'overflow-auto')}>
+          <div className={clsx('min-h-0 flex-1', isAnalysis ? 'overflow-hidden' : 'overflow-auto')}>
             {children}
           </div>
         </main>
