@@ -9,11 +9,17 @@ import type {
 } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
 import type { LocalFileFormat } from './dataSource';
-import type { AnalysisMessage } from './messages';
-import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
-import type { AnalysisMessage, Snippet, SnippetSaveInput, SnippetUpdateInput } from './schema';
 
-export type { AnalysisMessage, Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './schema';
+import type {
+  Snippet,
+  SnippetSpec,
+  SnippetContent,
+  SnippetSaveInput,
+  SnippetUpdateInput,
+  AnalysisMessage,
+} from './schema';
+
+export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput, AnalysisMessage };
 
 export type DuckDBEngineConfig = Extract<EngineConfig, { type: 'duckdb' }>;
 
