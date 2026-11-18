@@ -16,7 +16,7 @@ import {
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { AnalysisResponse, Profile, Schema, Semantic, VisualizeResponse } from '@antv/ava';
-import type { SnippetContent } from '@shared/snippets';
+import type { SnippetContent } from '@shared/schema';
 import { toast } from 'sonner';
 import type { AnalysisMessage, AnalysisTaskEvent } from '../../types';
 import { IconButton } from '../../components/IconButton';

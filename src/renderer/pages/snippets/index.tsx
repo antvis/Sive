@@ -1,7 +1,7 @@
 import { Lightbulb, PencilSimple, Trash } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import type { Snippet } from '@shared/snippets';
+import type { Snippet } from '@shared/schema';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Markdown } from '../../components/Markdown';

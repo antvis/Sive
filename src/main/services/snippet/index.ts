@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
+import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import { required } from '../../util';

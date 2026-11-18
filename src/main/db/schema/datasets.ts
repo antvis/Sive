@@ -1,5 +1,5 @@
 import { customType, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import type { DataSourceConfig, Profile, Schema, Semantic } from '@shared/schema';
+import type { DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
 import { decrypt, encrypt } from '../../util';
 
 const encryptedSourceConfig = customType<{ data: DataSourceConfig; driverData: string }>({

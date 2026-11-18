@@ -2,7 +2,7 @@ import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
-import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
+import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
 import type { Services } from '../services';
 import type { DatasetPreviewOptions } from '@shared/api';
 import type { ModelInput, Preferences } from '../services/types';
