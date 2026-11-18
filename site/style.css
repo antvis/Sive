@@ -173,6 +173,9 @@ img {
   width: 16px;
   height: 16px;
 }
+.nav-download:not([hidden]) {
+  animation: word-wave 360ms cubic-bezier(0.22, 0.68, 0, 1) both;
+}
 .hero {
   position: relative;
   padding: 150px 0 45px;
@@ -1208,6 +1211,7 @@ summary::-webkit-details-marker {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .nav-download,
   .type-character,
   .wave-word,
   .download.reveal-pending > :not(.download-decor) {

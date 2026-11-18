@@ -12,7 +12,7 @@
 
 保留薄荷、浅橙、浅蓝与淡紫演示底板。首屏与四个特性按顺序使用 `assets/demo-overview.png` 和 `assets/demo-step-1.png` 至 `assets/demo-step-4.png` 五张本地截图，通过相对路径引用，图片按实际比例显示。
 
-下载入口使用原生 details / summary，支持悬停、点击、键盘、Escape 与触屏。Header 下载入口在首屏隐藏，首屏离开视口后显示，返回首屏时隐藏并关闭菜单。仅展示桌面端，Mac 和 Windows 提供芯片子菜单；未支持版本禁用并标记“待上线”。浏览器提供 CPU Client Hints 时标记芯片，否则只标记操作系统，不根据 MacIntel 字符串推断真实硬件。当前尚无 GitHub Release 资产，受支持版本链接先指向项目 Releases。
+下载入口使用原生 details / summary，支持悬停、点击、键盘、Escape 与触屏。Header 下载入口在首屏隐藏，首屏离开视口后以 360ms 的轻微上浮淡入显示，复用现有文字动效；返回首屏时隐藏并关闭菜单，减少动态效果时直接显示。仅展示桌面端，Mac 和 Windows 提供芯片子菜单；未支持版本禁用并标记“待上线”。浏览器提供 CPU Client Hints 时标记芯片，否则只标记操作系统，不根据 MacIntel 字符串推断真实硬件。当前尚无 GitHub Release 资产，受支持版本链接先指向项目 Releases。
 
 底部“开始分析你的数据”以薄荷绿、雾蓝色 ASCII 字符瀑布替代图标下落。36 列字符以不同速度持续向下流动，每列重复两段内容以无缝循环；上下边缘淡出，中央文字与按钮区域留白，手机上减少一半列数。`download.js` 生成装饰，CSS 负责动画；离开视口或页面隐藏时停止，减少动态效果时保留静态字符。装饰不响应指针且对读屏隐藏，标题、说明与下载按钮沿用单次淡入，键盘聚焦时立即显示内容。
 
@@ -21,6 +21,8 @@
 页面无需构建，沿用现有 GitHub Pages / Surge 的 site 目录。正文优先使用系统苹方（PingFang SC），无苹方时回退到系统无衬线字体，不再加载 MiSans 网页字体。ASCII 动效继续使用等宽字体。
 
 预览：在仓库根目录运行 `python3 -m http.server 4173 --bind 127.0.0.1 --directory site`
+
+通过 `http://127.0.0.1:4173/` 访问预览。不要直接打开 `index.html`：浏览器会阻止 `file://` 页面加载 ES module，导致下载菜单、滚动显隐和动效无法运行。
 
 参考：
 
