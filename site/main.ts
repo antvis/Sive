@@ -1,11 +1,11 @@
-import { detectDevice } from './device.js';
+import { detectDevice } from './device.ts';
 
-document.querySelector('#year').textContent = new Date().getFullYear();
+document.querySelector<HTMLElement>('#year')!.textContent = String(new Date().getFullYear());
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const downloadMenus = [...document.querySelectorAll('.download-menu')];
+const downloadMenus = [...document.querySelectorAll<HTMLDetailsElement>('.download-menu')];
 
-for (const menu of document.querySelectorAll('.download-menu, .platform-submenu')) {
-  const summary = menu.querySelector(':scope > summary');
+for (const menu of document.querySelectorAll<HTMLDetailsElement>('.download-menu, .platform-submenu')) {
+  const summary = menu.querySelector<HTMLElement>(':scope > summary')!;
   summary.setAttribute('aria-expanded', 'false');
 
   menu.addEventListener('pointerenter', (event) => {
@@ -21,7 +21,11 @@ for (const menu of document.querySelectorAll('.download-menu, .platform-submenu'
     if (!menu.open) return;
     const siblings = menu.classList.contains('download-menu')
       ? downloadMenus
-      : [...menu.closest('.download-options').querySelectorAll('.platform-submenu')];
+      : [
+          ...menu
+            .closest<HTMLElement>('.download-options')!
+            .querySelectorAll<HTMLDetailsElement>('.platform-submenu'),
+        ];
     siblings.forEach((other) => {
       if (other !== menu) other.open = false;
     });
@@ -39,7 +43,7 @@ for (const menu of document.querySelectorAll('.download-menu, .platform-submenu'
   });
 
   menu.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
+    if (event.key !== 'Escape' || !menu.open) return;
     event.stopPropagation();
     menu.open = false;
     summary.focus();
@@ -48,21 +52,21 @@ for (const menu of document.querySelectorAll('.download-menu, .platform-submenu'
 
 document.addEventListener('pointerdown', (event) => {
   downloadMenus.forEach((menu) => {
-    if (!menu.contains(event.target)) menu.open = false;
+    if (!menu.contains(event.target as Node | null)) menu.open = false;
   });
 });
 
-function markDevice(device) {
-  document.querySelectorAll('[data-platform]').forEach((row) => {
+function markDevice(device: ReturnType<typeof detectDevice>) {
+  document.querySelectorAll<HTMLElement>('[data-platform]').forEach((row) => {
     const current = row.dataset.platform === device.platform;
-    row.querySelector('.current-device').hidden = !current;
+    row.querySelector<HTMLElement>('.current-device')!.hidden = !current;
     row.classList.toggle('is-current', current);
     const submenu = row.closest('.platform-submenu');
     if (submenu) {
-      submenu.querySelectorAll('[data-arch]').forEach((choice) => {
+      submenu.querySelectorAll<HTMLElement>('[data-arch]').forEach((choice) => {
         const match = current && choice.dataset.arch === device.architecture;
         choice.classList.toggle('is-current-chip', match);
-        const dot = choice.querySelector('.current-chip');
+        const dot = choice.querySelector<HTMLElement>('.current-chip');
         if (dot) dot.hidden = !match;
       });
     }
@@ -88,19 +92,19 @@ if (navigator.userAgentData?.getHighEntropyValues) {
 
 function initScrollEffects() {
   if (typeof IntersectionObserver !== 'function') {
-    document.querySelector('.nav-download').hidden = false;
+    document.querySelector<HTMLDetailsElement>('.nav-download')!.hidden = false;
     return;
   }
 
-  const navDownload = document.querySelector('.nav-download');
+  const navDownload = document.querySelector<HTMLDetailsElement>('.nav-download')!;
   const heroCopyObserver = new IntersectionObserver(([entry]) => {
     navDownload.hidden = entry.boundingClientRect.bottom > 0;
     if (navDownload.hidden) navDownload.open = false;
   });
-  heroCopyObserver.observe(document.querySelector('.hero-copy'));
+  heroCopyObserver.observe(document.querySelector('.hero-copy')!);
 
-  const scenes = [...document.querySelectorAll('.demo-scene')];
-  const chapterNav = document.querySelector('.chapter-progress');
+  const scenes = [...document.querySelectorAll<HTMLElement>('.demo-scene')];
+  const chapterNav = document.querySelector<HTMLElement>('.chapter-progress')!;
   const chapterLinks = [...chapterNav.querySelectorAll('a')];
   const sceneObserver = new IntersectionObserver(
     (entries) => {
@@ -108,7 +112,8 @@ function initScrollEffects() {
         if (!entry.isIntersecting) continue;
         chapterNav.classList.add('is-visible');
         chapterLinks.forEach((link, index) => {
-          if (index === Number(entry.target.dataset.step)) link.setAttribute('aria-current', 'step');
+          if (index === Number((entry.target as HTMLElement).dataset.step))
+            link.setAttribute('aria-current', 'step');
           else link.removeAttribute('aria-current');
         });
       }
@@ -122,11 +127,11 @@ function initScrollEffects() {
     },
     { threshold: 0.2 },
   );
-  storyBounds.observe(document.querySelector('.hero'));
-  storyBounds.observe(document.querySelector('.download'));
+  storyBounds.observe(document.querySelector<HTMLElement>('.hero')!);
+  storyBounds.observe(document.querySelector<HTMLElement>('.download')!);
 
   // Keep complete heading text in the DOM for layout and screen readers.
-  const typedHeadings = [...document.querySelectorAll('.scene-copy h2, .story-intro h2')];
+  const typedHeadings = [...document.querySelectorAll<HTMLElement>('.scene-copy h2, .story-intro h2')];
   const revealObserver = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
@@ -142,15 +147,15 @@ function initScrollEffects() {
     heading.setAttribute('aria-label', heading.textContent);
     const walker = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
     const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
+    while (walker.nextNode()) nodes.push(walker.currentNode as Text);
     let index = 0;
     for (const node of nodes) {
       const fragment = document.createDocumentFragment();
-      for (const char of Array.from(node.textContent)) {
+      for (const char of Array.from(node.data)) {
         const span = document.createElement('span');
         span.className = 'type-character';
         span.setAttribute('aria-hidden', 'true');
-        span.style.setProperty('--character', index++);
+        span.style.setProperty('--character', String(index++));
         span.textContent = char;
         fragment.append(span);
       }
@@ -173,7 +178,7 @@ function initScrollEffects() {
       ...words.map(({ segment }, index) => {
         const span = document.createElement('span');
         span.className = 'wave-word';
-        span.style.setProperty('--word', index);
+        span.style.setProperty('--word', String(index));
         span.textContent = segment;
         return span;
       }),
@@ -204,7 +209,7 @@ function initScrollEffects() {
 }
 
 // Dynamic imports keep optional animation failures isolated after bundling.
-import('./hero.js').catch((error) => console.warn('Hero animation unavailable', error));
-import('./download.js').catch((error) => console.warn('Download animation unavailable', error));
+import('./hero.ts').catch((error) => console.warn('Hero animation unavailable', error));
+import('./download.ts').catch((error) => console.warn('Download animation unavailable', error));
 
 initScrollEffects();

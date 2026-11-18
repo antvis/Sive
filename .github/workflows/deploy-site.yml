@@ -6,6 +6,10 @@ on:
       - main
     paths:
       - 'site/**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'tsconfig.site.json'
+      - '.github/workflows/check-site.yml'
       - '.github/workflows/deploy-site.yml'
   workflow_dispatch:
 
@@ -19,17 +23,27 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/check-site.yml
+
   deploy:
     if: github.ref == 'refs/heads/main'
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: site/dist
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: site
+          path: site/dist
       - uses: actions/deploy-pages@v4
         id: deployment

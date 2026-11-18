@@ -1,16 +1,16 @@
 function initHero() {
   if (typeof ResizeObserver !== 'function' || typeof IntersectionObserver !== 'function') return;
 
-  const hero = document.querySelector('.hero');
-  const host = document.querySelector('#ambient-canvas');
-  const copy = document.querySelector('.hero-copy');
-  const stage = document.querySelector('.hero-stage');
-  const media = document.querySelector('.hero-media');
-  const image = document.querySelector('#demo-overview');
+  const hero = document.querySelector<HTMLElement>('.hero')!;
+  const host = document.querySelector<HTMLElement>('#ambient-canvas')!;
+  const copy = document.querySelector<HTMLElement>('.hero-copy')!;
+  const stage = document.querySelector<HTMLElement>('.hero-stage')!;
+  const media = document.querySelector<HTMLElement>('.hero-media')!;
+  const image = document.querySelector<HTMLImageElement>('#demo-overview')!;
   const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext('2d')!;
   const pattern = document.createElement('canvas');
-  const patternContext = pattern.getContext('2d');
+  const patternContext = pattern.getContext('2d')!;
   if (!context || !patternContext) return;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const words = [...document.querySelectorAll('.hero-capability')];
@@ -23,17 +23,17 @@ function initHero() {
   let height = 1;
   let card = { x: 0, y: 0, w: 1, h: 1 };
   let safe = { x: 0, y: 0, w: 1, h: 1 };
-  let pointer = null;
-  let pulse = null;
+  let pointer: { x: number; y: number } | null = null;
+  let pulse: { age: number } | null = null;
   let inView = true;
-  let animation;
-  let wordTimer;
+  let animation = 0;
+  let wordTimer = 0;
   let wordIndex = 0;
   let elapsed = 0;
   let previousTime = 0;
   let lastFrame = 0;
 
-  function inBox(x, y, box, padding = 0) {
+  function inBox(x: number, y: number, box: typeof card, padding = 0) {
     return (
       x > box.x - padding && x < box.x + box.w + padding && y > box.y - padding && y < box.y + box.h + padding
     );
@@ -152,7 +152,7 @@ function initHero() {
     draw();
   }
 
-  function frame(time) {
+  function frame(time: number) {
     const dt = Math.min((time - previousTime) / 1000, 0.05);
     previousTime = time;
     elapsed += dt;
@@ -182,7 +182,7 @@ function initHero() {
     if (active) {
       previousTime = performance.now();
       animation = requestAnimationFrame(frame);
-      wordTimer = setInterval(() => {
+      wordTimer = window.setInterval(() => {
         words.forEach((item) => item.classList.remove('is-exiting'));
         words[wordIndex].classList.remove('is-active');
         words[wordIndex].classList.add('is-exiting');
@@ -221,7 +221,7 @@ function initHero() {
       if (
         reducedMotion.matches ||
         event.pointerType === 'touch' ||
-        event.target.closest('a,button,summary,details')
+        (event.target instanceof Element && event.target.closest('a,button,summary,details'))
       )
         return;
       const bounds = hero.getBoundingClientRect();
@@ -242,7 +242,7 @@ function initHero() {
     resetTilt();
   });
   hero.addEventListener('click', (event) => {
-    if (!event.target.closest('a,button,summary,details')) scanImage();
+    if (!(event.target instanceof Element && event.target.closest('a,button,summary,details'))) scanImage();
   });
   document.addEventListener('visibilitychange', updateMotion);
   reducedMotion.addEventListener?.('change', updateMotion);

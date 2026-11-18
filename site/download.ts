@@ -1,15 +1,15 @@
 function initDownload() {
   if (typeof IntersectionObserver !== 'function') return;
 
-  const download = document.querySelector('.download');
-  const waterfall = download.querySelector('.download-decor');
+  const download = document.querySelector<HTMLElement>('.download')!;
+  const waterfall = download.querySelector<HTMLElement>('.download-decor')!;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const chars = '0123456789.:+*=/<>[]{}-';
 
   for (let column = 0; column < 36; column++) {
     const stream = document.createElement('span');
     stream.className = 'download-stream';
-    stream.style.setProperty('--column', column);
+    stream.style.setProperty('--column', String(column));
     stream.style.setProperty('--duration', `${14 + ((column * 7) % 11)}s`);
     stream.style.setProperty('--delay', `${-(column * 13) % 23}s`);
     const text = Array.from({ length: 40 }, (_, row) =>
