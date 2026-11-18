@@ -113,8 +113,14 @@ img {
   top: 0;
   left: 0;
   right: 0;
-  background: #fffffff2;
-  backdrop-filter: blur(16px);
+  background: white;
+}
+@supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+  .header {
+    background: #fffffff2;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
 }
 .nav-wrap {
   max-width: 1320px;
@@ -267,7 +273,11 @@ img {
   pointer-events: none;
 }
 .hero-media::before {
-  background: radial-gradient(ellipse 230px 180px at var(--hero-px, 22%) var(--hero-py, 10%), #dfeae8, transparent);
+  background: radial-gradient(
+    ellipse 230px 180px at var(--hero-px, 22%) var(--hero-py, 10%),
+    #dfeae8,
+    transparent
+  );
 }
 .hero-media::after {
   opacity: 0;
@@ -423,7 +433,9 @@ img {
 .scene-demo.reveal-pending {
   opacity: 0;
   transform: translateY(32px);
-  transition: opacity 700ms ease, transform 850ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    opacity 700ms ease,
+    transform 850ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .scene-demo.reveal-pending.is-revealed {
   opacity: 1;
@@ -488,21 +500,31 @@ img {
   text-align: center;
 }
 .download-decor {
+  display: none;
   position: absolute;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  mask-image:
-    linear-gradient(transparent, #000 15%, #000 85%, transparent),
-    radial-gradient(ellipse 46% 60% at 50% 50%, transparent 65%, #000 100%);
-  mask-composite: intersect;
+}
+@supports (mask-composite: intersect) {
+  .download-decor {
+    display: block;
+    mask-image:
+      linear-gradient(transparent, #000 15%, #000 85%, transparent),
+      radial-gradient(ellipse 46% 60% at 50% 50%, transparent 65%, #000 100%);
+    mask-composite: intersect;
+  }
 }
 .download-stream {
   position: absolute;
   top: 0;
   left: calc((var(--column) + 0.5) * 100% / 36);
-  font: 12px / 24px ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    12px / 24px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
   white-space: pre;
   opacity: 0.42;
   animation: download-waterfall var(--duration) linear var(--delay) infinite;
@@ -1089,6 +1111,7 @@ summary::-webkit-details-marker {
     right: 16px;
     width: auto;
     transform: none;
+    max-height: calc(100vh - 98px);
     max-height: calc(100dvh - 98px);
     overflow: auto;
     padding: 19px;
@@ -1114,6 +1137,7 @@ summary::-webkit-details-marker {
   .download-options {
     top: 10px;
     transform: none;
+    max-height: calc(100vh - 100px);
     max-height: calc(100dvh - 100px);
     overflow: auto;
   }
@@ -1152,7 +1176,10 @@ summary::-webkit-details-marker {
   opacity: 0;
   visibility: hidden;
   transform: translateY(100%);
-  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1), opacity 350ms, visibility 600ms;
+  transition:
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 350ms,
+    visibility 600ms;
 }
 .hero-capability.is-active {
   opacity: 1;
@@ -1177,7 +1204,7 @@ summary::-webkit-details-marker {
 .capability-visualization {
   color: #3e6db4;
 }
-.type-character {
+.reveal-pending .type-character {
   opacity: 0;
 }
 .is-revealed .type-character {
@@ -1190,6 +1217,8 @@ summary::-webkit-details-marker {
 }
 .wave-word {
   position: relative;
+}
+.reveal-pending .wave-word {
   opacity: 0;
 }
 .is-revealed .wave-word {
@@ -1214,6 +1243,8 @@ summary::-webkit-details-marker {
   .nav-download,
   .type-character,
   .wave-word,
+  .reveal-pending .type-character,
+  .reveal-pending .wave-word,
   .download.reveal-pending > :not(.download-decor) {
     opacity: 1;
     top: 0;
