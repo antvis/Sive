@@ -6,8 +6,6 @@ on:
       - main
     paths:
       - 'site/**'
-      - 'package.json'
-      - 'tsconfig.json'
       - '.github/workflows/build-site.yml'
       - '.github/workflows/deploy-site.yml'
   workflow_dispatch:

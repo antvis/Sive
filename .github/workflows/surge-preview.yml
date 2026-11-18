@@ -4,8 +4,6 @@ on:
   pull_request:
     paths:
       - 'site/**'
-      - 'package.json'
-      - 'tsconfig.json'
       - '.github/workflows/build-site.yml'
       - '.github/workflows/surge-preview.yml'
 
