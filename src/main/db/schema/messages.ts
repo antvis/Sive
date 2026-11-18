@@ -1,5 +1,5 @@
 import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
-import type { MessageContent } from '@shared/messages';
+import type { AnalysisOptions, MessageContent } from '@shared/schema';
 
 export const messages = sqliteTable(
   'messages',
@@ -25,7 +25,7 @@ export const messages = sqliteTable(
     content: text('content', { mode: 'json' }).$type<MessageContent>().notNull(),
 
     // JSON object containing the AVA options snapshot without credentials.
-    analysisOptions: text('analysis_options', { mode: 'json' }).notNull().default({}),
+    analysisOptions: text('analysis_options', { mode: 'json' }).$type<AnalysisOptions>().notNull().default({}),
 
     // Creation timestamp.
     createdAt: text('created_at').notNull(),
@@ -41,6 +41,8 @@ export const messages = sqliteTable(
     index('idx_messages_status').on(table.status, table.createdAt, table.id),
   ],
 );
+
+export type MessageRow = typeof messages.$inferSelect;
 
 export type MessageInsert = typeof messages.$inferInsert;
 

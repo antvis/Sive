@@ -17,6 +17,8 @@ export const settings = sqliteTable('settings', {
   deletedAt: text('deleted_at'),
 });
 
+export type SettingRow = typeof settings.$inferSelect;
+
 export type SettingInsert = typeof settings.$inferInsert;
 
 export type SettingUpdate = Partial<Omit<SettingInsert, 'key' | 'createdAt'>>;
