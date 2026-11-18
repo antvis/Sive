@@ -93,11 +93,11 @@ function initScrollEffects() {
   }
 
   const navDownload = document.querySelector('.nav-download');
-  const heroObserver = new IntersectionObserver(([entry]) => {
-    navDownload.hidden = entry.isIntersecting;
-    if (entry.isIntersecting) navDownload.open = false;
+  const heroCopyObserver = new IntersectionObserver(([entry]) => {
+    navDownload.hidden = entry.boundingClientRect.bottom > 0;
+    if (navDownload.hidden) navDownload.open = false;
   });
-  heroObserver.observe(document.querySelector('.hero'));
+  heroCopyObserver.observe(document.querySelector('.hero-copy'));
 
   const scenes = [...document.querySelectorAll('.demo-scene')];
   const chapterNav = document.querySelector('.chapter-progress');
@@ -157,7 +157,10 @@ function initScrollEffects() {
       node.replaceWith(fragment);
     }
     if (reducedMotion.matches) heading.classList.add('is-revealed');
-    else revealObserver.observe(heading);
+    else {
+      revealObserver.observe(heading);
+      heading.classList.add('reveal-pending');
+    }
   }
 
   const descriptions = [...document.querySelectorAll('.hero-description, .scene-copy > p')];
@@ -176,14 +179,19 @@ function initScrollEffects() {
       }),
     );
     if (reducedMotion.matches) paragraph.classList.add('is-revealed');
-    else revealObserver.observe(paragraph);
+    else {
+      revealObserver.observe(paragraph);
+      paragraph.classList.add('reveal-pending');
+    }
   }
 
   const revealBlocks = [...document.querySelectorAll('.scene-demo, .download')];
   for (const block of revealBlocks) {
-    block.classList.add('reveal-pending');
     if (reducedMotion.matches) block.classList.add('is-revealed');
-    else revealObserver.observe(block);
+    else {
+      revealObserver.observe(block);
+      block.classList.add('reveal-pending');
+    }
   }
 
   reducedMotion.addEventListener?.('change', (event) => {
