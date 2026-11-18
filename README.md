@@ -1,7 +1,7 @@
 <img src="https://gw.alipayobjects.com/zos/antfincdn/R8sN%24GNdh6/language.svg" width="18"> English | [中文](https://github.com/antvis/Sive/blob/main/README.zh-CN.md)
 
 <p align="center">
-  <a href="https://sive.antv.antgroup.com">
+  <a href="https://sive.antv.vision">
     <img width="128" src="./assets/sive.svg">
   </a>
 </p>

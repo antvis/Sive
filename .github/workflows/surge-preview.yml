@@ -18,6 +18,9 @@ jobs:
   preview:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
     environment:
       name: surge-preview
       url: https://${{ steps.preview.outputs.preview_url }}/
@@ -25,11 +28,19 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: site/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build
       - uses: afc163/surge-preview@v1
         id: preview
         with:
           surge_token: ${{ secrets.SURGE_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          dist: site
-          build: test -f site/index.html
+          dist: site/dist
+          build: test -f site/dist/index.html
           failOnError: 'true'

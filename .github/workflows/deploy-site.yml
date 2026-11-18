@@ -22,14 +22,27 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: site/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: site
+          path: site/dist
       - uses: actions/deploy-pages@v4
         id: deployment
