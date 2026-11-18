@@ -1,5 +1,5 @@
-import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm';
-import { conversations } from '../schema';
+import { and, desc, eq, getTableColumns, isNotNull, isNull, sql } from 'drizzle-orm';
+import { conversations, messages } from '../schema';
 import type { ConversationInsert, ConversationUpdate } from '../schema';
 import type { DBConnection } from './db-connection';
 
@@ -19,21 +19,46 @@ export class ConversationRepo {
   }
 
   list() {
-    return this.db
-      .select()
-      .from(conversations)
+    return this.withMessages()
       .where(and(isNull(conversations.deletedAt), isNull(conversations.archivedAt)))
       .orderBy(desc(conversations.createdAt), desc(conversations.id))
       .all();
   }
 
   listArchived() {
-    return this.db
-      .select()
-      .from(conversations)
+    return this.withMessages()
       .where(and(isNull(conversations.deletedAt), isNotNull(conversations.archivedAt)))
       .orderBy(desc(conversations.archivedAt), desc(conversations.id))
       .all();
+  }
+
+  private withMessages() {
+    const latest = this.db
+      .select({
+        conversationId: messages.conversationId,
+        sequence: sql<number>`MAX(${messages.sequence})`.as('latest_sequence'),
+        lastCompletedSequence:
+          sql<number>`MAX(CASE WHEN ${messages.status} = 'done' THEN ${messages.sequence} ELSE -1 END)`.as(
+            'last_completed_sequence',
+          ),
+      })
+      .from(messages)
+      .where(and(eq(messages.role, 'assistant'), isNull(messages.deletedAt)))
+      .groupBy(messages.conversationId)
+      .as('latest');
+
+    return this.db
+      .select({
+        ...getTableColumns(conversations),
+        latestMessage: { id: messages.id, status: messages.status },
+        lastCompletedSequence: sql<number>`COALESCE(${latest.lastCompletedSequence}, -1)`,
+      })
+      .from(conversations)
+      .leftJoin(latest, eq(conversations.id, latest.conversationId))
+      .leftJoin(
+        messages,
+        and(eq(messages.conversationId, conversations.id), eq(messages.sequence, latest.sequence)),
+      );
   }
 
   listByDatasetId(datasetId: string) {

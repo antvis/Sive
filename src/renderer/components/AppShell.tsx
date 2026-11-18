@@ -17,15 +17,21 @@ import { Group, Panel } from 'react-resizable-panels';
 import { toast } from 'sonner';
 import { errorMessage, readWidth, saveWidth } from '../utils';
 import { findDatasetSource } from '../utils/dataSource';
-import type { AnalysisTaskSummary, Conversation, DatasetSummary } from '../types';
+import type { AnalysisMessage, Conversation, DatasetSummary } from '../types';
 import { IconButton } from './IconButton';
 import { ResizeHandle } from './ResizeHandle';
 
 export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
 
-type TaskState = { status: AnalysisTaskSummary['status']; unread: boolean };
-
-function TaskStatusIcon({ status, unread, className }: Partial<TaskState> & { className?: string }) {
+function ConversationStatusIcon({
+  status,
+  unread,
+  className,
+}: {
+  status?: AnalysisMessage['status'];
+  unread?: boolean;
+  className?: string;
+}) {
   const running = status === 'running' || status === 'cancelling';
   const failed = status === 'error';
   const interrupted = status === 'interrupted';
@@ -72,7 +78,7 @@ type AppShellProps = PropsWithChildren<{
   datasetTabs: (DatasetSummary & { running: boolean; unread: boolean })[];
   activeDatasetId: string | null;
   conversations: Conversation[];
-  taskStates: Record<string, TaskState>;
+  readPositions: Record<string, number>;
   activeConversationId: string | null;
   onDatasetSelect: (id: string) => void;
   onDatasetClose: (id: string) => void;
@@ -90,13 +96,13 @@ const itemClass = (active: boolean) =>
 
 function ConversationItem({
   conversation,
-  taskState,
+  unread,
   active,
   onSelect,
   onArchive,
 }: {
   conversation: Conversation;
-  taskState?: TaskState;
+  unread: boolean;
   active: boolean;
   onSelect: () => void;
   onArchive: () => void;
@@ -105,7 +111,8 @@ function ConversationItem({
   const [name, setName] = useState(conversation.title);
   const [busy, setBusy] = useState(false);
   const renameCancelled = useRef(false);
-  const running = taskState?.status === 'running' || taskState?.status === 'cancelling';
+  const status = conversation.latestMessage?.status;
+  const running = status === 'running' || status === 'cancelling';
   const updatedAt = new Date(conversation.updatedAt).toLocaleString('zh-CN');
 
   const saveName = async () => {
@@ -181,7 +188,11 @@ function ConversationItem({
         >
           <span className="flex min-w-0 items-center gap-2 group-focus-within:pr-14 group-hover:pr-14">
             <span className="min-w-0 flex-1 truncate">{conversation.title}</span>
-            <TaskStatusIcon {...taskState} className="group-focus-within:hidden group-hover:hidden" />
+            <ConversationStatusIcon
+              status={status}
+              unread={unread}
+              className="group-focus-within:hidden group-hover:hidden"
+            />
           </span>
           <span className="mt-1 flex items-center whitespace-nowrap text-xs text-muted">
             <time className="min-w-0 truncate" dateTime={conversation.updatedAt} title={updatedAt}>
@@ -220,7 +231,7 @@ export function AppShell({
   datasetTabs,
   activeDatasetId,
   conversations,
-  taskStates,
+  readPositions,
   activeConversationId,
   onDatasetSelect,
   onDatasetClose,
@@ -279,7 +290,7 @@ export function AppShell({
                   <ConversationItem
                     key={conversation.id}
                     conversation={conversation}
-                    taskState={taskStates[conversation.id]}
+                    unread={conversation.lastCompletedSequence > (readPositions[conversation.id] ?? -1)}
                     active={conversation.id === activeConversationId}
                     onSelect={() => onConversationSelect(conversation.id)}
                     onArchive={() => onConversationArchive(conversation.id)}
@@ -325,7 +336,7 @@ export function AppShell({
                       >
                         <SourceIcon size={14} className="shrink-0 text-[#25804d]" aria-hidden />
                         <span className="min-w-0 flex-1 truncate">{dataset.name}</span>
-                        <TaskStatusIcon
+                        <ConversationStatusIcon
                           status={dataset.running ? 'running' : undefined}
                           unread={dataset.unread}
                         />

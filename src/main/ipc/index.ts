@@ -34,7 +34,6 @@ export function registerIpc(services: Services) {
   ipcMain.handle('workspaceGetState', () => {
     const preferences = services.settings.getPreferences();
     return {
-      analysisTasks: services.analysis.listTaskSummaries(),
       conversations: services.conversation.list(),
       archivedConversations: services.conversation.listArchived(),
       datasets: services.dataset.listSummaries(),
@@ -152,7 +151,7 @@ export function registerIpc(services: Services) {
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
       (progress) => {
-        broadcast('analysis:task-change', progress);
+        broadcast('analysis:message-progress', progress);
         if (progress.status !== 'running') changed();
       },
     );
@@ -160,7 +159,7 @@ export function registerIpc(services: Services) {
     return result;
   });
 
-  ipcMain.handle('analysisCancel', (_event, taskId: string) => services.analysis.cancel(taskId));
+  ipcMain.handle('analysisCancel', (_event, messageId: string) => services.analysis.cancel(messageId));
 
   ipcMain.handle('analysisGetMessages', (_event, conversationId: string) =>
     services.analysis.getMessages(conversationId),

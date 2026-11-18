@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
-import type { AnalysisStartInput, AnalysisTaskEvent, DuckDBEngineConfig, Preferences } from '@shared/api';
+import type { AnalysisStartInput, MessageProgress, DuckDBEngineConfig, Preferences } from '@shared/api';
 import { createAnalysisAgent } from '../../ai';
 import type { AnalysisAgent } from '../../ai';
 import type { Repositories } from '../../db/repository';
@@ -10,8 +10,7 @@ import type { ModelConfig } from '../model';
 import type { DatasetRow } from '../../db/schema/datasets';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 
-type Emit = (event: AnalysisTaskEvent) => void;
-type Task = { conversationId: string; datasetId: string; controller: AbortController; emit: Emit };
+type Emit = (event: MessageProgress) => void;
 
 export class AnalysisService {
   // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
@@ -23,7 +22,10 @@ export class AnalysisService {
     agent: Promise<AnalysisAgent>,
   }>();
 
-  private tasks = new Map<string, Task>();
+  private generations = new Map<
+    string,
+    { conversationId: string; datasetId: string; controller: AbortController; emit: Emit }
+  >();
 
   private updatingDatasets = new Set<string>();
 
@@ -34,7 +36,7 @@ export class AnalysisService {
 
   async beginDatasetUpdate(datasetId: string) {
     if (this.updatingDatasets.has(datasetId)) throw new Error('数据源正在更新，请稍后重试。');
-    if ([...this.tasks.values()].some((task) => task.datasetId === datasetId))
+    if ([...this.generations.values()].some((generation) => generation.datasetId === datasetId))
       throw new Error('该数据源正在分析，请等待分析结束后刷新。');
     this.updatingDatasets.add(datasetId);
     try {
@@ -62,16 +64,8 @@ export class AnalysisService {
     return this.repositories.messages.listByConversationId(conversationId);
   }
 
-  listTaskSummaries() {
-    return this.repositories.messages.listAnalysisSummaries();
-  }
-
   recoverAfterRestart() {
     this.repositories.messages.interruptRunning();
-  }
-
-  getRun(id: string) {
-    return required(this.repositories.messages.get(id), '分析记录不存在。');
   }
 
   start(input: AnalysisStartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
@@ -79,8 +73,8 @@ export class AnalysisService {
     if (!question) throw new Error('请输入分析问题。');
     if (this.updatingDatasets.has(input.datasetId)) throw new Error('数据源正在更新，请稍后重试。');
     const dataset = required(this.repositories.datasets.get(input.datasetId), '数据源不存在或已删除。');
-    for (const task of this.tasks.values()) {
-      if (task.conversationId === input.conversationId) throw new Error('请等待当前分析完成。');
+    for (const generation of this.generations.values()) {
+      if (generation.conversationId === input.conversationId) throw new Error('请等待当前分析完成。');
     }
     const now = new Date().toISOString();
     const conversation =
@@ -97,7 +91,7 @@ export class AnalysisService {
     if (conversation.datasetId !== dataset.id) throw new Error('会话与数据集不匹配。');
     const agent = this.getAgent(conversation.id, model, dataset, preferences.engine);
     const sequence = this.repositories.messages.nextSequence(conversation.id);
-    const taskId = randomUUID();
+    const messageId = randomUUID();
 
     this.repositories.messages.insert({
       id: randomUUID(),
@@ -111,7 +105,7 @@ export class AnalysisService {
       updatedAt: now,
     });
     this.repositories.messages.insert({
-      id: taskId,
+      id: messageId,
       conversationId: conversation.id,
       sequence: sequence + 1,
       role: 'assistant',
@@ -126,9 +120,14 @@ export class AnalysisService {
       updatedAt: now,
     });
     const controller = new AbortController();
-    this.tasks.set(taskId, { conversationId: conversation.id, datasetId: dataset.id, controller, emit });
+    this.generations.set(messageId, {
+      conversationId: conversation.id,
+      datasetId: dataset.id,
+      controller,
+      emit,
+    });
     void this.run(
-      taskId,
+      messageId,
       agent,
       question,
       input.strategy,
@@ -136,18 +135,18 @@ export class AnalysisService {
       controller,
       localFilePath(dataset.sourceConfig),
     );
-    return { taskId, conversationId: conversation.id };
+    return { messageId, conversationId: conversation.id };
   }
 
-  cancel(taskId: string) {
-    const task = this.tasks.get(taskId);
-    if (!task || task.controller.signal.aborted) return;
-    task.controller.abort();
-    this.repositories.messages.update(taskId, { status: 'cancelling', content: { stage: '正在停止' } });
-    task.emit({
-      taskId,
-      datasetId: task.datasetId,
-      conversationId: task.conversationId,
+  cancel(messageId: string) {
+    const generation = this.generations.get(messageId);
+    if (!generation || generation.controller.signal.aborted) return;
+    generation.controller.abort();
+    this.repositories.messages.update(messageId, { status: 'cancelling', content: { stage: '正在停止' } });
+    generation.emit({
+      messageId,
+      datasetId: generation.datasetId,
+      conversationId: generation.conversationId,
       status: 'cancelling',
       stage: '正在停止',
     });
@@ -190,7 +189,7 @@ export class AnalysisService {
   }
 
   private async run(
-    taskId: string,
+    messageId: string,
     agentPromise: Promise<AnalysisAgent>,
     question: string,
     strategy: AnalysisStartInput['strategy'],
@@ -198,9 +197,13 @@ export class AnalysisService {
     controller: AbortController,
     file?: string,
   ) {
-    const task = required(this.tasks.get(taskId), '分析任务不存在。');
-    const { emit } = task;
-    const eventBase = { taskId, datasetId: task.datasetId, conversationId: task.conversationId };
+    const generation = required(this.generations.get(messageId), '消息生成已结束。');
+    const { emit } = generation;
+    const eventBase = {
+      messageId,
+      datasetId: generation.datasetId,
+      conversationId: generation.conversationId,
+    };
     try {
       emit({ ...eventBase, status: 'running', stage: '正在加载会话' });
       const agent = await agentPromise;
@@ -227,31 +230,31 @@ export class AnalysisService {
       });
       const text = await result.text;
       controller.signal.throwIfAborted();
-      this.repositories.messages.update(taskId, {
+      this.repositories.messages.update(messageId, {
         status: 'done',
         content: { text, query: question, parts },
       });
-      this.repositories.conversations.update(task.conversationId, {});
+      this.repositories.conversations.update(generation.conversationId, {});
       emit({ ...eventBase, status: 'done' });
     } catch (error) {
-      this.agents.delete(task.conversationId);
+      this.agents.delete(generation.conversationId);
       await agentPromise.then((agent) => agent.dispose()).catch(() => {});
       const cancelled = controller.signal.aborted;
-      this.repositories.messages.update(taskId, {
+      this.repositories.messages.update(messageId, {
         status: cancelled ? 'cancelled' : 'error',
         content: {
           stage: cancelled ? '已取消' : '分析失败',
           error: error instanceof Error ? error.message : String(error),
         },
       });
-      this.repositories.conversations.update(task.conversationId, {});
+      this.repositories.conversations.update(generation.conversationId, {});
       emit({
         ...eventBase,
         status: cancelled ? 'cancelled' : 'error',
         error: cancelled ? undefined : error instanceof Error ? error.message : String(error),
       });
     } finally {
-      this.tasks.delete(taskId);
+      this.generations.delete(messageId);
     }
   }
 }

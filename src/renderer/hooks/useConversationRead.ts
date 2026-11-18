@@ -16,7 +16,8 @@ export function useConversationRead(state: WorkspaceState | null, conversationId
     }
   });
   const sequence =
-    state?.analysisTasks.find((task) => task.conversationId === conversationId)?.completedSequence ?? -1;
+    state?.conversations.find((conversation) => conversation.id === conversationId)?.lastCompletedSequence ??
+    -1;
 
   useEffect(() => {
     if (!state) return;

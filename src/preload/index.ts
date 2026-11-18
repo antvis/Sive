@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
-import type { AnalysisTaskEvent, ModelTestProgress, WorkbenchApi } from './api';
+import type { MessageProgress, ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
   workspaceGetState: () => ipcRenderer.invoke('workspaceGetState'),
@@ -36,12 +36,12 @@ const api = {
   modelActivate: (id, model) => ipcRenderer.invoke('modelActivate', id, model),
   modelDelete: (id) => ipcRenderer.invoke('modelDelete', id),
   analysisStart: (input) => ipcRenderer.invoke('analysisStart', input),
-  analysisCancel: (taskId) => ipcRenderer.invoke('analysisCancel', taskId),
+  analysisCancel: (messageId) => ipcRenderer.invoke('analysisCancel', messageId),
   analysisGetMessages: (conversationId) => ipcRenderer.invoke('analysisGetMessages', conversationId),
-  analysisOnTaskChange: (callback) => {
-    const listener = (_event: IpcRendererEvent, progress: AnalysisTaskEvent) => callback(progress);
-    ipcRenderer.on('analysis:task-change', listener);
-    return () => ipcRenderer.removeListener('analysis:task-change', listener);
+  analysisOnMessageProgress: (callback) => {
+    const listener = (_event: IpcRendererEvent, progress: MessageProgress) => callback(progress);
+    ipcRenderer.on('analysis:message-progress', listener);
+    return () => ipcRenderer.removeListener('analysis:message-progress', listener);
   },
   conversationRename: (id, title) => ipcRenderer.invoke('conversationRename', id, title),
   conversationArchive: (id) => ipcRenderer.invoke('conversationArchive', id),

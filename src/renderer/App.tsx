@@ -21,28 +21,24 @@ export default function App() {
   const [openDatasetIds, setOpenDatasetIds] = useState<string[]>([]);
   const { state, error, refresh } = useWorkspace();
   const readPositions = useConversationRead(state, page === 'analysis' ? activeConversationId : null);
-  const taskStates = Object.fromEntries(
-    (state?.analysisTasks ?? []).map((task) => [
-      task.conversationId,
-      {
-        status: task.status,
-        unread: task.completedSequence > (readPositions[task.conversationId] ?? -1),
-      },
-    ]),
-  );
   const datasetCount = state?.datasets.length ?? 0;
   const previousDatasetCount = useRef<number | undefined>(undefined);
   const datasetTabs = openDatasetIds.flatMap((id) => {
     const dataset = state?.datasets.find((item) => item.id === id);
-    const tasks = (state?.conversations ?? [])
-      .filter((conversation) => conversation.datasetId === id)
-      .map((conversation) => taskStates[conversation.id]);
+    const conversations = (state?.conversations ?? []).filter(
+      (conversation) => conversation.datasetId === id,
+    );
     return dataset
       ? [
           {
             ...dataset,
-            running: tasks.some((task) => task?.status === 'running' || task?.status === 'cancelling'),
-            unread: tasks.some((task) => task?.unread),
+            running: conversations.some(
+              ({ latestMessage }) =>
+                latestMessage?.status === 'running' || latestMessage?.status === 'cancelling',
+            ),
+            unread: conversations.some(
+              (conversation) => conversation.lastCompletedSequence > (readPositions[conversation.id] ?? -1),
+            ),
           },
         ]
       : [];
@@ -124,7 +120,7 @@ export default function App() {
       datasetTabs={datasetTabs}
       activeDatasetId={analysisDatasetId}
       conversations={analysisDatasetId ? conversationsFor(analysisDatasetId) : []}
-      taskStates={taskStates}
+      readPositions={readPositions}
       activeConversationId={activeConversationId}
       onDatasetSelect={openDataset}
       onDatasetClose={closeDataset}
@@ -161,7 +157,10 @@ export default function App() {
       )}
       {state && page === 'analysis' && analysisDatasetId && (
         <AnalysisPage
-          task={state.analysisTasks.find((task) => task.conversationId === activeConversationId)}
+          latestMessage={
+            state.conversations.find((conversation) => conversation.id === activeConversationId)
+              ?.latestMessage
+          }
           datasetId={analysisDatasetId}
           conversationId={activeConversationId}
           onConversationChange={setActiveConversationId}

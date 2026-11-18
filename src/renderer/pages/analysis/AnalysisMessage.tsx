@@ -18,13 +18,13 @@ import type { ReactNode } from 'react';
 import type { AnalysisResponse, Profile, Schema, Semantic, VisualizeResponse } from '@antv/ava';
 import type { SnippetContent } from '@shared/snippets';
 import { toast } from 'sonner';
-import type { AnalysisMessage, AnalysisTaskEvent } from '../../types';
+import type { AnalysisMessage, MessageProgress } from '../../types';
 import { IconButton } from '../../components/IconButton';
 import { Markdown, SqlBlock } from '../../components/Markdown';
 import { Visualization } from '../../components/Visualization';
 import { errorMessage } from '../../utils';
 
-type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
+type StreamPart = NonNullable<MessageProgress['part']>;
 type ToolCallPart = Extract<StreamPart, { type: 'tool-call' }>;
 type VisualizationResult = VisualizeResponse & Partial<SnippetContent>;
 
@@ -463,12 +463,12 @@ function StreamContent({
 
 export function AnalysisMessageView({
   message,
-  activeTask,
+  stage,
   streamParts = [],
   savedMessageIds = [],
 }: {
   message: AnalysisMessage;
-  activeTask?: AnalysisTaskEvent | null;
+  stage?: string;
   streamParts?: StreamPart[];
   savedMessageIds?: string[];
 }) {
@@ -499,11 +499,7 @@ export function AnalysisMessageView({
     return <StreamContent parts={parts} messageId={message.id} savedMessageIds={savedMessageIds} />;
   }
   if (running) {
-    return (
-      <p className="m-0 text-sm text-muted">
-        {activeTask?.taskId === message.id ? activeTask.stage : message.content.stage || '正在分析…'}
-      </p>
-    );
+    return <p className="m-0 text-sm text-muted">{stage || message.content.stage || '正在分析…'}</p>;
   }
 
   return (

@@ -36,36 +36,6 @@ export class MessageRepo {
     return row?.value ?? 0;
   }
 
-  listAnalysisSummaries() {
-    const latest = this.db
-      .select({
-        conversationId: messages.conversationId,
-        sequence: sql<number>`MAX(${messages.sequence})`.as('latest_sequence'),
-        completedSequence:
-          sql<number>`MAX(CASE WHEN ${messages.status} = 'done' THEN ${messages.sequence} ELSE -1 END)`.as(
-            'completed_sequence',
-          ),
-      })
-      .from(messages)
-      .where(and(eq(messages.role, 'assistant'), isNull(messages.deletedAt)))
-      .groupBy(messages.conversationId)
-      .as('latest');
-
-    return this.db
-      .select({
-        taskId: messages.id,
-        conversationId: messages.conversationId,
-        status: messages.status,
-        completedSequence: latest.completedSequence,
-      })
-      .from(messages)
-      .innerJoin(
-        latest,
-        and(eq(messages.conversationId, latest.conversationId), eq(messages.sequence, latest.sequence)),
-      )
-      .all();
-  }
-
   insert(values: MessageInsert) {
     return this.db.insert(messages).values(values).returning().get();
   }

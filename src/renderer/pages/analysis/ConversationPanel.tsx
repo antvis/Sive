@@ -8,8 +8,8 @@ import { IconButton } from '../../components/IconButton';
 import { Select } from '../../components/Select';
 import type {
   AnalysisMessage,
-  AnalysisTaskEvent,
-  AnalysisTaskSummary,
+  MessageProgress,
+  Conversation,
   ModelProfile,
   Preferences,
   SuggestResult,
@@ -18,7 +18,7 @@ import { errorMessage } from '../../utils';
 import { AnalysisMessageView } from './AnalysisMessage';
 
 type Props = {
-  task?: AnalysisTaskSummary;
+  latestMessage?: Conversation['latestMessage'];
   datasetId: string;
   conversationId: string | null;
   savedMessageIds: string[];
@@ -30,10 +30,10 @@ type Props = {
 };
 
 const modelValue = (providerId: string, model: string) => JSON.stringify([providerId, model]);
-type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
+type StreamPart = NonNullable<MessageProgress['part']>;
 
 export function ConversationPanel({
-  task,
+  latestMessage,
   datasetId,
   conversationId,
   savedMessageIds,
@@ -45,8 +45,8 @@ export function ConversationPanel({
 }: Props) {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<AnalysisMessage[]>([]);
-  const [progress, setProgress] = useState<{ taskId: string; stage: string } | null>(null);
-  const [stream, setStream] = useState<{ taskId: string; parts: StreamPart[] } | null>(null);
+  const [progress, setProgress] = useState<{ messageId: string; stage: string } | null>(null);
+  const [stream, setStream] = useState<{ messageId: string; parts: StreamPart[] } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [sending, setSending] = useState(false);
@@ -63,17 +63,14 @@ export function ConversationPanel({
     })),
   );
 
-  const currentTask: AnalysisTaskEvent | null =
-    task && (task.status === 'running' || task.status === 'cancelling')
+  const currentMessage =
+    latestMessage && (latestMessage.status === 'running' || latestMessage.status === 'cancelling')
       ? {
-          taskId: task.taskId,
-          datasetId,
-          conversationId: task.conversationId,
-          status: task.status,
+          ...latestMessage,
           stage:
-            task.status === 'cancelling'
+            latestMessage.status === 'cancelling'
               ? '正在停止'
-              : progress?.taskId === task.taskId
+              : progress?.messageId === latestMessage.id
                 ? progress.stage
                 : '正在分析数据',
         }
@@ -115,8 +112,8 @@ export function ConversationPanel({
       .then((result) => {
         if (!live) return;
         setMessages(result);
-        if (task?.status !== 'running' && task?.status !== 'cancelling') {
-          setStream((current) => (current?.taskId === task?.taskId ? null : current));
+        if (latestMessage?.status !== 'running' && latestMessage?.status !== 'cancelling') {
+          setStream((current) => (current?.messageId === latestMessage?.id ? null : current));
         }
       })
       .catch((cause) => {
@@ -128,7 +125,7 @@ export function ConversationPanel({
     return () => {
       live = false;
     };
-  }, [conversationId, task?.taskId, task?.status]);
+  }, [conversationId, latestMessage?.id, latestMessage?.status]);
 
   useEffect(() => {
     let live = true;
@@ -156,22 +153,22 @@ export function ConversationPanel({
   }, [datasetId, activeModelId, activeModel]);
 
   useEffect(() => {
-    return window.workbench.analysisOnTaskChange((event) => {
+    return window.workbench.analysisOnMessageProgress((event) => {
       if (event.datasetId !== datasetId || event.conversationId !== conversationId) return;
       if (event.part) {
         const part = event.part;
         setStream((current) => ({
-          taskId: event.taskId,
-          parts: current?.taskId === event.taskId ? [...current.parts, part] : [part],
+          messageId: event.messageId,
+          parts: current?.messageId === event.messageId ? [...current.parts, part] : [part],
         }));
       }
-      if (event.stage) setProgress({ taskId: event.taskId, stage: event.stage });
+      if (event.stage) setProgress({ messageId: event.messageId, stage: event.stage });
       if (event.error) toast.error(event.error);
     });
   }, [datasetId, conversationId]);
 
   const start = async () => {
-    if (!question.trim() || !activeModelId || currentTask || sending || historyLoading) return;
+    if (!question.trim() || !activeModelId || currentMessage || sending || historyLoading) return;
     setShowScrollToBottom(false);
     setSending(true);
     setError('');
@@ -192,9 +189,9 @@ export function ConversationPanel({
   };
 
   const cancel = async () => {
-    if (!currentTask) return;
+    if (!currentMessage) return;
     try {
-      await window.workbench.analysisCancel(currentTask.taskId);
+      await window.workbench.analysisCancel(currentMessage.id);
     } catch (cause) {
       toast.error(errorMessage(cause));
     }
@@ -243,8 +240,8 @@ export function ConversationPanel({
                   key={message.id}
                   message={message}
                   savedMessageIds={savedMessageIds}
-                  activeTask={currentTask}
-                  streamParts={message.id === stream?.taskId ? stream.parts : []}
+                  stage={currentMessage?.id === message.id ? currentMessage.stage : undefined}
+                  streamParts={message.id === stream?.messageId ? stream.parts : []}
                 />
               ))}
             </div>
@@ -301,7 +298,7 @@ export function ConversationPanel({
             value={activeProvider ? modelValue(activeProvider.id, activeModel) : ''}
             onChange={changeModel}
             options={options}
-            disabled={!models.length || !!currentTask}
+            disabled={!models.length || !!currentMessage}
             className="w-36 shrink-0"
             compact
           />
@@ -309,28 +306,28 @@ export function ConversationPanel({
             <Tabs.List aria-label="分析方式" className="flex rounded-lg bg-page p-1">
               <Tabs.Trigger
                 value="direct"
-                disabled={!!currentTask}
+                disabled={!!currentMessage}
                 className="rounded-md px-2 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
               >
                 直接分析
               </Tabs.Trigger>
               <Tabs.Trigger
                 value="loop"
-                disabled={!!currentTask}
+                disabled={!!currentMessage}
                 className="rounded-md px-2 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
               >
                 多步探索
               </Tabs.Trigger>
             </Tabs.List>
           </Tabs.Root>
-          {currentTask ? (
+          {currentMessage ? (
             <Button
               className="ml-auto shrink-0"
               variant="secondary"
-              disabled={currentTask.status === 'cancelling'}
+              disabled={currentMessage.status === 'cancelling'}
               onClick={() => void cancel()}
             >
-              {currentTask.status === 'cancelling' ? '正在停止…' : '停止'}
+              {currentMessage.status === 'cancelling' ? '正在停止…' : '停止'}
             </Button>
           ) : (
             <Button

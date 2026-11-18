@@ -98,6 +98,8 @@ export type Conversation = {
   updatedAt: string;
   archivedAt: string | null;
   deletedAt: string | null;
+  latestMessage: Pick<AnalysisMessage, 'id' | 'status'> | null;
+  lastCompletedSequence: number;
 };
 
 export type DatasetSummary = {
@@ -127,8 +129,8 @@ export type AnalysisStartInput = {
   conversationId?: string;
 };
 
-export type AnalysisTaskEvent = {
-  taskId: string;
+export type MessageProgress = {
+  messageId: string;
   datasetId: string;
   conversationId: string;
   status: 'running' | 'cancelling' | 'done' | 'error' | 'cancelled';
@@ -137,15 +139,7 @@ export type AnalysisTaskEvent = {
   part?: TextStreamPart<ToolSet>;
 };
 
-export type AnalysisTaskSummary = {
-  taskId: string;
-  conversationId: string;
-  status: AnalysisMessage['status'];
-  completedSequence: number;
-};
-
 export type WorkspaceState = {
-  analysisTasks: AnalysisTaskSummary[];
   conversations: Conversation[];
   archivedConversations: Conversation[];
   datasets: DatasetSummary[];
@@ -188,10 +182,10 @@ export type WorkbenchApi = {
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;
   modelActivate(id: string, model?: string): Promise<void>;
   modelDelete(id: string): Promise<void>;
-  analysisStart(input: AnalysisStartInput): Promise<{ taskId: string; conversationId: string }>;
-  analysisCancel(taskId: string): Promise<void>;
+  analysisStart(input: AnalysisStartInput): Promise<{ messageId: string; conversationId: string }>;
+  analysisCancel(messageId: string): Promise<void>;
   analysisGetMessages(conversationId: string): Promise<AnalysisMessage[]>;
-  analysisOnTaskChange(callback: (event: AnalysisTaskEvent) => void): () => void;
+  analysisOnMessageProgress(callback: (event: MessageProgress) => void): () => void;
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;
