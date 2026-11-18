@@ -16,3 +16,7 @@ export const settings = sqliteTable('settings', {
   // Soft deletion timestamp.
   deletedAt: text('deleted_at'),
 });
+
+export type SettingInsert = typeof settings.$inferInsert;
+
+export type SettingUpdate = Partial<Omit<SettingInsert, 'key' | 'createdAt'>>;

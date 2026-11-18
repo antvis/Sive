@@ -1,9 +1,7 @@
 import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { messages } from '../schema';
+import type { MessageInsert, MessageUpdate } from '../schema';
 import type { DBConnection } from './db-connection';
-
-type MessageInsert = typeof messages.$inferInsert;
-type MessageUpdate = Partial<Omit<MessageInsert, 'id' | 'conversationId' | 'sequence' | 'createdAt'>>;
 
 export class MessageRepo {
   constructor(private database: DBConnection) {}

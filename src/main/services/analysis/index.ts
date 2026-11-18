@@ -6,18 +6,18 @@ import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import { required } from '../../util';
 import type { ModelService } from '../model';
-import type { datasets } from '../../db/schema/datasets';
+import type { DatasetRow } from '../../db/schema/datasets';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 
 type ModelConfig = ReturnType<ModelService['getDefaultModelConfig']>;
 type AgentPromise = ReturnType<typeof createAnalysisAgent>;
-type DatasetRow = typeof datasets.$inferSelect;
 type StartInput = {
   datasetId: string;
   question: string;
   strategy: Preferences['strategy'];
   conversationId?: string;
 };
+
 type TaskEvent = {
   taskId: string;
   datasetId: string;
@@ -27,6 +27,7 @@ type TaskEvent = {
   error?: string;
   part?: TextStreamPart<ToolSet>;
 };
+
 type Task = { conversationId: string; datasetId: string; controller: AbortController };
 type Emit = (event: TaskEvent) => void;
 
