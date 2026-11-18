@@ -1,0 +1,45 @@
+src/main/db/schema/model-providers.ts
+  s_abfb24d08f079a::t_2f6b4099eb6aa0 29-30
+src/shared/schema.ts
+  s_abfb24d08f079a::t_7d3b515096ce2a 1-8
+src/main/db/schema/snippets.ts
+  s_abfb24d08f079a::t_b3f89b2c7de50e 2
+  s_abfb24d08f079a::t_905b1c312d29ac 33-34
+src/main/db/schema/settings.ts
+  s_abfb24d08f079a::t_5b76796810aecb 20-21
+src/main/db/schema/messages.ts
+  s_abfb24d08f079a::t_ce496097fcc86b 45-46
+  s_abfb24d08f079a::t_270c325a401e9f 2
+  s_abfb24d08f079a::t_ae101bf9ed5fea 28
+src/main/db/schema/index.ts
+  s_abfb24d08f079a::t_ddb1ccb9cd9c2e 7
+  s_abfb24d08f079a::t_569df6f1fb019b 15
+  s_abfb24d08f079a::t_712ca4a4fb6629 19
+  s_abfb24d08f079a::t_5107fbb0c5a444 23
+  s_abfb24d08f079a::t_377a06e5eb3586 3
+src/main/db/schema/conversations.ts
+  s_abfb24d08f079a::t_5c2a78858bc843 30-31
+src/main/db/schema/datasets.ts
+  s_abfb24d08f079a::t_16a8b27fa988ea 2
+  s_abfb24d08f079a::t_d1ffee5e4b79cb 53-54
+src/shared/messages.ts
+  s_abfb24d08f079a::t_9d0bcd23fcaa2c 25
+  s_abfb24d08f079a::t_355eecb4225f12 1,4-7
+  s_abfb24d08f079a::t_6fa8b4597f3b88 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ec80bf22c43fa4ea42d5be87eac6074c2aec2db9",
+  "prompts": {},
+  "sessions": {
+    "s_abfb24d08f079a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "93351da1-21eb-4f4d-ba2a-be3ac0a4074b",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
