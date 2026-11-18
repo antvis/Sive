@@ -131,13 +131,21 @@ export type AnalysisTaskEvent = {
   taskId: string;
   datasetId: string;
   conversationId: string;
-  status: 'running' | 'done' | 'error' | 'cancelled';
+  status: 'running' | 'cancelling' | 'done' | 'error' | 'cancelled';
   stage?: string;
   error?: string;
   part?: TextStreamPart<ToolSet>;
 };
 
+export type AnalysisTaskSummary = {
+  taskId: string;
+  conversationId: string;
+  status: AnalysisMessage['status'];
+  completedSequence: number;
+};
+
 export type WorkspaceState = {
+  analysisTasks: AnalysisTaskSummary[];
   conversations: Conversation[];
   archivedConversations: Conversation[];
   datasets: DatasetSummary[];

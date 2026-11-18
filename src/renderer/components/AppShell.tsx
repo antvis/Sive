@@ -1,4 +1,13 @@
-import { Archive, Database, GearSix, Lightbulb, PencilSimple, Plus, X } from '@phosphor-icons/react';
+import {
+  Archive,
+  CircleNotch,
+  Database,
+  GearSix,
+  Lightbulb,
+  PencilSimple,
+  Plus,
+  X,
+} from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
@@ -6,18 +15,29 @@ import { Group, Panel } from 'react-resizable-panels';
 import { toast } from 'sonner';
 import { errorMessage, readWidth, saveWidth } from '../utils';
 import { findDatasetSource } from '../utils/dataSource';
-import type { Conversation, DatasetSummary } from '../types';
+import type { AnalysisTaskSummary, Conversation, DatasetSummary } from '../types';
 import { IconButton } from './IconButton';
 import { ResizeHandle } from './ResizeHandle';
 
 export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
 
+type TaskState = { status: AnalysisTaskSummary['status']; unread: boolean };
+
+const statusLabels: Partial<Record<AnalysisTaskSummary['status'], string>> = {
+  running: '分析中',
+  cancelling: '正在停止',
+  error: '分析失败',
+  cancelled: '已取消',
+  interrupted: '已中断',
+};
+
 type AppShellProps = PropsWithChildren<{
   page: AppPage;
   hasDatasets: boolean;
-  datasetTabs: DatasetSummary[];
+  datasetTabs: (DatasetSummary & { running: boolean; unread: boolean })[];
   activeDatasetId: string | null;
   conversations: Conversation[];
+  taskStates: Record<string, TaskState>;
   activeConversationId: string | null;
   onDatasetSelect: (id: string) => void;
   onDatasetClose: (id: string) => void;
@@ -35,11 +55,13 @@ const itemClass = (active: boolean) =>
 
 function ConversationItem({
   conversation,
+  taskState,
   active,
   onSelect,
   onArchive,
 }: {
   conversation: Conversation;
+  taskState?: TaskState;
   active: boolean;
   onSelect: () => void;
   onArchive: () => void;
@@ -48,6 +70,9 @@ function ConversationItem({
   const [name, setName] = useState(conversation.title);
   const [busy, setBusy] = useState(false);
   const renameCancelled = useRef(false);
+  const running = taskState?.status === 'running' || taskState?.status === 'cancelling';
+  const statusLabel = taskState ? statusLabels[taskState.status] : undefined;
+  const updatedAt = new Date(conversation.updatedAt).toLocaleString('zh-CN');
 
   const saveName = async () => {
     if (renameCancelled.current) {
@@ -90,7 +115,7 @@ function ConversationItem({
   return (
     <div
       className={clsx(
-        'group flex items-center rounded-lg',
+        'group relative flex items-center rounded-lg',
         active ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-surface hover:text-ink',
       )}
     >
@@ -120,14 +145,29 @@ function ConversationItem({
           className="min-w-0 flex-1 px-3 py-2 text-left text-sm"
           onClick={onSelect}
         >
-          <span className="block truncate">{conversation.title}</span>
-          <time className="mt-1 block text-xs text-muted" dateTime={conversation.updatedAt}>
-            {new Date(conversation.updatedAt).toLocaleString('zh-CN')}
-          </time>
+          <span className="block truncate pr-14">{conversation.title}</span>
+          <span className="mt-1 flex items-center gap-1.5 whitespace-nowrap text-xs text-muted">
+            <time className="min-w-0 truncate" dateTime={conversation.updatedAt} title={updatedAt}>
+              {updatedAt}
+            </time>
+            {statusLabel && (
+              <span
+                role="status"
+                className={clsx(
+                  'flex shrink-0 items-center gap-1',
+                  taskState?.status === 'error' ? 'text-danger' : running && 'text-accent',
+                )}
+              >
+                {running && <CircleNotch size={12} className="motion-safe:animate-spin" aria-hidden />}
+                {statusLabel}
+              </span>
+            )}
+            {taskState?.unread && <span className="shrink-0 text-accent">未读</span>}
+          </span>
         </button>
       )}
       {!editing && (
-        <div className="flex shrink-0 pr-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+        <div className="absolute right-1 top-1 flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
           <IconButton
             icon={PencilSimple}
             label={`重命名 ${conversation.title}`}
@@ -141,7 +181,7 @@ function ConversationItem({
           <IconButton
             icon={Archive}
             label={`归档 ${conversation.title}`}
-            disabled={busy}
+            disabled={busy || running}
             onClick={() => void archive()}
           />
         </div>
@@ -156,6 +196,7 @@ export function AppShell({
   datasetTabs,
   activeDatasetId,
   conversations,
+  taskStates,
   activeConversationId,
   onDatasetSelect,
   onDatasetClose,
@@ -214,6 +255,7 @@ export function AppShell({
                   <ConversationItem
                     key={conversation.id}
                     conversation={conversation}
+                    taskState={taskStates[conversation.id]}
                     active={conversation.id === activeConversationId}
                     onSelect={() => onConversationSelect(conversation.id)}
                     onArchive={() => onConversationArchive(conversation.id)}
@@ -255,9 +297,36 @@ export function AppShell({
                           active ? 'bg-surface text-ink' : 'text-muted hover:bg-surface/60',
                         )}
                         onClick={() => onDatasetSelect(dataset.id)}
+                        title={[
+                          dataset.name,
+                          dataset.running ? (active && page === 'analysis' ? '分析中' : '后台分析中') : '',
+                          dataset.unread ? '有未读分析结果' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
                       >
-                        <SourceIcon size={14} className="shrink-0 text-[#25804d]" aria-hidden />
+                        {dataset.running ? (
+                          <>
+                            <CircleNotch
+                              size={14}
+                              className="shrink-0 text-accent motion-safe:animate-spin"
+                              aria-hidden
+                            />
+                            <span className="sr-only">分析中：</span>
+                          </>
+                        ) : (
+                          <SourceIcon size={14} className="shrink-0 text-[#25804d]" aria-hidden />
+                        )}
                         <span className="min-w-0 truncate">{dataset.name}</span>
+                        {dataset.unread && (
+                          <>
+                            <span className="relative size-1.5 shrink-0" aria-hidden>
+                              <span className="absolute inset-0 rounded-full bg-accent/40 motion-safe:animate-ping motion-reduce:hidden" />
+                              <span className="absolute inset-0 rounded-full bg-accent/55" />
+                            </span>
+                            <span className="sr-only">（有未读分析结果）</span>
+                          </>
+                        )}
                       </button>
                       <button
                         type="button"

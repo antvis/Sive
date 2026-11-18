@@ -9,6 +9,7 @@ import { Select } from '../../components/Select';
 import type {
   AnalysisMessage,
   AnalysisTaskEvent,
+  AnalysisTaskSummary,
   ModelProfile,
   Preferences,
   SuggestResult,
@@ -17,6 +18,7 @@ import { errorMessage } from '../../utils';
 import { AnalysisMessageView } from './AnalysisMessage';
 
 type Props = {
+  task?: AnalysisTaskSummary;
   datasetId: string;
   conversationId: string | null;
   savedMessageIds: string[];
@@ -31,6 +33,7 @@ const modelValue = (providerId: string, model: string) => JSON.stringify([provid
 type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 
 export function ConversationPanel({
+  task,
   datasetId,
   conversationId,
   savedMessageIds,
@@ -42,7 +45,7 @@ export function ConversationPanel({
 }: Props) {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<AnalysisMessage[]>([]);
-  const [activeTask, setActiveTask] = useState<AnalysisTaskEvent | null>(null);
+  const [progress, setProgress] = useState<{ taskId: string; stage: string } | null>(null);
   const [stream, setStream] = useState<{ taskId: string; parts: StreamPart[] } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
@@ -60,7 +63,21 @@ export function ConversationPanel({
     })),
   );
 
-  const currentTask = activeTask?.conversationId === conversationId ? activeTask : null;
+  const currentTask: AnalysisTaskEvent | null =
+    task && (task.status === 'running' || task.status === 'cancelling')
+      ? {
+          taskId: task.taskId,
+          datasetId,
+          conversationId: task.conversationId,
+          status: task.status,
+          stage:
+            task.status === 'cancelling'
+              ? '正在停止'
+              : progress?.taskId === task.taskId
+                ? progress.stage
+                : '正在分析数据',
+        }
+      : null;
   const streamPartCount = stream?.parts.length ?? 0;
 
   const scrollToBottom = useCallback(() => {
@@ -80,35 +97,38 @@ export function ConversationPanel({
     if (!showScrollToBottom) scrollToBottom();
   }, [messages, streamPartCount, showScrollToBottom, scrollToBottom]);
 
-  const loadMessages = useCallback(
-    async (id: string | null = conversationId) => {
-      if (!id) {
-        setMessages([]);
-        setHistoryLoading(false);
-        return;
-      }
-      setMessages(await window.workbench.analysisGetMessages(id));
-      setHistoryLoading(false);
-    },
-    [conversationId],
-  );
-
   useEffect(() => {
-    setActiveTask(null);
+    setProgress(null);
     setStream(null);
     setQuestion('');
     setError('');
-  }, [datasetId]);
+  }, [datasetId, conversationId]);
 
   useEffect(() => {
-    setHistoryLoading(true);
+    let live = true;
+    setHistoryLoading(!!conversationId);
     setMessages([]);
     setShowScrollToBottom(false);
-    loadMessages().catch((cause) => {
-      setError(errorMessage(cause));
-      setHistoryLoading(false);
-    });
-  }, [loadMessages]);
+    if (!conversationId) return;
+    window.workbench
+      .analysisGetMessages(conversationId)
+      .then((result) => {
+        if (!live) return;
+        setMessages(result);
+        if (task?.status !== 'running' && task?.status !== 'cancelling') {
+          setStream((current) => (current?.taskId === task?.taskId ? null : current));
+        }
+      })
+      .catch((cause) => {
+        if (live) setError(errorMessage(cause));
+      })
+      .finally(() => {
+        if (live) setHistoryLoading(false);
+      });
+    return () => {
+      live = false;
+    };
+  }, [conversationId, task?.taskId, task?.status]);
 
   useEffect(() => {
     let live = true;
@@ -137,7 +157,7 @@ export function ConversationPanel({
 
   useEffect(() => {
     return window.workbench.analysisOnTaskChange((event) => {
-      if (event.datasetId !== datasetId) return;
+      if (event.datasetId !== datasetId || event.conversationId !== conversationId) return;
       if (event.part) {
         const part = event.part;
         setStream((current) => ({
@@ -145,27 +165,13 @@ export function ConversationPanel({
           parts: current?.taskId === event.taskId ? [...current.parts, part] : [part],
         }));
       }
-      setActiveTask((current) => {
-        if (event.status === 'running') return event;
-        return current?.taskId === event.taskId ? null : current;
-      });
-      if (event.status !== 'running') {
-        if (event.conversationId === conversationId) {
-          if (event.error) toast.error(event.error);
-          void loadMessages()
-            .catch((cause) => toast.error(errorMessage(cause)))
-            .finally(() => {
-              setStream((current) => (current?.taskId === event.taskId ? null : current));
-            });
-        } else {
-          setStream((current) => (current?.taskId === event.taskId ? null : current));
-        }
-      }
+      if (event.stage) setProgress({ taskId: event.taskId, stage: event.stage });
+      if (event.error) toast.error(event.error);
     });
-  }, [datasetId, conversationId, loadMessages]);
+  }, [datasetId, conversationId]);
 
   const start = async () => {
-    if (!question.trim() || !activeModelId || currentTask || sending) return;
+    if (!question.trim() || !activeModelId || currentTask || sending || historyLoading) return;
     setShowScrollToBottom(false);
     setSending(true);
     setError('');
@@ -177,15 +183,7 @@ export function ConversationPanel({
         conversationId: conversationId ?? undefined,
       });
       onConversationChange(result.conversationId);
-      setActiveTask({
-        taskId: result.taskId,
-        datasetId,
-        conversationId: result.conversationId,
-        status: 'running',
-        stage: '准备分析',
-      });
       setQuestion('');
-      await loadMessages(result.conversationId);
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -197,9 +195,6 @@ export function ConversationPanel({
     if (!currentTask) return;
     try {
       await window.workbench.analysisCancel(currentTask.taskId);
-      setActiveTask(null);
-      setStream(null);
-      await loadMessages();
     } catch (cause) {
       toast.error(errorMessage(cause));
     }
@@ -329,14 +324,19 @@ export function ConversationPanel({
             </Tabs.List>
           </Tabs.Root>
           {currentTask ? (
-            <Button className="ml-auto shrink-0" variant="secondary" onClick={() => void cancel()}>
-              停止
+            <Button
+              className="ml-auto shrink-0"
+              variant="secondary"
+              disabled={currentTask.status === 'cancelling'}
+              onClick={() => void cancel()}
+            >
+              {currentTask.status === 'cancelling' ? '正在停止…' : '停止'}
             </Button>
           ) : (
             <Button
               className="ml-auto shrink-0"
               variant="primary"
-              disabled={!question.trim() || !activeModelId || sending}
+              disabled={!question.trim() || !activeModelId || sending || historyLoading}
               onClick={() => void start()}
             >
               {sending ? '提交中…' : '发送'}

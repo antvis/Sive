@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Group, Panel } from 'react-resizable-panels';
 import { ResizeHandle } from '../../components/ResizeHandle';
 import { readWidth, saveWidth } from '../../utils';
-import type { ModelProfile, Preferences } from '../../types';
+import type { AnalysisTaskSummary, ModelProfile, Preferences } from '../../types';
 import { ConversationPanel } from './ConversationPanel';
 import { DatasetPanel } from './DatasetPanel';
 
 type Props = {
+  task?: AnalysisTaskSummary;
   datasetId: string;
   conversationId: string | null;
   savedMessageIds: string[];
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export function AnalysisPage({
+  task,
   datasetId,
   conversationId,
   savedMessageIds,
@@ -39,6 +41,7 @@ export function AnalysisPage({
         onResize={(size) => saveWidth('sive.conversation-width', size.inPixels)}
       >
         <ConversationPanel
+          task={task}
           datasetId={datasetId}
           conversationId={conversationId}
           savedMessageIds={savedMessageIds}

@@ -2,6 +2,7 @@ export type {
   AnalysisMessage,
   AnalysisStartInput,
   AnalysisTaskEvent,
+  AnalysisTaskSummary,
   Conversation,
   DatasetDetail,
   DatasetSummary,

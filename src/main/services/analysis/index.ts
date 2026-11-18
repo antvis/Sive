@@ -10,8 +10,8 @@ import type { ModelConfig } from '../model';
 import type { DatasetRow } from '../../db/schema/datasets';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 
-type Task = { conversationId: string; datasetId: string; controller: AbortController };
 type Emit = (event: AnalysisTaskEvent) => void;
+type Task = { conversationId: string; datasetId: string; controller: AbortController; emit: Emit };
 
 export class AnalysisService {
   // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
@@ -60,6 +60,10 @@ export class AnalysisService {
   getMessages(conversationId: string) {
     required(this.repositories.conversations.get(conversationId), '会话不存在。');
     return this.repositories.messages.listByConversationId(conversationId);
+  }
+
+  listTaskSummaries() {
+    return this.repositories.messages.listAnalysisSummaries();
   }
 
   recoverAfterRestart() {
@@ -122,7 +126,7 @@ export class AnalysisService {
       updatedAt: now,
     });
     const controller = new AbortController();
-    this.tasks.set(taskId, { conversationId: conversation.id, datasetId: dataset.id, controller });
+    this.tasks.set(taskId, { conversationId: conversation.id, datasetId: dataset.id, controller, emit });
     void this.run(
       taskId,
       agent,
@@ -130,18 +134,23 @@ export class AnalysisService {
       input.strategy,
       preferences.agent,
       controller,
-      emit,
       localFilePath(dataset.sourceConfig),
     );
     return { taskId, conversationId: conversation.id };
   }
 
-  async cancel(taskId: string) {
+  cancel(taskId: string) {
     const task = this.tasks.get(taskId);
-    if (!task) return;
+    if (!task || task.controller.signal.aborted) return;
     task.controller.abort();
-    this.repositories.messages.update(taskId, { status: 'cancelled', content: { stage: '已取消' } });
-    return { datasetId: task.datasetId, conversationId: task.conversationId };
+    this.repositories.messages.update(taskId, { status: 'cancelling', content: { stage: '正在停止' } });
+    task.emit({
+      taskId,
+      datasetId: task.datasetId,
+      conversationId: task.conversationId,
+      status: 'cancelling',
+      stage: '正在停止',
+    });
   }
 
   private getAgent(
@@ -187,14 +196,15 @@ export class AnalysisService {
     strategy: AnalysisStartInput['strategy'],
     agentConfig: Preferences['agent'],
     controller: AbortController,
-    emit: Emit,
     file?: string,
   ) {
     const task = required(this.tasks.get(taskId), '分析任务不存在。');
+    const { emit } = task;
     const eventBase = { taskId, datasetId: task.datasetId, conversationId: task.conversationId };
     try {
       emit({ ...eventBase, status: 'running', stage: '正在加载会话' });
       const agent = await agentPromise;
+      controller.signal.throwIfAborted();
       if (file) await checkLocalFile(file);
       controller.signal.throwIfAborted();
       emit({ ...eventBase, status: 'running', stage: '正在分析数据' });
@@ -205,6 +215,7 @@ export class AnalysisService {
         agent: agentConfig,
         abortSignal: controller.signal,
         onPart: (part) => {
+          if (controller.signal.aborted) return;
           const previous = parts.at(-1);
           if (part.type === 'text-delta' && previous?.type === 'text-delta' && previous.id === part.id) {
             parts[parts.length - 1] = { ...previous, text: previous.text + part.text };
@@ -233,10 +244,11 @@ export class AnalysisService {
           error: error instanceof Error ? error.message : String(error),
         },
       });
+      this.repositories.conversations.update(task.conversationId, {});
       emit({
         ...eventBase,
         status: cancelled ? 'cancelled' : 'error',
-        error: error instanceof Error ? error.message : String(error),
+        error: cancelled ? undefined : error instanceof Error ? error.message : String(error),
       });
     } finally {
       this.tasks.delete(taskId);
