@@ -3,13 +3,15 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { IconButton } from '../../components/IconButton';
 import { errorMessage } from '../../utils';
-import { findDatasetSource } from '../../utils/dataSource';
+import { findDatasetSource } from '@shared/dataSource';
+import * as dialogs from './datasetDialogs';
 
 export function SourceActions({ datasetId, sourceType }: { datasetId: string; sourceType: string }) {
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const source = findDatasetSource(sourceType);
-  const Dialog = source?.enable && source.action.type === 'connection' ? source.action.Dialog : undefined;
+  const Dialog =
+    source?.enable && source.action.type === 'connection' ? dialogs[source.action.dialog] : undefined;
 
   const refresh = async () => {
     if (busy) return;

@@ -8,7 +8,7 @@ import { Modal } from '../../components/Modal';
 import { SourceActions } from './SourceActions';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
-import { findDatasetSource } from '../../utils/dataSource';
+import { findDatasetSource } from '@shared/dataSource';
 
 function formatFileSize(value?: number) {
   if (value === undefined) return '—';

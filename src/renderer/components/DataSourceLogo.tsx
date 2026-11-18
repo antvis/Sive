@@ -1,5 +1,5 @@
 import { Database } from '@phosphor-icons/react';
-import { findDatasetSource } from '../utils/dataSource';
+import { findDatasetSource } from '@shared/dataSource';
 
 export function DataSourceLogo({ type, size }: { type: string; size: number }) {
   const source = findDatasetSource(type);

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '../utils';
-import type { LocalFileFormat } from '@shared/api';
+import type { LocalFileFormat } from '@shared/dataSource';
 
 const DIRECTORY_KEY = 'sive.last-import-directory';
 

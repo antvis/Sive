@@ -1,12 +1,10 @@
 import { access, constants } from 'node:fs/promises';
 import path from 'node:path';
 import type { DataSourceConfig } from '@antv/ava';
+import { FILE_SOURCES } from '@shared/dataSource';
 
 export function localFilePath(source: DataSourceConfig) {
-  if (
-    ['csv-file', 'json-file', 'parquet', 'excel', 'sqlite'].includes(source.type) &&
-    'path' in source.options
-  ) {
+  if (FILE_SOURCES.some((fileSource) => fileSource.type === source.type) && 'path' in source.options) {
     const file = source.options.path;
     if (typeof file === 'string' && !/^https?:\/\//i.test(file)) return file;
   }
@@ -15,22 +13,12 @@ export function localFilePath(source: DataSourceConfig) {
 
 export function localSource(file: string): DataSourceConfig {
   file = path.resolve(file);
-  switch (path.extname(file).toLowerCase()) {
-    case '.csv':
-      return { type: 'csv-file', options: { path: file } };
-    case '.json':
-      return { type: 'json-file', options: { path: file } };
-    case '.parquet':
-      return { type: 'parquet', options: { path: file } };
-    case '.xlsx':
-      return { type: 'excel', options: { path: file } };
-    case '.sqlite':
-    case '.sqlite3':
-    case '.db':
-      return { type: 'sqlite', options: { path: file } };
-    default:
-      throw new Error('请选择 CSV、JSON、XLSX、Parquet 或 SQLite 文件。');
-  }
+  const extension = path.extname(file).slice(1).toLowerCase();
+  const source = FILE_SOURCES.find((source) =>
+    source.action.extensions.some((supported) => supported === extension),
+  );
+  if (!source) throw new Error(`请选择 ${FILE_SOURCES.map((source) => source.label).join('、')} 文件。`);
+  return { type: source.type, options: { path: file } };
 }
 
 export async function checkLocalFile(file: string) {

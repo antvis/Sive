@@ -23,7 +23,7 @@ import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { Markdown, SqlBlock } from '../../components/Markdown';
 import { Visualization } from '../../components/Visualization';
 import { errorMessage } from '../../utils';
-import { findDatasetSource } from '../../utils/dataSource';
+import { findDatasetSource } from '@shared/dataSource';
 
 type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 type ToolCallPart = Extract<StreamPart, { type: 'tool-call' }>;
