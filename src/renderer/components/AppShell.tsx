@@ -4,8 +4,10 @@ import {
   Database,
   GearSix,
   Lightbulb,
+  PauseCircle,
   PencilSimple,
   Plus,
+  WarningCircle,
   X,
 } from '@phosphor-icons/react';
 import clsx from 'clsx';
@@ -23,13 +25,46 @@ export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settin
 
 type TaskState = { status: AnalysisTaskSummary['status']; unread: boolean };
 
-const statusLabels: Partial<Record<AnalysisTaskSummary['status'], string>> = {
-  running: '分析中',
-  cancelling: '正在停止',
-  error: '分析失败',
-  cancelled: '已取消',
-  interrupted: '已中断',
-};
+function TaskStatusIcon({ status, unread, className }: Partial<TaskState> & { className?: string }) {
+  const running = status === 'running' || status === 'cancelling';
+  const failed = status === 'error';
+  const interrupted = status === 'interrupted';
+  if (!running && !failed && !interrupted && !unread) return null;
+
+  const label = running
+    ? status === 'cancelling'
+      ? '正在停止'
+      : '分析中'
+    : failed
+      ? '分析失败'
+      : interrupted
+        ? '已中断'
+        : '有未读分析结果';
+  const StatusIcon = running ? CircleNotch : failed ? WarningCircle : PauseCircle;
+  const unreadOnly = !running && !failed && !interrupted;
+
+  return (
+    <span
+      role="status"
+      title={label}
+      className={clsx(
+        'grid size-3.5 shrink-0 place-items-center',
+        failed ? 'text-danger' : 'text-accent',
+        className,
+      )}
+    >
+      {unreadOnly ? (
+        <span className="relative size-1.5" aria-hidden>
+          <span className="absolute inset-0 rounded-full bg-accent/40 motion-safe:animate-ping motion-reduce:hidden" />
+          <span className="absolute inset-0 rounded-full bg-accent/55" />
+        </span>
+      ) : (
+        <StatusIcon size={14} className={clsx(running && 'motion-safe:animate-spin')} aria-hidden />
+      )}
+      <span className="sr-only">{label}</span>
+    </span>
+  );
+}
 
 type AppShellProps = PropsWithChildren<{
   page: AppPage;
@@ -71,7 +106,6 @@ function ConversationItem({
   const [busy, setBusy] = useState(false);
   const renameCancelled = useRef(false);
   const running = taskState?.status === 'running' || taskState?.status === 'cancelling';
-  const statusLabel = taskState ? statusLabels[taskState.status] : undefined;
   const updatedAt = new Date(conversation.updatedAt).toLocaleString('zh-CN');
 
   const saveName = async () => {
@@ -145,24 +179,14 @@ function ConversationItem({
           className="min-w-0 flex-1 px-3 py-2 text-left text-sm"
           onClick={onSelect}
         >
-          <span className="block truncate pr-14">{conversation.title}</span>
-          <span className="mt-1 flex items-center gap-1.5 whitespace-nowrap text-xs text-muted">
+          <span className="flex min-w-0 items-center gap-2 group-focus-within:pr-14 group-hover:pr-14">
+            <span className="min-w-0 flex-1 truncate">{conversation.title}</span>
+            <TaskStatusIcon {...taskState} className="group-focus-within:hidden group-hover:hidden" />
+          </span>
+          <span className="mt-1 flex items-center whitespace-nowrap text-xs text-muted">
             <time className="min-w-0 truncate" dateTime={conversation.updatedAt} title={updatedAt}>
               {updatedAt}
             </time>
-            {statusLabel && (
-              <span
-                role="status"
-                className={clsx(
-                  'flex shrink-0 items-center gap-1',
-                  taskState?.status === 'error' ? 'text-danger' : running && 'text-accent',
-                )}
-              >
-                {running && <CircleNotch size={12} className="motion-safe:animate-spin" aria-hidden />}
-                {statusLabel}
-              </span>
-            )}
-            {taskState?.unread && <span className="shrink-0 text-accent">未读</span>}
           </span>
         </button>
       )}
@@ -297,36 +321,14 @@ export function AppShell({
                           active ? 'bg-surface text-ink' : 'text-muted hover:bg-surface/60',
                         )}
                         onClick={() => onDatasetSelect(dataset.id)}
-                        title={[
-                          dataset.name,
-                          dataset.running ? (active && page === 'analysis' ? '分析中' : '后台分析中') : '',
-                          dataset.unread ? '有未读分析结果' : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
+                        title={dataset.name}
                       >
-                        {dataset.running ? (
-                          <>
-                            <CircleNotch
-                              size={14}
-                              className="shrink-0 text-accent motion-safe:animate-spin"
-                              aria-hidden
-                            />
-                            <span className="sr-only">分析中：</span>
-                          </>
-                        ) : (
-                          <SourceIcon size={14} className="shrink-0 text-[#25804d]" aria-hidden />
-                        )}
-                        <span className="min-w-0 truncate">{dataset.name}</span>
-                        {dataset.unread && (
-                          <>
-                            <span className="relative size-1.5 shrink-0" aria-hidden>
-                              <span className="absolute inset-0 rounded-full bg-accent/40 motion-safe:animate-ping motion-reduce:hidden" />
-                              <span className="absolute inset-0 rounded-full bg-accent/55" />
-                            </span>
-                            <span className="sr-only">（有未读分析结果）</span>
-                          </>
-                        )}
+                        <SourceIcon size={14} className="shrink-0 text-[#25804d]" aria-hidden />
+                        <span className="min-w-0 flex-1 truncate">{dataset.name}</span>
+                        <TaskStatusIcon
+                          status={dataset.running ? 'running' : undefined}
+                          unread={dataset.unread}
+                        />
                       </button>
                       <button
                         type="button"
