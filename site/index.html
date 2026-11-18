@@ -71,10 +71,62 @@
         >
         <div class="header-actions">
           <details class="download-menu nav-download" hidden>
-            <summary class="button nav-cta" aria-expanded="false" aria-controls="download-options-nav">
+            <summary class="button nav-cta" aria-controls="download-options-nav">
               下载 <svg class="icon"><use href="#i-download" /></svg>
             </summary>
-            <div class="download-options" id="download-options-nav" data-download-panel></div>
+            <div class="download-options" id="download-options-nav">
+              <p class="download-group-title">桌面端</p>
+              <div class="download-group">
+                <details class="platform-submenu">
+                  <summary class="platform-row" data-platform="mac">
+                    <svg class="icon filled"><use href="#i-apple" /></svg><span>Mac</span
+                    ><span class="current-device" hidden>当前设备</span
+                    ><span class="chevron" aria-hidden="true">›</span>
+                  </summary>
+                  <div class="platform-submenu-panel">
+                    <button class="platform-choice" type="button" disabled data-arch="x64">
+                      <span>Mac Intel 芯片</span><span class="coming-soon">待上线</span></button
+                    ><a
+                      class="platform-choice"
+                      href="https://github.com/antvis/Sive/releases"
+                      target="_blank"
+                      rel="noreferrer"
+                      data-arch="arm64"
+                      ><span>Mac Apple 芯片</span
+                      ><span class="current-chip" hidden aria-label="当前芯片"></span
+                    ></a>
+                  </div>
+                </details>
+                <details class="platform-submenu">
+                  <summary class="platform-row" data-platform="windows">
+                    <svg class="icon filled"><use href="#i-windows" /></svg><span>Windows</span
+                    ><span class="current-device" hidden>当前设备</span
+                    ><span class="chevron" aria-hidden="true">›</span>
+                  </summary>
+                  <div class="platform-submenu-panel">
+                    <a
+                      class="platform-choice"
+                      href="https://github.com/antvis/Sive/releases"
+                      target="_blank"
+                      rel="noreferrer"
+                      data-arch="x64"
+                      ><span>Windows x64</span
+                      ><span class="current-chip" hidden aria-label="当前芯片"></span></a
+                    ><button class="platform-choice" type="button" disabled data-arch="arm64">
+                      <span>Windows ARM64</span><span class="coming-soon">待上线</span>
+                    </button>
+                  </div>
+                </details>
+                <button class="platform-row" type="button" disabled data-platform="harmony-desktop">
+                  <img src="./assets/icons/harmony.svg" alt="" width="21" height="21" /><span>鸿蒙电脑版</span
+                  ><span class="current-device" hidden>当前设备</span><span class="coming-soon">待上线</span>
+                </button>
+                <button class="platform-row" type="button" disabled data-platform="linux">
+                  <img src="./assets/icons/linux.svg" alt="" width="21" height="21" /><span>Linux</span
+                  ><span class="current-device" hidden>当前设备</span><span class="coming-soon">待上线</span>
+                </button>
+              </div>
+            </div>
           </details>
           <a class="header-github" href="https://github.com/antvis/Sive" target="_blank" rel="noreferrer"
             ><img src="./assets/icons/github.svg" alt="" width="19" height="19" />GitHub</a
@@ -109,10 +161,62 @@
             数据工作台，开源、免费，注重数据安全，帮你连接文件和数据库，用自然语言完成分析，并把结果变成清晰的图表
           </p>
           <details class="download-menu hero-download">
-            <summary class="button primary-cta" aria-expanded="false" aria-controls="download-options-hero">
+            <summary class="button primary-cta" aria-controls="download-options-hero">
               立即下载 Sive <svg class="icon"><use href="#i-download" /></svg>
             </summary>
-            <div class="download-options" id="download-options-hero" data-download-panel></div>
+            <div class="download-options" id="download-options-hero">
+              <p class="download-group-title">桌面端</p>
+              <div class="download-group">
+                <details class="platform-submenu">
+                  <summary class="platform-row" data-platform="mac">
+                    <svg class="icon filled"><use href="#i-apple" /></svg><span>Mac</span
+                    ><span class="current-device" hidden>当前设备</span
+                    ><span class="chevron" aria-hidden="true">›</span>
+                  </summary>
+                  <div class="platform-submenu-panel">
+                    <button class="platform-choice" type="button" disabled data-arch="x64">
+                      <span>Mac Intel 芯片</span><span class="coming-soon">待上线</span></button
+                    ><a
+                      class="platform-choice"
+                      href="https://github.com/antvis/Sive/releases"
+                      target="_blank"
+                      rel="noreferrer"
+                      data-arch="arm64"
+                      ><span>Mac Apple 芯片</span
+                      ><span class="current-chip" hidden aria-label="当前芯片"></span
+                    ></a>
+                  </div>
+                </details>
+                <details class="platform-submenu">
+                  <summary class="platform-row" data-platform="windows">
+                    <svg class="icon filled"><use href="#i-windows" /></svg><span>Windows</span
+                    ><span class="current-device" hidden>当前设备</span
+                    ><span class="chevron" aria-hidden="true">›</span>
+                  </summary>
+                  <div class="platform-submenu-panel">
+                    <a
+                      class="platform-choice"
+                      href="https://github.com/antvis/Sive/releases"
+                      target="_blank"
+                      rel="noreferrer"
+                      data-arch="x64"
+                      ><span>Windows x64</span
+                      ><span class="current-chip" hidden aria-label="当前芯片"></span></a
+                    ><button class="platform-choice" type="button" disabled data-arch="arm64">
+                      <span>Windows ARM64</span><span class="coming-soon">待上线</span>
+                    </button>
+                  </div>
+                </details>
+                <button class="platform-row" type="button" disabled data-platform="harmony-desktop">
+                  <img src="./assets/icons/harmony.svg" alt="" width="21" height="21" /><span>鸿蒙电脑版</span
+                  ><span class="current-device" hidden>当前设备</span><span class="coming-soon">待上线</span>
+                </button>
+                <button class="platform-row" type="button" disabled data-platform="linux">
+                  <img src="./assets/icons/linux.svg" alt="" width="21" height="21" /><span>Linux</span
+                  ><span class="current-device" hidden>当前设备</span><span class="coming-soon">待上线</span>
+                </button>
+              </div>
+            </div>
           </details>
         </div>
         <div class="hero-stage">
@@ -263,57 +367,6 @@
         ><a href="#insight" aria-label="第 4 步：看见洞察"><span></span></a>
       </nav>
     </main>
-    <template id="download-panel-template">
-      <p class="download-group-title">桌面端</p>
-      <div class="download-group">
-        <details class="platform-submenu">
-          <summary class="platform-row" data-platform="mac">
-            <svg class="icon filled"><use href="#i-apple" /></svg><span>Mac</span
-            ><span class="current-device" hidden>当前设备</span
-            ><span class="chevron" aria-hidden="true">›</span>
-          </summary>
-          <div class="platform-submenu-panel">
-            <button class="platform-choice" type="button" disabled data-arch="x64">
-              <span>Mac Intel 芯片</span><span class="coming-soon">待上线</span></button
-            ><a
-              class="platform-choice"
-              href="https://github.com/antvis/Sive/releases"
-              target="_blank"
-              rel="noreferrer"
-              data-arch="arm64"
-              ><span>Mac Apple 芯片</span><span class="current-chip" hidden aria-label="当前芯片"></span
-            ></a>
-          </div>
-        </details>
-        <details class="platform-submenu">
-          <summary class="platform-row" data-platform="windows">
-            <svg class="icon filled"><use href="#i-windows" /></svg><span>Windows</span
-            ><span class="current-device" hidden>当前设备</span
-            ><span class="chevron" aria-hidden="true">›</span>
-          </summary>
-          <div class="platform-submenu-panel">
-            <a
-              class="platform-choice"
-              href="https://github.com/antvis/Sive/releases"
-              target="_blank"
-              rel="noreferrer"
-              data-arch="x64"
-              ><span>Windows x64</span><span class="current-chip" hidden aria-label="当前芯片"></span></a
-            ><button class="platform-choice" type="button" disabled data-arch="arm64">
-              <span>Windows ARM64</span><span class="coming-soon">待上线</span>
-            </button>
-          </div>
-        </details>
-        <button class="platform-row" type="button" disabled data-platform="harmony-desktop">
-          <img src="./assets/icons/harmony.svg" alt="" width="21" height="21" /><span>鸿蒙电脑版</span
-          ><span class="current-device" hidden>当前设备</span><span class="coming-soon">待上线</span>
-        </button>
-        <button class="platform-row" type="button" disabled data-platform="linux">
-          <img src="./assets/icons/linux.svg" alt="" width="21" height="21" /><span>Linux</span
-          ><span class="current-device" hidden>当前设备</span><span class="coming-soon">待上线</span>
-        </button>
-      </div>
-    </template>
     <footer class="footer">
       <div class="footer-main">
         <div class="footer-brand">
@@ -342,10 +395,15 @@
           <div>
             <h3>项目</h3>
             <a href="#download">下载 Sive</a
-            ><a href="https://github.com/antvis/Sive/blob/main/README.zh-CN.md" target="_blank" rel="noreferrer"
+            ><a
+              href="https://github.com/antvis/Sive/blob/main/README.zh-CN.md"
+              target="_blank"
+              rel="noreferrer"
               >项目介绍</a
             ><a href="https://github.com/antvis/Sive/releases" target="_blank" rel="noreferrer">版本更新</a
-            ><a href="https://github.com/antvis/Sive/blob/main/LICENSE" target="_blank" rel="noreferrer">开源协议</a>
+            ><a href="https://github.com/antvis/Sive/blob/main/LICENSE" target="_blank" rel="noreferrer"
+              >开源协议</a
+            >
           </div>
           <div>
             <h3>社区</h3>

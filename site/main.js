@@ -5,10 +5,6 @@ import './download.js';
 document.querySelector('#year').textContent = new Date().getFullYear();
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const downloadMenus = [...document.querySelectorAll('.download-menu')];
-const template = document.querySelector('#download-panel-template');
-for (const menu of downloadMenus) {
-  menu.querySelector('[data-download-panel]').replaceChildren(template.content.cloneNode(true));
-}
 
 const navDownload = document.querySelector('.nav-download');
 const heroObserver = new IntersectionObserver(([entry]) => {
