@@ -10,6 +10,13 @@ for (const menu of downloadMenus) {
   menu.querySelector('[data-download-panel]').replaceChildren(template.content.cloneNode(true));
 }
 
+const navDownload = document.querySelector('.nav-download');
+const heroObserver = new IntersectionObserver(([entry]) => {
+  navDownload.hidden = entry.isIntersecting;
+  if (entry.isIntersecting) navDownload.open = false;
+});
+heroObserver.observe(document.querySelector('.hero'));
+
 for (const menu of document.querySelectorAll('.download-menu, .platform-submenu')) {
   const summary = menu.querySelector(':scope > summary');
   summary.setAttribute('aria-expanded', 'false');
