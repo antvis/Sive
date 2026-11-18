@@ -1,5 +1,10 @@
-import type { AnalysisResponse, VisualizeResponse } from '@antv/ava';
+import type { AnalysisResponse, AnalysisStrategyConfig, VisualizeResponse } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
+
+export type AnalysisOptions = {
+  strategy?: AnalysisStrategyConfig;
+  model?: string;
+};
 
 export type MessageContent = {
   question?: string;
@@ -17,7 +22,7 @@ export type AnalysisMessage = {
   role: 'user' | 'assistant';
   status: 'running' | 'cancelling' | 'done' | 'error' | 'cancelled' | 'interrupted';
   content: MessageContent;
-  analysisOptions: unknown;
+  analysisOptions: AnalysisOptions;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

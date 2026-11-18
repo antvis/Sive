@@ -1,5 +1,5 @@
 import { customType, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import type { DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
+import type { DataSourceConfig, Profile, Schema, Semantic } from '@shared/schema';
 import { decrypt, encrypt } from '../../util';
 
 const encryptedSourceConfig = customType<{ data: DataSourceConfig; driverData: string }>({
@@ -50,8 +50,8 @@ export const datasets = sqliteTable('datasets', {
   deletedAt: text('deleted_at'),
 });
 
+export type DatasetRow = typeof datasets.$inferSelect;
+
 export type DatasetInsert = typeof datasets.$inferInsert;
 
 export type DatasetUpdate = Partial<Omit<DatasetInsert, 'id' | 'createdAt'>>;
-
-export type DatasetRow = typeof datasets.$inferSelect;
