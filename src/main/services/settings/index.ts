@@ -1,7 +1,7 @@
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { ActiveModel } from '../../db/repository/setting-repo';
-import type { Preferences } from '../types';
+import type { Preferences } from '@shared/api';
 import { DEFAULT_PREFERENCES } from '../../../shared/api';
 import type { DuckDBEngineConfig } from '../../../shared/api';
 
