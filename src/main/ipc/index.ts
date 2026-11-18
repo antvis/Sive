@@ -1,31 +1,12 @@
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { DataSourceConfig, Semantic } from '@antv/ava';
-import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
 import type { Services } from '../services';
-import type { DatasetPreviewOptions } from '@shared/api';
-import type { ModelInput, Preferences } from '../services/types';
 import { LOCAL_FILE_FORMATS } from '@shared/api';
 import { localSource } from '../util/localFile';
 import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
-
-function text(value: unknown) {
-  if (typeof value !== 'string' || !value.trim()) throw new Error('文本不能为空。');
-  return value.trim();
-}
-
-function objectInput<T>(value: unknown): T {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('输入参数无效。');
-  return value as T;
-}
-
-function stringList(value: unknown) {
-  if (!Array.isArray(value)) throw new Error('输入参数无效。');
-  return value.map(text);
-}
 
 export function registerIpc(services: Services) {
   let revision = 0;
@@ -76,8 +57,7 @@ export function registerIpc(services: Services) {
     };
   });
 
-  ipcMain.handle('datasetRefresh', async (event, input) => {
-    const id = text(input);
+  ipcMain.handle('datasetRefresh', async (event, id) => {
     await services.analysis.beginDatasetUpdate(id);
     try {
       await services.dataset.refresh(id);
@@ -87,23 +67,20 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(text(id)));
+  ipcMain.handle('datasetGet', (_event, id) => services.dataset.getDetail(id));
 
   ipcMain.handle('datasetTest', (_event, sourceConfig) =>
-    services.dataset.test(objectInput<DataSourceConfig>(sourceConfig)),
+    services.dataset.test(sourceConfig),
   );
 
   ipcMain.handle('datasetExtractText', (_event, input) =>
-    services.dataset.extractText(text(input), services.model.getDefaultModelConfig()),
+    services.dataset.extractText(input, services.model.getDefaultModelConfig()),
   );
 
-  ipcMain.handle('datasetSave', async (event, name, sourceConfig, inputId) => {
-    const id = inputId === undefined ? undefined : text(inputId);
-    const datasetName = text(name);
-    const source = objectInput<DataSourceConfig>(sourceConfig);
+  ipcMain.handle('datasetSave', async (event, name, sourceConfig, id) => {
     if (id) await services.analysis.beginDatasetUpdate(id);
     try {
-      await services.dataset.save(datasetName, source, id);
+      await services.dataset.save(name, sourceConfig, id);
     } finally {
       if (id) services.analysis.endDatasetUpdate(id);
     }
@@ -111,61 +88,51 @@ export function registerIpc(services: Services) {
   });
 
   ipcMain.handle('datasetPreview', (_event, id, table, options) =>
-    services.dataset.preview(
-      text(id),
-      table,
-      options === undefined ? undefined : objectInput<DatasetPreviewOptions>(options),
-    ),
+    services.dataset.preview(id, table, options),
   );
 
   ipcMain.handle('datasetSuggest', (_event, id) =>
-    services.dataset.suggest(text(id), services.model.getDefaultModelConfig()),
+    services.dataset.suggest(id, services.model.getDefaultModelConfig()),
   );
 
   ipcMain.handle('datasetRename', (event, id, name) => {
-    services.dataset.rename(text(id), text(name));
+    services.dataset.rename(id, name);
     changed(event);
   });
 
   ipcMain.handle('datasetDelete', (event, id) => {
-    services.dataset.remove(text(id));
+    services.dataset.remove(id);
     changed(event);
   });
 
   ipcMain.handle('datasetSaveSemantic', (event, id, semantic, metrics) => {
-    services.dataset.saveSemantic(text(id), objectInput<Semantic>(semantic), metrics);
+    services.dataset.saveSemantic(id, semantic, metrics);
     changed(event);
   });
 
   ipcMain.handle('conversationRename', (event, id, title) => {
-    services.conversation.rename(text(id), text(title));
+    services.conversation.rename(id, title);
     changed(event);
   });
 
   ipcMain.handle('conversationArchive', (event, id) => {
-    services.conversation.archive(text(id));
+    services.conversation.archive(id);
     changed(event);
   });
 
   ipcMain.handle('conversationRestore', (event, id) => {
-    services.conversation.restore(text(id));
+    services.conversation.restore(id);
     changed(event);
   });
 
   ipcMain.handle('conversationPurge', (event, ids) => {
-    services.conversation.purge(stringList(ids));
+    services.conversation.purge(ids);
     changed(event);
   });
 
   ipcMain.handle('analysisStart', (event, input) => {
-    const request = objectInput<{
-      datasetId: string;
-      question: string;
-      strategy: Preferences['strategy'];
-      conversationId?: string;
-    }>(input);
     const result = services.analysis.start(
-      request,
+      input,
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
       (progress) => event.sender.send('analysis:task-change', progress),
@@ -175,7 +142,7 @@ export function registerIpc(services: Services) {
   });
 
   ipcMain.handle('analysisCancel', async (event, taskId) => {
-    const task = await services.analysis.cancel(text(taskId));
+    const task = await services.analysis.cancel(taskId);
     event.sender.send('analysis:task-change', {
       taskId,
       datasetId: task?.datasetId,
@@ -186,27 +153,27 @@ export function registerIpc(services: Services) {
   });
 
   ipcMain.handle('analysisGetMessages', (_event, conversationId) =>
-    services.analysis.getMessages(text(conversationId)),
+    services.analysis.getMessages(conversationId),
   );
 
   ipcMain.handle('snippetSave', (event, input) => {
-    const result = services.snippet.save(objectInput<SnippetSaveInput>(input));
+    const result = services.snippet.save(input);
     changed(event);
     return result;
   });
 
   ipcMain.handle('snippetRemove', (event, runId) => {
-    services.snippet.remove(text(runId));
+    services.snippet.remove(runId);
     changed(event);
   });
 
   ipcMain.handle('snippetUpdate', (event, messageId, input) => {
-    services.snippet.update(text(messageId), objectInput<SnippetUpdateInput>(input));
+    services.snippet.update(messageId, input);
     changed(event);
   });
 
   ipcMain.handle('settingsSavePreferences', (event, preferences) => {
-    services.settings.savePreferences(objectInput<Preferences>(preferences));
+    services.settings.savePreferences(preferences);
     changed(event);
   });
 
@@ -218,22 +185,21 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('aboutCheckUpdates', () => checkForUpdates());
 
-  ipcMain.handle('modelListAvailable', (_event, input) => services.model.listAvailable(objectInput(input)));
+  ipcMain.handle('modelListAvailable', (_event, input) => services.model.listAvailable(input));
 
   ipcMain.handle('modelSave', async (event, input) => {
-    const model = objectInput<ModelInput>(input);
-    await services.model.test(model, (progress) => event.sender.send('model:test-progress', progress));
-    services.model.save(model);
+    await services.model.test(input, (progress) => event.sender.send('model:test-progress', progress));
+    services.model.save(input);
     changed(event);
   });
 
   ipcMain.handle('modelActivate', (event, id, model) => {
-    services.model.activate(text(id), model === undefined ? undefined : text(model));
+    services.model.activate(id, model);
     changed(event);
   });
 
   ipcMain.handle('modelDelete', (event, id) => {
-    services.model.remove(text(id));
+    services.model.remove(id);
     changed(event);
   });
 }
