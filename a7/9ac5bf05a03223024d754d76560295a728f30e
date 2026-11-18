@@ -1,0 +1,56 @@
+src/main/db/repository/conversation-repo.ts
+  s_5eec1278ed5f19::t_cd9e62c3271317 3
+src/main/db/repository/setting-repo.ts
+  s_5eec1278ed5f19::t_438196dda1bb52 3
+src/main/db/schema/conversations.ts
+  s_5eec1278ed5f19::t_de470cfc929fe8 31-32
+  s_5eec1278ed5f19::t_92b6b22e6d27f7 29-30
+src/main/db/repository/message-repo.ts
+  s_5eec1278ed5f19::t_1004c7941e900f 3
+src/main/db/schema/messages.ts
+  s_5eec1278ed5f19::t_bb341a87a54013 46-47
+  s_5eec1278ed5f19::t_55be4ca4f6d666 44-45
+src/main/services/dataset/index.ts
+  s_5eec1278ed5f19::t_e2202cc144b2a7 8
+src/main/db/repository/snippet-repo.ts
+  s_5eec1278ed5f19::t_59cf254cd07f87 3
+src/main/db/schema/index.ts
+  s_5eec1278ed5f19::t_062ef897ef61a8 3-4,7-8,11-12,15-16,19,23
+  s_5eec1278ed5f19::t_e122708663d082 22
+  s_5eec1278ed5f19::t_31fc7c1b060d62 20
+src/main/services/analysis/index.ts
+  s_5eec1278ed5f19::t_a8e38d04f723b7 9
+src/main/db/schema/model-providers.ts
+  s_5eec1278ed5f19::t_9c3243427b3149 28-29
+  s_5eec1278ed5f19::t_58032a8834c39f 30-31
+src/main/db/repository/dataset-repo.ts
+  s_5eec1278ed5f19::t_b0d9705fe1bc2a 3
+src/main/db/schema/settings.ts
+  s_5eec1278ed5f19::t_2e78188174d45d 21-22
+  s_5eec1278ed5f19::t_99f9b465725f55 19-20
+src/main/db/repository/model-provider-repo.ts
+  s_5eec1278ed5f19::t_fcbb8f90417059 3
+src/main/db/schema/datasets.ts
+  s_5eec1278ed5f19::t_d95fa39943ae11 52-53,57
+  s_5eec1278ed5f19::t_ba91f5f7e5c77b 54
+  s_5eec1278ed5f19::t_187ebab03b6b9a 55-56
+src/main/db/schema/snippets.ts
+  s_5eec1278ed5f19::t_e8d14c452d696f 32-33
+  s_5eec1278ed5f19::t_28affd068adece 34-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a79ac5bf05a03223024d754d76560295a728f30e",
+  "prompts": {},
+  "sessions": {
+    "s_5eec1278ed5f19": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "33191763-b857-4706-a86a-7203b42b3af9",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
