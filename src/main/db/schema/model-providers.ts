@@ -26,6 +26,8 @@ export const modelProviders = sqliteTable('model_providers', {
   deletedAt: text('deleted_at'),
 });
 
+export type ModelProviderRow = typeof modelProviders.$inferSelect;
+
 export type ModelProviderInsert = typeof modelProviders.$inferInsert;
 
 export type ModelProviderUpdate = Partial<Omit<ModelProviderInsert, 'id' | 'createdAt'>>;

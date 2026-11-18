@@ -1,5 +1,5 @@
 import { GPTVis } from '@antv/gpt-vis';
-import type { SnippetSpec } from '@shared/snippets';
+import type { SnippetSpec } from '@shared/schema';
 import sizeSensor from 'size-sensor';
 import { useEffect, useRef } from 'react';
 

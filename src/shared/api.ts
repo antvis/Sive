@@ -8,18 +8,20 @@ import type {
   SuggestResult,
 } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
-import type { AnalysisMessage } from './messages';
-import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
+import type { LocalFileFormat } from './dataSource';
 
-export type { AnalysisMessage } from './messages';
+import type {
+  Snippet,
+  SnippetSpec,
+  SnippetContent,
+  SnippetSaveInput,
+  SnippetUpdateInput,
+  AnalysisMessage,
+} from './schema';
 
-export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './snippets';
+export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput, AnalysisMessage };
 
 export type DuckDBEngineConfig = Extract<EngineConfig, { type: 'duckdb' }>;
-
-export const LOCAL_FILE_FORMATS = ['csv', 'json', 'xlsx', 'parquet', 'sqlite'] as const;
-
-export type LocalFileFormat = (typeof LOCAL_FILE_FORMATS)[number];
 
 export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
 

@@ -1,17 +1,17 @@
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
-import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/snippets';
+import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
 import type { Services } from '../services';
 import type {
   AnalysisStartInput,
   DatasetPreviewOptions,
-  LocalFileFormat,
   ModelConnectionInput,
   ModelInput,
   Preferences,
 } from '@shared/api';
-import { LOCAL_FILE_FORMATS } from '@shared/api';
+import { FILE_SOURCES } from '@shared/dataSource';
+import type { LocalFileFormat } from '@shared/dataSource';
 import { localSource } from '../util/localFile';
 import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
 
@@ -46,9 +46,11 @@ export function registerIpc(services: Services) {
   });
 
   ipcMain.handle('datasetSelectLocal', async (event, format?: LocalFileFormat, lastDirectory?: string) => {
-    if (format !== undefined && !LOCAL_FILE_FORMATS.includes(format)) throw new Error('不支持的文件格式。');
-    const extensions = (format ? [format] : LOCAL_FILE_FORMATS).flatMap((format) =>
-      format === 'sqlite' ? ['sqlite', 'sqlite3', 'db'] : [format],
+    const source = FILE_SOURCES.find((source) => source.action.format === format);
+    if (format !== undefined && !source) throw new Error('不支持的文件格式。');
+    const formatName = source?.label;
+    const extensions = (source ? [source] : FILE_SOURCES).flatMap<string>(
+      (source) => source.action.extensions,
     );
     const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
       title: '选择数据文件',
@@ -56,7 +58,7 @@ export function registerIpc(services: Services) {
       properties: ['openFile'],
       filters: [
         {
-          name: format ? `${format.toUpperCase()} 文件` : '数据文件',
+          name: formatName ? `${formatName} 文件` : '数据文件',
           extensions,
         },
       ],
@@ -64,7 +66,7 @@ export function registerIpc(services: Services) {
     if (result.canceled) return null;
     const filePath = result.filePaths[0];
     if (format && !extensions.includes(path.extname(filePath).slice(1).toLowerCase()))
-      throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
+      throw new Error(`请选择 ${formatName} 文件。`);
     return {
       name: path.basename(filePath, path.extname(filePath)).trim(),
       sourceConfig: localSource(filePath),
@@ -194,7 +196,9 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('aboutCheckUpdates', () => checkForUpdates());
 
-  ipcMain.handle('modelListAvailable', (_event, input: ModelConnectionInput) => services.model.listAvailable(input));
+  ipcMain.handle('modelListAvailable', (_event, input: ModelConnectionInput) =>
+    services.model.listAvailable(input),
+  );
 
   ipcMain.handle('modelSave', async (event, input: ModelInput) => {
     await services.model.test(input, (progress) => event.sender.send('model:test-progress', progress));
