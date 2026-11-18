@@ -3,9 +3,6 @@ name: build
 on: [push, pull_request]
 
 jobs:
-  site:
-    uses: ./.github/workflows/build-site.yml
-
   lint:
     runs-on: ubuntu-latest
     steps:
