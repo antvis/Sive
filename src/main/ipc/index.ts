@@ -42,6 +42,15 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetSelectLocal', async (event, format?: LocalFileFormat, lastDirectory?: string) => {
     if (format !== undefined && !LOCAL_FILE_FORMATS.includes(format)) throw new Error('不支持的文件格式。');
+    const formatName =
+      format &&
+      {
+        csv: 'CSV',
+        json: 'JSON',
+        xlsx: 'Excel',
+        parquet: 'Parquet',
+        sqlite: 'SQLite',
+      }[format];
     const extensions = (format ? [format] : LOCAL_FILE_FORMATS).flatMap((format) =>
       format === 'sqlite' ? ['sqlite', 'sqlite3', 'db'] : [format],
     );
@@ -51,7 +60,7 @@ export function registerIpc(services: Services) {
       properties: ['openFile'],
       filters: [
         {
-          name: format ? `${format.toUpperCase()} 文件` : '数据文件',
+          name: formatName ? `${formatName} 文件` : '数据文件',
           extensions,
         },
       ],
@@ -59,7 +68,7 @@ export function registerIpc(services: Services) {
     if (result.canceled) return null;
     const filePath = result.filePaths[0];
     if (format && !extensions.includes(path.extname(filePath).slice(1).toLowerCase()))
-      throw new Error(`请选择 ${format.toUpperCase()} 文件。`);
+      throw new Error(`请选择 ${formatName} 文件。`);
     return {
       name: path.basename(filePath, path.extname(filePath)).trim(),
       sourceConfig: localSource(filePath),
@@ -195,7 +204,9 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('aboutCheckUpdates', () => checkForUpdates());
 
-  ipcMain.handle('modelListAvailable', (_event, input: ModelConnectionInput) => services.model.listAvailable(input));
+  ipcMain.handle('modelListAvailable', (_event, input: ModelConnectionInput) =>
+    services.model.listAvailable(input),
+  );
 
   ipcMain.handle('modelSave', async (event, input: ModelInput) => {
     await services.model.test(input, (progress) => event.sender.send('model:test-progress', progress));

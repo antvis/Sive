@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
+import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { Modal } from '../../components/Modal';
 import { SourceActions } from './SourceActions';
 import type { DatasetSummary } from '../../types';
@@ -30,7 +31,6 @@ function DatasetCard({
   const [busy, setBusy] = useState(false);
   const renameCancelled = useRef(false);
   const source = findDatasetSource(dataset.sourceType);
-  const SourceIcon = source?.icon ?? Database;
   const sourceLabel = source?.label ?? dataset.sourceType;
   const stats = [
     dataset.localFile
@@ -86,8 +86,8 @@ function DatasetCard({
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#25804d14] text-[#25804d]">
-            <SourceIcon size={26} weight="duotone" />
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-page">
+            <DataSourceLogo type={dataset.sourceType} size={26} />
           </span>
           {action === 'rename' ? (
             <input
@@ -160,7 +160,6 @@ function DatasetCard({
         ))}
       </div>
       <footer className="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-muted">
-        <SourceIcon size={14} className="text-[#25804d]" aria-label={sourceLabel} />
         <span>
           {sourceLabel}
           {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}

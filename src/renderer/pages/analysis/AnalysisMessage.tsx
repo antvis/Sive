@@ -6,7 +6,6 @@ import {
   CircleNotch,
   Columns,
   Database,
-  FileCsv,
   MagnifyingGlass,
   PushPin,
   Tag,
@@ -20,9 +19,11 @@ import type { SnippetContent } from '@shared/snippets';
 import { toast } from 'sonner';
 import type { AnalysisMessage, AnalysisTaskEvent } from '../../types';
 import { IconButton } from '../../components/IconButton';
+import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { Markdown, SqlBlock } from '../../components/Markdown';
 import { Visualization } from '../../components/Visualization';
 import { errorMessage } from '../../utils';
+import { findDatasetSource } from '../../utils/dataSource';
 
 type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 type ToolCallPart = Extract<StreamPart, { type: 'tool-call' }>;
@@ -239,12 +240,12 @@ function toolContent(toolName: string, output: unknown, chartAction?: ReactNode)
     return (
       <div className="rounded-lg bg-page p-4">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-8 shrink-0 place-items-center rounded-md bg-[#25804d14] text-[#25804d]">
-            <FileCsv size={18} />
+          <span className="grid size-8 shrink-0 place-items-center rounded-md bg-surface">
+            <DataSourceLogo type={source.sourceType} size={18} />
           </span>
           <span className="min-w-0 break-words text-sm font-medium text-ink">{source.name}</span>
           <span className="shrink-0 text-xs text-muted">
-            {source.sourceType.replace(/-file$/i, '').toUpperCase()}
+            {findDatasetSource(source.sourceType)?.label ?? source.sourceType}
           </span>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">

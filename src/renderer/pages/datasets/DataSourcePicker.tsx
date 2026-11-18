@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { useImportLocal } from '../../hooks/useImportLocal';
 import { DATA_SOURCE_GROUPS } from '../../utils/dataSource';
 import type { DatasetSource, DatasetSourceAction } from '../../utils/dataSource';
@@ -10,12 +11,12 @@ function SourceCard({
   disabled,
   onSelect,
 }: {
-  source: Pick<DatasetSource, 'label' | 'description' | 'color' | 'icon'>;
+  source: Pick<DatasetSource, 'type' | 'label' | 'description' | 'color'>;
   actionLabel: string;
   disabled: boolean;
   onSelect: () => void;
 }) {
-  const { label: name, description, color, icon: SourceIcon } = source;
+  const { label: name, description, color } = source;
   return (
     <button
       type="button"
@@ -31,9 +32,9 @@ function SourceCard({
       >
         <span
           className="grid size-9 shrink-0 place-items-center rounded-[10px]"
-          style={{ color, backgroundColor: `${color}14` }}
+          style={{ backgroundColor: `${color}14` }}
         >
-          <SourceIcon size={20} weight="duotone" />
+          <DataSourceLogo type={source.type} size={24} />
         </span>
         <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
       </span>

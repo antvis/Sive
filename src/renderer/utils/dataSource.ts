@@ -1,4 +1,4 @@
-import { Database, FileCode, FileCsv, FileText, Files, Lightning, Stack, Table } from '@phosphor-icons/react';
+import { Database, Files, Stack } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import type { ComponentType } from 'react';
 import type { LocalFileFormat } from '@shared/api';
@@ -23,7 +23,7 @@ export type DatasetSource = {
   label: string;
   description: string;
   color: string;
-  icon: Icon;
+  logo: string;
 } & (
   | { enable: false; action?: never; actionLabel?: never }
   | { enable: true; action: DatasetSourceAction; actionLabel: string }
@@ -37,20 +37,20 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
       {
         type: 'csv-file',
         enable: true,
-        label: 'CSV 文件',
+        label: 'CSV',
         description: '逗号分隔的纯文本表格格式',
         color: '#25804d',
-        icon: FileCsv,
+        logo: './logos/csv.svg',
         action: { type: 'file', format: 'csv' },
         actionLabel: '选择文件',
       },
       {
         type: 'json-file',
         enable: true,
-        label: 'JSON 文件',
+        label: 'JSON',
         description: '轻量级数据交换格式',
         color: '#8054b6',
-        icon: FileCode,
+        logo: './logos/json.svg',
         action: { type: 'file', format: 'json' },
         actionLabel: '选择文件',
       },
@@ -60,7 +60,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: 'Excel',
         description: '支持多个工作表的电子表格格式',
         color: '#18734b',
-        icon: Table,
+        logo: './logos/excel.svg',
         action: { type: 'file', format: 'xlsx' },
         actionLabel: '选择文件',
       },
@@ -70,7 +70,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: 'Parquet',
         description: '面向分析的列式数据文件',
         color: '#a66a1c',
-        icon: Stack,
+        logo: './logos/parquet.svg',
         action: { type: 'file', format: 'parquet' },
         actionLabel: '选择文件',
       },
@@ -80,7 +80,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: '文本',
         description: '通过模型从文本中提取结构化数据',
         color: '#687682',
-        icon: FileText,
+        logo: './logos/text.svg',
         action: { type: 'import', Dialog: TextImportDialog },
         actionLabel: '提取数据',
       },
@@ -96,7 +96,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: 'MySQL',
         description: '开源关系型数据库',
         color: '#28769a',
-        icon: Database,
+        logo: './logos/mysql.svg',
         action: { type: 'connection', Dialog: MySQLDialog },
         actionLabel: '配置连接',
       },
@@ -106,7 +106,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: 'PostgreSQL',
         description: '通用对象关系型数据库',
         color: '#336791',
-        icon: Database,
+        logo: './logos/postgresql.svg',
         action: { type: 'connection', Dialog: PostgreSQLDialog },
         actionLabel: '配置连接',
       },
@@ -116,7 +116,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: 'SQLite',
         description: '轻量级本地文件数据库，支持多表分析',
         color: '#28769a',
-        icon: Database,
+        logo: './logos/sqlite.svg',
         action: { type: 'file', format: 'sqlite' },
         actionLabel: '选择文件',
       },
@@ -126,7 +126,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: 'MongoDB',
         description: '面向文档的 NoSQL 数据库',
         color: '#25804d',
-        icon: Stack,
+        logo: './logos/mongodb.svg',
         action: { type: 'connection', Dialog: MongoDBDialog },
         actionLabel: '配置连接',
       },
@@ -136,7 +136,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: 'ClickHouse',
         description: '面向实时分析的列式数据库',
         color: '#687682',
-        icon: Database,
+        logo: './logos/clickhouse.svg',
         action: { type: 'connection', Dialog: ClickHouseDialog },
         actionLabel: '配置连接',
       },
@@ -152,7 +152,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: 'Supabase',
         description: '基于 PostgreSQL 的云端数据库',
         color: '#687682',
-        icon: Lightning,
+        logo: './logos/supabase.svg',
         action: { type: 'connection', Dialog: SupabaseDialog },
         actionLabel: '配置连接',
       },
@@ -162,7 +162,7 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
         label: '飞书多维表格',
         description: '飞书中的协作表格与业务数据',
         color: '#687682',
-        icon: Table,
+        logo: './logos/feishu-bitable.svg',
         action: { type: 'connection', Dialog: FeishuBitableDialog },
         actionLabel: '配置连接',
       },
@@ -173,5 +173,5 @@ export const DATA_SOURCE_GROUPS: { title: string; icon: Icon; sources: DatasetSo
 const sources = DATA_SOURCE_GROUPS.flatMap((group) => group.sources);
 
 export function findDatasetSource(type: string): DatasetSource | undefined {
-  return sources.find((source) => source.type === type);
+  return sources.find((source) => source.type === (type === 'json' ? 'json-file' : type));
 }
