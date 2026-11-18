@@ -22,8 +22,6 @@
 
 预览：在仓库根目录运行 `python3 -m http.server 4173 --bind 127.0.0.1 --directory site`
 
-检查：`node --test site/device.test.mjs site/site.test.mjs site/hero.test.mjs site/download.test.mjs`
-
 参考：
 
 - Canvas UI Ripple：https://canvasui.dev/docs/components/ripple
