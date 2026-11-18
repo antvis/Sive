@@ -1,0 +1,76 @@
+src/main/services/snippet/index.ts
+  s_abfb24d08f079a::t_9381daa4c6d754 46,48
+  s_abfb24d08f079a::t_122ef698de1d97 34,36
+src/main/db/schema/datasets.ts
+  s_abfb24d08f079a::t_6dd91a7b914d66 53
+  s_abfb24d08f079a::t_bfbe75f73b0a01 54
+src/main/services/dataset/index.ts
+  s_abfb24d08f079a::t_4771a38968e49d 14
+  s_abfb24d08f079a::t_db8e6b09a7bffa 193
+  s_abfb24d08f079a::t_82166cbb185aaa 266,269
+src/main/services/model/index.ts
+  s_abfb24d08f079a::t_557afc1f2d3f9e 8
+  s_abfb24d08f079a::t_53ed0cf55e38ac 9
+  s_abfb24d08f079a::t_eaef859f9f2af0 7
+  s_abfb24d08f079a::t_1e12f761d0d6c5 53
+src/main/services/analysis/index.ts
+  s_abfb24d08f079a::t_000e81c93afb60 152
+  s_abfb24d08f079a::t_62d564986ab7f7 3
+  s_abfb24d08f079a::t_3986526d3ac03f 23
+  s_abfb24d08f079a::t_97f9fa7ee6f121 9
+  s_abfb24d08f079a::t_203164bf2b8f1d 187
+  s_abfb24d08f079a::t_408238a495833b 14
+  s_abfb24d08f079a::t_4c2c2edf2a2684 185
+  s_abfb24d08f079a::t_e5988b66fe0560 73
+  s_abfb24d08f079a::t_07c5a2247ac991 5
+src/main/ai/agent.ts
+  s_abfb24d08f079a::t_c1f52a32c5024e 10
+  s_abfb24d08f079a::t_9604d519f741c3 27
+src/main/ai/index.ts
+  s_abfb24d08f079a::t_58753e9685a256 3
+  s_abfb24d08f079a::t_f411649f37bb0d 2
+src/main/ipc/index.ts
+  s_abfb24d08f079a::t_222c5a5498bcbc 70
+  s_abfb24d08f079a::t_c455f45c313cad 165,169,175-176,180,185
+  s_abfb24d08f079a::t_92ada3d335b02b 109
+  s_abfb24d08f079a::t_8c869859c61ee7 124
+  s_abfb24d08f079a::t_c5dee10c3581e1 181
+  s_abfb24d08f079a::t_1da34446cacf0a 139
+  s_abfb24d08f079a::t_973afb5d749165 101
+  s_abfb24d08f079a::t_79a8206e0af122 80,82,86-87,90
+  s_abfb24d08f079a::t_fb6e2694c8fc4e 43
+  s_abfb24d08f079a::t_519389ca8210f3 154
+  s_abfb24d08f079a::t_9c3829d9ab94fe 100,104,108,113,118-119,123,128,133,138,143
+  s_abfb24d08f079a::t_054097aa19c644 93
+  s_abfb24d08f079a::t_44d9a2c004820d 166
+  s_abfb24d08f079a::t_d01a5ca7d535cf 170
+  s_abfb24d08f079a::t_ece72399448377 7-14
+  s_abfb24d08f079a::t_625b28be0524d9 186
+  s_abfb24d08f079a::t_fe170ae0e957dc 198,200
+  s_abfb24d08f079a::t_2cc26e26a05bd5 201-202
+  s_abfb24d08f079a::t_691918ce16b5a4 207
+  s_abfb24d08f079a::t_3b2beb522c9dc4 105,114,129,134,212
+  s_abfb24d08f079a::t_8f2782e20c5505 155
+  s_abfb24d08f079a::t_3ede4c3400a407 145
+  s_abfb24d08f079a::t_43a6d455593531 83
+  s_abfb24d08f079a::t_9757e583363885 192
+  s_abfb24d08f079a::t_89660ab9307c60 206,211
+src/main/services/settings/index.ts
+  s_abfb24d08f079a::t_f36349eb3af156 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4303112b1d34aaf62ad7760ff4e9642b7500c1cf",
+  "prompts": {},
+  "sessions": {
+    "s_abfb24d08f079a": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "93351da1-21eb-4f4d-ba2a-be3ac0a4074b",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
