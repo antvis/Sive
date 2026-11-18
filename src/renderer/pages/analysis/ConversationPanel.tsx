@@ -99,13 +99,13 @@ export function ConversationPanel({
     setStream(null);
     setQuestion('');
     setError('');
+    setMessages([]);
+    setShowScrollToBottom(false);
   }, [datasetId, conversationId]);
 
   useEffect(() => {
     let live = true;
     setHistoryLoading(!!conversationId);
-    setMessages([]);
-    setShowScrollToBottom(false);
     if (!conversationId) return;
     window.workbench
       .analysisGetMessages(conversationId)
@@ -231,7 +231,7 @@ export function ConversationPanel({
           className="h-full overflow-x-hidden overflow-y-auto px-8 py-5"
           onScroll={handleScroll}
         >
-          {historyLoading ? (
+          {historyLoading && !messages.length ? (
             <p className="text-sm text-muted">正在加载会话…</p>
           ) : messages.length ? (
             <div className="grid w-full min-w-0 gap-5">

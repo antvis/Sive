@@ -5,6 +5,8 @@ import { registerIpc } from './ipc';
 import { createServices } from './services';
 
 let database: DBConnection | undefined;
+let mainWindow: BrowserWindow | undefined;
+
 const iconPath = path.join(__dirname, '../assets/sive.png');
 
 function createWindow() {
@@ -27,6 +29,11 @@ function createWindow() {
     },
   });
 
+  mainWindow = window;
+  window.on('closed', () => {
+    mainWindow = undefined;
+  });
+
   if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(process.env.ELECTRON_RENDERER_URL);
   else void window.loadFile(path.join(__dirname, '../dist/index.html'));
 }
@@ -38,7 +45,7 @@ async function initialize() {
   const services = createServices(database);
   services.analysis.recoverAfterRestart();
 
-  registerIpc(services);
+  registerIpc(services, () => mainWindow);
   createWindow();
 }
 
@@ -51,7 +58,7 @@ void app
   });
 
 app.on('activate', () => {
-  if (database && BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (database && !mainWindow) createWindow();
 });
 
 app.on('window-all-closed', () => {

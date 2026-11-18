@@ -17,18 +17,19 @@ import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
-export function registerIpc(services: Services) {
+export function registerIpc(services: Services, getMainWindow: () => BrowserWindow | undefined) {
   let revision = 0;
 
-  const broadcast = (channel: string, payload?: unknown) => {
-    for (const window of BrowserWindow.getAllWindows()) {
-      if (!window.webContents.isDestroyed()) window.webContents.send(channel, payload);
+  const notifyRenderer = (channel: string, payload?: unknown) => {
+    const window = getMainWindow();
+    if (window && !window.isDestroyed() && !window.webContents.isDestroyed()) {
+      window.webContents.send(channel, payload);
     }
   };
 
   const changed = () => {
     revision += 1;
-    broadcast(WORKSPACE_CHANGED_CHANNEL);
+    notifyRenderer(WORKSPACE_CHANGED_CHANNEL);
   };
 
   ipcMain.handle('workspaceGetState', () => {
@@ -153,7 +154,7 @@ export function registerIpc(services: Services) {
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
       (progress) => {
-        broadcast('analysis:message-progress', progress);
+        notifyRenderer('analysis:message-progress', progress);
         if (progress.status !== 'running') changed();
       },
     );
