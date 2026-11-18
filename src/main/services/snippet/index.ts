@@ -31,9 +31,9 @@ export class SnippetService {
     });
   }
 
-  update(runId: string, input: SnippetUpdateInput) {
+  update(messageId: string, input: SnippetUpdateInput) {
     this.database.write(() => {
-      const snippet = required(this.repositories.snippets.getByMessageId(runId), 'Snippet 不存在。');
+      const snippet = required(this.repositories.snippets.getByMessageId(messageId), 'Snippet 不存在。');
       const title = input.title.trim();
       if (!title) throw new Error('标题不能为空。');
       this.repositories.snippets.update(snippet.id, {
@@ -43,9 +43,9 @@ export class SnippetService {
     });
   }
 
-  remove(runId: string) {
+  remove(messageId: string) {
     this.database.write(() => {
-      const snippet = this.repositories.snippets.getByMessageId(runId);
+      const snippet = this.repositories.snippets.getByMessageId(messageId);
       if (snippet) this.repositories.snippets.remove(snippet.id);
     });
   }

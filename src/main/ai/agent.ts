@@ -7,8 +7,7 @@ import type { DuckDBEngineConfig } from '@shared/api';
 import { sourceEngine } from '../util/engine';
 import { createTools } from './tools';
 import type { ToolContext } from './tools';
-
-type ModelConfig = { baseURL: string; model: string; apiKey?: string };
+import type { ModelConfig } from '../services/model';
 
 type CreateAgentInput = {
   dataset: ToolContext;
@@ -25,7 +24,7 @@ type StreamInput = {
   onPart: (part: TextStreamPart<ToolSet>) => void;
 };
 
-type AnalysisAgent = {
+export type AnalysisAgent = {
   stream(input: StreamInput): ReturnType<ToolLoopAgent<never, ToolSet>['stream']>;
   dispose(): Promise<void>;
 };

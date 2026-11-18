@@ -1,35 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
-import type { DuckDBEngineConfig, Preferences } from '@shared/api';
+import type { AnalysisStartInput, AnalysisTaskEvent, DuckDBEngineConfig, Preferences } from '@shared/api';
 import { createAnalysisAgent } from '../../ai';
+import type { AnalysisAgent } from '../../ai';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import { required } from '../../util';
-import type { ModelService } from '../model';
+import type { ModelConfig } from '../model';
 import type { DatasetRow } from '../../db/schema/datasets';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 
-type ModelConfig = ReturnType<ModelService['getDefaultModelConfig']>;
-type AgentPromise = ReturnType<typeof createAnalysisAgent>;
-type StartInput = {
-  datasetId: string;
-  question: string;
-  strategy: Preferences['strategy'];
-  conversationId?: string;
-};
-
-type TaskEvent = {
-  taskId: string;
-  datasetId: string;
-  conversationId: string;
-  status: 'running' | 'done' | 'error' | 'cancelled';
-  stage?: string;
-  error?: string;
-  part?: TextStreamPart<ToolSet>;
-};
-
 type Task = { conversationId: string; datasetId: string; controller: AbortController };
-type Emit = (event: TaskEvent) => void;
+type Emit = (event: AnalysisTaskEvent) => void;
 
 export class AnalysisService {
   // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
@@ -38,7 +20,7 @@ export class AnalysisService {
   private agents = new Map<string, {
     datasetId: string;
     engineKey: string;
-    agent: AgentPromise,
+    agent: Promise<AnalysisAgent>,
   }>();
 
   private tasks = new Map<string, Task>();
@@ -88,7 +70,7 @@ export class AnalysisService {
     return required(this.repositories.messages.get(id), '分析记录不存在。');
   }
 
-  start(input: StartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
+  start(input: AnalysisStartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
     const question = input.question.trim();
     if (!question) throw new Error('请输入分析问题。');
     if (this.updatingDatasets.has(input.datasetId)) throw new Error('数据源正在更新，请稍后重试。');
@@ -167,7 +149,7 @@ export class AnalysisService {
     model: ModelConfig,
     dataset: DatasetRow,
     engine: DuckDBEngineConfig,
-  ): AgentPromise {
+  ): Promise<AnalysisAgent> {
     const engineKey = JSON.stringify(engine);
     const existing = this.agents.get(conversationId);
     if (existing?.engineKey === engineKey) return existing.agent;
@@ -200,9 +182,9 @@ export class AnalysisService {
 
   private async run(
     taskId: string,
-    agentPromise: AgentPromise,
+    agentPromise: Promise<AnalysisAgent>,
     question: string,
-    strategy: StartInput['strategy'],
+    strategy: AnalysisStartInput['strategy'],
     agentConfig: Preferences['agent'],
     controller: AbortController,
     emit: Emit,

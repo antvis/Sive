@@ -4,7 +4,9 @@ import { generateText } from 'ai';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import { decrypt, encrypt, required } from '../../util';
-import type { ModelConnectionInput, ModelInput, ModelTestProgress } from '../types';
+import type { ModelConnectionInput, ModelInput, ModelTestProgress } from '@shared/api';
+
+export type ModelConfig = { baseURL: string; model: string; apiKey?: string };
 
 function modelURL(value: string) {
   const url = new URL(value);
@@ -48,7 +50,7 @@ export class ModelService {
     }));
   }
 
-  getDefaultModelConfig() {
+  getDefaultModelConfig(): ModelConfig {
     const active = this.repositories.settings.getActiveModel();
     if (!active.providerId) throw new Error('请先在设置中配置默认模型服务。');
     const provider = required(

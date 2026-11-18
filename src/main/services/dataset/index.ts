@@ -11,6 +11,7 @@ import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 import { sourceEngine } from '../../util/engine';
+import type { ModelConfig } from '../model';
 
 function toSummary(row: DatasetRow) {
   let fileSize: number | undefined;
@@ -189,7 +190,7 @@ export class DatasetService {
     }
   }
 
-  async suggest(id: string, config: { baseURL: string; model: string; apiKey?: string }) {
+  async suggest(id: string, config: ModelConfig) {
     const dataset = required(this.get(id), '数据源不存在或已删除。');
     const provider = createOpenAICompatible({ name: 'sive', baseURL: config.baseURL, apiKey: config.apiKey });
     const ava = new AVA({
@@ -262,10 +263,10 @@ export class DatasetService {
     this.database.write(() => this.repositories.datasets.remove(id));
   }
 
-  saveSemantic(id: string, semantic: Semantic, metrics?: unknown) {
+  saveSemantic(id: string, semantic: Semantic) {
     this.database.write(() => {
       required(this.repositories.datasets.get(id), '数据源不存在或已删除。');
-      this.repositories.datasets.update(id, { semantic, metrics });
+      this.repositories.datasets.update(id, { semantic });
     });
   }
 }
