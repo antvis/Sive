@@ -29,3 +29,7 @@ export const snippets = sqliteTable(
   },
   (table) => [index('idx_snippets_list').on(table.deletedAt, sql`${table.updatedAt} DESC`, table.id)],
 );
+
+export type SnippetInsert = typeof snippets.$inferInsert;
+
+export type SnippetUpdate = Partial<Omit<SnippetInsert, 'id' | 'createdAt'>>;

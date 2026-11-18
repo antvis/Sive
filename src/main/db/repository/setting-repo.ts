@@ -1,9 +1,7 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { settings } from '../schema';
+import type { SettingInsert, SettingUpdate } from '../schema';
 import type { DBConnection } from './db-connection';
-
-type SettingInsert = typeof settings.$inferInsert;
-type SettingUpdate = Partial<Omit<SettingInsert, 'key' | 'createdAt'>>;
 
 export type ActiveModel = { providerId: string; model?: string };
 

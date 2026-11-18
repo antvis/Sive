@@ -25,3 +25,7 @@ export const modelProviders = sqliteTable('model_providers', {
   // Soft deletion timestamp.
   deletedAt: text('deleted_at'),
 });
+
+export type ModelProviderInsert = typeof modelProviders.$inferInsert;
+
+export type ModelProviderUpdate = Partial<Omit<ModelProviderInsert, 'id' | 'createdAt'>>;

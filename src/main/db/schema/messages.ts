@@ -41,3 +41,7 @@ export const messages = sqliteTable(
     index('idx_messages_status').on(table.status, table.createdAt, table.id),
   ],
 );
+
+export type MessageInsert = typeof messages.$inferInsert;
+
+export type MessageUpdate = Partial<Omit<MessageInsert, 'id' | 'conversationId' | 'sequence' | 'createdAt'>>;

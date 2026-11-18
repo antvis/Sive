@@ -49,3 +49,9 @@ export const datasets = sqliteTable('datasets', {
   // Soft deletion timestamp.
   deletedAt: text('deleted_at'),
 });
+
+export type DatasetInsert = typeof datasets.$inferInsert;
+
+export type DatasetUpdate = Partial<Omit<DatasetInsert, 'id' | 'createdAt'>>;
+
+export type DatasetRow = typeof datasets.$inferSelect;

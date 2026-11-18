@@ -5,14 +5,12 @@ import { AVA, sourceInputSchema } from '@antv/ava';
 import type { DataSourceConfig, JavaScriptEngine, LLMConfig, Semantic } from '@antv/ava';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
-import type { datasets } from '../../db/schema/datasets';
+import type { DatasetRow } from '../../db/schema/datasets';
 import { required } from '../../util';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 import { sourceEngine } from '../../util/engine';
-
-type DatasetRow = typeof datasets.$inferSelect;
 
 function toSummary(row: DatasetRow) {
   let fileSize: number | undefined;

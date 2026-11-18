@@ -1,9 +1,7 @@
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { snippets } from '../schema';
+import type { SnippetInsert, SnippetUpdate } from '../schema';
 import type { DBConnection } from './db-connection';
-
-type SnippetInsert = typeof snippets.$inferInsert;
-type SnippetUpdate = Partial<Omit<SnippetInsert, 'id' | 'createdAt'>>;
 
 export class SnippetRepo {
   constructor(private database: DBConnection) {}
