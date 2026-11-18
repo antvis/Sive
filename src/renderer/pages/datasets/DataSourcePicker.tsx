@@ -1,8 +1,13 @@
+import { Database, Files, Stack } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { useImportLocal } from '../../hooks/useImportLocal';
-import { DATA_SOURCE_GROUPS } from '../../utils/dataSource';
-import type { DatasetSource, DatasetSourceAction } from '../../utils/dataSource';
+import { DATA_SOURCE_GROUPS } from '@shared/dataSource';
+import type { DatasetSource, DatasetSourceAction } from '@shared/dataSource';
+import * as dialogs from './datasetDialogs';
+
+const groupIcons = { Database, Files, Stack };
 
 function SourceCard({
   source,
@@ -10,12 +15,12 @@ function SourceCard({
   disabled,
   onSelect,
 }: {
-  source: Pick<DatasetSource, 'label' | 'description' | 'color' | 'icon'>;
+  source: Pick<DatasetSource, 'type' | 'label' | 'description' | 'color'>;
   actionLabel: string;
   disabled: boolean;
   onSelect: () => void;
 }) {
-  const { label: name, description, color, icon: SourceIcon } = source;
+  const { label: name, description, color } = source;
   return (
     <button
       type="button"
@@ -31,9 +36,9 @@ function SourceCard({
       >
         <span
           className="grid size-9 shrink-0 place-items-center rounded-[10px]"
-          style={{ color, backgroundColor: `${color}14` }}
+          style={{ backgroundColor: `${color}14` }}
         >
-          <SourceIcon size={20} weight="duotone" />
+          <DataSourceLogo type={source.type} size={24} />
         </span>
         <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
       </span>
@@ -58,7 +63,7 @@ export function DataSourcePicker() {
     { type: 'connection' | 'import' }
   > | null>(null);
   const [importingType, setImportingType] = useState<string | null>(null);
-  const Dialog = connection?.Dialog;
+  const Dialog = connection ? dialogs[connection.dialog] : undefined;
 
   const selectSource = async (source: DatasetSource) => {
     if (!source.enable || importing) return;
@@ -84,31 +89,34 @@ export function DataSourcePicker() {
   return (
     <>
       <div className="my-8 grid gap-8" aria-busy={importing}>
-        {DATA_SOURCE_GROUPS.map(({ title, icon: GroupIcon, sources }) => (
-          <section key={title} aria-label={title}>
-            <h2 className="mt-0 mr-0 mb-3.5 ml-0 flex items-center gap-2 text-base font-normal tracking-[0.01em]">
-              <GroupIcon size={18} className="text-muted" aria-hidden />
-              {title}
-            </h2>
-            <div className="grid grid-cols-[repeat(auto-fill,min(200px,100%))] gap-4">
-              {sources.map((source) => (
-                <SourceCard
-                  key={source.type}
-                  source={source}
-                  disabled={!source.enable || importing}
-                  actionLabel={
-                    !source.enable
-                      ? '待接入'
-                      : importingType === source.type
-                        ? '正在导入…'
-                        : source.actionLabel
-                  }
-                  onSelect={() => void selectSource(source)}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
+        {DATA_SOURCE_GROUPS.map(({ title, icon, sources }) => {
+          const GroupIcon = groupIcons[icon];
+          return (
+            <section key={title} aria-label={title}>
+              <h2 className="mt-0 mr-0 mb-3.5 ml-0 flex items-center gap-2 text-base font-normal tracking-[0.01em]">
+                <GroupIcon size={18} className="text-muted" aria-hidden />
+                {title}
+              </h2>
+              <div className="grid grid-cols-[repeat(auto-fill,min(200px,100%))] gap-4">
+                {sources.map((source) => (
+                  <SourceCard
+                    key={source.type}
+                    source={source}
+                    disabled={!source.enable || importing}
+                    actionLabel={
+                      !source.enable
+                        ? '待接入'
+                        : importingType === source.type
+                          ? '正在导入…'
+                          : source.actionLabel
+                    }
+                    onSelect={() => void selectSource(source)}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
       {Dialog && <Dialog onClose={() => setConnection(null)} />}
     </>

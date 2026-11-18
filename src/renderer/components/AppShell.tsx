@@ -5,7 +5,7 @@ import type { PropsWithChildren } from 'react';
 import { Group, Panel } from 'react-resizable-panels';
 import { toast } from 'sonner';
 import { errorMessage, readWidth, saveWidth } from '../utils';
-import { findDatasetSource } from '../utils/dataSource';
+import { DataSourceLogo } from './DataSourceLogo';
 import type { Conversation, DatasetSummary } from '../types';
 import { IconButton } from './IconButton';
 import { ResizeHandle } from './ResizeHandle';
@@ -239,7 +239,6 @@ export function AppShell({
               <div className="flex h-full items-center gap-1 overflow-x-auto [-webkit-app-region:no-drag]">
                 {datasetTabs.map((dataset) => {
                   const active = activeDatasetId === dataset.id;
-                  const SourceIcon = findDatasetSource(dataset.sourceType)?.icon ?? Database;
                   return (
                     <div
                       key={dataset.id}
@@ -256,7 +255,7 @@ export function AppShell({
                         )}
                         onClick={() => onDatasetSelect(dataset.id)}
                       >
-                        <SourceIcon size={14} className="shrink-0 text-[#25804d]" aria-hidden />
+                        <DataSourceLogo type={dataset.sourceType} size={14} />
                         <span className="min-w-0 truncate">{dataset.name}</span>
                       </button>
                       <button
