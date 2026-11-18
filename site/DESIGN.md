@@ -18,9 +18,9 @@
 
 页脚参考 AVA 官网的品牌简介、分组导航与底部信息栏，沿用 Sive 的浅灰背景和苹方字体。左侧将 AntV 与 Sive 标识并排展示，复用页头的分隔线与产品标识排版，下方介绍 Sive 的桌面工作台定位并标明由 AVA 驱动；导航分为产品、项目、社区与 AntV 生态，只提供现有功能锚点、下载、项目说明、开源协议及贡献反馈入口。桌面端品牌与四组导航并列，手机端品牌独占一行、导航两列排列。底栏保留团队版权与 Sive 标语，不展示字体链接。
 
-页面无需构建，沿用现有 GitHub Pages / Surge 的 site 目录。正文优先使用系统苹方（PingFang SC），无苹方时回退到系统无衬线字体，不再加载 MiSans 网页字体。ASCII 动效继续使用等宽字体。
+页面通过 Vite 独立构建，产物输出到 `site/dist/`，仅打包页面实际引用的素材。浏览器最低版本固定为 Chrome / Edge 111、Firefox 114、Safari / iOS 16.4，JavaScript 与 Lightning CSS 使用相同目标；缺少分词、观察器或 Canvas 能力时保留静态内容，下载选项直接包含在 HTML 中。正文优先使用系统苹方（PingFang SC），无苹方时回退到系统无衬线字体，不再加载 MiSans 网页字体。ASCII 动效继续使用等宽字体。
 
-预览：在仓库根目录运行 `python3 -m http.server 4173 --bind 127.0.0.1 --directory site`
+预览：在仓库根目录运行 `pnpm dev:site`；生产预览先运行 `pnpm build:site`，再运行 `pnpm preview:site`。
 
 通过 `http://127.0.0.1:4173/` 访问预览。不要直接打开 `index.html`：浏览器会阻止 `file://` 页面加载 ES module，导致下载菜单、滚动显隐和动效无法运行。
 

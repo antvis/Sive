@@ -195,4 +195,8 @@ function initScrollEffects() {
   });
 }
 
+// Dynamic imports keep optional animation failures isolated after bundling.
+import('./hero.js').catch((error) => console.warn('Hero animation unavailable', error));
+import('./download.js').catch((error) => console.warn('Download animation unavailable', error));
+
 initScrollEffects();

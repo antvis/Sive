@@ -14,7 +14,10 @@
   "scripts": {
     "electron:install": "install-electron",
     "dev": "electron-vite dev --watch",
+    "dev:site": "vite --config site/vite.config.ts --host 127.0.0.1",
     "build": "electron-vite build",
+    "build:site": "vite build --config site/vite.config.ts",
+    "preview:site": "vite preview --config site/vite.config.ts --host 127.0.0.1",
     "start": "electron .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -61,6 +64,7 @@
     "electron": "44.9.1",
     "electron-vite": "^6.0.0",
     "husky": "^9.1.7",
+    "lightningcss": "1.33.0",
     "lint-staged": "^17.6.1",
     "oxlint": "1.93.0",
     "prettier": "^3.9.10",
