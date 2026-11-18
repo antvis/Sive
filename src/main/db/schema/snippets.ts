@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import type { SnippetContent } from '@shared/snippets';
+import type { SnippetContent } from '@shared/schema';
 import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const snippets = sqliteTable(
@@ -29,6 +29,8 @@ export const snippets = sqliteTable(
   },
   (table) => [index('idx_snippets_list').on(table.deletedAt, sql`${table.updatedAt} DESC`, table.id)],
 );
+
+export type SnippetRow = typeof snippets.$inferSelect;
 
 export type SnippetInsert = typeof snippets.$inferInsert;
 

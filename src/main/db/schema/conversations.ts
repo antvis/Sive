@@ -27,6 +27,8 @@ export const conversations = sqliteTable(
   (table) => [index('idx_conversations_dataset').on(table.datasetId, table.createdAt, table.id)],
 );
 
+export type ConversationRow = typeof conversations.$inferSelect;
+
 export type ConversationInsert = typeof conversations.$inferInsert;
 
 export type ConversationUpdate = Partial<Omit<ConversationInsert, 'id' | 'createdAt'>>;

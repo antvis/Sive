@@ -11,10 +11,9 @@ import type { TextStreamPart, ToolSet } from 'ai';
 import type { LocalFileFormat } from './dataSource';
 import type { AnalysisMessage } from './messages';
 import type { Snippet, SnippetSaveInput, SnippetUpdateInput } from './snippets';
+import type { AnalysisMessage, Snippet, SnippetSaveInput, SnippetUpdateInput } from './schema';
 
-export type { AnalysisMessage } from './messages';
-
-export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './snippets';
+export type { AnalysisMessage, Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput } from './schema';
 
 export type DuckDBEngineConfig = Extract<EngineConfig, { type: 'duckdb' }>;
 
