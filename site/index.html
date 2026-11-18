@@ -1,32 +1,378 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sive</title>
-    <style>
-      body {
-        display: grid;
-        min-height: 100vh;
-        margin: 0;
-        place-items: center;
-        background: #e7f2f0;
-        color: #243039;
-      }
-
-      h1 {
-        margin: 0;
-        font:
-          700 clamp(4rem, 16vw, 9rem) / 1 'Avenir Next',
-          'Century Gothic',
-          sans-serif;
-        letter-spacing: -0.065em;
-      }
-    </style>
+    <meta
+      name="description"
+      content="Sive 是 AntV 团队出品的开源 AI 数据分析桌面工作台连接你的数据，用自然语言提问，让洞察清晰浮现"
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <meta property="og:title" content="Sive Desktop · 让数据浮现" />
+    <meta property="og:description" content="连接数据，自然提问从一个问题，到看得见的洞察" />
+    <title>Sive Desktop · 让数据浮现</title>
+    <link rel="icon" href="./assets/sive.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./main.js"></script>
   </head>
   <body>
-    <main>
-      <h1>Sive</h1>
+    <a class="skip-link" href="#main">跳至主要内容</a>
+    <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" /></symbol>
+        <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4" /></symbol>
+        <symbol id="i-apple" viewBox="0 0 24 24">
+          <path
+            d="M16.8 12.7c0-2 1.6-2.9 1.7-3-1-1.5-2.5-1.7-3.1-1.7-1.3-.1-2.6.8-3.3.8s-1.8-.8-2.9-.8C7.7 8 6.2 8.9 5.5 10.3c-1.5 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.2 2.8 2.1 1.1 0 1.6-.7 3-.7s1.8.7 3 .7 2-1 2.7-2.1c.9-1.3 1.2-2.5 1.2-2.6-.1 0-2.5-1-2.5-3.9ZM14.6 6.7c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.3-.6.7-1.2 1.8-1.1 2.9 1.1.1 2.2-.5 2.9-1.2Z"
+          />
+        </symbol>
+        <symbol id="i-windows" viewBox="0 0 24 24">
+          <path d="m3 5 8-1v7H3Zm10-1 8-1v8h-8ZM3 13h8v7l-8-1Zm10 0h8v8l-8-1Z" />
+        </symbol>
+        <symbol id="i-connect" viewBox="0 0 32 32">
+          <path d="M20 5h7v22h-7z" fill="currentColor" fill-opacity=".1" stroke="none" />
+          <rect x="19.5" y="4.5" width="8" height="23" rx="3" />
+          <path d="M5 7h4c5 0 3 9 10 9M5 16h14M5 25h4c5 0 3-9 10-9" />
+          <path d="M3 5h4v4H3zM3 14h4v4H3zM3 23h4v4H3z" fill="currentColor" stroke="none" />
+          <path d="M23.5 11v10" />
+        </symbol>
+        <symbol id="i-conversation" viewBox="0 0 32 32">
+          <path d="M5 5h17a5 5 0 0 1 5 5v5H10a5 5 0 0 1-5-5Z" fill="currentColor" fill-opacity=".1" />
+          <path d="M27 15v12H10a5 5 0 0 1-5-5v-7M10 10h11M11 21h11M18 18l4 3-4 3" />
+          <path d="M5 10v5a6 6 0 0 0 6 6" />
+        </symbol>
+        <symbol id="i-trace" viewBox="0 0 32 32">
+          <path d="M8 9v8a6 6 0 0 0 6 6h5M12 6h13M12 10h8" />
+          <rect x="4" y="4" width="7" height="8" rx="2" fill="currentColor" fill-opacity=".1" />
+          <rect x="19" y="19" width="9" height="9" rx="3" fill="currentColor" fill-opacity=".1" />
+          <path d="m21.5 23.5 1.5 1.5 2.5-3M14 15h11" />
+          <circle cx="8" cy="23" r="1.5" fill="currentColor" stroke="none" />
+        </symbol>
+        <symbol id="i-chart" viewBox="0 0 32 32">
+          <path d="M5 27V17h5v10M14 27V12h5v15M23 27V5h5v22" fill="currentColor" fill-opacity=".1" />
+          <path d="M3 11c8 0 8-8 17-8M5 27h23" />
+          <circle cx="20" cy="3" r="2" fill="currentColor" stroke="none" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <header class="header">
+      <div class="nav-wrap">
+        <a class="logo" href="#" aria-label="AntV Sive 首页"
+          ><img
+            src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*A-lcQbVTpjwAAAAAAAAAAAAADmJ7AQ/original"
+            alt="AntV"
+            width="82"
+            height="28"
+          /><span class="logo-divider" aria-hidden="true"></span
+          ><span class="logo-product"
+            ><img src="./assets/sive.svg" alt="" width="25" height="25" /><span>Sive</span></span
+          ></a
+        >
+        <div class="header-actions">
+          <details class="download-menu nav-download">
+            <summary class="button nav-cta" aria-expanded="false" aria-controls="download-options-nav">
+              下载 <svg class="icon"><use href="#i-download" /></svg>
+            </summary>
+            <div class="download-options" id="download-options-nav" data-download-panel></div>
+          </details>
+          <a class="header-github" href="https://github.com/antvis/Sive" target="_blank" rel="noreferrer"
+            ><img src="./assets/icons/github.svg" alt="" width="19" height="19" />GitHub</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div id="ambient-canvas" aria-hidden="true"></div>
+        <div class="hero-copy">
+          <h1 id="hero-title" aria-label="数据理解、数据分析、数据可视化，交给 Sive">
+            <span class="rotating-capability" aria-hidden="true">
+              <span class="hero-capability capability-understanding is-active">
+                <img src="./assets/icons/data-understanding-3d.png" alt="" width="512" height="512" />
+                <span>数据理解</span>
+              </span>
+              <span class="hero-capability capability-analysis">
+                <img src="./assets/icons/data-analysis-3d.png" alt="" width="512" height="512" />
+                <span>数据分析</span>
+              </span>
+              <span class="hero-capability capability-visualization">
+                <img src="./assets/icons/data-visualization-3d.png" alt="" width="512" height="512" />
+                <span>数据可视化</span>
+              </span>
+            </span>
+            <span class="slogan-secondary">交给 Sive</span>
+          </h1>
+          <p class="hero-description">
+            Sive 是 AntV 出品、基于 AVA 4.0 的 AI
+            数据工作台，开源、免费，注重数据安全，帮你连接文件和数据库，用自然语言完成分析，并把结果变成清晰的图表
+          </p>
+          <details class="download-menu hero-download">
+            <summary class="button primary-cta" aria-expanded="false" aria-controls="download-options-hero">
+              立即下载 Sive <svg class="icon"><use href="#i-download" /></svg>
+            </summary>
+            <div class="download-options" id="download-options-hero" data-download-panel></div>
+          </details>
+        </div>
+        <div class="hero-stage">
+          <div class="hero-media">
+            <img
+              id="demo-overview"
+              class="demo-image"
+              src="./assets/demo-overview.png"
+              alt="Sive 数据分析工作台"
+              width="1440"
+              height="900"
+            />
+          </div>
+        </div>
+      </section>
+
+      <div class="story-intro" id="experience">
+        <h2>连接、分析、可视化</h2>
+        <span class="scroll-hint" aria-hidden="true">↓</span>
+      </div>
+
+      <section class="demo-scene" id="connect" data-step="0" aria-labelledby="connect-title">
+        <div class="scene-copy">
+          <span class="chapter-label"
+            ><svg class="feature-icon" aria-hidden="true"><use href="#i-connect" /></svg>01 / 连接数据</span
+          >
+          <h2 id="connect-title">文件与数据库<br />一起分析</h2>
+          <p>
+            把本地文件和数据库接入同一个工作区，统一查看、管理和查询数据，并支持跨来源联合分析，让分散在不同文件或数据库中的数据可以一起使用
+          </p>
+        </div>
+        <div class="scene-demo scene-mint">
+          <img
+            id="demo-step-1"
+            class="demo-image"
+            src="./assets/demo-step-1.png"
+            alt="Sive 数据源选择界面"
+            width="1440"
+            height="900"
+            loading="lazy"
+          />
+        </div>
+      </section>
+
+      <section class="demo-scene scene-tinted" id="ask" data-step="1" aria-labelledby="ask-title">
+        <div class="scene-copy">
+          <span class="chapter-label"
+            ><svg class="feature-icon" aria-hidden="true"><use href="#i-conversation" /></svg>02 /
+            自然语言提问</span
+          >
+          <h2 id="ask-title">像聊天一样<br />完成数据分析</h2>
+          <p>
+            用日常语言描述你想了解的数据，Sive
+            会理解需求、生成查询并执行分析，将结果直接呈现在对话中；你可以基于结果继续提问，逐步缩小范围、调整分析方向，不需要先学会写
+            SQL
+          </p>
+        </div>
+        <div class="scene-demo scene-peach">
+          <img
+            id="demo-step-2"
+            class="demo-image"
+            src="./assets/demo-step-2.png"
+            alt="Sive 自然语言分析对话"
+            width="1440"
+            height="900"
+            loading="lazy"
+          />
+        </div>
+      </section>
+
+      <section class="demo-scene" id="analyze" data-step="2" aria-labelledby="analyze-title">
+        <div class="scene-copy">
+          <span class="chapter-label"
+            ><svg class="feature-icon" aria-hidden="true"><use href="#i-trace" /></svg>03 / 执行与溯源</span
+          >
+          <h2 id="analyze-title">分析过程<br />每一步都可查</h2>
+          <p>
+            每次分析都会保留调用的工具、执行的查询语句和返回的数据，你可以逐步查看数据如何被读取、计算和处理，并将结论与实际结果对照，核验分析依据和计算过程
+          </p>
+        </div>
+        <div class="scene-demo scene-blue">
+          <img
+            id="demo-step-3"
+            class="demo-image"
+            src="./assets/demo-step-3.png"
+            alt="Sive 分析查询与结果溯源"
+            width="1440"
+            height="900"
+            loading="lazy"
+          />
+        </div>
+      </section>
+
+      <section class="demo-scene scene-tinted" id="insight" data-step="3" aria-labelledby="insight-title">
+        <div class="scene-copy">
+          <span class="chapter-label"
+            ><svg class="feature-icon" aria-hidden="true"><use href="#i-chart" /></svg>04 / 看见洞察</span
+          >
+          <h2 id="insight-title">用合适的图表<br />看懂你的数据</h2>
+          <p>
+            根据数据结构和分析目标自动选择合适的图表，将查询结果转化为直观的可视化，帮助你看清数据中的关系与变化；图表和分析保存在同一段对话中，方便查看结果并继续探索
+          </p>
+        </div>
+        <div class="scene-demo scene-lilac">
+          <img
+            id="demo-step-4"
+            class="demo-image"
+            src="./assets/demo-step-4.png"
+            alt="Sive 洞察 Snippet 界面"
+            width="1440"
+            height="900"
+            loading="lazy"
+          />
+        </div>
+      </section>
+
+      <section class="section download" id="download" aria-labelledby="download-title">
+        <div class="download-decor" aria-hidden="true"></div>
+        <span class="download-mascot"><img src="./assets/sive.svg" alt="" /></span>
+        <p class="eyebrow">你的下一个发现，就从这里开始</p>
+        <h2 id="download-title">开始分析你的数据</h2>
+        <p>开源、免费就在你的桌面</p>
+        <div class="download-buttons">
+          <a
+            class="button download-platform"
+            href="https://github.com/antvis/Sive/releases"
+            target="_blank"
+            rel="noreferrer"
+            ><svg class="icon filled"><use href="#i-apple" /></svg
+            ><span>下载 macOS 版<small>Apple silicon</small></span
+            ><svg class="icon"><use href="#i-download" /></svg></a
+          ><a
+            class="button download-platform windows"
+            href="https://github.com/antvis/Sive/releases"
+            target="_blank"
+            rel="noreferrer"
+            ><svg class="icon filled"><use href="#i-windows" /></svg
+            ><span>下载 Windows 版<small>Windows x64</small></span
+            ><svg class="icon"><use href="#i-download" /></svg
+          ></a>
+        </div>
+        <p class="download-note">前往 GitHub Releases 选择对应安装包 · MIT 开源</p>
+      </section>
+      <nav class="chapter-progress" aria-label="演示章节">
+        <a href="#connect" aria-label="第 1 步：连接数据"><span></span></a
+        ><a href="#ask" aria-label="第 2 步：自然语言提问"><span></span></a
+        ><a href="#analyze" aria-label="第 3 步：执行与溯源"><span></span></a
+        ><a href="#insight" aria-label="第 4 步：看见洞察"><span></span></a>
+      </nav>
     </main>
+    <template id="download-panel-template">
+      <p class="download-group-title">桌面端</p>
+      <div class="download-group">
+        <details class="platform-submenu">
+          <summary class="platform-row" data-platform="mac">
+            <svg class="icon filled"><use href="#i-apple" /></svg><span>Mac</span
+            ><span class="current-device" hidden>当前设备</span
+            ><span class="chevron" aria-hidden="true">›</span>
+          </summary>
+          <div class="platform-submenu-panel">
+            <button class="platform-choice" type="button" disabled data-arch="x64">
+              <span>Mac Intel 芯片</span><span class="coming-soon">待上线</span></button
+            ><a
+              class="platform-choice"
+              href="https://github.com/antvis/Sive/releases"
+              target="_blank"
+              rel="noreferrer"
+              data-arch="arm64"
+              ><span>Mac Apple 芯片</span><span class="current-chip" hidden aria-label="当前芯片"></span
+            ></a>
+          </div>
+        </details>
+        <details class="platform-submenu">
+          <summary class="platform-row" data-platform="windows">
+            <svg class="icon filled"><use href="#i-windows" /></svg><span>Windows</span
+            ><span class="current-device" hidden>当前设备</span
+            ><span class="chevron" aria-hidden="true">›</span>
+          </summary>
+          <div class="platform-submenu-panel">
+            <a
+              class="platform-choice"
+              href="https://github.com/antvis/Sive/releases"
+              target="_blank"
+              rel="noreferrer"
+              data-arch="x64"
+              ><span>Windows x64</span><span class="current-chip" hidden aria-label="当前芯片"></span></a
+            ><button class="platform-choice" type="button" disabled data-arch="arm64">
+              <span>Windows ARM64</span><span class="coming-soon">待上线</span>
+            </button>
+          </div>
+        </details>
+        <button class="platform-row" type="button" disabled data-platform="harmony-desktop">
+          <img src="./assets/icons/harmony.svg" alt="" width="21" height="21" /><span>鸿蒙电脑版</span
+          ><span class="current-device" hidden>当前设备</span><span class="coming-soon">待上线</span>
+        </button>
+        <button class="platform-row" type="button" disabled data-platform="linux">
+          <img src="./assets/icons/linux.svg" alt="" width="21" height="21" /><span>Linux</span
+          ><span class="current-device" hidden>当前设备</span><span class="coming-soon">待上线</span>
+        </button>
+      </div>
+    </template>
+    <footer class="footer">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <a class="logo" href="#" aria-label="返回 AntV Sive 首页"
+            ><img
+              src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*A-lcQbVTpjwAAAAAAAAAAAAADmJ7AQ/original"
+              alt="AntV"
+              width="82"
+              height="28"
+            /><span class="logo-divider" aria-hidden="true"></span
+            ><span class="logo-product"
+              ><img src="./assets/sive.svg" alt="" width="25" height="25" /><span>Sive</span></span
+            ></a
+          >
+          <p>开源 AI 数据分析桌面工作台</p>
+          <a class="footer-powered" href="https://ava.antv.vision/zh/" target="_blank" rel="noreferrer"
+            >由 AVA 驱动 <span aria-hidden="true">↗</span></a
+          >
+        </div>
+        <nav class="footer-links" aria-label="页脚导航">
+          <div>
+            <h3>产品</h3>
+            <a href="#connect">连接数据</a><a href="#ask">对话分析</a><a href="#analyze">分析溯源</a
+            ><a href="#insight">图表洞察</a>
+          </div>
+          <div>
+            <h3>项目</h3>
+            <a href="#download">下载 Sive</a
+            ><a href="https://github.com/antvis/Sive/blob/main/README.zh-CN.md" target="_blank" rel="noreferrer"
+              >项目介绍</a
+            ><a href="https://github.com/antvis/Sive/releases" target="_blank" rel="noreferrer">版本更新</a
+            ><a href="https://github.com/antvis/Sive/blob/main/LICENSE" target="_blank" rel="noreferrer">开源协议</a>
+          </div>
+          <div>
+            <h3>社区</h3>
+            <a href="https://github.com/antvis/Sive" target="_blank" rel="noreferrer">GitHub</a
+            ><a href="https://github.com/antvis/Sive/issues" target="_blank" rel="noreferrer">问题与建议</a
+            ><a
+              href="https://github.com/antvis/Sive/blob/main/README.zh-CN.md#-参与贡献"
+              target="_blank"
+              rel="noreferrer"
+              >参与贡献</a
+            >
+          </div>
+          <div>
+            <h3>AntV 生态</h3>
+            <a href="https://antv.antgroup.com/" target="_blank" rel="noreferrer">AntV</a
+            ><a href="https://ava.antv.vision/zh/" target="_blank" rel="noreferrer">AVA</a
+            ><a href="https://g2.antv.vision/" target="_blank" rel="noreferrer">G2</a
+            ><a href="https://g6.antv.vision/" target="_blank" rel="noreferrer">G6</a
+            ><a href="https://gpt-vis.antv.vision/" target="_blank" rel="noreferrer">GPT-Vis</a
+            ><a href="https://infographic.antv.vision/" target="_blank" rel="noreferrer">Infographic</a>
+          </div>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span id="year">2026</span> AntV AI Visualization Team</span
+        ><span class="footer-tagline">See it Live, Share it Real.</span>
+      </div>
+    </footer>
   </body>
 </html>
