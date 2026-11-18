@@ -514,21 +514,6 @@ img {
 .download-decor.is-flowing .download-stream {
   animation-play-state: running;
 }
-.download-motion {
-  margin-top: 18px;
-  padding: 4px 0;
-  border: 0;
-  border-bottom: 1px solid #c8d0d8;
-  background: none;
-  color: var(--muted);
-  font-size: 10px;
-}
-.download-motion:hover {
-  color: var(--accent);
-}
-.download-motion:disabled {
-  cursor: default;
-}
 .download.reveal-pending > :not(.download-decor) {
   opacity: 0;
   position: relative;

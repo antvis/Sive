@@ -20,22 +20,10 @@ for (let column = 0; column < 36; column++) {
   waterfall.append(stream);
 }
 
-const motionButton = document.createElement('button');
-motionButton.type = 'button';
-motionButton.className = 'download-motion';
-download.append(motionButton);
-let paused = false;
 let inView = false;
 
 function updateMotion() {
-  waterfall.classList.toggle('is-flowing', !paused && !reducedMotion.matches && inView && !document.hidden);
-  motionButton.textContent = reducedMotion.matches
-    ? '已减少动态效果'
-    : paused
-      ? '播放背景动效'
-      : '暂停背景动效';
-  motionButton.setAttribute('aria-pressed', String(paused || reducedMotion.matches));
-  motionButton.disabled = reducedMotion.matches;
+  waterfall.classList.toggle('is-flowing', !reducedMotion.matches && inView && !document.hidden);
 }
 
 const observer = new IntersectionObserver(([entry]) => {
@@ -43,10 +31,6 @@ const observer = new IntersectionObserver(([entry]) => {
   updateMotion();
 });
 observer.observe(download);
-motionButton.addEventListener('click', () => {
-  paused = !paused;
-  updateMotion();
-});
 document.addEventListener('visibilitychange', updateMotion);
 reducedMotion.addEventListener('change', updateMotion);
 updateMotion();
