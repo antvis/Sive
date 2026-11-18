@@ -8,8 +8,7 @@ on:
       - 'site/**'
       - 'package.json'
       - 'tsconfig.json'
-      - 'tsconfig.site.json'
-      - '.github/workflows/check-site.yml'
+      - '.github/workflows/build-site.yml'
       - '.github/workflows/deploy-site.yml'
   workflow_dispatch:
 
@@ -27,7 +26,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
-    uses: ./.github/workflows/check-site.yml
+    uses: ./.github/workflows/build-site.yml
 
   deploy:
     if: github.ref == 'refs/heads/main'

@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   site:
-    uses: ./.github/workflows/check-site.yml
+    uses: ./.github/workflows/build-site.yml
 
   lint:
     runs-on: ubuntu-latest

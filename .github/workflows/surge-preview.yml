@@ -6,8 +6,7 @@ on:
       - 'site/**'
       - 'package.json'
       - 'tsconfig.json'
-      - 'tsconfig.site.json'
-      - '.github/workflows/check-site.yml'
+      - '.github/workflows/build-site.yml'
       - '.github/workflows/surge-preview.yml'
 
 permissions:
@@ -23,7 +22,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       contents: read
-    uses: ./.github/workflows/check-site.yml
+    uses: ./.github/workflows/build-site.yml
 
   preview:
     if: github.event.pull_request.head.repo.full_name == github.repository

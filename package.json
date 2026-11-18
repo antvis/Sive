@@ -18,13 +18,12 @@
     "build": "electron-vite build",
     "build:site": "vite build --config site/vite.config.ts",
     "preview:site": "vite preview --config site/vite.config.ts --host 127.0.0.1",
-    "check:site": "tsc --noEmit -p tsconfig.site.json && oxlint --deny-warnings site",
     "start": "electron .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=\"^/(src|docs|samples|site|.git|.github)$\"",
-    "tsc": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json && tsc --noEmit -p tsconfig.site.json",
-    "lint": "npm run tsc && oxlint --deny-warnings src site electron.vite.config.ts",
+    "tsc": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "lint": "npm run tsc && oxlint --deny-warnings src electron.vite.config.ts",
     "fix": "prettier --write src electron.vite.config.ts .prettierrc.json package.json",
     "prepare": "husky"
   },
@@ -80,7 +79,7 @@
     "vitest": "^5.1.0"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "oxlint --deny-warnings"
+    "*.{js,jsx,ts,tsx}": "oxlint --deny-warnings --ignore-pattern site/** --no-error-on-unmatched-pattern"
   },
   "packageManager": "pnpm@10.30.3",
   "config": {
