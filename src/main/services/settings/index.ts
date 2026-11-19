@@ -5,8 +5,6 @@ import type { Preferences } from '@shared/api';
 import { DEFAULT_PREFERENCES } from '../../../shared/api';
 import type { DuckDBEngineConfig } from '../../../shared/api';
 
-const LANGUAGE_KEY = 'language';
-
 // 主题风格
 const THEME_KEY = 'theme';
 // Agent 设置
@@ -15,6 +13,8 @@ const AGENT_KEY = 'agent';
 const STRATEGY_KEY = 'strategy';
 // DuckDB 引擎配置
 const ENGINE_KEY = 'engine';
+// 界面语言
+const LANGUAGE_KEY = 'language';
 
 /**
  * Store several types of configurations separately,
