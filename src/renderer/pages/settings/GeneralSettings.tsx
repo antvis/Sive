@@ -1,6 +1,5 @@
 import { FolderOpen, Monitor, Moon, Sun } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-import { isLanguagePreference } from '../../../shared/i18n';
 import type { Preferences, StorageInfo } from '@shared/api';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
@@ -64,7 +63,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
               { value: 'en-US', label: 'English' },
             ]}
             onChange={(language) => {
-              if (isLanguagePreference(language)) void update({ ...preferences, language });
+              update({ ...preferences, language: language as Preferences['language'] });
             }}
           />
         </SettingRow>

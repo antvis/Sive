@@ -1,3 +1,11 @@
+import type { i18n as I18n } from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import { createI18n } from '../shared/i18n';
+
+export function createRendererI18n(): I18n {
+  return createI18n().use(initReactI18next);
+}
+
 export function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : '操作失败，请稍后重试。';
 }

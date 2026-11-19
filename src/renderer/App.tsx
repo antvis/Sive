@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { I18nextProvider } from 'react-i18next';
 import { Toaster } from 'sonner';
+import { createRendererI18n } from './utils';
+import { useWorkspace } from './hooks/useWorkspace';
 import { AppShell } from './components/AppShell';
 import type { AppPage } from './components/AppShell';
 import type { WorkspaceState } from './types';
@@ -9,7 +12,19 @@ import { SettingsPage } from './pages/settings';
 import { SnippetsPage } from './pages/snippets';
 import { WelcomePage } from './pages/WelcomePage';
 
-export default function App({ state }: { state: WorkspaceState }) {
+const i18n = createRendererI18n();
+
+export default function App() {
+  const { state } = useWorkspace(i18n);
+  if (!state) return null;
+  return (
+    <I18nextProvider i18n={i18n}>
+      <Workspace state={state} />
+    </I18nextProvider>
+  );
+}
+
+function Workspace({ state }: { state: WorkspaceState }) {
   const [page, setPage] = useState<AppPage>('welcome');
   const [systemDark, setSystemDark] = useState(
     () => window.matchMedia('(prefers-color-scheme: dark)').matches,

@@ -51,14 +51,12 @@ export function registerIpc(services: Services, i18n: I18n) {
       (source) => source.action.extensions,
     );
     const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
-      title: i18n.t('selectDataFile', { ns: 'native' }),
+      title: i18n.t('selectDataFile'),
       defaultPath: typeof lastDirectory === 'string' && lastDirectory ? lastDirectory : undefined,
       properties: ['openFile'],
       filters: [
         {
-          name: formatName
-            ? i18n.t('fileFormat', { ns: 'native', format: formatName })
-            : i18n.t('dataFiles', { ns: 'native' }),
+          name: formatName ? i18n.t('fileFormat', { format: formatName }) : i18n.t('dataFiles'),
           extensions,
         },
       ],
@@ -189,13 +187,10 @@ export function registerIpc(services: Services, i18n: I18n) {
     changed(event);
   });
 
-  ipcMain.handle('settingsSavePreferences', async (_event, preferences: Preferences) => {
+  ipcMain.handle('settingsSavePreferences', async (event, preferences: Preferences) => {
     services.settings.savePreferences(preferences);
     await i18n.changeLanguage(resolveLocale(preferences.language, app.getPreferredSystemLanguages()));
-    revision += 1;
-    for (const window of BrowserWindow.getAllWindows()) {
-      if (!window.isDestroyed()) window.webContents.send(WORKSPACE_CHANGED_CHANNEL);
-    }
+    changed(event);
   });
 
   ipcMain.handle('systemGetStorageInfo', () => getStorageInfo());
