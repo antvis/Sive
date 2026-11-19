@@ -1,9 +1,8 @@
-import { Summary } from '@antv/gpt-vis';
+import { Summary as GPTVisSummary } from '@antv/gpt-vis';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { createChartTheme, ThemeContext } from '../theme';
-import { Markdown } from './Markdown';
 
-export function InsightSummary({ text, syntax }: { text: string; syntax?: string }) {
+export function Summary({ syntax }: { syntax: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const themeMode = useContext(ThemeContext);
   const [failedSyntax, setFailedSyntax] = useState<string>();
@@ -11,7 +10,7 @@ export function InsightSummary({ text, syntax }: { text: string; syntax?: string
 
   useEffect(() => {
     if (!containerRef.current || !syntax || !renderT8) return;
-    const summary = Summary({ container: containerRef.current, theme: createChartTheme(themeMode) });
+    const summary = GPTVisSummary({ container: containerRef.current, theme: createChartTheme(themeMode) });
     try {
       summary.render(syntax);
     } catch {
@@ -20,5 +19,5 @@ export function InsightSummary({ text, syntax }: { text: string; syntax?: string
     return () => summary.destroy();
   }, [syntax, themeMode, renderT8]);
 
-  return renderT8 ? <div ref={containerRef} /> : <Markdown>{text}</Markdown>;
+  return renderT8 ? <div ref={containerRef} /> : <div className="whitespace-pre-wrap">{syntax}</div>;
 }

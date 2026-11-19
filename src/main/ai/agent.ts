@@ -48,7 +48,7 @@ export async function createAnalysisAgent({
   // This is the default options, but they can be overridden by the `stream` method.
   // The `strategy` option is passed to the tools, and the `agent` option is used to control the agent's behavior.
   // The `maxSteps` option controls how many steps the agent can take before stopping.
-  // Tools read the current question and strategy from this shared options object.
+  // Tools read the current question and strategy through the options callback.
   const options = {
     agent: { maxSteps: 10 },
     strategy: { type: 'direct' } as AnalysisStrategyConfig,
@@ -58,7 +58,7 @@ export async function createAnalysisAgent({
   const agent = new ToolLoopAgent({
     model: languageModel,
     instructions: INSTRUCTIONS,
-    tools: createTools(ava, dataset, options, languageModel),
+    tools: createTools(ava, dataset, () => options, languageModel),
     stopWhen: ({ steps }) => steps.length >= options.agent.maxSteps,
   });
 

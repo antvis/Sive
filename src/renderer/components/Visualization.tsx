@@ -3,7 +3,7 @@ import type { SnippetSpec } from '@shared/schema';
 import sizeSensor from 'size-sensor';
 import { useContext, useEffect, useRef } from 'react';
 import { createChartTheme, ThemeContext } from '../theme';
-import { InsightSummary } from './InsightSummary';
+import { Summary } from './Summary';
 
 export function Visualization({ spec, height = 320 }: { spec: SnippetSpec; height?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export function Visualization({ spec, height = 320 }: { spec: SnippetSpec; heigh
 
   if (typeof spec === 'string') {
     const syntax = spec.replace(/^theme\s+(light|dark)\s*$/gim, '');
-    return <InsightSummary text={syntax} syntax={syntax} />;
+    return <Summary syntax={syntax} />;
   }
 
   return <div ref={containerRef} className="w-full min-w-0 max-w-full overflow-hidden" style={{ height }} />;

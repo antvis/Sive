@@ -1,4 +1,3 @@
-import type { SnippetContent } from '@shared/schema';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SnippetRepo } from '../../../../src/main/db/repository/snippet-repo';
 import { createTestDb } from '../../../helpers/db';
@@ -9,7 +8,12 @@ function makeSnippet(id: string, messageId: string, overrides = {}) {
     id,
     messageId,
     title: `snippet-${id}`,
-    content: { question: 'q', summary: 's' } as SnippetContent,
+    question: 'q',
+    intent: '分类比较',
+    summary: '收入为 [120万元](metric_value)。',
+    spec: { type: 'column' as const, data: [{ category: '一月', value: 120 }] },
+    tags: ['月度'],
+    templateId: 'default',
     createdAt: now,
     updatedAt: now,
     ...overrides,
@@ -28,9 +32,10 @@ describe('SnippetRepo', () => {
   afterEach(() => testDb.close());
 
   it('inserts and reads back a snippet', () => {
-    repo.insert(makeSnippet('s1', 'm1'));
+    const input = makeSnippet('s1', 'm1');
+    repo.insert(input);
 
-    expect(repo.get('s1')).toMatchObject({ id: 's1', messageId: 'm1', title: 'snippet-s1' });
+    expect(repo.get('s1')).toMatchObject(input);
     expect(repo.get('missing')).toBeUndefined();
   });
 

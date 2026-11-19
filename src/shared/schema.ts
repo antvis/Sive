@@ -2,7 +2,6 @@
 
 import type { AnalysisResponse, AnalysisStrategyConfig, ChartConfig } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
-import type { InsightPresentation } from './insight';
 
 export type { DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
 
@@ -36,20 +35,23 @@ export type AnalysisMessage = {
 
 export type SnippetContent = {
   question: string;
-  spec: SnippetSpec;
+  intent: string;
+  title: string;
   summary: string;
-  presentation?: InsightPresentation;
+  spec: SnippetSpec;
+  tags: string[];
 };
 
 export type SnippetSaveInput = SnippetContent & { messageId: string };
 
-export type SnippetUpdateInput = { title: string; summary: string };
+export type SnippetUpdateInput = Partial<Pick<SnippetContent, 'title' | 'summary'>> & {
+  templateId?: string;
+};
 
-export type Snippet = {
+export type Snippet = SnippetContent & {
   id: string;
   messageId: string;
-  title: string;
-  content: SnippetContent;
+  templateId: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

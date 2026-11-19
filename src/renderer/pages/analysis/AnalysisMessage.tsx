@@ -155,7 +155,7 @@ function semanticSummary(semantic: Semantic) {
 }
 
 function hasChart(output: VisualizationResult | null | undefined): output is VisualizationResult {
-  return Boolean(output?.spec);
+  return Boolean(output?.spec && output.title);
 }
 
 function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {

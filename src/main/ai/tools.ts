@@ -12,7 +12,7 @@ import type {
   Semantic,
 } from '@antv/ava';
 import { localFilePath } from '../util/localFile';
-import { generateInsightPresentation } from './snippet-agent';
+import { generateSnippet } from './snippet-agent';
 
 export type ToolContext = {
   name: string;
@@ -26,7 +26,7 @@ export type ToolContext = {
 export function createTools(
   ava: AVA,
   context: ToolContext,
-  options: { strategy: AnalysisStrategyConfig; question: string },
+  options: () => { strategy: AnalysisStrategyConfig; question: string },
   model: LanguageModel,
 ): ToolSet {
   let latest: AnalysisResponse | undefined;
@@ -75,7 +75,7 @@ export function createTools(
       description: 'Analyze the loaded dataset and return the actual query, SQL, text conclusion and rows.',
       inputSchema: z.object({ query: z.string().min(1) }),
       execute: async ({ query }) => {
-        latest = await ava.analyze(query, { strategy: options.strategy });
+        latest = await ava.analyze(query, { strategy: options().strategy });
         return latest;
       },
     }),
@@ -85,21 +85,27 @@ export function createTools(
       execute: async (_input, { abortSignal }) => {
         if (!latest) return null;
         const analysis = latest;
+        const { question } = options();
         const visualization = await ava.visualize(analysis);
         if (!visualization) return null;
-        const presentation = await generateInsightPresentation({
+        const spec = visualization.config;
+        const title = (typeof spec !== 'string' && spec.title) || question;
+        const formatted = await generateSnippet({
           model,
-          question: options.question,
+          question,
           query: analysis.query,
+          title,
           summary: analysis.text,
-          spec: visualization.config,
+          spec,
           abortSignal,
         });
         return {
-          question: analysis.query,
-          summary: analysis.text,
-          spec: visualization.config,
-          presentation,
+          question,
+          intent: formatted?.intent ?? '数据笔记',
+          title: formatted?.title ?? title,
+          summary: formatted?.summary ?? analysis.text,
+          spec,
+          tags: formatted?.tags ?? [],
         };
       },
     }),
