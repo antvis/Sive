@@ -3,6 +3,7 @@ import { app, BrowserWindow } from 'electron';
 import { DBConnection } from './db';
 import { registerIpc } from './ipc';
 import { createServices } from './services';
+import { createI18n, resolveLocale } from '../shared/i18n';
 
 let database: DBConnection | undefined;
 const iconPath = path.join(__dirname, '../assets/sive.png');
@@ -38,7 +39,11 @@ async function initialize() {
   const services = createServices(database);
   services.analysis.recoverAfterRestart();
 
-  registerIpc(services);
+  const i18n = createI18n();
+  await i18n.init({
+    lng: resolveLocale(services.settings.getPreferences().language, app.getPreferredSystemLanguages()),
+  });
+  registerIpc(services, i18n);
   createWindow();
 }
 

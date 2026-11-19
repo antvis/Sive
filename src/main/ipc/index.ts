@@ -1,4 +1,6 @@
 import path from 'node:path';
+import type { i18n as I18n } from 'i18next';
+import { resolveLocale } from '../../shared/i18n';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
@@ -18,7 +20,7 @@ import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
-export function registerIpc(services: Services) {
+export function registerIpc(services: Services, i18n: I18n) {
   let revision = 0;
 
   const changed = (event: IpcMainInvokeEvent) => {
@@ -36,6 +38,7 @@ export function registerIpc(services: Services) {
       models: services.model.list(),
       activeModelId: services.settings.getActiveModel().providerId,
       preferences,
+      resolvedLocale: i18n.language,
       revision,
     };
   });
@@ -48,12 +51,14 @@ export function registerIpc(services: Services) {
       (source) => source.action.extensions,
     );
     const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
-      title: '选择数据文件',
+      title: i18n.t('selectDataFile', { ns: 'native' }),
       defaultPath: typeof lastDirectory === 'string' && lastDirectory ? lastDirectory : undefined,
       properties: ['openFile'],
       filters: [
         {
-          name: formatName ? `${formatName} 文件` : '数据文件',
+          name: formatName
+            ? i18n.t('fileFormat', { ns: 'native', format: formatName })
+            : i18n.t('dataFiles', { ns: 'native' }),
           extensions,
         },
       ],
@@ -184,9 +189,13 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('settingsSavePreferences', (event, preferences: Preferences) => {
+  ipcMain.handle('settingsSavePreferences', async (_event, preferences: Preferences) => {
     services.settings.savePreferences(preferences);
-    changed(event);
+    await i18n.changeLanguage(resolveLocale(preferences.language, app.getPreferredSystemLanguages()));
+    revision += 1;
+    for (const window of BrowserWindow.getAllWindows()) {
+      if (!window.isDestroyed()) window.webContents.send(WORKSPACE_CHANGED_CHANNEL);
+    }
   });
 
   ipcMain.handle('systemGetStorageInfo', () => getStorageInfo());

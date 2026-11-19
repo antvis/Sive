@@ -4,6 +4,9 @@ import type { ActiveModel } from '../../db/repository/setting-repo';
 import type { Preferences } from '@shared/api';
 import { DEFAULT_PREFERENCES } from '../../../shared/api';
 import type { DuckDBEngineConfig } from '../../../shared/api';
+import { isLanguagePreference } from '../../../shared/i18n';
+
+const LANGUAGE_KEY = 'language';
 
 // 主题风格
 const THEME_KEY = 'theme';
@@ -34,6 +37,7 @@ export class SettingsService {
   }
 
   getPreferences(): Preferences {
+    const language = this.repositories.settings.get(LANGUAGE_KEY)?.value;
     const theme = this.repositories.settings.get(THEME_KEY)?.value as
       Partial<Preferences['theme']> | undefined;
     const agent = this.repositories.settings.get(AGENT_KEY)?.value as Preferences['agent'] | undefined;
@@ -42,6 +46,7 @@ export class SettingsService {
     const engine = this.repositories.settings.get(ENGINE_KEY)?.value as
       Partial<DuckDBEngineConfig> | undefined;
     return {
+      language: isLanguagePreference(language) ? language : DEFAULT_PREFERENCES.language,
       theme: { ...DEFAULT_PREFERENCES.theme, ...theme },
       agent: { ...DEFAULT_PREFERENCES.agent, ...agent },
       strategy: { ...DEFAULT_PREFERENCES.strategy, ...strategy },
@@ -50,10 +55,14 @@ export class SettingsService {
   }
 
   savePreferences(preferences: Preferences) {
-    this.set(THEME_KEY, preferences.theme);
-    this.set(AGENT_KEY, preferences.agent);
-    this.set(STRATEGY_KEY, preferences.strategy);
-    this.set(ENGINE_KEY, preferences.engine);
+    if (!preferences || !isLanguagePreference(preferences.language)) throw new Error('不支持的界面语言。');
+    this.database.write(() => {
+      this.set(LANGUAGE_KEY, preferences.language);
+      this.set(THEME_KEY, preferences.theme);
+      this.set(AGENT_KEY, preferences.agent);
+      this.set(STRATEGY_KEY, preferences.strategy);
+      this.set(ENGINE_KEY, preferences.engine);
+    });
   }
 
   getActiveModel(): ActiveModel {

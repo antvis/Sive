@@ -1,8 +1,11 @@
 import { FolderOpen, Monitor, Moon, Sun } from '@phosphor-icons/react';
+import { useTranslation } from 'react-i18next';
+import { isLanguagePreference } from '../../../shared/i18n';
 import type { Preferences, StorageInfo } from '@shared/api';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { IconButton } from '../../components/IconButton';
+import { Select } from '../../components/Select';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
 
@@ -14,6 +17,8 @@ function formatSize(bytes: number) {
 }
 
 export function GeneralSettings({ preferences }: { preferences: Preferences }) {
+  const { t } = useTranslation();
+
   const theme = preferences.theme;
   const [saving, setSaving] = useState(false);
   const [storage, setStorage] = useState<StorageInfo>();
@@ -48,6 +53,21 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
   return (
     <div>
       <SettingGroup title="外观">
+        <SettingRow title={t('language')} description={t('languageHint')}>
+          <Select
+            aria-label={t('language')}
+            value={preferences.language}
+            disabled={saving}
+            options={[
+              { value: 'system', label: t('systemLanguage') },
+              { value: 'zh-CN', label: '简体中文' },
+              { value: 'en-US', label: 'English' },
+            ]}
+            onChange={(language) => {
+              if (isLanguagePreference(language)) void update({ ...preferences, language });
+            }}
+          />
+        </SettingRow>
         <SettingRow title="界面主题" description="选择适合当前环境的配色，或跟随系统自动切换。">
           <div className="flex gap-3">
             {(

@@ -2,15 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
 import type { AppPage } from './components/AppShell';
-import { Button } from './components/Button';
-import { useWorkspace } from './hooks/useWorkspace';
+import type { WorkspaceState } from './types';
 import { AnalysisPage } from './pages/analysis';
 import { DatasetsPage } from './pages/datasets';
 import { SettingsPage } from './pages/settings';
 import { SnippetsPage } from './pages/snippets';
 import { WelcomePage } from './pages/WelcomePage';
 
-export default function App() {
+export default function App({ state }: { state: WorkspaceState }) {
   const [page, setPage] = useState<AppPage>('welcome');
   const [systemDark, setSystemDark] = useState(
     () => window.matchMedia('(prefers-color-scheme: dark)').matches,
@@ -18,16 +17,15 @@ export default function App() {
   const [analysisDatasetId, setAnalysisDatasetId] = useState<string | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [openDatasetIds, setOpenDatasetIds] = useState<string[]>([]);
-  const { state, error, refresh } = useWorkspace();
-  const datasetCount = state?.datasets.length ?? 0;
+  const datasetCount = state.datasets.length;
   const previousDatasetCount = useRef<number | undefined>(undefined);
   const datasetTabs = openDatasetIds.flatMap((id) => {
-    const dataset = state?.datasets.find((item) => item.id === id);
+    const dataset = state.datasets.find((item) => item.id === id);
     return dataset ? [dataset] : [];
   });
 
   const conversationsFor = (datasetId: string) =>
-    (state?.conversations ?? [])
+    state.conversations
       .filter((conversation) => conversation.datasetId === datasetId)
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
@@ -58,11 +56,11 @@ export default function App() {
   };
 
   const theme =
-    state?.preferences.theme.mode === 'system'
+    state.preferences.theme.mode === 'system'
       ? systemDark
         ? 'dark'
         : 'light'
-      : (state?.preferences.theme.mode ?? 'light');
+      : state.preferences.theme.mode;
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -77,8 +75,8 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
-    document.documentElement.style.fontSize = `${state?.preferences.theme.fontSize ?? 14}px`;
-  }, [state?.preferences.theme.fontSize]);
+    document.documentElement.style.fontSize = `${state.preferences.theme.fontSize}px`;
+  }, [state.preferences.theme.fontSize]);
 
   useEffect(() => {
     const previous = previousDatasetCount.current;
@@ -87,8 +85,7 @@ export default function App() {
   }, [datasetCount]);
 
   useEffect(() => {
-    if (!state || !analysisDatasetId || state.datasets.some((dataset) => dataset.id === analysisDatasetId))
-      return;
+    if (!analysisDatasetId || state.datasets.some((dataset) => dataset.id === analysisDatasetId)) return;
     setOpenDatasetIds((current) => current.filter((id) => id !== analysisDatasetId));
     setAnalysisDatasetId(null);
     setActiveConversationId(null);
@@ -120,15 +117,8 @@ export default function App() {
       }}
       onNavigate={setPage}
     >
-      {!state && !error && <div className="grid h-full place-items-center text-muted">正在加载工作台…</div>}
-      {!state && error && (
-        <div className="grid h-full place-content-center justify-items-center gap-4">
-          <p className="m-0 text-danger">{error}</p>
-          <Button onClick={() => void refresh()}>重新加载</Button>
-        </div>
-      )}
-      {state && page === 'welcome' && <WelcomePage />}
-      {state && page === 'datasets' && (
+      {page === 'welcome' && <WelcomePage />}
+      {page === 'datasets' && (
         <DatasetsPage
           datasets={state.datasets}
           onAdd={() => setPage('welcome')}
@@ -136,7 +126,7 @@ export default function App() {
           onDelete={closeDataset}
         />
       )}
-      {state && page === 'analysis' && analysisDatasetId && (
+      {page === 'analysis' && analysisDatasetId && (
         <AnalysisPage
           datasetId={analysisDatasetId}
           conversationId={activeConversationId}
@@ -152,8 +142,8 @@ export default function App() {
           preferences={state.preferences}
         />
       )}
-      {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
-      {state && page === 'settings' && <SettingsPage state={state} />}
+      {page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
+      {page === 'settings' && <SettingsPage state={state} />}
       <Toaster
         theme={theme}
         position="bottom-right"
