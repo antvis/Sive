@@ -7,27 +7,22 @@ import {
   Columns,
   Database,
   MagnifyingGlass,
-  PushPin,
   Tag,
   Wrench,
   XCircle,
 } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { AnalysisResponse, Profile, Schema, Semantic, VisualizeResponse } from '@antv/ava';
-import type { SnippetContent } from '@shared/schema';
-import { toast } from 'sonner';
+import type { AnalysisResponse, Profile, Schema, Semantic } from '@antv/ava';
 import type { AnalysisMessage, AnalysisTaskEvent } from '../../types';
-import { IconButton } from '../../components/IconButton';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { Markdown, SqlBlock } from '../../components/Markdown';
-import { Visualization } from '../../components/Visualization';
-import { errorMessage } from '../../utils';
 import { findDatasetSource } from '@shared/dataSource';
+import { AnalysisChart } from './AnalysisChart';
+import type { VisualizationResult } from './AnalysisChart';
 
 type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 type ToolCallPart = Extract<StreamPart, { type: 'tool-call' }>;
-type VisualizationResult = VisualizeResponse & Partial<SnippetContent>;
 
 type SourceResult = {
   name: string;
@@ -159,23 +154,8 @@ function semanticSummary(semantic: Semantic) {
     : '已应用语义层，当前数据集未配置额外业务描述。';
 }
 
-function visualizationSummary(visualization: VisualizeResponse | null | undefined) {
-  if (!visualization) return '未生成图表。';
-  const chartNames: Record<string, string> = {
-    line: '折线图',
-    column: '柱状图',
-    bar: '条形图',
-    pie: '饼图',
-    area: '面积图',
-    scatter: '散点图',
-    histogram: '直方图',
-    radar: '雷达图',
-    funnel: '漏斗图',
-    table: '数据表格',
-  };
-  const chartName = chartNames[visualization.chartType] ?? visualization.chartType;
-  const title = visualization.chartType === 'summary' ? undefined : visualization.config.title;
-  return `已根据分析结果生成${typeof title === 'string' && title ? `“${title}”` : ''}${chartName}。`;
+function hasChart(output: VisualizationResult | null | undefined): output is VisualizationResult {
+  return Boolean(output?.spec && output.title);
 }
 
 function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {
@@ -214,19 +194,7 @@ function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {
   );
 }
 
-function Chart({ html }: { html?: string }) {
-  if (!html) return null;
-  return (
-    <iframe
-      title="分析图表"
-      srcDoc={html}
-      sandbox="allow-scripts"
-      className="block h-80 w-full max-w-full rounded-md border-0 bg-page"
-    />
-  );
-}
-
-function toolContent(toolName: string, output: unknown, chartAction?: ReactNode): ReactNode {
+function toolContent(toolName: string, output: unknown): ReactNode {
   if (toolName === 'source') {
     const source = output as SourceResult;
     const stats = [
@@ -280,19 +248,7 @@ function toolContent(toolName: string, output: unknown, chartAction?: ReactNode)
       </div>
     );
   }
-  if (toolName === 'visualize') {
-    const visualization = output as VisualizationResult | null | undefined;
-    const spec = visualization?.spec ?? visualization?.config;
-    return (
-      <div className="grid min-w-0 gap-3">
-        <p className="m-0 text-sm leading-6 text-muted">{visualizationSummary(visualization)}</p>
-        <div className="group/chart relative min-w-0 max-w-full overflow-hidden">
-          {spec ? <Visualization spec={spec} /> : <Chart html={visualization?.html} />}
-          {chartAction}
-        </div>
-      </div>
-    );
-  }
+  if (toolName === 'visualize') return <p className="m-0 text-sm leading-6 text-muted">未生成图表。</p>;
   return null;
 }
 
@@ -301,11 +257,13 @@ function ToolCallView({
   parts,
   messageId,
   savedMessageIds,
+  hasVisualization,
 }: {
   call: ToolCallPart;
   parts: StreamPart[];
   messageId: string;
   savedMessageIds: string[];
+  hasVisualization: boolean;
 }) {
   const result = parts.find(
     (part) =>
@@ -313,13 +271,14 @@ function ToolCallView({
   );
   const resultType = result?.type;
   const [expanded, setExpanded] = useState(
-    !result || call.toolName === 'analyze' || call.toolName === 'visualize',
+    !result || (call.toolName === 'analyze' && !hasVisualization) || call.toolName === 'visualize',
   );
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setExpanded(!resultType || call.toolName === 'analyze' || call.toolName === 'visualize');
-  }, [resultType, call.toolName]);
+    setExpanded(
+      !resultType || (call.toolName === 'analyze' && !hasVisualization) || call.toolName === 'visualize',
+    );
+  }, [resultType, call.toolName, hasVisualization]);
 
   const failed = resultType === 'tool-error';
   const StatusIcon = !result ? CircleNotch : failed ? XCircle : CheckCircle;
@@ -333,55 +292,23 @@ function ToolCallView({
     if (call.toolName === 'profile') summary = profileSummary(result.output as Profile);
     if (call.toolName === 'semantic') summary = semanticSummary(result.output as Semantic);
     if (call.toolName === 'visualize') {
-      summary = visualizationSummary(result.output as VisualizeResponse | null | undefined);
+      summary = '未生成图表。';
     }
   }
-  const snippet =
+  const visualization =
     call.toolName === 'visualize' && result?.type === 'tool-result'
-      ? (result.output as Partial<SnippetContent> | null | undefined)
+      ? (result.output as VisualizationResult | null | undefined)
       : undefined;
-  const canSave = Boolean(snippet?.question && snippet.spec && typeof snippet.summary === 'string');
-  const saved = savedMessageIds.includes(messageId);
-
-  const saveSnippet = async () => {
-    if (!snippet?.question || !snippet.spec || typeof snippet.summary !== 'string' || saved || saving) return;
-    setSaving(true);
-    try {
-      await window.workbench.snippetSave({
-        messageId,
-        question: snippet.question,
-        spec: snippet.spec,
-        summary: snippet.summary,
-      });
-      toast.success('Snippet 已保存');
-    } catch (cause) {
-      toast.error(errorMessage(cause));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const content =
-    result?.type === 'tool-result'
-      ? toolContent(
-          call.toolName,
-          result.output,
-          canSave ? (
-            <IconButton
-              icon={PushPin}
-              weight={saved ? 'fill' : 'regular'}
-              label={saved ? '已保存 Snippet' : saving ? '保存中…' : '保存 Snippet'}
-              disabled={saved || saving}
-              className={`absolute top-2 right-2 rounded-full bg-surface/90 shadow-sm transition-opacity ${
-                saved
-                  ? 'text-accent opacity-100 disabled:opacity-100'
-                  : 'opacity-0 group-hover/chart:opacity-100 group-focus-within/chart:opacity-100'
-              }`}
-              onClick={() => void saveSnippet()}
-            />
-          ) : undefined,
-        )
-      : null;
+  if (hasChart(visualization)) {
+    return (
+      <AnalysisChart
+        visualization={visualization}
+        messageId={messageId}
+        saved={savedMessageIds.includes(messageId)}
+      />
+    );
+  }
+  const content = result?.type === 'tool-result' ? toolContent(call.toolName, result.output) : null;
 
   return (
     <div className="group min-w-0">
@@ -430,6 +357,22 @@ function StreamContent({
   messageId: string;
   savedMessageIds: string[];
 }) {
+  const visualizedAnalysis = new Set<string>();
+  let analysisId: string | undefined;
+  const results = new Map(
+    parts.filter((part) => part.type === 'tool-result').map((part) => [part.toolCallId, part.output]),
+  );
+  for (const part of parts) {
+    if (part.type !== 'tool-call') continue;
+    if (part.toolName === 'analyze') analysisId = part.toolCallId;
+    if (
+      part.toolName === 'visualize' &&
+      analysisId &&
+      hasChart(results.get(part.toolCallId) as VisualizationResult | null | undefined)
+    ) {
+      visualizedAnalysis.add(analysisId);
+    }
+  }
   const blocks: ReactNode[] = [];
   for (let index = 0; index < parts.length; index += 1) {
     const part = parts[index];
@@ -452,6 +395,7 @@ function StreamContent({
         <ToolCallView
           key={part.toolCallId}
           call={part}
+          hasVisualization={visualizedAnalysis.has(part.toolCallId)}
           parts={parts}
           messageId={messageId}
           savedMessageIds={savedMessageIds}
@@ -510,7 +454,6 @@ export function AnalysisMessageView({
   return (
     <div className="grid min-w-0 gap-4">
       {message.content.text && <Markdown>{message.content.text}</Markdown>}
-      <Chart html={message.content.chartHtml} />
       <AnalysisTable analysis={message.content} />
     </div>
   );

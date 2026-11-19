@@ -46,8 +46,14 @@ export const SchemaDDL = `
   CREATE TABLE IF NOT EXISTS snippets (
     id TEXT PRIMARY KEY,
     message_id TEXT NOT NULL UNIQUE,
+    question TEXT NOT NULL,
+    intent TEXT NOT NULL,
     title TEXT NOT NULL,
-    content TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    spec TEXT NOT NULL,
+    tags TEXT NOT NULL,
+    metrics TEXT NOT NULL,
+    template_id TEXT NOT NULL DEFAULT 'default',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     deleted_at TEXT

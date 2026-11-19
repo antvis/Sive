@@ -1,6 +1,6 @@
 import { statSync } from 'node:fs';
 import { tool } from 'ai';
-import type { ToolSet } from 'ai';
+import type { LanguageModel, ToolSet } from 'ai';
 import { z } from 'zod';
 import type {
   AnalysisResponse,
@@ -12,6 +12,7 @@ import type {
   Semantic,
 } from '@antv/ava';
 import { localFilePath } from '../util/localFile';
+import { generateSnippet } from './snippet-agent';
 
 export type ToolContext = {
   name: string;
@@ -25,7 +26,8 @@ export type ToolContext = {
 export function createTools(
   ava: AVA,
   context: ToolContext,
-  getStrategy: () => AnalysisStrategyConfig,
+  options: () => { strategy: AnalysisStrategyConfig; question: string },
+  model: LanguageModel,
 ): ToolSet {
   let latest: AnalysisResponse | undefined;
 
@@ -73,23 +75,38 @@ export function createTools(
       description: 'Analyze the loaded dataset and return the actual query, SQL, text conclusion and rows.',
       inputSchema: z.object({ query: z.string().min(1) }),
       execute: async ({ query }) => {
-        latest = await ava.analyze(query, { strategy: getStrategy() });
+        latest = await ava.analyze(query, { strategy: options().strategy });
         return latest;
       },
     }),
     visualize: tool({
       description: 'Create a visualization for the latest analysis result. Call analyze first.',
       inputSchema: z.object({}),
-      execute: async () => {
+      execute: async (_input, { abortSignal }) => {
         if (!latest) return null;
         const analysis = latest;
+        const { question } = options();
         const visualization = await ava.visualize(analysis);
         if (!visualization) return null;
-        return {
-          ...visualization,
-          question: analysis.query,
+        const spec = visualization.config;
+        const title = (typeof spec !== 'string' && spec.title) || question;
+        const formatted = await generateSnippet({
+          model,
+          question,
+          query: analysis.query,
+          title,
           summary: analysis.text,
-          spec: visualization.config,
+          spec,
+          abortSignal,
+        });
+        return {
+          question,
+          intent: formatted?.intent ?? '数据笔记',
+          title: formatted?.title ?? title,
+          summary: formatted?.summary ?? analysis.text,
+          spec,
+          tags: formatted?.tags ?? [],
+          metrics: formatted?.metrics ?? [],
         };
       },
     }),

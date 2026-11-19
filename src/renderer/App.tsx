@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
 import type { AppPage } from './components/AppShell';
@@ -9,6 +9,7 @@ import { DatasetsPage } from './pages/datasets';
 import { SettingsPage } from './pages/settings';
 import { SnippetsPage } from './pages/snippets';
 import { WelcomePage } from './pages/WelcomePage';
+import { ThemeContext } from './theme';
 
 export default function App() {
   const [page, setPage] = useState<AppPage>('welcome');
@@ -72,7 +73,7 @@ export default function App() {
     return () => media.removeEventListener('change', update);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
@@ -95,7 +96,7 @@ export default function App() {
     if (page === 'analysis') setPage('datasets');
   }, [state, analysisDatasetId, page]);
 
-  return (
+  const content = (
     <AppShell
       page={page}
       hasDatasets={datasetCount > 0}
@@ -175,4 +176,6 @@ export default function App() {
       />
     </AppShell>
   );
+
+  return <ThemeContext value={theme}>{content}</ThemeContext>;
 }
