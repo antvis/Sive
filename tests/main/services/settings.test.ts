@@ -19,15 +19,18 @@ describe('SettingsService', () => {
     expect(service.getPreferences()).toEqual(DEFAULT_PREFERENCES);
   });
 
-  it('saves theme, agent, strategy and engine as separate JSON records', () => {
+  it('saves language and other preferences as separate JSON records', () => {
     service.savePreferences({
-      theme: DEFAULT_PREFERENCES.theme,
+      ...DEFAULT_PREFERENCES,
+      language: 'en-US',
       agent: { maxSteps: 15 },
       strategy: { type: 'loop', maxSteps: 6 },
       engine: { ...DEFAULT_PREFERENCES.engine, memoryLimit: '2GB' },
     });
 
     const settings = createRepositories(testDb.database).settings;
+    expect(settings.get('language')?.value).toBe('en-US');
+    expect(service.getPreferences().language).toBe('en-US');
     expect(settings.get('theme')?.value).toEqual(DEFAULT_PREFERENCES.theme);
     expect(settings.get('agent')?.value).toEqual({ maxSteps: 15 });
     expect(settings.get('strategy')?.value).toEqual({ type: 'loop', maxSteps: 6 });
