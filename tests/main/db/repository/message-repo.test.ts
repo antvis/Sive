@@ -9,8 +9,7 @@ function makeMessage(id: string, sequence: number, overrides = {}) {
     conversationId: 'c1',
     sequence,
     role: 'user' as const,
-    status: 'done' as const,
-    content: {},
+    parts: [],
     createdAt: now,
     updatedAt: now,
     ...overrides,
@@ -56,9 +55,9 @@ describe('MessageRepo', () => {
   it('updates fields and refreshes updatedAt', () => {
     repo.insert(makeMessage('m1', 0, { updatedAt: '2026-01-01T00:00:00.000Z' }));
 
-    const row = repo.update('m1', { status: 'error' });
+    const row = repo.update('m1', { parts: [{ type: 'text', text: 'updated' }] });
 
-    expect(row?.status).toBe('error');
+    expect(row?.parts).toEqual([{ type: 'text', text: 'updated' }]);
     expect(row?.updatedAt).not.toBe('2026-01-01T00:00:00.000Z');
   });
 

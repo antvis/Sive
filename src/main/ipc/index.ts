@@ -12,6 +12,7 @@ import type {
   Preferences,
 } from '@shared/api';
 import { FILE_SOURCES } from '@shared/dataSource';
+import { analysisStartSchema } from '@shared/api';
 import type { LocalFileFormat } from '@shared/dataSource';
 import { localSource } from '../util/localFile';
 import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
@@ -142,27 +143,20 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('analysisStart', (event, input: AnalysisStartInput) => {
-    const result = services.analysis.start(
+  ipcMain.handle('analysisStart', async (event, input: AnalysisStartInput) => {
+    input = await analysisStartSchema.parseAsync(input);
+    services.analysis.start(
       input,
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
-      (progress) => event.sender.send('analysis:task-change', progress),
+      (chunk) => event.sender.send('analysis:chunk', input.message.id, chunk),
     );
     changed(event);
-    return result;
   });
 
-  ipcMain.handle('analysisCancel', async (event, taskId: string) => {
-    const task = await services.analysis.cancel(taskId);
-    event.sender.send('analysis:task-change', {
-      taskId,
-      datasetId: task?.datasetId,
-      conversationId: task?.conversationId,
-      status: 'cancelled',
-      stage: '已取消',
-    });
-  });
+  ipcMain.handle('analysisCancel', (_event, conversationId: string) =>
+    services.analysis.cancel(conversationId),
+  );
 
   ipcMain.handle('analysisGetMessages', (_event, conversationId: string) =>
     services.analysis.getMessages(conversationId),

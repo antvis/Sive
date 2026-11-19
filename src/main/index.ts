@@ -36,8 +36,6 @@ async function initialize() {
   database = await DBConnection.connect(app.getPath('userData'));
 
   const services = createServices(database);
-  services.analysis.recoverAfterRestart();
-
   registerIpc(services);
   createWindow();
 }

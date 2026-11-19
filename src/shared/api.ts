@@ -7,19 +7,14 @@ import type {
   Semantic,
   SuggestResult,
 } from '@antv/ava';
-import type { TextStreamPart, ToolSet } from 'ai';
+import type { UIMessage, UIMessageChunk } from 'ai';
+import { isTextUIPart, validateUIMessages } from 'ai';
+import { z } from 'zod';
 import type { LocalFileFormat } from './dataSource';
 
-import type {
-  Snippet,
-  SnippetSpec,
-  SnippetContent,
-  SnippetSaveInput,
-  SnippetUpdateInput,
-  AnalysisMessage,
-} from './schema';
+import type { Snippet, SnippetSpec, SnippetContent, SnippetSaveInput, SnippetUpdateInput } from './schema';
 
-export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput, AnalysisMessage };
+export type { Snippet, SnippetContent, SnippetSaveInput, SnippetSpec, SnippetUpdateInput };
 
 export type DuckDBEngineConfig = Extract<EngineConfig, { type: 'duckdb' }>;
 
@@ -122,22 +117,23 @@ export type DatasetDetail = DatasetSummary & {
   semantic: Semantic;
 };
 
-export type AnalysisStartInput = {
-  datasetId: string;
-  question: string;
-  strategy: AnalysisStrategyConfig;
-  conversationId?: string;
-};
+export const analysisStartSchema = z.object({
+  chatId: z.string().min(1),
+  datasetId: z.string().min(1),
+  message: z.unknown().transform(async (value) => {
+    const [message] = await validateUIMessages({ messages: [value] });
+    if (message.role !== 'user' || !message.parts.every(isTextUIPart)) {
+      throw new Error('仅支持发送用户文本消息。');
+    }
+    return message;
+  }),
+  strategy: z.discriminatedUnion('type', [
+    z.object({ type: z.literal('direct'), maxRetries: z.number().int().nonnegative().optional() }),
+    z.object({ type: z.literal('loop'), maxSteps: z.number().int().positive().optional() }),
+  ]),
+});
 
-export type AnalysisTaskEvent = {
-  taskId: string;
-  datasetId: string;
-  conversationId: string;
-  status: 'running' | 'done' | 'error' | 'cancelled';
-  stage?: string;
-  error?: string;
-  part?: TextStreamPart<ToolSet>;
-};
+export type AnalysisStartInput = z.infer<typeof analysisStartSchema>;
 
 export type WorkspaceState = {
   conversations: Conversation[];
@@ -182,10 +178,10 @@ export type WorkbenchApi = {
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;
   modelActivate(id: string, model?: string): Promise<void>;
   modelDelete(id: string): Promise<void>;
-  analysisStart(input: AnalysisStartInput): Promise<{ taskId: string; conversationId: string }>;
-  analysisCancel(taskId: string): Promise<void>;
-  analysisGetMessages(conversationId: string): Promise<AnalysisMessage[]>;
-  analysisOnTaskChange(callback: (event: AnalysisTaskEvent) => void): () => void;
+  analysisStart(input: AnalysisStartInput): Promise<void>;
+  analysisCancel(conversationId: string): Promise<void>;
+  analysisGetMessages(conversationId: string): Promise<UIMessage[]>;
+  analysisOnChunk(callback: (messageId: string, chunk: UIMessageChunk | null) => void): () => void;
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;
