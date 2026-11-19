@@ -7,7 +7,6 @@ import {
   Columns,
   Database,
   MagnifyingGlass,
-  PushPin,
   Tag,
   Wrench,
   XCircle,
@@ -16,18 +15,14 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { getToolName, isTextUIPart, isToolOutputErrorUIPart, isToolUIPart } from 'ai';
 import type { DynamicToolUIPart, ToolUIPart, UIMessage } from 'ai';
-import type { AnalysisResponse, Profile, Schema, Semantic, VisualizeResponse } from '@antv/ava';
-import type { SnippetContent } from '@shared/schema';
-import { toast } from 'sonner';
-import { IconButton } from '../../components/IconButton';
+import type { AnalysisResponse, Profile, Schema, Semantic } from '@antv/ava';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { Markdown, SqlBlock } from '../../components/Markdown';
-import { Visualization } from '../../components/Visualization';
-import { errorMessage } from '../../utils';
 import { findDatasetSource } from '@shared/dataSource';
+import { AnalysisChart } from './AnalysisChart';
+import type { VisualizationResult } from './AnalysisChart';
 
 type ToolPart = ToolUIPart | DynamicToolUIPart;
-type VisualizationResult = VisualizeResponse & Partial<SnippetContent>;
 
 type SourceResult = {
   name: string;
@@ -159,23 +154,8 @@ function semanticSummary(semantic: Semantic) {
     : '已应用语义层，当前数据集未配置额外业务描述。';
 }
 
-function visualizationSummary(visualization: VisualizeResponse | null | undefined) {
-  if (!visualization) return '未生成图表。';
-  const chartNames: Record<string, string> = {
-    line: '折线图',
-    column: '柱状图',
-    bar: '条形图',
-    pie: '饼图',
-    area: '面积图',
-    scatter: '散点图',
-    histogram: '直方图',
-    radar: '雷达图',
-    funnel: '漏斗图',
-    table: '数据表格',
-  };
-  const chartName = chartNames[visualization.chartType] ?? visualization.chartType;
-  const title = visualization.chartType === 'summary' ? undefined : visualization.config.title;
-  return `已根据分析结果生成${typeof title === 'string' && title ? `“${title}”` : ''}${chartName}。`;
+function hasChart(output: VisualizationResult | null | undefined): output is VisualizationResult {
+  return Boolean(output?.spec && output.title);
 }
 
 function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {
@@ -214,19 +194,7 @@ function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {
   );
 }
 
-function Chart({ html }: { html?: string }) {
-  if (!html) return null;
-  return (
-    <iframe
-      title="分析图表"
-      srcDoc={html}
-      sandbox="allow-scripts"
-      className="block h-80 w-full max-w-full rounded-md border-0 bg-page"
-    />
-  );
-}
-
-function toolContent(toolName: string, output: unknown, chartAction?: ReactNode): ReactNode {
+function toolContent(toolName: string, output: unknown): ReactNode {
   if (toolName === 'source') {
     const source = output as SourceResult;
     const stats = [
@@ -280,19 +248,7 @@ function toolContent(toolName: string, output: unknown, chartAction?: ReactNode)
       </div>
     );
   }
-  if (toolName === 'visualize') {
-    const visualization = output as VisualizationResult | null | undefined;
-    const spec = visualization?.spec ?? visualization?.config;
-    return (
-      <div className="grid min-w-0 gap-3">
-        <p className="m-0 text-sm leading-6 text-muted">{visualizationSummary(visualization)}</p>
-        <div className="group/chart relative min-w-0 max-w-full overflow-hidden">
-          {spec ? <Visualization spec={spec} /> : <Chart html={visualization?.html} />}
-          {chartAction}
-        </div>
-      </div>
-    );
-  }
+  if (toolName === 'visualize') return <p className="m-0 text-sm leading-6 text-muted">未生成图表。</p>;
   return null;
 }
 
@@ -300,22 +256,25 @@ function ToolCallView({
   call,
   messageId,
   savedMessageIds,
+  hasVisualization,
   isStreaming,
 }: {
   call: ToolPart;
   messageId: string;
   savedMessageIds: string[];
+  hasVisualization: boolean;
   isStreaming: boolean;
 }) {
   const toolName = getToolName(call);
   const completed =
     call.state === 'output-available' || call.state === 'output-error' || call.state === 'output-denied';
-  const [expanded, setExpanded] = useState(!completed || toolName === 'analyze' || toolName === 'visualize');
-  const [saving, setSaving] = useState(false);
+  const [expanded, setExpanded] = useState(
+    !completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize',
+  );
 
   useEffect(() => {
-    setExpanded(!completed || toolName === 'analyze' || toolName === 'visualize');
-  }, [completed, toolName]);
+    setExpanded(!completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize');
+  }, [completed, toolName, hasVisualization]);
 
   const failed = isToolOutputErrorUIPart(call) || call.state === 'output-denied';
   const StatusIcon = !completed ? CircleNotch : failed ? XCircle : CheckCircle;
@@ -328,56 +287,25 @@ function ToolCallView({
     if (toolName === 'schema') summary = schemaSummary(call.output as Schema);
     if (toolName === 'profile') summary = profileSummary(call.output as Profile);
     if (toolName === 'semantic') summary = semanticSummary(call.output as Semantic);
-    if (toolName === 'visualize') {
-      summary = visualizationSummary(call.output as VisualizeResponse | null | undefined);
-    }
+    if (toolName === 'visualize') summary = '未生成图表。';
   }
-  const snippet =
+  const visualization =
     toolName === 'visualize' && call.state === 'output-available'
-      ? (call.output as Partial<SnippetContent> | null | undefined)
+      ? (call.output as VisualizationResult | null | undefined)
       : undefined;
-  const canSave =
-    !isStreaming && Boolean(snippet?.question && snippet.spec && typeof snippet.summary === 'string');
-  const saved = savedMessageIds.includes(messageId);
-
-  const saveSnippet = async () => {
-    if (!snippet?.question || !snippet.spec || typeof snippet.summary !== 'string' || saved || saving) return;
-    setSaving(true);
-    try {
-      await window.workbench.snippetSave({
-        messageId,
-        question: snippet.question,
-        spec: snippet.spec,
-        summary: snippet.summary,
-      });
-      toast.success('Snippet 已保存');
-    } catch (cause) {
-      toast.error(errorMessage(cause));
-    } finally {
-      setSaving(false);
-    }
-  };
-
+  if (hasChart(visualization)) {
+    return (
+      <AnalysisChart
+        visualization={visualization}
+        messageId={messageId}
+        saved={savedMessageIds.includes(messageId)}
+        isStreaming={isStreaming}
+      />
+    );
+  }
   const content =
     call.state === 'output-available' ? (
-      toolContent(
-        toolName,
-        call.output,
-        canSave ? (
-          <IconButton
-            icon={PushPin}
-            weight={saved ? 'fill' : 'regular'}
-            label={saved ? '已保存 Snippet' : saving ? '保存中…' : '保存 Snippet'}
-            disabled={saved || saving}
-            className={`absolute top-2 right-2 rounded-full bg-surface/90 shadow-sm transition-opacity ${
-              saved
-                ? 'text-accent opacity-100 disabled:opacity-100'
-                : 'opacity-0 group-hover/chart:opacity-100 group-focus-within/chart:opacity-100'
-            }`}
-            onClick={() => void saveSnippet()}
-          />
-        ) : undefined,
-      )
+      toolContent(toolName, call.output)
     ) : isToolOutputErrorUIPart(call) ? (
       <p className="m-0 text-sm text-danger">{call.errorText}</p>
     ) : null;
@@ -431,6 +359,21 @@ function StreamContent({
   savedMessageIds: string[];
   isStreaming: boolean;
 }) {
+  const visualizedAnalysis = new Set<string>();
+  let analysisId: string | undefined;
+  for (const part of parts) {
+    if (!isToolUIPart(part)) continue;
+    const toolName = getToolName(part);
+    if (toolName === 'analyze') analysisId = part.toolCallId;
+    if (
+      toolName === 'visualize' &&
+      analysisId &&
+      part.state === 'output-available' &&
+      hasChart(part.output as VisualizationResult | null | undefined)
+    ) {
+      visualizedAnalysis.add(analysisId);
+    }
+  }
   return (
     <div className="grid min-w-0 gap-2">
       {parts.map((part, index) => {
@@ -445,6 +388,7 @@ function StreamContent({
             <ToolCallView
               key={part.toolCallId}
               call={part}
+              hasVisualization={visualizedAnalysis.has(part.toolCallId)}
               messageId={messageId}
               savedMessageIds={savedMessageIds}
               isStreaming={isStreaming}
@@ -477,7 +421,6 @@ export function AnalysisMessageView({
       </div>
     );
   }
-
   return (
     <StreamContent
       parts={message.parts}

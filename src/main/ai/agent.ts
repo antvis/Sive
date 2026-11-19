@@ -1,6 +1,6 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA } from '@antv/ava';
-import { ToolLoopAgent, createAgentUIStream, generateId, isStepCount } from 'ai';
+import { ToolLoopAgent, createAgentUIStream, generateId, isStepCount, isTextUIPart } from 'ai';
 import type { AnalysisStrategyConfig } from '@antv/ava';
 import type { UIMessage, UIMessageStreamOnEndCallback } from 'ai';
 import type { DuckDBEngineConfig } from '@shared/api';
@@ -45,12 +45,13 @@ export async function createAnalysisAgent({
   const options = {
     agent: { maxSteps: 10 },
     strategy: { type: 'direct' } as AnalysisStrategyConfig,
+    question: '',
   };
 
   const agent = new ToolLoopAgent({
     model: languageModel,
     instructions: INSTRUCTIONS,
-    tools: createTools(ava, dataset, () => options.strategy),
+    tools: createTools(ava, dataset, () => options, languageModel),
     stopWhen: (context) => isStepCount(options.agent.maxSteps)(context),
   });
 
@@ -60,6 +61,13 @@ export async function createAnalysisAgent({
     stream({ messages, strategy, agent: agentConfig, abortSignal, onEnd }) {
       options.strategy = strategy;
       options.agent = agentConfig;
+      options.question =
+        messages
+          .at(-1)
+          ?.parts.filter(isTextUIPart)
+          .map((part) => part.text)
+          .join('')
+          .trim() ?? '';
       return createAgentUIStream({
         agent,
         uiMessages: messages,

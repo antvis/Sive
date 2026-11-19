@@ -1,5 +1,6 @@
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import type { UIMessage } from 'ai';
+import type { AnalysisOptions } from '@shared/schema';
 
 export const messages = sqliteTable(
   'messages',
@@ -18,6 +19,12 @@ export const messages = sqliteTable(
 
     // AI SDK UI message parts, including text and tool calls.
     parts: text('parts', { mode: 'json' }).$type<UIMessage['parts']>().notNull(),
+
+    // Snapshot of the analysis strategy and model, without credentials.
+    analysisOptions: text('analysis_options', { mode: 'json' })
+      .$type<AnalysisOptions>()
+      .notNull()
+      .default({}),
 
     // Creation timestamp.
     createdAt: text('created_at').notNull(),

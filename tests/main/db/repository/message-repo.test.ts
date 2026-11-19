@@ -28,9 +28,10 @@ describe('MessageRepo', () => {
   afterEach(() => testDb.close());
 
   it('inserts and reads back a message', () => {
-    repo.insert(makeMessage('m1', 0));
+    const analysisOptions = { strategy: { type: 'loop', maxSteps: 6 }, model: 'test-model' };
+    repo.insert(makeMessage('m1', 0, { analysisOptions }));
 
-    expect(repo.get('m1')).toMatchObject({ id: 'm1', conversationId: 'c1', sequence: 0 });
+    expect(repo.get('m1')).toMatchObject({ id: 'm1', conversationId: 'c1', sequence: 0, analysisOptions });
     expect(repo.get('missing')).toBeUndefined();
   });
 

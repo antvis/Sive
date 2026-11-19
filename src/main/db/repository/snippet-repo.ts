@@ -31,7 +31,7 @@ export class SnippetRepo {
       .select()
       .from(snippets)
       .where(isNull(snippets.deletedAt))
-      .orderBy(desc(snippets.updatedAt), desc(snippets.id))
+      .orderBy(desc(snippets.createdAt), desc(snippets.id))
       .all();
   }
 

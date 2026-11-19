@@ -1,6 +1,7 @@
 import type { UIMessage, UIMessageChunk } from 'ai';
 import { isTextUIPart } from 'ai';
 import type { AnalysisStartInput, DuckDBEngineConfig, Preferences } from '@shared/api';
+import type { AnalysisOptions } from '@shared/schema';
 import { createAnalysisAgent } from '../../ai';
 import type { AnalysisAgent } from '../../ai';
 import type { Repositories } from '../../db/repository';
@@ -90,12 +91,14 @@ export class AnalysisService {
       );
     if (conversation.datasetId !== dataset.id) throw new Error('会话与数据集不匹配。');
     const agent = this.getAgent(conversation.id, model, dataset, preferences.engine);
+    const analysisOptions = { strategy: input.strategy, model: model.model };
     this.repositories.messages.insert({
       id: input.message.id,
       conversationId: conversation.id,
       sequence: this.repositories.messages.nextSequence(conversation.id),
       role: 'user',
       parts: input.message.parts,
+      analysisOptions,
       createdAt: now,
       updatedAt: now,
     });
@@ -108,7 +111,7 @@ export class AnalysisService {
     void this.run(
       conversation.id,
       agent,
-      input.strategy,
+      analysisOptions,
       preferences.agent,
       controller,
       emit,
@@ -147,7 +150,7 @@ export class AnalysisService {
   private async run(
     conversationId: string,
     agentPromise: Promise<AnalysisAgent>,
-    strategy: AnalysisStartInput['strategy'],
+    analysisOptions: Required<AnalysisOptions>,
     agentConfig: Preferences['agent'],
     controller: AbortController,
     emit: Emit,
@@ -159,7 +162,7 @@ export class AnalysisService {
       controller.signal.throwIfAborted();
       const stream = await agent.stream({
         messages: this.getMessages(conversationId),
-        strategy,
+        strategy: analysisOptions.strategy,
         agent: agentConfig,
         abortSignal: controller.signal,
         onEnd: ({ responseMessage, outcome, isAborted }) => {
@@ -174,6 +177,7 @@ export class AnalysisService {
               sequence: this.repositories.messages.nextSequence(conversationId),
               role: 'assistant',
               parts: responseMessage.parts,
+              analysisOptions,
               createdAt: now,
               updatedAt: now,
             });

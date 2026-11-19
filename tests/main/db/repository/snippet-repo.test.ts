@@ -1,4 +1,3 @@
-import type { SnippetContent } from '@shared/snippets';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SnippetRepo } from '../../../../src/main/db/repository/snippet-repo';
 import { createTestDb } from '../../../helpers/db';
@@ -9,7 +8,13 @@ function makeSnippet(id: string, messageId: string, overrides = {}) {
     id,
     messageId,
     title: `snippet-${id}`,
-    content: { question: 'q', summary: 's' } as SnippetContent,
+    question: 'q',
+    intent: '分类比较',
+    summary: '收入为 [120万元](metric_value)。',
+    spec: { type: 'column' as const, data: [{ category: '一月', value: 120 }] },
+    tags: ['月度'],
+    metrics: [{ label: '一月收入', value: '120', unit: '万元' }],
+    templateId: 'default',
     createdAt: now,
     updatedAt: now,
     ...overrides,
@@ -28,9 +33,10 @@ describe('SnippetRepo', () => {
   afterEach(() => testDb.close());
 
   it('inserts and reads back a snippet', () => {
-    repo.insert(makeSnippet('s1', 'm1'));
+    const input = makeSnippet('s1', 'm1');
+    repo.insert(input);
 
-    expect(repo.get('s1')).toMatchObject({ id: 's1', messageId: 'm1', title: 'snippet-s1' });
+    expect(repo.get('s1')).toMatchObject(input);
     expect(repo.get('missing')).toBeUndefined();
   });
 
@@ -41,9 +47,11 @@ describe('SnippetRepo', () => {
     expect(repo.getByMessageId('missing')).toBeUndefined();
   });
 
-  it('lists snippets ordered by updatedAt descending', () => {
-    repo.insert(makeSnippet('s1', 'm1', { updatedAt: '2026-01-01T00:00:00.000Z' }));
-    repo.insert(makeSnippet('s2', 'm2', { updatedAt: '2026-02-01T00:00:00.000Z' }));
+  it('keeps creation order when a template is updated', () => {
+    repo.insert(makeSnippet('s1', 'm1', { createdAt: '2026-01-01T00:00:00.000Z' }));
+    repo.insert(makeSnippet('s2', 'm2', { createdAt: '2026-02-01T00:00:00.000Z' }));
+
+    repo.update('s1', { templateId: 'pop' });
 
     expect(repo.list().map((row) => row.id)).toEqual(['s2', 's1']);
   });
