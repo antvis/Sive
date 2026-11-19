@@ -13,6 +13,7 @@ function makeSnippet(id: string, messageId: string, overrides = {}) {
     summary: '收入为 [120万元](metric_value)。',
     spec: { type: 'column' as const, data: [{ category: '一月', value: 120 }] },
     tags: ['月度'],
+    metrics: [{ label: '一月收入', value: '120', unit: '万元' }],
     templateId: 'default',
     createdAt: now,
     updatedAt: now,
@@ -46,9 +47,11 @@ describe('SnippetRepo', () => {
     expect(repo.getByMessageId('missing')).toBeUndefined();
   });
 
-  it('lists snippets ordered by updatedAt descending', () => {
-    repo.insert(makeSnippet('s1', 'm1', { updatedAt: '2026-01-01T00:00:00.000Z' }));
-    repo.insert(makeSnippet('s2', 'm2', { updatedAt: '2026-02-01T00:00:00.000Z' }));
+  it('keeps creation order when a template is updated', () => {
+    repo.insert(makeSnippet('s1', 'm1', { createdAt: '2026-01-01T00:00:00.000Z' }));
+    repo.insert(makeSnippet('s2', 'm2', { createdAt: '2026-02-01T00:00:00.000Z' }));
+
+    repo.update('s1', { templateId: 'pop' });
 
     expect(repo.list().map((row) => row.id)).toEqual(['s2', 's1']);
   });

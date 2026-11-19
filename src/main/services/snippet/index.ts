@@ -29,6 +29,7 @@ export class SnippetService {
         summary: input.summary,
         spec: input.spec,
         tags: input.tags,
+        metrics: input.metrics,
         templateId: 'default',
         createdAt: now,
         updatedAt: now,

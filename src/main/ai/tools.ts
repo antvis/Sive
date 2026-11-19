@@ -106,6 +106,7 @@ export function createTools(
           summary: formatted?.summary ?? analysis.text,
           spec,
           tags: formatted?.tags ?? [],
+          metrics: formatted?.metrics ?? [],
         };
       },
     }),

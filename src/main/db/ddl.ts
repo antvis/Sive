@@ -52,6 +52,7 @@ export const SchemaDDL = `
     summary TEXT NOT NULL,
     spec TEXT NOT NULL,
     tags TEXT NOT NULL,
+    metrics TEXT NOT NULL,
     template_id TEXT NOT NULL DEFAULT 'default',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,

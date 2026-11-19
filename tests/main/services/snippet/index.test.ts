@@ -12,6 +12,7 @@ const input: SnippetSaveInput = {
   summary: '销售额为 [120万元](metric_value)。',
   spec: { type: 'column', title: '月度销售额', data: [{ category: '一月', value: 120 }] },
   tags: ['月度'],
+  metrics: [{ label: '一月销售额', value: '120', unit: '万元' }],
 };
 
 describe('SnippetService', () => {
@@ -37,7 +38,7 @@ describe('SnippetService', () => {
 
   afterEach(() => testDb.close());
 
-  it('persists all six fields without changing T8 and saves each message once', () => {
+  it('persists content and metrics without changing T8 and saves each message once', () => {
     const saved = service.save(input);
     expect(saved).toMatchObject({ ...input, templateId: 'default' });
     expect(service.list()).toEqual([saved]);
@@ -55,8 +56,8 @@ describe('SnippetService', () => {
 
   it('changes only the template without changing the snippet content', () => {
     const saved = service.save(input);
-    service.update(input.messageId, { templateId: 'minimal' });
-    expect(service.list()[0]).toEqual({ ...saved, templateId: 'minimal', updatedAt: expect.any(String) });
+    service.update(input.messageId, { templateId: 'pop' });
+    expect(service.list()[0]).toEqual({ ...saved, templateId: 'pop', updatedAt: expect.any(String) });
   });
 
   it('stores Summary chart specs independently from the T8 title and summary', () => {
@@ -64,6 +65,12 @@ describe('SnippetService', () => {
     const saved = service.save({ ...input, spec });
     expect(saved).toMatchObject({ ...input, spec });
     expect(service.list()[0]).toEqual(saved);
+  });
+
+  it('saves snippets without reliable metrics and keeps the chart when switching templates', () => {
+    const saved = service.save({ ...input, metrics: [] });
+    service.update(input.messageId, { templateId: 'circuit' });
+    expect(service.list()[0]).toEqual({ ...saved, templateId: 'circuit', updatedAt: expect.any(String) });
   });
 
   it('rejects a missing source message', () => {

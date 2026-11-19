@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import type { SnippetSpec } from '@shared/schema';
+import type { SnippetMetric, SnippetSpec } from '@shared/schema';
 import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const snippets = sqliteTable(
@@ -24,6 +24,8 @@ export const snippets = sqliteTable(
     spec: text('spec', { mode: 'json' }).$type<SnippetSpec>().notNull(),
 
     tags: text('tags', { mode: 'json' }).$type<string[]>().notNull(),
+
+    metrics: text('metrics', { mode: 'json' }).$type<SnippetMetric[]>().notNull(),
 
     templateId: text('template_id').notNull().default('default'),
 

@@ -3,6 +3,8 @@ import { createContext } from 'react';
 
 export const ThemeContext = createContext<'light' | 'dark'>('light');
 
+export const ChartThemeContext = createContext<ThemeSpec | undefined>(undefined);
+
 // Read the active client palette after App applies data-theme, before rendering charts.
 export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
   const styles = getComputedStyle(document.documentElement);

@@ -1,6 +1,6 @@
 import { Lightbulb } from '@phosphor-icons/react';
 import { AlertDialog } from 'radix-ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import type { Snippet } from '@shared/schema';
 import { Button } from '../../components/Button';
@@ -10,6 +10,18 @@ import { errorMessage } from '../../utils';
 export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
   const [deleting, setDeleting] = useState<Snippet | null>(null);
   const [busy, setBusy] = useState(false);
+  const [columnCount, setColumnCount] = useState(() =>
+    window.matchMedia('(min-width: 1280px)').matches ? 2 : 1,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 1280px)');
+
+    const update = () => setColumnCount(media.matches ? 2 : 1);
+
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
 
   const remove = async () => {
     if (!deleting || busy) return;
@@ -43,19 +55,25 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
           <p className="m-0 text-muted">在分析图表中点击“保存 Snippet”后即可查看。</p>
         </div>
       ) : (
-        <div className="mt-8 columns-1 gap-7 xl:columns-2">
-          {snippets.map((snippet) => (
-            <div key={snippet.id} className="mb-7 break-inside-avoid">
-              <SnippetCard
-                data={snippet}
-                templateId={snippet.templateId}
-                createdAt={snippet.createdAt}
-                onUpdate={async (input) => {
-                  await window.workbench.snippetUpdate(snippet.messageId, input);
-                  toast.success('Snippet 已更新');
-                }}
-                onDelete={() => setDeleting(snippet)}
-              />
+        <div className="mt-8 grid grid-cols-1 items-start gap-7 xl:grid-cols-2">
+          {Array.from({ length: columnCount }, (_, column) => (
+            <div key={column} className="flex min-w-0 flex-col gap-7">
+              {snippets.map((snippet, index) =>
+                index % columnCount === column ? (
+                  <div key={snippet.id} className="min-w-0">
+                    <SnippetCard
+                      data={snippet}
+                      templateId={snippet.templateId}
+                      createdAt={snippet.createdAt}
+                      onUpdate={async (input) => {
+                        await window.workbench.snippetUpdate(snippet.messageId, input);
+                        toast.success('Snippet 已更新');
+                      }}
+                      onDelete={() => setDeleting(snippet)}
+                    />
+                  </div>
+                ) : null,
+              )}
             </div>
           ))}
         </div>

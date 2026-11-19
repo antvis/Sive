@@ -1,62 +1,22 @@
 import {
-  ArrowsDownUp,
   CalendarBlank,
   CaretDown,
-  ChartBar,
-  ChartBarHorizontal,
-  ChartLineUp,
-  ChartPieSlice,
-  ChartPolar,
-  ChartScatter,
-  FlowArrow,
-  Funnel,
-  Gauge,
-  Intersect,
-  Lightbulb,
+  Quotes,
   LinkSimple,
-  NotePencil,
   PencilSimple,
   PushPin,
-  Ranking,
-  SquaresFour,
-  Table,
   Tag,
-  TextAa,
   Trash,
-  TreeStructure,
-  WarningCircle,
 } from '@phosphor-icons/react';
-import type { Icon } from '@phosphor-icons/react';
-import clsx from 'clsx';
-import { useId, useMemo, useState } from 'react';
-import type { SnippetTemplateProps } from './index';
-import { Button } from '../Button';
-import { IconButton } from '../IconButton';
-import { Select } from '../Select';
-import { Summary } from '../Summary';
-import { Visualization } from '../Visualization';
-import { errorMessage } from '../../utils';
-
-// The model supplies the intent; this map only selects its visual icon.
-const intentIcons = new Map<string, Icon>([
-  ['趋势观察', ChartLineUp],
-  ['分类比较', ChartBarHorizontal],
-  ['排名分析', Ranking],
-  ['多维比较', ChartPolar],
-  ['占比分析', ChartPieSlice],
-  ['阶段转化', Funnel],
-  ['累计增减', ArrowsDownUp],
-  ['进度观察', Gauge],
-  ['分布分析', ChartBar],
-  ['异常观察', WarningCircle],
-  ['相关分析', ChartScatter],
-  ['集合关系', Intersect],
-  ['层级构成', TreeStructure],
-  ['流向分析', FlowArrow],
-  ['词频分析', TextAa],
-  ['明细查阅', Table],
-  ['数据概览', SquaresFour],
-]);
+import { twMerge } from 'tailwind-merge';
+import type { SnippetTemplateProps } from '../index';
+import { Button } from '../../Button';
+import { IconButton } from '../../IconButton';
+import { TemplatePicker } from '../TemplatePicker';
+import { Summary } from '../../Summary';
+import { Visualization } from '../../Visualization';
+import { useSnippetCard } from '../useSnippetCard';
+import { getIntentIcon, titleClassName, summaryClassName, summaryToggleClassName } from '../utils';
 
 const chipClassName =
   "relative isolate inline-flex min-h-[26px] items-center justify-center gap-[5px] rounded border border-dashed border-[color-mix(in_srgb,var(--accent)_30%,var(--surface))]! px-2 py-[3px] leading-[18px] tabular-nums shadow-[0_2px_3px_color-mix(in_srgb,var(--ink)_5%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[url('/textures/paper-grain.svg')] before:opacity-[0.055] [&_svg]:shrink-0";
@@ -64,6 +24,7 @@ const chipClassName =
 export default function DefaultTemplate({
   data,
   templateId,
+  templateButtonRef,
   templates,
   createdAt,
   saved,
@@ -71,45 +32,33 @@ export default function DefaultTemplate({
   onUpdate,
   onDelete,
 }: SnippetTemplateProps) {
-  const [editing, setEditing] = useState(false);
-  const [title, setTitle] = useState(data.title);
-  const [summary, setSummary] = useState(data.summary);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const titleId = useId();
-  const IntentIcon = intentIcons.get(data.intent) ?? NotePencil;
+  const {
+    editing,
+    title,
+    setTitle,
+    summary,
+    setSummary,
+    busy,
+    error,
+    titleId,
+    summaryId,
+    summaryRef,
+    summaryExpanded,
+    setSummaryExpanded,
+    summaryOverflow,
+    chartSpec,
+    run,
+    startEditing,
+    cancelEditing,
+    saveEdits,
+  } = useSnippetCard(data, onUpdate);
+  const IntentIcon = getIntentIcon(data.intent);
   const subtitle = typeof data.spec !== 'string' ? data.spec.subtitle : undefined;
-  const chartSpec = useMemo(
-    () =>
-      typeof data.spec === 'string'
-        ? data.spec
-        : {
-            ...data.spec,
-            title: undefined,
-            subtitle: undefined,
-            style: { ...data.spec.style, backgroundColor: 'transparent' },
-          },
-    [data.spec],
-  );
-
-  const run = async (action: () => Promise<void>) => {
-    setBusy(true);
-    setError('');
-    try {
-      await action();
-      return true;
-    } catch (cause) {
-      setError(errorMessage(cause));
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return (
     <article
       aria-labelledby={titleId}
-      className="relative isolate h-fit w-full min-w-0 rounded-xl border border-[color-mix(in_srgb,var(--line)_85%,var(--surface))]! bg-surface bg-[linear-gradient(160deg,color-mix(in_srgb,var(--accent-soft)_20%,var(--surface)),var(--surface)_40%)] p-6 text-ink shadow-[0_3px_0_-1px_var(--surface),0_3px_0_var(--line),0_5px_8px_-5px_color-mix(in_srgb,var(--ink)_12%,transparent),0_18px_30px_-22px_color-mix(in_srgb,var(--ink)_28%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[url('/textures/paper-grain.svg')] before:opacity-[0.055]"
+      className="relative isolate h-fit w-full min-w-0 rounded-lg border border-[color-mix(in_srgb,var(--line)_85%,var(--surface))]! bg-surface bg-[linear-gradient(160deg,color-mix(in_srgb,var(--accent-soft)_20%,var(--surface)),var(--surface)_40%)] p-6 text-ink shadow-[0_3px_0_-1px_var(--surface),0_3px_0_var(--line),0_5px_8px_-5px_color-mix(in_srgb,var(--ink)_12%,transparent),0_18px_30px_-22px_color-mix(in_srgb,var(--ink)_28%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[url('/textures/paper-grain.svg')] before:opacity-[0.055]"
     >
       <span
         aria-hidden
@@ -118,7 +67,7 @@ export default function DefaultTemplate({
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
           <span
-            className={clsx(
+            className={twMerge(
               chipClassName,
               '-rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_25%,var(--surface))] font-semibold text-ink',
             )}
@@ -130,7 +79,7 @@ export default function DefaultTemplate({
           {data.tags.map((tag) => (
             <span
               key={tag}
-              className={clsx(
+              className={twMerge(
                 chipClassName,
                 'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-accent',
               )}
@@ -143,26 +92,14 @@ export default function DefaultTemplate({
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {onUpdate && !editing && (
             <>
-              <Select
-                aria-label="Snippet 模板"
-                compact
-                className="w-28"
+              <TemplatePicker
+                buttonRef={templateButtonRef}
                 value={templateId}
-                options={templates}
+                templates={templates}
                 disabled={busy}
                 onChange={(value) => void run(() => onUpdate({ templateId: value }))}
               />
-              <IconButton
-                icon={PencilSimple}
-                label="编辑 Snippet"
-                disabled={busy}
-                onClick={() => {
-                  setTitle(data.title);
-                  setSummary(data.summary);
-                  setError('');
-                  setEditing(true);
-                }}
-              />
+              <IconButton icon={PencilSimple} label="编辑 Snippet" disabled={busy} onClick={startEditing} />
             </>
           )}
           {onDelete && !editing && (
@@ -197,12 +134,7 @@ export default function DefaultTemplate({
           onChange={(event) => setTitle(event.target.value)}
         />
       ) : (
-        <div
-          id={titleId}
-          role="heading"
-          aria-level={3}
-          className="mt-3 line-clamp-2 max-h-14 text-xl leading-7 font-semibold break-words text-balance tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-container]:text-xl! [&_.t8-p]:line-clamp-2 [&_.t8-p]:m-0! [&_.t8-p]:text-xl! [&_.t8-p]:leading-7! [&_.t8-p]:font-semibold!"
-        >
+        <div id={titleId} role="heading" aria-level={3} className={twMerge('mt-3', titleClassName)}>
           <Summary syntax={data.title} />
         </div>
       )}
@@ -214,6 +146,22 @@ export default function DefaultTemplate({
           {subtitle}
         </p>
       )}
+      {data.metrics.length > 0 && (
+        <dl
+          aria-label="关键指标"
+          className="mt-5 grid grid-flow-col auto-cols-fr gap-3 border-y border-line/65! py-4"
+        >
+          {data.metrics.map((metric, index) => (
+            <div key={index} className="min-w-0">
+              <dt className="text-xs leading-5 text-pretty text-muted">{metric.label}</dt>
+              <dd className="m-0 mt-1 flex flex-wrap items-baseline gap-x-1 tabular-nums">
+                <span className="text-xl leading-7 font-semibold wrap-anywhere text-ink">{metric.value}</span>
+                <span className="text-xs text-muted">{metric.unit}</span>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
       {editing ? (
         <div className="mt-4">
           <textarea
@@ -224,38 +172,51 @@ export default function DefaultTemplate({
             onChange={(event) => setSummary(event.target.value)}
           />
           <div className="mt-3 flex justify-end gap-2">
-            <Button
-              disabled={busy}
-              onClick={() => {
-                setEditing(false);
-                setError('');
-              }}
-            >
+            <Button disabled={busy} onClick={cancelEditing}>
               取消
             </Button>
-            <Button
-              variant="primary"
-              disabled={busy || !title.trim()}
-              onClick={async () => {
-                if (onUpdate && (await run(() => onUpdate({ title: title.trim(), summary: summary.trim() }))))
-                  setEditing(false);
-              }}
-            >
+            <Button variant="primary" disabled={busy || !title.trim()} onClick={() => void saveEdits()}>
               {busy ? '保存中…' : '保存'}
             </Button>
           </div>
         </div>
       ) : (
         data.summary.trim() && (
-          <div className="relative mt-5 rotate-[-0.35deg] rounded-md border border-[color-mix(in_srgb,var(--accent)_14%,var(--surface))]! bg-[linear-gradient(165deg,color-mix(in_srgb,var(--accent-soft)_90%,var(--surface)),color-mix(in_srgb,var(--accent-soft)_55%,var(--surface)))] p-4 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--surface)_65%,transparent),1px_4px_7px_-5px_color-mix(in_srgb,var(--ink)_22%,transparent)] after:pointer-events-none after:absolute after:-right-px after:-bottom-px after:size-4 after:rounded-[3px_0_5px] after:bg-[linear-gradient(135deg,transparent_48%,color-mix(in_srgb,var(--accent)_20%,var(--surface))_50%,var(--surface)_90%)]">
-            <div className="mb-2 flex min-h-6 items-center gap-1.5 text-xs font-medium text-accent">
-              <Lightbulb size={14} weight="duotone" aria-hidden />
-              关键洞察
+          <section
+            aria-label="关键洞察"
+            className="relative isolate mt-5 rotate-[-0.35deg] rounded-md border border-[color-mix(in_srgb,var(--accent)_14%,var(--surface))]! bg-[linear-gradient(165deg,color-mix(in_srgb,var(--accent-soft)_90%,var(--surface)),color-mix(in_srgb,var(--accent-soft)_55%,var(--surface)))] p-4 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--surface)_65%,transparent),1px_4px_7px_-5px_color-mix(in_srgb,var(--ink)_22%,transparent)] after:pointer-events-none after:absolute after:-right-px after:-bottom-px after:size-4 after:rounded-[3px_0_5px] after:bg-[linear-gradient(135deg,transparent_48%,color-mix(in_srgb,var(--accent)_20%,var(--surface))_50%,var(--surface)_90%)]"
+          >
+            <Quotes
+              size={56}
+              weight="fill"
+              aria-hidden
+              className="pointer-events-none absolute top-1 right-2 -z-10 -rotate-12 text-accent/7"
+            />
+            <div
+              className={twMerge(
+                summaryClassName,
+                '[&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:rounded-xs [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:bg-accent/8 [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:font-semibold [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:text-accent [&_:is(.t8-metric\\_name,.t8-trend\\_desc)]:font-semibold',
+              )}
+            >
+              <div id={summaryId} className={summaryExpanded ? undefined : 'line-clamp-3 max-h-[84px]'}>
+                <div ref={summaryRef}>
+                  <Summary syntax={data.summary} />
+                </div>
+              </div>
+              {summaryOverflow && (
+                <button
+                  type="button"
+                  aria-expanded={summaryExpanded}
+                  aria-controls={summaryId}
+                  onClick={() => setSummaryExpanded(!summaryExpanded)}
+                  className={summaryToggleClassName}
+                >
+                  {summaryExpanded ? '收起洞察' : '展开洞察'}
+                  <CaretDown size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
+                </button>
+              )}
             </div>
-            <div className="min-w-0 text-sm leading-7 text-pretty tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_:is(.t8-metric\_value,.t8-delta\_value,.t8-ratio\_value)]:rounded-xs [&_:is(.t8-metric\_value,.t8-delta\_value,.t8-ratio\_value)]:bg-accent/8 [&_:is(.t8-metric\_value,.t8-delta\_value,.t8-ratio\_value)]:font-semibold [&_:is(.t8-metric\_value,.t8-delta\_value,.t8-ratio\_value)]:text-accent [&_:is(.t8-metric\_name,.t8-trend\_desc)]:font-semibold">
-              <Summary syntax={data.summary} />
-            </div>
-          </div>
+          </section>
         )
       )}
       {error && (

@@ -33,6 +33,12 @@ export type AnalysisMessage = {
   deletedAt: string | null;
 };
 
+export type SnippetMetric = {
+  label: string;
+  value: string;
+  unit: string;
+};
+
 export type SnippetContent = {
   question: string;
   intent: string;
@@ -40,6 +46,7 @@ export type SnippetContent = {
   summary: string;
   spec: SnippetSpec;
   tags: string[];
+  metrics: SnippetMetric[];
 };
 
 export type SnippetSaveInput = SnippetContent & { messageId: string };
