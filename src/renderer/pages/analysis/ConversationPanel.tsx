@@ -1,20 +1,17 @@
 import { ArrowDown, ArrowLeft, Sparkle } from '@phosphor-icons/react';
+import { useChat } from '@ai-sdk/react';
+import { generateId } from 'ai';
 import { analysisStrategy } from '@shared/api';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Select } from '../../components/Select';
-import type {
-  AnalysisMessage,
-  AnalysisTaskEvent,
-  ModelProfile,
-  Preferences,
-  SuggestResult,
-} from '../../types';
+import type { ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
 import { AnalysisMessageView } from './AnalysisMessage';
+import { IpcChatTransport } from './IpcChatTransport';
 
 type Props = {
   datasetId: string;
@@ -28,7 +25,6 @@ type Props = {
 };
 
 const modelValue = (providerId: string, model: string) => JSON.stringify([providerId, model]);
-type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
 
 export function ConversationPanel({
   datasetId,
@@ -41,12 +37,21 @@ export function ConversationPanel({
   preferences,
 }: Props) {
   const [question, setQuestion] = useState('');
-  const [messages, setMessages] = useState<AnalysisMessage[]>([]);
-  const [activeTask, setActiveTask] = useState<AnalysisTaskEvent | null>(null);
-  const [stream, setStream] = useState<{ taskId: string; parts: StreamPart[] } | null>(null);
+  const chatId = useMemo(() => conversationId ?? generateId(), [datasetId, conversationId]);
+  const transport = useMemo(
+    () => new IpcChatTransport(onConversationChange, (cause) => toast.error(errorMessage(cause))),
+    [onConversationChange],
+  );
+  const {
+    messages,
+    setMessages,
+    sendMessage,
+    stop,
+    status,
+    error: chatError,
+  } = useChat({ id: chatId, transport });
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const [sending, setSending] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
@@ -60,8 +65,8 @@ export function ConversationPanel({
     })),
   );
 
-  const currentTask = activeTask?.conversationId === conversationId ? activeTask : null;
-  const streamPartCount = stream?.parts.length ?? 0;
+  const busy = status === 'submitted' || status === 'streaming';
+  const displayError = error || chatError?.message;
 
   const scrollToBottom = useCallback(() => {
     const container = scrollRef.current;
@@ -78,37 +83,36 @@ export function ConversationPanel({
 
   useEffect(() => {
     if (!showScrollToBottom) scrollToBottom();
-  }, [messages, streamPartCount, showScrollToBottom, scrollToBottom]);
-
-  const loadMessages = useCallback(
-    async (id: string | null = conversationId) => {
-      if (!id) {
-        setMessages([]);
-        setHistoryLoading(false);
-        return;
-      }
-      setMessages(await window.workbench.analysisGetMessages(id));
-      setHistoryLoading(false);
-    },
-    [conversationId],
-  );
+  }, [messages, showScrollToBottom, scrollToBottom]);
 
   useEffect(() => {
-    setActiveTask(null);
-    setStream(null);
     setQuestion('');
     setError('');
-  }, [datasetId]);
+    setShowScrollToBottom(false);
+    setHistoryLoading(Boolean(conversationId));
+  }, [chatId]);
 
   useEffect(() => {
-    setHistoryLoading(true);
-    setMessages([]);
-    setShowScrollToBottom(false);
-    loadMessages().catch((cause) => {
-      setError(errorMessage(cause));
+    let live = true;
+    if (!conversationId) {
       setHistoryLoading(false);
-    });
-  }, [loadMessages]);
+    } else if (!busy) {
+      window.workbench
+        .analysisGetMessages(conversationId)
+        .then((history) => {
+          if (live) setMessages(history);
+        })
+        .catch((cause) => {
+          if (live) setError(errorMessage(cause));
+        })
+        .finally(() => {
+          if (live) setHistoryLoading(false);
+        });
+    }
+    return () => {
+      live = false;
+    };
+  }, [chatId, conversationId, busy, setMessages]);
 
   useEffect(() => {
     let live = true;
@@ -135,74 +139,21 @@ export function ConversationPanel({
     };
   }, [datasetId, activeModelId, activeModel]);
 
-  useEffect(() => {
-    return window.workbench.analysisOnTaskChange((event) => {
-      if (event.datasetId !== datasetId) return;
-      if (event.part) {
-        const part = event.part;
-        setStream((current) => ({
-          taskId: event.taskId,
-          parts: current?.taskId === event.taskId ? [...current.parts, part] : [part],
-        }));
-      }
-      setActiveTask((current) => {
-        if (event.status === 'running') return event;
-        return current?.taskId === event.taskId ? null : current;
-      });
-      if (event.status !== 'running') {
-        if (event.conversationId === conversationId) {
-          if (event.error) toast.error(event.error);
-          void loadMessages()
-            .catch((cause) => toast.error(errorMessage(cause)))
-            .finally(() => {
-              setStream((current) => (current?.taskId === event.taskId ? null : current));
-            });
-        } else {
-          setStream((current) => (current?.taskId === event.taskId ? null : current));
-        }
-      }
-    });
-  }, [datasetId, conversationId, loadMessages]);
-
   const start = async () => {
-    if (!question.trim() || !activeModelId || currentTask || sending) return;
+    if (!question.trim() || !activeModelId || busy || historyLoading) return;
     setShowScrollToBottom(false);
-    setSending(true);
     setError('');
-    try {
-      const result = await window.workbench.analysisStart({
-        datasetId,
-        question: question.trim(),
-        strategy: preferences.strategy,
-        conversationId: conversationId ?? undefined,
-      });
-      onConversationChange(result.conversationId);
-      setActiveTask({
-        taskId: result.taskId,
-        datasetId,
-        conversationId: result.conversationId,
-        status: 'running',
-        stage: '准备分析',
-      });
-      setQuestion('');
-      await loadMessages(result.conversationId);
-    } catch (cause) {
-      setError(errorMessage(cause));
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const cancel = async () => {
-    if (!currentTask) return;
-    try {
-      await window.workbench.analysisCancel(currentTask.taskId);
-      setActiveTask(null);
-      setStream(null);
-      await loadMessages();
-    } catch (cause) {
-      toast.error(errorMessage(cause));
-    }
+    const text = question.trim();
+    setQuestion('');
+    await sendMessage(
+      { text },
+      {
+        body: {
+          datasetId,
+          strategy: preferences.strategy,
+        },
+      },
+    );
   };
 
   const changeModel = (value: string) => {
@@ -248,8 +199,7 @@ export function ConversationPanel({
                   key={message.id}
                   message={message}
                   savedMessageIds={savedMessageIds}
-                  activeTask={currentTask}
-                  streamParts={message.id === stream?.taskId ? stream.parts : []}
+                  isStreaming={busy && message.id === messages.at(-1)?.id}
                 />
               ))}
             </div>
@@ -263,7 +213,7 @@ export function ConversationPanel({
               <div className="mt-6 grid gap-2">
                 {suggestionsLoading && <p className="text-sm text-muted">正在生成推荐问题…</p>}
                 {!activeModelId && <p className="text-sm text-muted">请先在设置中配置默认模型服务。</p>}
-                {error && <p className="m-0 text-sm text-danger">{error}</p>}
+                {displayError && <p className="m-0 text-sm text-danger">{displayError}</p>}
                 {!suggestionsLoading &&
                   suggestions.map((suggestion) => (
                     <button
@@ -278,7 +228,10 @@ export function ConversationPanel({
               </div>
             </div>
           )}
-          {error && messages.length > 0 && <p className="mt-4 text-sm text-danger">{error}</p>}
+          {busy && (messages.at(-1)?.role === 'user' || !messages.at(-1)?.parts.length) && (
+            <p className="mt-4 text-sm text-muted">正在分析…</p>
+          )}
+          {displayError && messages.length > 0 && <p className="mt-4 text-sm text-danger">{displayError}</p>}
         </div>
         {showScrollToBottom && (
           <Button
@@ -306,7 +259,7 @@ export function ConversationPanel({
             value={activeProvider ? modelValue(activeProvider.id, activeModel) : ''}
             onChange={changeModel}
             options={options}
-            disabled={!models.length || !!currentTask}
+            disabled={!models.length || busy}
             className="w-36 shrink-0"
             compact
           />
@@ -314,32 +267,32 @@ export function ConversationPanel({
             <Tabs.List aria-label="分析方式" className="flex rounded-lg bg-page p-1">
               <Tabs.Trigger
                 value="direct"
-                disabled={!!currentTask}
+                disabled={busy}
                 className="rounded-md px-2 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
               >
                 直接分析
               </Tabs.Trigger>
               <Tabs.Trigger
                 value="loop"
-                disabled={!!currentTask}
+                disabled={busy}
                 className="rounded-md px-2 py-1 text-xs text-muted data-[state=active]:bg-surface data-[state=active]:text-ink"
               >
                 多步探索
               </Tabs.Trigger>
             </Tabs.List>
           </Tabs.Root>
-          {currentTask ? (
-            <Button className="ml-auto shrink-0" variant="secondary" onClick={() => void cancel()}>
+          {busy ? (
+            <Button className="ml-auto shrink-0" variant="secondary" onClick={() => void stop()}>
               停止
             </Button>
           ) : (
             <Button
               className="ml-auto shrink-0"
               variant="primary"
-              disabled={!question.trim() || !activeModelId || sending}
+              disabled={!question.trim() || !activeModelId || historyLoading}
               onClick={() => void start()}
             >
-              {sending ? '提交中…' : '发送'}
+              发送
             </Button>
           )}
         </div>

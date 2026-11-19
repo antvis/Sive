@@ -28,8 +28,7 @@ describe('SnippetService', () => {
       conversationId: 'conversation-1',
       sequence: 0,
       role: 'assistant',
-      status: 'done',
-      content: {},
+      parts: [],
       createdAt: now,
       updatedAt: now,
     });

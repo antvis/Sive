@@ -1,5 +1,6 @@
-import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
-import type { AnalysisOptions, MessageContent } from '@shared/schema';
+import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
+import type { UIMessage } from 'ai';
+import type { AnalysisOptions } from '@shared/schema';
 
 export const messages = sqliteTable(
   'messages',
@@ -16,30 +17,25 @@ export const messages = sqliteTable(
     // Role of the message author: user or assistant.
     role: text('role', { enum: ['user', 'assistant'] }).notNull(),
 
-    // Current generation status; must be one of the declared enum values.
-    status: text('status', {
-      enum: ['running', 'cancelling', 'done', 'error', 'cancelled', 'interrupted'],
-    }).notNull(),
+    // AI SDK UI message parts, including text and tool calls.
+    parts: text('parts', { mode: 'json' }).$type<UIMessage['parts']>().notNull(),
 
-    // JSON object containing the message body, analysis results, and process information.
-    content: text('content', { mode: 'json' }).$type<MessageContent>().notNull(),
-
-    // JSON object containing the AVA options snapshot without credentials.
-    analysisOptions: text('analysis_options', { mode: 'json' }).$type<AnalysisOptions>().notNull().default({}),
+    // Snapshot of the analysis strategy and model, without credentials.
+    analysisOptions: text('analysis_options', { mode: 'json' })
+      .$type<AnalysisOptions>()
+      .notNull()
+      .default({}),
 
     // Creation timestamp.
     createdAt: text('created_at').notNull(),
 
-    // Timestamp of the last progress, terminal-state, or soft deletion update.
+    // Last modification timestamp.
     updatedAt: text('updated_at').notNull(),
 
     // Soft deletion timestamp.
     deletedAt: text('deleted_at'),
   },
-  (table) => [
-    unique('messages_conversation_sequence_unique').on(table.conversationId, table.sequence),
-    index('idx_messages_status').on(table.status, table.createdAt, table.id),
-  ],
+  (table) => [unique('messages_conversation_sequence_unique').on(table.conversationId, table.sequence)],
 );
 
 export type MessageRow = typeof messages.$inferSelect;

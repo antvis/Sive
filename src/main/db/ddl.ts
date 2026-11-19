@@ -31,8 +31,7 @@ export const SchemaDDL = `
     conversation_id TEXT NOT NULL,
     sequence INTEGER NOT NULL,
     role TEXT NOT NULL,
-    status TEXT NOT NULL,
-    content TEXT NOT NULL,
+    parts TEXT NOT NULL,
     analysis_options TEXT NOT NULL DEFAULT '{}',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
@@ -40,8 +39,6 @@ export const SchemaDDL = `
   );
   CREATE UNIQUE INDEX IF NOT EXISTS messages_conversation_sequence_unique
     ON messages (conversation_id, sequence);
-  CREATE INDEX IF NOT EXISTS idx_messages_status
-    ON messages (status, created_at, id);
 
   CREATE TABLE IF NOT EXISTS snippets (
     id TEXT PRIMARY KEY,

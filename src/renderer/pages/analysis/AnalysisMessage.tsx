@@ -13,16 +13,16 @@ import {
 } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { getToolName, isTextUIPart, isToolOutputErrorUIPart, isToolUIPart } from 'ai';
+import type { DynamicToolUIPart, ToolUIPart, UIMessage } from 'ai';
 import type { AnalysisResponse, Profile, Schema, Semantic } from '@antv/ava';
-import type { AnalysisMessage, AnalysisTaskEvent } from '../../types';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { Markdown, SqlBlock } from '../../components/Markdown';
 import { findDatasetSource } from '@shared/dataSource';
 import { AnalysisChart } from './AnalysisChart';
 import type { VisualizationResult } from './AnalysisChart';
 
-type StreamPart = NonNullable<AnalysisTaskEvent['part']>;
-type ToolCallPart = Extract<StreamPart, { type: 'tool-call' }>;
+type ToolPart = ToolUIPart | DynamicToolUIPart;
 
 type SourceResult = {
   name: string;
@@ -254,50 +254,44 @@ function toolContent(toolName: string, output: unknown): ReactNode {
 
 function ToolCallView({
   call,
-  parts,
   messageId,
   savedMessageIds,
   hasVisualization,
+  isStreaming,
 }: {
-  call: ToolCallPart;
-  parts: StreamPart[];
+  call: ToolPart;
   messageId: string;
   savedMessageIds: string[];
   hasVisualization: boolean;
+  isStreaming: boolean;
 }) {
-  const result = parts.find(
-    (part) =>
-      (part.type === 'tool-result' || part.type === 'tool-error') && part.toolCallId === call.toolCallId,
-  );
-  const resultType = result?.type;
+  const toolName = getToolName(call);
+  const completed =
+    call.state === 'output-available' || call.state === 'output-error' || call.state === 'output-denied';
   const [expanded, setExpanded] = useState(
-    !result || (call.toolName === 'analyze' && !hasVisualization) || call.toolName === 'visualize',
+    !completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize',
   );
 
   useEffect(() => {
-    setExpanded(
-      !resultType || (call.toolName === 'analyze' && !hasVisualization) || call.toolName === 'visualize',
-    );
-  }, [resultType, call.toolName, hasVisualization]);
+    setExpanded(!completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize');
+  }, [completed, toolName, hasVisualization]);
 
-  const failed = resultType === 'tool-error';
-  const StatusIcon = !result ? CircleNotch : failed ? XCircle : CheckCircle;
-  const ToolIcon = toolIcons[call.toolName as keyof typeof toolIcons] ?? Wrench;
-  const input = call.input as { query?: unknown };
-  const query = call.toolName === 'analyze' && typeof input.query === 'string' ? input.query : '';
+  const failed = isToolOutputErrorUIPart(call) || call.state === 'output-denied';
+  const StatusIcon = !completed ? CircleNotch : failed ? XCircle : CheckCircle;
+  const ToolIcon = toolIcons[toolName as keyof typeof toolIcons] ?? Wrench;
+  const input = call.input as { query?: unknown } | undefined;
+  const query = toolName === 'analyze' && typeof input?.query === 'string' ? input.query : '';
   let summary = query;
-  if (result?.type === 'tool-result') {
-    if (call.toolName === 'source') summary = (result.output as SourceResult).name;
-    if (call.toolName === 'schema') summary = schemaSummary(result.output as Schema);
-    if (call.toolName === 'profile') summary = profileSummary(result.output as Profile);
-    if (call.toolName === 'semantic') summary = semanticSummary(result.output as Semantic);
-    if (call.toolName === 'visualize') {
-      summary = '未生成图表。';
-    }
+  if (call.state === 'output-available') {
+    if (toolName === 'source') summary = (call.output as SourceResult).name;
+    if (toolName === 'schema') summary = schemaSummary(call.output as Schema);
+    if (toolName === 'profile') summary = profileSummary(call.output as Profile);
+    if (toolName === 'semantic') summary = semanticSummary(call.output as Semantic);
+    if (toolName === 'visualize') summary = '未生成图表。';
   }
   const visualization =
-    call.toolName === 'visualize' && result?.type === 'tool-result'
-      ? (result.output as VisualizationResult | null | undefined)
+    toolName === 'visualize' && call.state === 'output-available'
+      ? (call.output as VisualizationResult | null | undefined)
       : undefined;
   if (hasChart(visualization)) {
     return (
@@ -305,10 +299,16 @@ function ToolCallView({
         visualization={visualization}
         messageId={messageId}
         saved={savedMessageIds.includes(messageId)}
+        isStreaming={isStreaming}
       />
     );
   }
-  const content = result?.type === 'tool-result' ? toolContent(call.toolName, result.output) : null;
+  const content =
+    call.state === 'output-available' ? (
+      toolContent(toolName, call.output)
+    ) : isToolOutputErrorUIPart(call) ? (
+      <p className="m-0 text-sm text-danger">{call.errorText}</p>
+    ) : null;
 
   return (
     <div className="group min-w-0">
@@ -320,9 +320,9 @@ function ToolCallView({
       >
         <ToolIcon size={16} className="shrink-0 text-muted" />
         <span className={`shrink-0 text-sm font-medium ${failed ? 'text-danger' : 'text-ink'}`}>
-          {toolLabels[call.toolName] ?? call.toolName}
+          {toolLabels[toolName] ?? toolName}
         </span>
-        {summary && (!expanded || call.toolName === 'analyze') && (
+        {summary && (!expanded || toolName === 'analyze') && (
           <span className="min-w-0 flex-1 truncate text-xs text-muted" title={summary}>
             {summary}
           </span>
@@ -331,7 +331,7 @@ function ToolCallView({
         <StatusIcon
           size={15}
           className={
-            !result
+            !completed
               ? 'shrink-0 animate-spin text-muted'
               : failed
                 ? 'shrink-0 text-danger'
@@ -352,109 +352,81 @@ function StreamContent({
   parts,
   messageId,
   savedMessageIds,
+  isStreaming,
 }: {
-  parts: StreamPart[];
+  parts: UIMessage['parts'];
   messageId: string;
   savedMessageIds: string[];
+  isStreaming: boolean;
 }) {
   const visualizedAnalysis = new Set<string>();
   let analysisId: string | undefined;
-  const results = new Map(
-    parts.filter((part) => part.type === 'tool-result').map((part) => [part.toolCallId, part.output]),
-  );
   for (const part of parts) {
-    if (part.type !== 'tool-call') continue;
-    if (part.toolName === 'analyze') analysisId = part.toolCallId;
+    if (!isToolUIPart(part)) continue;
+    const toolName = getToolName(part);
+    if (toolName === 'analyze') analysisId = part.toolCallId;
     if (
-      part.toolName === 'visualize' &&
+      toolName === 'visualize' &&
       analysisId &&
-      hasChart(results.get(part.toolCallId) as VisualizationResult | null | undefined)
+      part.state === 'output-available' &&
+      hasChart(part.output as VisualizationResult | null | undefined)
     ) {
       visualizedAnalysis.add(analysisId);
     }
   }
-  const blocks: ReactNode[] = [];
-  for (let index = 0; index < parts.length; index += 1) {
-    const part = parts[index];
-    if (part.type === 'text-delta') {
-      const start = index;
-      let text = part.text;
-      let next = parts[index + 1];
-      while (next?.type === 'text-delta') {
-        text += next.text;
-        index += 1;
-        next = parts[index + 1];
-      }
-      blocks.push(
-        <div key={`text-${start}`} className="p-3">
-          <Markdown>{text}</Markdown>
-        </div>,
-      );
-    } else if (part.type === 'tool-call') {
-      blocks.push(
-        <ToolCallView
-          key={part.toolCallId}
-          call={part}
-          hasVisualization={visualizedAnalysis.has(part.toolCallId)}
-          parts={parts}
-          messageId={messageId}
-          savedMessageIds={savedMessageIds}
-        />,
-      );
-    }
-  }
-  return <div className="grid min-w-0 gap-2">{blocks}</div>;
+  return (
+    <div className="grid min-w-0 gap-2">
+      {parts.map((part, index) => {
+        if (isTextUIPart(part))
+          return (
+            <div key={index} className="p-3">
+              <Markdown>{part.text}</Markdown>
+            </div>
+          );
+        if (isToolUIPart(part))
+          return (
+            <ToolCallView
+              key={part.toolCallId}
+              call={part}
+              hasVisualization={visualizedAnalysis.has(part.toolCallId)}
+              messageId={messageId}
+              savedMessageIds={savedMessageIds}
+              isStreaming={isStreaming}
+            />
+          );
+        return null;
+      })}
+    </div>
+  );
 }
 
 export function AnalysisMessageView({
   message,
-  activeTask,
-  streamParts = [],
   savedMessageIds = [],
+  isStreaming = false,
 }: {
-  message: AnalysisMessage;
-  activeTask?: AnalysisTaskEvent | null;
-  streamParts?: StreamPart[];
+  message: UIMessage;
   savedMessageIds?: string[];
+  isStreaming?: boolean;
 }) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
         <p className="m-0 min-w-0 max-w-[85%] rounded-xl bg-accent-soft px-4 py-3 text-sm leading-6 break-words whitespace-pre-wrap">
-          {message.content.question}
+          {message.parts
+            .filter(isTextUIPart)
+            .map((part) => part.text)
+            .join('')}
         </p>
       </div>
     );
   }
-
-  if (message.status === 'error') {
-    return <p className="m-0 text-sm text-danger">{message.content.error || '分析失败，请重试。'}</p>;
-  }
-  if (message.status === 'cancelled' || message.status === 'interrupted') {
-    return (
-      <p className="m-0 text-sm text-muted">
-        {message.status === 'cancelled' ? '分析已取消。' : '分析已中断。'}
-      </p>
-    );
-  }
-
-  const running = message.status === 'running' || message.status === 'cancelling';
-  const parts = running ? streamParts : (message.content.parts ?? []);
-  if (parts.length) {
-    return <StreamContent parts={parts} messageId={message.id} savedMessageIds={savedMessageIds} />;
-  }
-  if (running) {
-    return (
-      <p className="m-0 text-sm text-muted">
-        {activeTask?.taskId === message.id ? activeTask.stage : message.content.stage || '正在分析…'}
-      </p>
-    );
-  }
-
   return (
-    <div className="grid min-w-0 gap-4">
-      {message.content.text && <Markdown>{message.content.text}</Markdown>}
-      <AnalysisTable analysis={message.content} />
-    </div>
+    <StreamContent
+      parts={message.parts}
+      messageId={message.id}
+      savedMessageIds={savedMessageIds}
+      isStreaming={isStreaming}
+    />
   );
 }

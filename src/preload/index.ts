@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
-import type { AnalysisTaskEvent, ModelTestProgress, WorkbenchApi } from './api';
+import type { UIMessageChunk } from 'ai';
+import type { ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
   workspaceGetState: () => ipcRenderer.invoke('workspaceGetState'),
@@ -36,12 +37,13 @@ const api = {
   modelActivate: (id, model) => ipcRenderer.invoke('modelActivate', id, model),
   modelDelete: (id) => ipcRenderer.invoke('modelDelete', id),
   analysisStart: (input) => ipcRenderer.invoke('analysisStart', input),
-  analysisCancel: (taskId) => ipcRenderer.invoke('analysisCancel', taskId),
+  analysisCancel: (conversationId) => ipcRenderer.invoke('analysisCancel', conversationId),
   analysisGetMessages: (conversationId) => ipcRenderer.invoke('analysisGetMessages', conversationId),
-  analysisOnTaskChange: (callback) => {
-    const listener = (_event: IpcRendererEvent, progress: AnalysisTaskEvent) => callback(progress);
-    ipcRenderer.on('analysis:task-change', listener);
-    return () => ipcRenderer.removeListener('analysis:task-change', listener);
+  analysisOnChunk: (callback) => {
+    const listener = (_event: IpcRendererEvent, messageId: string, chunk: UIMessageChunk | null) =>
+      callback(messageId, chunk);
+    ipcRenderer.on('analysis:chunk', listener);
+    return () => ipcRenderer.removeListener('analysis:chunk', listener);
   },
   conversationRename: (id, title) => ipcRenderer.invoke('conversationRename', id, title),
   conversationArchive: (id) => ipcRenderer.invoke('conversationArchive', id),
