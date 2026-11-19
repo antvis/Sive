@@ -1,0 +1,19 @@
+docs/design-docs/active/2026-11-19-supabase-mcp-oauth.md
+  s_c2653db6be8445::t_0c8fa24002e3bd 1-131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c1a02de31d7acc5331f7a3c669bbd9bea6672fd4",
+  "prompts": {},
+  "sessions": {
+    "s_c2653db6be8445": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "a32b27fc-1511-476c-b6fd-f6a558852ba9",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
