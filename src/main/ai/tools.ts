@@ -1,6 +1,6 @@
 import { statSync } from 'node:fs';
 import { tool } from 'ai';
-import type { ToolSet } from 'ai';
+import type { LanguageModel, ToolSet } from 'ai';
 import { z } from 'zod';
 import type {
   AnalysisResponse,
@@ -12,7 +12,7 @@ import type {
   Semantic,
 } from '@antv/ava';
 import { localFilePath } from '../util/localFile';
-import type { SnippetContent } from '@shared/schema';
+import { generateInsightPresentation } from './snippet-agent';
 
 export type ToolContext = {
   name: string;
@@ -26,12 +26,8 @@ export type ToolContext = {
 export function createTools(
   ava: AVA,
   context: ToolContext,
-  getStrategy: () => AnalysisStrategyConfig,
-  present: (
-    analysis: AnalysisResponse,
-    spec: SnippetContent['spec'],
-    abortSignal?: AbortSignal,
-  ) => Promise<SnippetContent['presentation']>,
+  options: { strategy: AnalysisStrategyConfig; question: string },
+  model: LanguageModel,
 ): ToolSet {
   let latest: AnalysisResponse | undefined;
 
@@ -79,7 +75,7 @@ export function createTools(
       description: 'Analyze the loaded dataset and return the actual query, SQL, text conclusion and rows.',
       inputSchema: z.object({ query: z.string().min(1) }),
       execute: async ({ query }) => {
-        latest = await ava.analyze(query, { strategy: getStrategy() });
+        latest = await ava.analyze(query, { strategy: options.strategy });
         return latest;
       },
     }),
@@ -91,7 +87,14 @@ export function createTools(
         const analysis = latest;
         const visualization = await ava.visualize(analysis);
         if (!visualization) return null;
-        const presentation = await present(analysis, visualization.config, abortSignal);
+        const presentation = await generateInsightPresentation({
+          model,
+          question: options.question,
+          query: analysis.query,
+          summary: analysis.text,
+          spec: visualization.config,
+          abortSignal,
+        });
         return {
           question: analysis.query,
           summary: analysis.text,

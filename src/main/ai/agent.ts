@@ -6,7 +6,6 @@ import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
 import type { DuckDBEngineConfig } from '@shared/api';
 import { sourceEngine } from '../util/engine';
 import { createTools } from './tools';
-import { generateInsightPresentation } from './insight';
 import type { ToolContext } from './tools';
 import type { ModelConfig } from '../services/model';
 
@@ -49,7 +48,7 @@ export async function createAnalysisAgent({
   // This is the default options, but they can be overridden by the `stream` method.
   // The `strategy` option is passed to the tools, and the `agent` option is used to control the agent's behavior.
   // The `maxSteps` option controls how many steps the agent can take before stopping.
-  // The AVA tool execution reads the current strategy through **closure**.
+  // Tools read the current question and strategy from this shared options object.
   const options = {
     agent: { maxSteps: 10 },
     strategy: { type: 'direct' } as AnalysisStrategyConfig,
@@ -59,20 +58,7 @@ export async function createAnalysisAgent({
   const agent = new ToolLoopAgent({
     model: languageModel,
     instructions: INSTRUCTIONS,
-    tools: createTools(
-      ava,
-      dataset,
-      () => options.strategy,
-      (analysis, spec, abortSignal) =>
-        generateInsightPresentation({
-          model: languageModel,
-          question: options.question,
-          query: analysis.query,
-          summary: analysis.text,
-          spec,
-          abortSignal,
-        }),
-    ),
+    tools: createTools(ava, dataset, options, languageModel),
     stopWhen: ({ steps }) => steps.length >= options.agent.maxSteps,
   });
 

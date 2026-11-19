@@ -2,7 +2,7 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LanguageModel } from 'ai';
 import { generateText } from 'ai';
-import { generateInsightPresentation } from '../../../src/main/ai/insight';
+import { generateInsightPresentation } from '../../../src/main/ai/snippet-agent';
 
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
