@@ -6,6 +6,7 @@ import type { ModelMessage, TextStreamPart, ToolSet } from 'ai';
 import type { DuckDBEngineConfig } from '@shared/api';
 import { sourceEngine } from '../util/engine';
 import { createTools } from './tools';
+import { generateInsightPresentation } from './insight';
 import type { ToolContext } from './tools';
 import type { ModelConfig } from '../services/model';
 
@@ -52,12 +53,26 @@ export async function createAnalysisAgent({
   const options = {
     agent: { maxSteps: 10 },
     strategy: { type: 'direct' } as AnalysisStrategyConfig,
+    question: '',
   };
 
   const agent = new ToolLoopAgent({
     model: languageModel,
     instructions: INSTRUCTIONS,
-    tools: createTools(ava, dataset, () => options.strategy),
+    tools: createTools(
+      ava,
+      dataset,
+      () => options.strategy,
+      (analysis, spec, abortSignal) =>
+        generateInsightPresentation({
+          model: languageModel,
+          question: options.question,
+          query: analysis.query,
+          summary: analysis.text,
+          spec,
+          abortSignal,
+        }),
+    ),
     stopWhen: ({ steps }) => steps.length >= options.agent.maxSteps,
   });
 
@@ -69,6 +84,7 @@ export async function createAnalysisAgent({
 
       options.strategy = strategy;
       options.agent = agentConfig;
+      options.question = question;
 
       const result = await agent.stream({ messages, abortSignal });
       for await (const part of result.stream) {

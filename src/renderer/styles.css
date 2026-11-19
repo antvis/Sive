@@ -21,6 +21,10 @@
   --accent: #177c72;
   --accent-soft: #e7f2f0;
   --danger: #c64646;
+  --chart-palette: var(--accent), #4f6fb0, #e2ae69, #d78c7b, #83b7aa, #8f9ec3;
+  --chart-node-palette: #177c72, #4f6fb0, #9b6b28, #ad5d4d, #367b6d, #626f95;
+  --chart-text-palette: var(--chart-node-palette);
+  --chart-stroke: #84939f;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   font-synthesis: none;
 }
@@ -35,6 +39,9 @@
   --accent: #63b7ac;
   --accent-soft: #243b39;
   --danger: #f08a88;
+  --chart-palette: var(--accent), #91a8df, #e7bd83, #e2a295, #a1c7bc, #b2bedc;
+  --chart-text-palette: var(--chart-palette);
+  --chart-stroke: #738695;
 }
 
 * {

@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
+import { readInsightPresentation } from '../../../shared/insight';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
-import { required } from '../../util';
+import { required } from '../../util/assert';
 
 export class SnippetService {
   constructor(
@@ -23,8 +24,13 @@ export class SnippetService {
       return this.repositories.snippets.insert({
         id: randomUUID(),
         messageId: input.messageId,
-        title: input.question,
-        content: { question: input.question, spec: input.spec, summary: input.summary },
+        title: typeof input.spec === 'string' ? input.question : input.spec.title || input.question,
+        content: {
+          question: input.question,
+          spec: input.spec,
+          summary: input.summary,
+          presentation: readInsightPresentation(input.presentation),
+        },
         createdAt: now,
         updatedAt: now,
       });
@@ -36,9 +42,19 @@ export class SnippetService {
       const snippet = required(this.repositories.snippets.getByMessageId(messageId), 'Snippet 不存在。');
       const title = input.title.trim();
       if (!title) throw new Error('标题不能为空。');
+      const summary = input.summary.trim();
+      const presentation =
+        summary === snippet.content.summary.trim() ? snippet.content.presentation : undefined;
       this.repositories.snippets.update(snippet.id, {
         title,
-        content: { ...snippet.content, question: title, summary: input.summary.trim() },
+        content: {
+          ...snippet.content,
+          summary,
+          presentation: presentation && {
+            ...presentation,
+            titleHighlights: title === snippet.title ? presentation.titleHighlights : [],
+          },
+        },
       });
     });
   }

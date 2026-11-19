@@ -1,7 +1,8 @@
 // Types for database entities and IPC messages.
 
-import type { AnalysisResponse, AnalysisStrategyConfig, ChartConfig, VisualizeResponse } from '@antv/ava';
+import type { AnalysisResponse, AnalysisStrategyConfig, ChartConfig } from '@antv/ava';
 import type { TextStreamPart, ToolSet } from 'ai';
+import type { InsightPresentation } from './insight';
 
 export type { DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
 
@@ -15,7 +16,6 @@ export type MessageContent = {
   stage?: string;
   error?: string;
 } & Partial<AnalysisResponse> & {
-    chartHtml?: VisualizeResponse['html'];
     parts?: TextStreamPart<ToolSet>[];
   };
 
@@ -38,6 +38,7 @@ export type SnippetContent = {
   question: string;
   spec: SnippetSpec;
   summary: string;
+  presentation?: InsightPresentation;
 };
 
 export type SnippetSaveInput = SnippetContent & { messageId: string };

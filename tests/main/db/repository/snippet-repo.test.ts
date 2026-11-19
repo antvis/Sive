@@ -1,4 +1,4 @@
-import type { SnippetContent } from '@shared/snippets';
+import type { SnippetContent } from '@shared/schema';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SnippetRepo } from '../../../../src/main/db/repository/snippet-repo';
 import { createTestDb } from '../../../helpers/db';

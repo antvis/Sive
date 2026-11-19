@@ -12,6 +12,7 @@ import type {
   Semantic,
 } from '@antv/ava';
 import { localFilePath } from '../util/localFile';
+import type { SnippetContent } from '@shared/schema';
 
 export type ToolContext = {
   name: string;
@@ -26,6 +27,11 @@ export function createTools(
   ava: AVA,
   context: ToolContext,
   getStrategy: () => AnalysisStrategyConfig,
+  present: (
+    analysis: AnalysisResponse,
+    spec: SnippetContent['spec'],
+    abortSignal?: AbortSignal,
+  ) => Promise<SnippetContent['presentation']>,
 ): ToolSet {
   let latest: AnalysisResponse | undefined;
 
@@ -80,16 +86,17 @@ export function createTools(
     visualize: tool({
       description: 'Create a visualization for the latest analysis result. Call analyze first.',
       inputSchema: z.object({}),
-      execute: async () => {
+      execute: async (_input, { abortSignal }) => {
         if (!latest) return null;
         const analysis = latest;
         const visualization = await ava.visualize(analysis);
         if (!visualization) return null;
+        const presentation = await present(analysis, visualization.config, abortSignal);
         return {
-          ...visualization,
           question: analysis.query,
           summary: analysis.text,
           spec: visualization.config,
+          presentation,
         };
       },
     }),
