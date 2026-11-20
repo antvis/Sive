@@ -53,7 +53,7 @@ export function Messages({
         ) : (
           <>
             <ConversationEmptyState
-              className="flex-1 items-start p-0 py-8 text-left [&_h3]:text-2xl [&_h3]:tracking-tight [&_p]:mt-3 [&_p]:leading-6"
+              className="flex-1 items-start p-0 py-8 text-left"
               title="向数据提问"
               description={hasModel ? '选择推荐问题，或输入你关心的问题。' : '请先在设置中配置默认模型服务。'}
             />

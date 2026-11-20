@@ -48,13 +48,11 @@ export type ToolHeaderProps = {
 const statusLabels: Partial<Record<ToolPart["state"], string>> = {
   "approval-requested": "等待授权",
   "output-denied": "已拒绝",
-  "output-error": "执行失败",
 };
 
 const statusIcons: Partial<Record<ToolPart["state"], ReactNode>> = {
   "approval-requested": <ClockIcon className="size-4 text-yellow-600" />,
   "output-denied": <XCircleIcon className="size-4 text-orange-600" />,
-  "output-error": <XCircleIcon className="size-4 text-red-600" />,
 };
 
 export const getStatusBadge = (status: ToolPart["state"]) =>
@@ -82,7 +80,7 @@ export const ToolHeader = ({
   return (
     <CollapsibleTrigger
       className={cn(
-        "group/tool-header flex min-h-6 w-full items-center justify-start gap-1 bg-transparent p-0 text-left text-muted-foreground outline-offset-2 transition-[color] duration-150 ease-[ease] hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
+        "group/tool-header flex min-h-7 w-full items-center justify-start gap-1 bg-transparent p-0 text-left text-muted-foreground outline-offset-2 transition-[color] duration-150 ease-[ease] hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
         className
       )}
       {...props}
@@ -160,18 +158,15 @@ export const ToolOutput = ({
   }
 
   return (
-    <div className={cn("space-y-2", className)} {...props}>
-      <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-        {errorText ? "Error" : "Result"}
-      </h4>
+    <div className={className} {...props}>
       <div
+        role={errorText ? "alert" : undefined}
         className={cn(
-          "overflow-x-auto rounded-md text-xs [&_table]:w-full",
-          errorText && "bg-destructive/10 text-destructive"
+          "overflow-x-auto rounded-md text-sm leading-6",
+          errorText && "bg-destructive/10 p-3 whitespace-pre-wrap break-words text-destructive"
         )}
       >
-        {errorText && <div>{errorText}</div>}
-        {Output}
+        {errorText || Output}
       </div>
     </div>
   );
