@@ -23,38 +23,38 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@renderer/components/ui/command";
+} from "../ui/command";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@renderer/components/ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@renderer/components/ui/hover-card";
+} from "../ui/hover-card";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
-} from "@renderer/components/ui/input-group";
+} from "../ui/input-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@renderer/components/ui/select";
-import { Spinner } from "@renderer/components/ui/spinner";
+} from "../ui/select";
+import { Spinner } from "../ui/spinner";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@renderer/components/ui/tooltip";
-import { cn } from "@renderer/lib/utils";
+} from "../ui/tooltip";
+import { cn } from "../../lib/utils";
 import {
   CornerDownLeftIcon,
   ImageIcon,

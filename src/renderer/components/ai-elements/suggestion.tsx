@@ -2,12 +2,12 @@
 
 import type { ComponentProps } from "react";
 
-import { Button } from "@renderer/components/ui/button";
+import { Button } from "../ui/button";
 import {
   ScrollArea,
   ScrollBar,
-} from "@renderer/components/ui/scroll-area";
-import { cn } from "@renderer/lib/utils";
+} from "../ui/scroll-area";
+import { cn } from "../../lib/utils";
 import { useCallback } from "react";
 
 export type SuggestionsProps = ComponentProps<typeof ScrollArea>;
