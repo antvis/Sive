@@ -65,7 +65,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
                 onClick={() => void update({ ...preferences, theme: { ...preferences.theme, mode } })}
                 className={clsx(
                   'grid size-12 place-items-center rounded-xl border',
-                  theme.mode === mode ? 'border-accent bg-accent-soft text-accent' : 'bg-surface text-muted',
+                  theme.mode === mode ? 'border-accent bg-accent-soft text-accent' : 'bg-surface text-muted-foreground',
                 )}
               >
                 <Icon size={22} className={mode === 'dark' ? 'text-ink' : undefined} />
@@ -98,7 +98,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
                 <option key={size} value={index} label={`${size}px`} />
               ))}
             </datalist>
-            <div className="grid grid-cols-5 text-xs text-muted">
+            <div className="grid grid-cols-5 text-xs text-muted-foreground">
               <span>小</span>
               <span className="text-center">默认</span>
               <span />
@@ -136,7 +136,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
         <SettingRow title="数据存储" description={dataStorage?.path ?? '正在读取数据存储信息…'}>
           <div className="flex items-center justify-end gap-4">
             {dataStorage && (
-              <span className="text-sm whitespace-nowrap text-muted">
+              <span className="text-sm whitespace-nowrap text-muted-foreground">
                 {formatSize(dataStorage.sizeBytes)}
               </span>
             )}
@@ -161,7 +161,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
                 >
                   <div className="bg-accent" style={{ width: `${usedPercent}%` }} />
                 </div>
-                <p className="mt-2 mb-0 text-xs whitespace-nowrap text-muted">
+                <p className="mt-2 mb-0 text-xs whitespace-nowrap text-muted-foreground">
                   已用 {formatSize(cache.usedBytes)}，可用 {formatSize(cache.freeBytes)}，使用{' '}
                   {usedPercent.toFixed(4)}%
                 </p>

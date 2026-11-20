@@ -41,7 +41,7 @@ export function Select({
       </select>
       <CaretDown
         size={14}
-        className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted"
+        className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
         aria-hidden
       />
     </div>

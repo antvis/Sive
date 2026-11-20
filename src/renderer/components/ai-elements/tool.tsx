@@ -82,7 +82,7 @@ export const ToolHeader = ({
   return (
     <CollapsibleTrigger
       className={cn(
-        "group/tool-header flex min-h-6 w-full items-center justify-start gap-1 bg-transparent p-0 text-left text-muted-foreground outline-offset-2 transition-colors duration-150 ease-linear hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
+        "group/tool-header flex min-h-6 w-full items-center justify-start gap-1 bg-transparent p-0 text-left text-muted-foreground outline-offset-2 transition-[color] duration-150 ease-[ease] hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
         className
       )}
       {...props}
@@ -95,11 +95,11 @@ export const ToolHeader = ({
         )}>{running ? `正在${action}…` : action}</span>
       </div>
       <ChevronRightIcon
-        className="size-4 shrink-0 text-inherit opacity-0 transition-opacity duration-150 ease-linear group-hover/tool-header:opacity-100 group-focus-visible/tool-header:opacity-100 group-data-[state=open]/tool-header:hidden group-data-[state=open]/tool-header:opacity-100"
+        className="size-4 shrink-0 text-inherit opacity-0 transition-opacity duration-150 ease-[ease] group-hover/tool-header:opacity-100 group-focus-visible/tool-header:opacity-100 group-data-[state=open]/tool-header:hidden group-data-[state=open]/tool-header:opacity-100"
         aria-hidden="true"
       />
       <ChevronDownIcon
-        className="hidden size-4 shrink-0 text-inherit opacity-0 transition-opacity duration-150 ease-linear group-hover/tool-header:opacity-100 group-focus-visible/tool-header:opacity-100 group-data-[state=open]/tool-header:block group-data-[state=open]/tool-header:opacity-100"
+        className="hidden size-4 shrink-0 text-inherit opacity-0 transition-opacity duration-150 ease-[ease] group-hover/tool-header:opacity-100 group-focus-visible/tool-header:opacity-100 group-data-[state=open]/tool-header:block group-data-[state=open]/tool-header:opacity-100"
         aria-hidden="true"
       />
       {getStatusBadge(state)}

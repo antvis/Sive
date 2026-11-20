@@ -52,4 +52,4 @@ export const summaryClassName =
   'min-w-0 text-sm leading-7 text-pretty tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-p]:m-0! [&_.t8-p]:text-sm! [&_.t8-p]:leading-7!';
 
 export const summaryToggleClassName =
-  'mt-2 inline-flex items-center gap-1 p-0 text-xs leading-5 text-muted hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+  'mt-2 inline-flex items-center gap-1 p-0 text-xs leading-5 text-muted-foreground hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';

@@ -121,7 +121,7 @@ export default function App() {
       }}
       onNavigate={setPage}
     >
-      {!state && !error && <div className="grid h-full place-items-center text-muted">正在加载工作台…</div>}
+      {!state && !error && <div className="grid h-full place-items-center text-muted-foreground">正在加载工作台…</div>}
       {!state && error && (
         <div className="grid h-full place-content-center justify-items-center gap-4">
           <p className="m-0 text-danger">{error}</p>

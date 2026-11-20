@@ -13,7 +13,6 @@ import { errorMessage } from '../../utils';
 import { IpcChatTransport } from './ipc-chat-transport';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
-import './chat.css';
 
 type Props = {
   datasetId: string;
@@ -145,7 +144,7 @@ export function Chat({
   return (
     <TooltipProvider>
       <section
-        className="chat-theme flex h-full min-h-0 flex-col bg-background text-foreground"
+        className="chat-theme flex h-full min-h-0 flex-col bg-background text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono [&_[data-streamdown=code-block-body]_code>span]:before:text-sm"
         aria-label="AI 对话"
       >
         <header className="flex h-14 shrink-0 items-center gap-2 px-4">

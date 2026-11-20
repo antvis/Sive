@@ -135,10 +135,10 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span>启用模型</span>
-                <span className="text-xs text-muted">已选择 {modelIds.length} 个</span>
+                <span className="text-xs text-muted-foreground">已选择 {modelIds.length} 个</span>
               </div>
               <div className="flex items-center gap-2">
-                {catalogHint && <span className="text-xs text-muted">{catalogHint}</span>}
+                {catalogHint && <span className="text-xs text-muted-foreground">{catalogHint}</span>}
                 <IconButton
                   icon={ArrowClockwise}
                   iconClassName={discovering ? 'animate-spin' : undefined}
@@ -191,7 +191,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
   return (
     <section>
       <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="m-0 text-muted">连接兼容 OpenAI 的服务，获取并选择可用模型。</p>
+        <p className="m-0 text-muted-foreground">连接兼容 OpenAI 的服务，获取并选择可用模型。</p>
         <Button variant="primary" onClick={() => setEditing('new')}>
           <Plus size={16} />
           添加服务
@@ -242,24 +242,24 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
 
             <dl className="mt-4 grid gap-2 text-sm leading-5">
               <div className="flex gap-3">
-                <dt className="w-16 shrink-0 text-muted">服务地址</dt>
+                <dt className="w-16 shrink-0 text-muted-foreground">服务地址</dt>
                 <dd className="m-0 min-w-0 break-all text-ink">{model.baseURL}</dd>
               </div>
               <div className="flex gap-3">
-                <dt className="w-16 shrink-0 text-muted">可用模型</dt>
+                <dt className="w-16 shrink-0 text-muted-foreground">可用模型</dt>
                 <dd className="m-0 min-w-0 leading-5 text-ink">
                   {model.modelIds.join('、')}
-                  <span className="ml-2 text-muted">（{model.modelIds.length} 个）</span>
+                  <span className="ml-2 text-muted-foreground">（{model.modelIds.length} 个）</span>
                 </dd>
               </div>
             </dl>
 
             <div className="mt-3 flex items-center justify-between gap-4 border-t pt-3 max-sm:flex-col max-sm:items-start">
-              <span className="text-sm text-muted">
+              <span className="text-sm text-muted-foreground">
                 最近更新：{new Date(model.updatedAt).toLocaleString('zh-CN')}
               </span>
               {activeModelId === model.id && (
-                <div className="flex items-center gap-2 text-sm text-muted">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>默认模型</span>
                   <Select
                     compact
@@ -281,7 +281,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
         <div className="grid justify-items-center rounded-xl border border-dashed px-6 py-14 text-center">
           <Cpu size={32} className="text-accent" />
           <h3 className="mt-4 mb-2 text-base font-medium">连接你的第一个模型服务</h3>
-          <p className="m-0 leading-6 text-muted">支持兼容 OpenAI 接口的云端或本地服务。</p>
+          <p className="m-0 leading-6 text-muted-foreground">支持兼容 OpenAI 接口的云端或本地服务。</p>
           <Button className="mt-5" onClick={() => setEditing('new')}>
             <Plus size={16} />
             添加模型服务
@@ -317,7 +317,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
           </>
         }
       >
-        <p className="m-0 leading-6 text-muted">确定删除“{deleting?.name}”及其模型配置吗？</p>
+        <p className="m-0 leading-6 text-muted-foreground">确定删除“{deleting?.name}”及其模型配置吗？</p>
       </Modal>
     </section>
   );

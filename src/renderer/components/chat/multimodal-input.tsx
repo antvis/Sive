@@ -61,7 +61,13 @@ export function MultimodalInput({
 
   return (
     <PromptInput
-      className="chat-composer"
+      className={cn(
+        'motion-reduce:transition-none! motion-reduce:**:transition-none!',
+        '[&_[data-slot=input-group]]:gap-1.5 [&_[data-slot=input-group]]:rounded-[14px]! [&_[data-slot=input-group]]:border-border [&_[data-slot=input-group]]:bg-background [&_[data-slot=input-group]]:p-1.5',
+        '[&_[data-slot=input-group]]:shadow-[0_1px_3px_rgb(0_0_0/5%),0_1px_1px_rgb(0_0_0/3%)] dark:[&_[data-slot=input-group]]:shadow-[inset_0_1px_0_rgb(255_255_255/3%),0_1px_3px_rgb(0_0_0/20%)]',
+        '[&_[data-slot=input-group]]:transition-[border-color,border-radius] [&_[data-slot=input-group]]:duration-150 [&_[data-slot=input-group]]:ease-[ease]',
+        '[&_[data-slot=input-group]]:focus-within:border-ring! [&_[data-slot=input-group]]:focus-within:ring-0!',
+      )}
       onSubmit={onSubmit}
       onResetCapture={(event) => {
         // Text is cleared by the caller; a native reset also changes the model and strategy.
@@ -90,17 +96,17 @@ export function MultimodalInput({
                 <PromptInputSelectTrigger
                   aria-label="分析方式"
                   size="sm"
-                  className="chat-composer-mode shrink-0 rounded-lg px-1.5 font-normal hover:bg-secondary data-[size=sm]:h-7"
+                  className="shrink-0 rounded-lg px-1.5 font-normal transition-[background-color,color,transform] duration-150 ease-[ease] hover:bg-secondary active:scale-[0.94] data-[size=sm]:h-7"
                 >
                   <PromptInputSelectValue />
                 </PromptInputSelectTrigger>
               </TooltipTrigger>
-              <TooltipContent className="chat-theme rounded-lg" side="top" sideOffset={6}>
+              <TooltipContent className="chat-theme rounded-lg text-base" side="top" sideOffset={6}>
                 调整分析策略
               </TooltipContent>
             </Tooltip>
             <PromptInputSelectContent
-              className="chat-theme chat-composer-menu"
+              className="chat-theme text-base [&_[data-slot=select-item]]:min-h-7 [&_[data-slot=select-item]]:text-xs [&_[data-slot=select-item]]:leading-4 [&_[data-slot=select-item]]:font-normal"
               side="top"
               onCloseAutoFocus={focusInput}
             >
@@ -122,14 +128,14 @@ export function MultimodalInput({
             <PromptInputSelectTrigger
               aria-label="选择模型"
               size="sm"
-              className="chat-composer-model ml-auto min-h-7 min-w-0 max-w-full rounded-lg px-1.5 py-1 text-left font-normal whitespace-normal hover:bg-secondary data-[size=sm]:h-auto *:data-[slot=select-value]:line-clamp-none"
+              className="ml-auto min-h-7 min-w-0 max-w-full rounded-lg px-1.5 py-1 text-left font-normal whitespace-normal transition-[background-color,color,transform] duration-150 ease-[ease] hover:bg-secondary active:scale-[0.94] data-[size=sm]:h-auto *:data-[slot=select-value]:line-clamp-none"
             >
               <PromptInputSelectValue className="min-w-0 break-all" placeholder="选择模型">
                 {provider?.model}
               </PromptInputSelectValue>
             </PromptInputSelectTrigger>
             <PromptInputSelectContent
-              className="chat-theme chat-composer-menu"
+              className="chat-theme text-base [&_[data-slot=select-item]]:min-h-7 [&_[data-slot=select-item]]:text-xs [&_[data-slot=select-item]]:leading-4 [&_[data-slot=select-item]]:font-normal"
               side="top"
               onCloseAutoFocus={focusInput}
             >

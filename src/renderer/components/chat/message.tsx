@@ -247,7 +247,7 @@ function toolContent(toolName: string, output: unknown): ReactNode {
       <div className="grid min-w-0 gap-4">
         {content && (
           <div className="text-foreground/80">
-            <MessageResponse className="chat-response">{content}</MessageResponse>
+            <MessageResponse className="leading-6">{content}</MessageResponse>
           </div>
         )}
         {analysis.sql && <CodeBlock code={analysis.sql} language="sql" />}
@@ -314,18 +314,16 @@ function ToolCallView({
 
   return (
     <Tool
-      className="chat-tool mb-0 rounded-none border-0 bg-transparent p-0"
-      data-tool-state={call.state}
+      className="mb-0 rounded-none border-0 bg-transparent p-0"
       open={expanded}
       onOpenChange={setExpanded}
     >
       <ToolHeader
         {...header}
-        className="chat-tool-header"
         title={toolLabels[toolName] ?? toolName}
         icon={ToolIcon ? <ToolIcon className="size-4 text-muted-foreground" aria-hidden="true" /> : undefined}
       />
-      <ToolContent className="chat-tool-content p-0">
+      <ToolContent className="p-0">
         <div className="ml-4 border-l border-border py-3 pl-4">
           <ToolOutput
             className="[&>div]:text-sm [&>div]:leading-6"
@@ -369,7 +367,7 @@ function StreamContent({
       {parts.map((part, index) => {
         if (isTextUIPart(part))
           return (
-            <MessageResponse className="chat-response" key={index}>
+            <MessageResponse key={index}>
               {part.text}
             </MessageResponse>
           );
@@ -415,7 +413,7 @@ function UserMessageContent({ text }: { text: string }) {
     <>
       <div id={contentId} className={expanded ? undefined : 'max-h-[10.5rem] overflow-hidden'}>
         <div ref={contentRef} onFocusCapture={() => setExpanded(true)}>
-          <MessageResponse className="chat-response">{text}</MessageResponse>
+          <MessageResponse>{text}</MessageResponse>
         </div>
       </div>
       {overflowing && (
@@ -451,7 +449,7 @@ export function PreviewMessage({
       from={message.role}
       className={cn(
         'group/message max-w-full',
-        isUser && 'motion-safe:animate-[fade-up_0.25s_cubic-bezier(0.22,1,0.36,1)]',
+        isUser && 'motion-safe:animate-fade-up',
       )}
     >
       <div className={isUser ? 'flex flex-col items-end gap-2' : 'flex min-w-0'}>
