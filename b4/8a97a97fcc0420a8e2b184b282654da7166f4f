@@ -1,0 +1,105 @@
+src/main/util/supabase/oauth-provider.ts
+  s_c2653db6be8445::t_9c74234e86549f 11
+  s_c2653db6be8445::t_f56a6be485fcd9 8-10
+  s_c2653db6be8445::t_5a626a398bd539 12-14
+  s_c2653db6be8445::t_edcd1a55b1feee 1-7,15-116
+src/renderer/pages/datasets/datasetDialogs/SupabaseDialog.tsx
+  s_c2653db6be8445::t_a2c2b6b4c8bab6 27
+  s_c2653db6be8445::t_2b704d988a5d48 80-82
+  s_c2653db6be8445::t_cd54a371f48cf2 2-5,10-13,18-19,22-26,28-40,49,51-52,61-78,83-89
+src/main/db/schema/datasets.ts
+  s_c2653db6be8445::t_f9e2c42d7811b7 42-43
+  s_c2653db6be8445::t_35c5b6178889c7 12-13,16-27
+  s_c2653db6be8445::t_07c95a0bf3c42a 3,6-11,14-15,28
+  s_c2653db6be8445::t_f139724e94eabb 40-41
+  s_c2653db6be8445::t_738f1267c16197 44
+src/main/services/dataset/index.ts
+  s_c2653db6be8445::t_6e8e1ec121003c 248
+  s_c2653db6be8445::t_3d78bce301b71e 221-223
+  s_c2653db6be8445::t_d94cf8bf75d60f 152
+  s_c2653db6be8445::t_668df4fe059bad 133-151,153-158,163-168,170-204,209-211
+  s_c2653db6be8445::t_43a2f09db292b3 169
+  s_c2653db6be8445::t_32f3447353903f 8
+  s_c2653db6be8445::t_10cff6097263e8 213
+  s_c2653db6be8445::t_59d4f86fdfe13c 287
+  s_c2653db6be8445::t_c2b1e74941f607 324-325
+  s_c2653db6be8445::t_a0342a362e5160 331-333,337,342,351-352
+  s_c2653db6be8445::t_02838607cf71ec 49-54
+  s_c2653db6be8445::t_55f68abba163df 15-16
+  s_c2653db6be8445::t_2e0f0ebf9c6ded 17-19
+  s_c2653db6be8445::t_7c18951740d5e8 159-162,205-208
+AGENTS.md
+  s_e67189f9f9c01e::t_7c53e907561dd7 18-22,27,29
+  s_e67189f9f9c01e::t_ec78c68c47fabe 15-17,23-26,28
+src/main/services/analysis/index.ts
+  s_c2653db6be8445::t_d56525f5d0bda3 134
+  s_c2653db6be8445::t_2b704d988a5d48 132-133
+src/main/util/supabase/oauth.ts
+  s_c2653db6be8445::t_7fa47490c68075 2-3
+  s_c2653db6be8445::t_66862a2ab5b98c 1
+  s_c2653db6be8445::t_c91ce401b97149 4-6
+  s_c2653db6be8445::t_edcd1a55b1feee 7-69
+src/main/db/repository/dataset-repo.ts
+  s_c2653db6be8445::t_6a37fa63012599 43,46
+  s_c2653db6be8445::t_831f8498221a45 44-45,47-51
+src/main/db/ddl.ts
+  s_c2653db6be8445::t_005cf633a96eeb 7
+src/main/ipc/index.ts
+  s_c2653db6be8445::t_2eb91324f302c4 107
+  s_c2653db6be8445::t_9884e68ff695c5 160
+  s_c2653db6be8445::t_00b494974465f7 158
+  s_c2653db6be8445::t_3a4e338c1cd24c 89-90
+  s_c2653db6be8445::t_afd67f3a4262ac 85-86
+  s_c2653db6be8445::t_58d12b781c7305 102-106,108-113
+  s_c2653db6be8445::t_4d24e0d817761d 91-96
+  s_c2653db6be8445::t_e4697617b64ca3 97
+src/shared/api.ts
+  s_c2653db6be8445::t_250ee545d9ed2e 63-67
+  s_c2653db6be8445::t_f689e1039998be 172
+  s_c2653db6be8445::t_2b704d988a5d48 166-171
+  s_c2653db6be8445::t_6d4007244574c8 164
+src/preload/index.ts
+  s_c2653db6be8445::t_26bc783d66af6a 19-20
+  s_c2653db6be8445::t_27ff7d11c9ffc7 21
+  s_c2653db6be8445::t_2b704d988a5d48 16-17
+src/main/db/schema/index.ts
+  s_c2653db6be8445::t_952a6c043d66a6 11-17
+src/renderer/pages/datasets/datasetDialogs/ConnectionDialog.tsx
+  s_c2653db6be8445::t_f16b802950eacd 47,55
+  s_c2653db6be8445::t_2d359a365c02f0 56
+  s_c2653db6be8445::t_b6c2c2f13bd78e 118
+  s_c2653db6be8445::t_2b704d988a5d48 121-126
+  s_c2653db6be8445::t_5948cd86b81636 95,98
+  s_c2653db6be8445::t_3ec615d908e8ae 48
+  s_c2653db6be8445::t_eab0f75076e03c 89
+src/main/util/supabase/errors.ts
+  s_c2653db6be8445::t_8c1dcfb98fa439 1-32
+src/main/util/supabase/loopback.ts
+  s_c2653db6be8445::t_2343c30a2aec80 1-80
+package.json
+  s_c2653db6be8445::t_edcd1a55b1feee 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b48a97a97fcc0420a8e2b184b282654da7166f4f",
+  "prompts": {},
+  "sessions": {
+    "s_c2653db6be8445": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "a32b27fc-1511-476c-b6fd-f6a558852ba9",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    },
+    "s_e67189f9f9c01e": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "29974752-54d4-45d4-9964-4b7bf1405d46",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
