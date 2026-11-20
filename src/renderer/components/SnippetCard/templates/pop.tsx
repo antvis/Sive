@@ -85,7 +85,7 @@ export default function PopTemplate({
               key={tag}
               className={twMerge(
                 chipClassName,
-                'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-muted',
+                'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-muted-foreground',
               )}
             >
               <Tag size={13} aria-hidden />
@@ -189,10 +189,10 @@ export default function PopTemplate({
         <dl aria-label="关键指标" className="mt-6 grid grid-flow-col auto-cols-fr gap-4 bg-accent-soft p-4">
           {data.metrics.map((metric, index) => (
             <div key={index} className="min-w-0">
-              <dt className="text-xs leading-5 text-pretty text-muted">{metric.label}</dt>
+              <dt className="text-xs leading-5 text-pretty text-muted-foreground">{metric.label}</dt>
               <dd className="m-0 mt-1 flex flex-wrap items-baseline gap-x-1 tabular-nums">
                 <span className="text-3xl leading-9 font-black wrap-anywhere text-ink">{metric.value}</span>
-                <span className="text-xs text-muted">{metric.unit}</span>
+                <span className="text-xs text-muted-foreground">{metric.unit}</span>
               </dd>
             </div>
           ))}
@@ -204,7 +204,7 @@ export default function PopTemplate({
         </p>
       )}
       <figure className="mx-0 mt-6 mb-0 min-w-0 border-t-2 border-ink! pt-4">
-        <figcaption className="mb-2 flex items-center gap-2 text-xs font-bold text-muted">
+        <figcaption className="mb-2 flex items-center gap-2 text-xs font-bold text-muted-foreground">
           <span className="inline-block size-2 bg-accent" aria-hidden />
           图表分析
         </figcaption>
@@ -228,14 +228,14 @@ export default function PopTemplate({
         )}
         {!editing && subtitle && (
           <p
-            className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted"
+            className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted-foreground"
             title={subtitle}
           >
             {subtitle}
           </p>
         )}
       </div>
-      <footer className="mt-3 flex items-start justify-between gap-4 border-t-2 border-ink! pt-3 text-xs text-muted">
+      <footer className="mt-3 flex items-start justify-between gap-4 border-t-2 border-ink! pt-3 text-xs text-muted-foreground">
         <details className="group/source min-w-0 flex-1">
           <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
             <LinkSimple size={13} aria-hidden />

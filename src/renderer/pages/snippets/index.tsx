@@ -41,8 +41,8 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
     <div className="w-full px-6 pt-8 pb-12">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="m-0 text-[26px] leading-[1.35] font-semibold text-balance">洞察 Snippet</h1>
-          <p className="mt-2 mb-0 text-pretty text-muted">
+          <h1 className="m-0 text-3xl leading-[1.35] font-semibold text-balance">洞察 Snippet</h1>
+          <p className="mt-2 mb-0 text-pretty text-muted-foreground">
             <span className="tabular-nums">{snippets.length}</span> 个已保存的数据洞察 · 把发现收集起来
           </p>
         </div>
@@ -50,9 +50,9 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
 
       {!snippets.length ? (
         <div className="mt-6 grid justify-items-center rounded-xl border border-dashed px-6 py-14 text-center">
-          <Lightbulb size={32} className="text-muted" />
+          <Lightbulb size={32} className="text-muted-foreground" />
           <h2 className="mt-4 mb-2 text-base font-medium">暂无数据洞察</h2>
-          <p className="m-0 text-muted">在分析图表中点击“保存 Snippet”后即可查看。</p>
+          <p className="m-0 text-muted-foreground">在分析图表中点击“保存 Snippet”后即可查看。</p>
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-1 items-start gap-7 xl:grid-cols-2">
@@ -86,7 +86,7 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
             <AlertDialog.Title className="mt-0 mb-4 text-lg font-semibold text-balance">
               删除 Snippet
             </AlertDialog.Title>
-            <AlertDialog.Description className="m-0 text-sm leading-6 text-pretty text-muted">
+            <AlertDialog.Description className="m-0 text-sm leading-6 text-pretty text-muted-foreground">
               确定删除这个 Snippet 吗？此操作无法撤销。
             </AlertDialog.Description>
             <div className="mt-6 flex justify-end gap-2">

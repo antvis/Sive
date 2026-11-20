@@ -1,26 +1,28 @@
 import {
-  CaretDown,
-  ChartBar,
-  ChartLineUp,
-  CheckCircle,
-  CircleNotch,
-  Columns,
-  Database,
-  MagnifyingGlass,
-  Tag,
-  Wrench,
-  XCircle,
-} from '@phosphor-icons/react';
-import { useEffect, useState } from 'react';
+  ChartColumnIcon,
+  ChartLineIcon,
+  Columns3Icon,
+  DatabaseIcon,
+  SearchIcon,
+  TagsIcon,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { getToolName, isTextUIPart, isToolOutputErrorUIPart, isToolUIPart } from 'ai';
 import type { DynamicToolUIPart, ToolUIPart, UIMessage } from 'ai';
 import type { AnalysisResponse, Profile, Schema, Semantic } from '@antv/ava';
-import { DataSourceLogo } from '../../components/DataSourceLogo';
-import { Markdown, SqlBlock } from '../../components/Markdown';
+import { DataSourceLogo } from '../DataSourceLogo';
+import { CodeBlock } from '../ai-elements/code-block';
+import { Message, MessageContent, MessageResponse } from '../ai-elements/message';
+import { Button } from '../ui/button';
+import { Tool, ToolContent, ToolHeader, ToolOutput } from '../ai-elements/tool';
 import { findDatasetSource } from '@shared/dataSource';
-import { AnalysisChart } from './AnalysisChart';
-import type { VisualizationResult } from './AnalysisChart';
+import type { ChatMessage } from '@shared/api';
+import { AnalysisChart } from './analysis-chart';
+import type { VisualizationResult } from './analysis-chart';
+import { MessageActions } from './message-actions';
 
 type ToolPart = ToolUIPart | DynamicToolUIPart;
 
@@ -33,21 +35,21 @@ type SourceResult = {
 };
 
 const toolLabels: Record<string, string> = {
-  source: '加载数据源',
-  schema: '识别数据字段',
-  profile: '统计数据概况',
-  semantic: '应用语义层',
+  source: '读取数据源',
+  schema: '解析数据结构',
+  profile: '计算统计指标',
+  semantic: '应用业务语义',
   analyze: '分析数据',
-  visualize: '生成图表',
+  visualize: '绘制图表',
 };
 
-const toolIcons = {
-  source: Database,
-  schema: Columns,
-  profile: ChartBar,
-  semantic: Tag,
-  analyze: MagnifyingGlass,
-  visualize: ChartLineUp,
+const toolIcons: Record<string, LucideIcon> = {
+  source: DatabaseIcon,
+  schema: Columns3Icon,
+  profile: ChartColumnIcon,
+  semantic: TagsIcon,
+  analyze: SearchIcon,
+  visualize: ChartLineIcon,
 };
 
 function cellText(value: unknown) {
@@ -110,7 +112,7 @@ function ProfileDetails({ profile }: { profile: Profile }) {
   const numericColumns = columns.filter((column) => column.properties.logicalType === 'numeric');
 
   return (
-    <div className="grid min-w-0 gap-2 break-words text-sm leading-6 text-muted">
+    <div className="grid min-w-0 gap-4 break-words text-sm leading-6 text-muted-foreground">
       <p className="m-0">{profileSummary(profile)}</p>
       {hasNullMetrics && (
         <p className="m-0">
@@ -162,12 +164,15 @@ function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {
   const { data = [], schema: columns = [] } = analysis;
   if (!data.length) return null;
   return (
-    <div className="max-w-full overflow-auto rounded-md bg-page p-2">
-      <table className="w-full border-collapse text-xs">
+    <div className="max-w-full overflow-auto rounded-md bg-muted/50 p-2">
+      <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
             {columns.map((column) => (
-              <th key={column.name} className="border-b px-2 py-2 text-left font-medium text-muted">
+              <th
+                key={column.name}
+                className="border-b px-2 py-2 text-left font-medium text-muted-foreground"
+              >
                 {column.name}
               </th>
             ))}
@@ -179,7 +184,7 @@ function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {
               {columns.map((column) => (
                 <td
                   key={column.name}
-                  className="max-w-48 truncate border-b px-2 py-2 text-ink/80"
+                  className="max-w-48 truncate border-b px-2 py-2 text-foreground/80"
                   title={cellText(row[column.name])}
                 >
                   {cellText(row[column.name])}
@@ -189,7 +194,7 @@ function AnalysisTable({ analysis }: { analysis: Partial<AnalysisResponse> }) {
           ))}
         </tbody>
       </table>
-      {data.length > 20 && <p className="mt-2 mb-0 text-xs text-muted">仅展示前 20 行</p>}
+      {data.length > 20 && <p className="mt-2 mb-0 text-xs text-muted-foreground">仅展示前 20 行</p>}
     </div>
   );
 }
@@ -206,21 +211,21 @@ function toolContent(toolName: string, output: unknown): ReactNode {
       { label: '列数', value: formatMetric(source.columnCount) },
     ];
     return (
-      <div className="rounded-lg bg-page p-4">
+      <div className="rounded-lg bg-muted/50 p-4">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-8 shrink-0 place-items-center rounded-md bg-surface">
+          <span className="grid size-8 shrink-0 place-items-center rounded-md bg-background">
             <DataSourceLogo type={source.sourceType} size={18} />
           </span>
-          <span className="min-w-0 break-words text-sm font-medium text-ink">{source.name}</span>
-          <span className="shrink-0 text-xs text-muted">
+          <span className="min-w-0 break-words text-sm font-medium text-foreground">{source.name}</span>
+          <span className="shrink-0 text-xs text-muted-foreground">
             {findDatasetSource(source.sourceType)?.label ?? source.sourceType}
           </span>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
           {stats.map((stat) => (
             <div key={stat.label} className="flex items-baseline gap-1.5 text-xs">
-              <span className="text-muted">{stat.label}</span>
-              <span className="text-ink/80">{stat.value}</span>
+              <span className="text-muted-foreground">{stat.label}</span>
+              <span className="text-foreground/80">{stat.value}</span>
             </div>
           ))}
         </div>
@@ -228,27 +233,30 @@ function toolContent(toolName: string, output: unknown): ReactNode {
     );
   }
   if (toolName === 'schema')
-    return <p className="m-0 text-sm leading-6 text-muted">{schemaSummary(output as Schema)}</p>;
+    return <p className="m-0 text-sm leading-6 text-muted-foreground">{schemaSummary(output as Schema)}</p>;
   if (toolName === 'profile') return <ProfileDetails profile={output as Profile} />;
   if (toolName === 'semantic') {
-    return <p className="m-0 text-sm leading-6 text-muted">{semanticSummary(output as Semantic)}</p>;
+    return (
+      <p className="m-0 text-sm leading-6 text-muted-foreground">{semanticSummary(output as Semantic)}</p>
+    );
   }
   if (toolName === 'analyze') {
     const analysis = output as AnalysisResponse;
     const content = analysis.markdown || analysis.text;
     return (
-      <div className="grid min-w-0 gap-3">
+      <div className="grid min-w-0 gap-4">
         {content && (
-          <div className="text-ink/80">
-            <Markdown>{content}</Markdown>
+          <div className="text-foreground/80">
+            <MessageResponse className="leading-6">{content}</MessageResponse>
           </div>
         )}
-        {analysis.sql && <SqlBlock code={analysis.sql} />}
+        {analysis.sql && <CodeBlock code={analysis.sql} language="sql" />}
         <AnalysisTable analysis={analysis} />
       </div>
     );
   }
-  if (toolName === 'visualize') return <p className="m-0 text-sm leading-6 text-muted">未生成图表。</p>;
+  if (toolName === 'visualize')
+    return <p className="m-0 text-sm leading-6 text-muted-foreground">未生成图表。</p>;
   return null;
 }
 
@@ -266,6 +274,7 @@ function ToolCallView({
   isStreaming: boolean;
 }) {
   const toolName = getToolName(call);
+  const ToolIcon = toolIcons[toolName];
   const completed =
     call.state === 'output-available' || call.state === 'output-error' || call.state === 'output-denied';
   const [expanded, setExpanded] = useState(
@@ -276,75 +285,54 @@ function ToolCallView({
     setExpanded(!completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize');
   }, [completed, toolName, hasVisualization]);
 
-  const failed = isToolOutputErrorUIPart(call) || call.state === 'output-denied';
-  const StatusIcon = !completed ? CircleNotch : failed ? XCircle : CheckCircle;
-  const ToolIcon = toolIcons[toolName as keyof typeof toolIcons] ?? Wrench;
-  const input = call.input as { query?: unknown } | undefined;
-  const query = toolName === 'analyze' && typeof input?.query === 'string' ? input.query : '';
-  let summary = query;
-  if (call.state === 'output-available') {
-    if (toolName === 'source') summary = (call.output as SourceResult).name;
-    if (toolName === 'schema') summary = schemaSummary(call.output as Schema);
-    if (toolName === 'profile') summary = profileSummary(call.output as Profile);
-    if (toolName === 'semantic') summary = semanticSummary(call.output as Semantic);
-    if (toolName === 'visualize') summary = '未生成图表。';
-  }
   const visualization =
     toolName === 'visualize' && call.state === 'output-available'
       ? (call.output as VisualizationResult | null | undefined)
       : undefined;
-  if (hasChart(visualization)) {
-    return (
-      <AnalysisChart
-        visualization={visualization}
-        messageId={messageId}
-        saved={savedMessageIds.includes(messageId)}
-        isStreaming={isStreaming}
-      />
-    );
-  }
   const content =
     call.state === 'output-available' ? (
-      toolContent(toolName, call.output)
-    ) : isToolOutputErrorUIPart(call) ? (
-      <p className="m-0 text-sm text-danger">{call.errorText}</p>
+      hasChart(visualization) ? (
+        <AnalysisChart
+          visualization={visualization}
+          messageId={messageId}
+          saved={savedMessageIds.includes(messageId)}
+          isStreaming={isStreaming}
+        />
+      ) : (
+        toolContent(toolName, call.output)
+      )
     ) : null;
+  const header =
+    call.type === 'dynamic-tool'
+      ? { type: call.type, toolName: call.toolName, state: call.state }
+      : { type: call.type, state: call.state };
+  const errorText = isToolOutputErrorUIPart(call)
+    ? call.errorText
+    : call.state === 'output-denied'
+      ? '工具执行已拒绝。'
+      : undefined;
 
   return (
-    <div className="group min-w-0">
-      <button
-        type="button"
-        aria-expanded={expanded}
-        className="flex min-w-0 w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-page"
-        onClick={() => setExpanded((current) => !current)}
-      >
-        <ToolIcon size={16} className="shrink-0 text-muted" />
-        <span className={`shrink-0 text-sm font-medium ${failed ? 'text-danger' : 'text-ink'}`}>
-          {toolLabels[toolName] ?? toolName}
-        </span>
-        {summary && (!expanded || toolName === 'analyze') && (
-          <span className="min-w-0 flex-1 truncate text-xs text-muted" title={summary}>
-            {summary}
-          </span>
-        )}
-        <span className="flex-1" />
-        <StatusIcon
-          size={15}
-          className={
-            !completed
-              ? 'shrink-0 animate-spin text-muted'
-              : failed
-                ? 'shrink-0 text-danger'
-                : 'shrink-0 text-[#25804d]'
-          }
-        />
-        <CaretDown
-          size={14}
-          className={`shrink-0 text-muted opacity-0 transition-[opacity,transform] group-hover:opacity-100 group-focus-within:opacity-100 ${expanded ? '' : '-rotate-90'}`}
-        />
-      </button>
-      {expanded && content && <div className="mt-1 mr-2 mb-3 ml-8 min-w-0">{content}</div>}
-    </div>
+    <Tool
+      className="mb-0 rounded-none border-0 bg-transparent p-0"
+      open={expanded}
+      onOpenChange={setExpanded}
+    >
+      <ToolHeader
+        {...header}
+        title={toolLabels[toolName] ?? toolName}
+        icon={ToolIcon ? <ToolIcon className="size-4 text-muted-foreground" aria-hidden="true" /> : undefined}
+      />
+      <ToolContent className="p-0">
+        <div className="ml-4 border-l border-border py-3 pl-4">
+          <ToolOutput
+            className="[&>div]:text-sm [&>div]:leading-6"
+            output={content ?? undefined}
+            errorText={errorText}
+          />
+        </div>
+      </ToolContent>
+    </Tool>
   );
 }
 
@@ -375,13 +363,13 @@ function StreamContent({
     }
   }
   return (
-    <div className="grid min-w-0 gap-2">
+    <div className="grid min-w-0 gap-4">
       {parts.map((part, index) => {
         if (isTextUIPart(part))
           return (
-            <div key={index} className="p-3">
-              <Markdown>{part.text}</Markdown>
-            </div>
+            <MessageResponse key={index}>
+              {part.text}
+            </MessageResponse>
           );
         if (isToolUIPart(part))
           return (
@@ -400,33 +388,96 @@ function StreamContent({
   );
 }
 
-export function AnalysisMessageView({
+function UserMessageContent({ text }: { text: string }) {
+  const contentId = useId();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+
+  useLayoutEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+
+    const measure = () => {
+      const lineHeight = Number.parseFloat(getComputedStyle(content).lineHeight);
+      setOverflowing(content.scrollHeight > lineHeight * 6 + 1);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [text]);
+
+  return (
+    <>
+      <div id={contentId} className={expanded ? undefined : 'max-h-[10.5rem] overflow-hidden'}>
+        <div ref={contentRef} onFocusCapture={() => setExpanded(true)}>
+          <MessageResponse>{text}</MessageResponse>
+        </div>
+      </div>
+      {overflowing && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-auto self-start rounded-sm p-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground aria-expanded:bg-transparent"
+          aria-expanded={expanded}
+          aria-controls={contentId}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? '收起' : '展示更多'}
+        </Button>
+      )}
+    </>
+  );
+}
+
+export function PreviewMessage({
   message,
   savedMessageIds = [],
   isStreaming = false,
 }: {
-  message: UIMessage;
+  message: ChatMessage;
   savedMessageIds?: string[];
   isStreaming?: boolean;
 }) {
-  if (message.role === 'user') {
-    return (
-      <div className="flex justify-end">
-        <p className="m-0 min-w-0 max-w-[85%] rounded-xl bg-accent-soft px-4 py-3 text-sm leading-6 break-words whitespace-pre-wrap">
-          {message.parts
-            .filter(isTextUIPart)
-            .map((part) => part.text)
-            .join('')}
-        </p>
-      </div>
-    );
-  }
+  const isUser = message.role === 'user';
+
   return (
-    <StreamContent
-      parts={message.parts}
-      messageId={message.id}
-      savedMessageIds={savedMessageIds}
-      isStreaming={isStreaming}
-    />
+    <Message
+      from={message.role}
+      className={cn(
+        'group/message max-w-full',
+        isUser && 'motion-safe:animate-fade-up',
+      )}
+    >
+      <div className={isUser ? 'flex flex-col items-end gap-2' : 'flex min-w-0'}>
+        <MessageContent
+          className={cn(
+            isUser
+              ? 'chat-user-message w-fit max-w-[min(80%,56ch)] overflow-hidden break-words rounded-2xl rounded-br-lg border border-border/30 bg-gradient-to-br from-secondary to-muted px-3.5 py-2 text-base leading-7 shadow-[var(--shadow-card)]'
+              : 'min-w-0 flex-1 text-base leading-7',
+          )}
+        >
+          {isUser ? (
+            <UserMessageContent
+              text={message.parts
+                .filter(isTextUIPart)
+                .map((part) => part.text)
+                .join('')}
+            />
+          ) : (
+            <StreamContent
+              parts={message.parts}
+              messageId={message.id}
+              savedMessageIds={savedMessageIds}
+              isStreaming={isStreaming}
+            />
+          )}
+        </MessageContent>
+      </div>
+      <MessageActions message={message} isStreaming={isStreaming} />
+    </Message>
   );
 }

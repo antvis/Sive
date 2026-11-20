@@ -121,7 +121,7 @@ export default function App() {
       }}
       onNavigate={setPage}
     >
-      {!state && !error && <div className="grid h-full place-items-center text-muted">正在加载工作台…</div>}
+      {!state && !error && <div className="grid h-full place-items-center text-muted-foreground">正在加载工作台…</div>}
       {!state && error && (
         <div className="grid h-full place-content-center justify-items-center gap-4">
           <p className="m-0 text-danger">{error}</p>
@@ -160,6 +160,7 @@ export default function App() {
         position="bottom-right"
         visibleToasts={1}
         toastOptions={{
+          className: 'text-xs!',
           style: {
             width: 'max-content',
             maxWidth: 'calc(100vw - 32px)',
@@ -170,7 +171,6 @@ export default function App() {
             background: 'var(--surface)',
             color: 'var(--ink)',
             boxShadow: '0 4px 16px #00000012',
-            fontSize: '12px',
           },
         }}
       />

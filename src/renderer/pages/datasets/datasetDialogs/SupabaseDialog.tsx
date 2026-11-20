@@ -45,7 +45,7 @@ export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
         value={form.accessToken}
         onValueChange={(value) => setForm({ ...form, accessToken: value })}
       />
-      <p className="m-0 text-xs text-muted">
+      <p className="m-0 text-xs text-muted-foreground">
         使用个人访问令牌（非项目 API Key），读取 public schema 中的数据表和视图。
       </p>
     </ConnectionDialog>

@@ -43,7 +43,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
             <span className="break-all">{id}</span>
           </label>
         ))}
-        {!all.length && <p className="m-0 px-1 py-3 text-center text-xs text-muted">请获取或手动添加模型</p>}
+        {!all.length && <p className="m-0 px-1 py-3 text-center text-xs text-muted-foreground">请获取或手动添加模型</p>}
       </div>
 
       {adding ? (
@@ -94,7 +94,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
       ) : (
         <Button
           variant="ghost"
-          className="mt-2 w-full justify-start px-1 text-muted"
+          className="mt-2 w-full justify-start px-1 text-muted-foreground"
           disabled={disabled}
           onClick={() => setAdding(true)}
         >

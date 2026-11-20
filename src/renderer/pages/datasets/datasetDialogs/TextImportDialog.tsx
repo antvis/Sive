@@ -83,7 +83,7 @@ export function TextImportDialog({ onClose }: { onClose: () => void }) {
         />
         {rows ? (
           <>
-            <p className="m-0 text-sm text-muted">
+            <p className="m-0 text-sm text-muted-foreground">
               已提取 {rows.length} 条数据，预览前 {Math.min(rows.length, 20)} 条。
               请核对结果，确认后保存全部数据。
             </p>
@@ -93,7 +93,7 @@ export function TextImportDialog({ onClose }: { onClose: () => void }) {
           </>
         ) : (
           <>
-            <p className="m-0 text-sm text-muted">文本将发送至当前默认模型，提取后可预览并确认保存。</p>
+            <p className="m-0 text-sm text-muted-foreground">文本将发送至当前默认模型，提取后可预览并确认保存。</p>
             <label className="grid gap-1.5 text-sm">
               文本内容
               <textarea

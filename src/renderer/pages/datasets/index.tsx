@@ -151,15 +151,15 @@ function DatasetCard({
             key={label}
             className="flex items-center justify-center gap-2 border-r border-line/60 px-2 last:border-0"
           >
-            <StatIcon size={17} className="shrink-0 text-muted" />
+            <StatIcon size={17} className="shrink-0 text-muted-foreground" />
             <div className="min-w-0">
-              <strong className="block truncate text-sm font-medium text-muted">{value}</strong>
-              <span className="mt-0.5 block text-[10px] text-muted/80">{label}</span>
+              <strong className="block truncate text-sm font-medium text-muted-foreground">{value}</strong>
+              <span className="mt-0.5 block text-xs text-muted-foreground/80">{label}</span>
             </div>
           </div>
         ))}
       </div>
-      <footer className="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-muted">
+      <footer className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <span>
           {sourceLabel}
           {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}
@@ -189,7 +189,7 @@ function DatasetCard({
           </>
         }
       >
-        <p className="m-0 leading-6 text-muted">确定删除“{dataset.name}”吗？删除后不再显示在数据源列表中。</p>
+        <p className="m-0 leading-6 text-muted-foreground">确定删除“{dataset.name}”吗？删除后不再显示在数据源列表中。</p>
       </Modal>
     </article>
   );
@@ -237,8 +237,8 @@ export function DatasetsPage({
     <div className="w-full px-6 pt-8 pb-12">
       <header className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="m-0 text-[26px] leading-[1.35] font-semibold tracking-[-0.03em]">数据源</h1>
-          <p className="mt-2 mb-0 text-muted">{datasets.length} 个已添加的数据源</p>
+          <h1 className="m-0 text-3xl leading-[1.35] font-semibold tracking-[-0.03em]">数据源</h1>
+          <p className="mt-2 mb-0 text-muted-foreground">{datasets.length} 个已添加的数据源</p>
         </div>
         <Button variant="primary" onClick={onAdd}>
           <Plus size={16} />
@@ -257,7 +257,7 @@ export function DatasetsPage({
             setVisibleCount(24);
           }}
         />
-        <span className="text-xs text-muted">
+        <span className="text-xs text-muted-foreground">
           已显示 {Math.min(visibleCount, filtered.length)} / {filtered.length} 个
         </span>
       </div>
@@ -267,7 +267,7 @@ export function DatasetsPage({
         ))}
       </div>
       {!filtered.length && (
-        <p className="py-10 text-center text-sm text-muted">
+        <p className="py-10 text-center text-sm text-muted-foreground">
           {datasets.length ? '没有匹配的数据源' : '还没有数据源，点击“添加数据源”开始。'}
         </p>
       )}

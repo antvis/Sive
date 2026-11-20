@@ -121,7 +121,7 @@ export function ConnectionDialog({
       }
     >
       {loading ? (
-        <p className="text-sm text-muted">正在读取连接…</p>
+        <p className="text-sm text-muted-foreground">正在读取连接…</p>
       ) : (
         <form
           id={formId}

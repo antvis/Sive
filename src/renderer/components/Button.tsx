@@ -13,7 +13,7 @@ export function Button({ className, variant = 'secondary', type = 'button', ...p
         'inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors disabled:opacity-45',
         variant === 'primary' && 'bg-accent text-white hover:opacity-90',
         variant === 'secondary' && 'border bg-surface text-ink hover:bg-page',
-        variant === 'ghost' && 'text-muted hover:bg-page hover:text-ink',
+        variant === 'ghost' && 'text-muted-foreground hover:bg-page hover:text-ink',
         variant === 'danger' && 'border border-danger/30 bg-danger/5 text-danger hover:bg-danger/10',
         className,
       )}

@@ -1,7 +1,8 @@
-import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
+import type { ChatTransport, UIMessageChunk } from 'ai';
 import { analysisStartSchema } from '../../../shared/api';
+import type { ChatMessage } from '../../../shared/api';
 
-export class IpcChatTransport implements ChatTransport<UIMessage> {
+export class IpcChatTransport implements ChatTransport<ChatMessage> {
   constructor(
     private onConversationChange: (id: string) => void,
     private onError: (error: unknown) => void,
@@ -13,7 +14,7 @@ export class IpcChatTransport implements ChatTransport<UIMessage> {
     body,
     abortSignal,
     trigger,
-  }: Parameters<ChatTransport<UIMessage>['sendMessages']>[0]) {
+  }: Parameters<ChatTransport<ChatMessage>['sendMessages']>[0]) {
     if (trigger !== 'submit-message') throw new Error('暂不支持重新生成消息。');
     const input = await analysisStartSchema.parseAsync({ ...body, chatId, message: messages.at(-1) });
     abortSignal?.throwIfAborted();

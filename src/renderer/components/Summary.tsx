@@ -13,7 +13,7 @@ export function Summary({ syntax }: { syntax: string }) {
     if (!containerRef.current || !syntax || !renderT8) return;
     const summary = GPTVisSummary({
       container: containerRef.current,
-      theme: templateTheme ?? createChartTheme(themeMode),
+      theme: createChartTheme(themeMode, templateTheme),
     });
     try {
       summary.render(syntax);

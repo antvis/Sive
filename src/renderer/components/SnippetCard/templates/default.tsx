@@ -140,7 +140,7 @@ export default function DefaultTemplate({
       )}
       {!editing && subtitle && (
         <p
-          className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted"
+          className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted-foreground"
           title={subtitle}
         >
           {subtitle}
@@ -153,10 +153,10 @@ export default function DefaultTemplate({
         >
           {data.metrics.map((metric, index) => (
             <div key={index} className="min-w-0">
-              <dt className="text-xs leading-5 text-pretty text-muted">{metric.label}</dt>
+              <dt className="text-xs leading-5 text-pretty text-muted-foreground">{metric.label}</dt>
               <dd className="m-0 mt-1 flex flex-wrap items-baseline gap-x-1 tabular-nums">
                 <span className="text-xl leading-7 font-semibold wrap-anywhere text-ink">{metric.value}</span>
-                <span className="text-xs text-muted">{metric.unit}</span>
+                <span className="text-xs text-muted-foreground">{metric.unit}</span>
               </dd>
             </div>
           ))}
@@ -228,7 +228,7 @@ export default function DefaultTemplate({
         <figcaption className="sr-only">图表分析</figcaption>
         <Visualization spec={chartSpec} height={360} />
       </figure>
-      <footer className="mt-3 flex items-start justify-between gap-4 border-t border-line/65! pt-3 text-xs text-muted">
+      <footer className="mt-3 flex items-start justify-between gap-4 border-t border-line/65! pt-3 text-xs text-muted-foreground">
         <details className="group/source min-w-0 flex-1">
           <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
             <LinkSimple size={13} aria-hidden />

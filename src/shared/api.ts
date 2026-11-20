@@ -97,6 +97,8 @@ export type Conversation = {
   deletedAt: string | null;
 };
 
+export type ChatMessage = UIMessage<{ createdAt: string }>;
+
 export type DatasetSummary = {
   id: string;
   name: string;
@@ -180,7 +182,7 @@ export type WorkbenchApi = {
   modelDelete(id: string): Promise<void>;
   analysisStart(input: AnalysisStartInput): Promise<void>;
   analysisCancel(conversationId: string): Promise<void>;
-  analysisGetMessages(conversationId: string): Promise<UIMessage[]>;
+  analysisGetMessages(conversationId: string): Promise<ChatMessage[]>;
   analysisOnChunk(callback: (messageId: string, chunk: UIMessageChunk | null) => void): () => void;
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;

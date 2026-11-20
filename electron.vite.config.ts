@@ -36,7 +36,11 @@ export default defineConfig(({ command }) => ({
     root: 'src/renderer',
     publicDir: resolve('assets'),
     resolve: {
-      alias: { '@assets': resolve('assets'), '@shared': resolve('src/shared') },
+      alias: {
+        '@renderer': resolve('src/renderer'),
+        '@assets': resolve('assets'),
+        '@shared': resolve('src/shared'),
+      },
     },
     base: './',
     plugins: [react(), tailwindcss()],
