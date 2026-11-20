@@ -1,0 +1,72 @@
+src/preload/index.ts
+  s_b0a1f271e5345c::t_7b2c0e6621751c 1
+src/main/services/settings/index.ts
+  s_b0a1f271e5345c::t_197366e0ac0449 16-17
+  s_b0a1f271e5345c::t_c5a964c437143d 46-47,53
+  s_b0a1f271e5345c::t_8749739558bf54 62
+src/renderer/pages/settings/index.tsx
+  s_b0a1f271e5345c::t_2ffc398de04834 26
+  s_b0a1f271e5345c::t_036f9a1c0b7cb7 58
+  s_b0a1f271e5345c::t_7233a85ceb69b7 1
+  s_b0a1f271e5345c::t_946ea3352c7b16 10,12
+tests/main/sentry/privacy.test.ts
+  s_b0a1f271e5345c::t_79f31a89cba79e 14,28,41-42,53,57,59,62,64-65,69,71,74-75,82-87,96-97,99-104,124-127,129-150
+  s_b0a1f271e5345c::t_33c996082457c4 128
+  s_b0a1f271e5345c::t_ae21e1bacb2167 109,119-120
+  s_b0a1f271e5345c::t_09951a1fdac04c 3
+  s_b0a1f271e5345c::t_bd8dfd067519bb 16
+  s_b0a1f271e5345c::t_4b6674fdfde7d9 1-2,4-13,15,17-27,29-40,43-52,54-56,58,60-61,63,66-68,70,72-73,76-81,88-94,112-118,121-123,151-152
+  s_b0a1f271e5345c::t_59116e48e2eeaa 95,105-108,110-111
+  s_b0a1f271e5345c::t_531718a7be668e 98
+package.json
+  s_b0a1f271e5345c::t_655cde5d287a84 34
+src/shared/api.ts
+  s_b0a1f271e5345c::t_6e5b0d954a0cec 30
+  s_b0a1f271e5345c::t_b22818a634dedc 44
+electron.vite.config.ts
+  s_b0a1f271e5345c::t_97e70aef1d1d61 51
+src/shared/sentry.ts
+  s_b0a1f271e5345c::t_64165f42ba9614 1-2
+  s_b0a1f271e5345c::t_bb296d395b829c 3
+src/renderer/pages/settings/PrivacySettings.tsx
+  s_b0a1f271e5345c::t_807a91afea207c 32-37
+  s_b0a1f271e5345c::t_c9d64d74a285d0 1-27,38-39,41-62,73-79
+  s_b0a1f271e5345c::t_f5884b3a766524 28-31
+  s_b0a1f271e5345c::t_a9715ff48f6e60 63-72
+  s_b0a1f271e5345c::t_430e926fb36491 40
+src/renderer/components/AppErrorBoundary.tsx
+  s_b0a1f271e5345c::t_4e79364359a55c 1-39
+tests/main/services/settings.test.ts
+  s_b0a1f271e5345c::t_c861bac94882fb 22,28
+  s_b0a1f271e5345c::t_d793ef13433e8e 36
+src/renderer/main.tsx
+  s_b0a1f271e5345c::t_fd37fcbee943a4 3,7-13
+  s_b0a1f271e5345c::t_f0269b9b4d4856 4
+src/main/index.ts
+  s_b0a1f271e5345c::t_b432977d5d067e 3
+  s_b0a1f271e5345c::t_13f0ca717cf782 7
+  s_b0a1f271e5345c::t_184fa03ccb8812 51-52
+  s_b0a1f271e5345c::t_44749f3d28bee6 41
+src/renderer/pages/settings/SettingControls.tsx
+  s_b0a1f271e5345c::t_3f5ccd321a0e51 34,36
+src/main/util/sentry/index.ts
+  s_b0a1f271e5345c::t_e43f027bc58733 1-38
+src/renderer/utils/sentry.ts
+  s_b0a1f271e5345c::t_33a9c87db875e0 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5cd6a2040685f264eec400e87962da1d1a9e5379",
+  "prompts": {},
+  "sessions": {
+    "s_b0a1f271e5345c": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "24029b35-640a-4a10-ba27-0824727b4a50",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
