@@ -48,6 +48,7 @@ export default defineConfig(({ command }) => ({
     build: {
       outDir: resolve('dist'),
       minify: true,
+      sourcemap: 'hidden',
       chunkSizeWarningLimit: 1600,
       rolldownOptions: { input: resolve('src/renderer/index.html') },
     },

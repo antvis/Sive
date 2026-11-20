@@ -19,12 +19,13 @@ describe('SettingsService', () => {
     expect(service.getPreferences()).toEqual(DEFAULT_PREFERENCES);
   });
 
-  it('saves theme, agent, strategy and engine as separate JSON records', () => {
+  it('saves preferences as separate JSON records', () => {
     service.savePreferences({
       theme: DEFAULT_PREFERENCES.theme,
       agent: { maxSteps: 15 },
       strategy: { type: 'loop', maxSteps: 6 },
       engine: { ...DEFAULT_PREFERENCES.engine, memoryLimit: '2GB' },
+      diagnostics: { nativeCrashReporting: true },
     });
 
     const settings = createRepositories(testDb.database).settings;
@@ -32,5 +33,6 @@ describe('SettingsService', () => {
     expect(settings.get('agent')?.value).toEqual({ maxSteps: 15 });
     expect(settings.get('strategy')?.value).toEqual({ type: 'loop', maxSteps: 6 });
     expect(settings.get('engine')?.value).toEqual({ ...DEFAULT_PREFERENCES.engine, memoryLimit: '2GB' });
+    expect(settings.get('diagnostics')?.value).toEqual({ nativeCrashReporting: true });
   });
 });
