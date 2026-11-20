@@ -13,6 +13,8 @@ const AGENT_KEY = 'agent';
 const STRATEGY_KEY = 'strategy';
 // DuckDB 引擎配置
 const ENGINE_KEY = 'engine';
+// 异常诊断配置
+const DIAGNOSTICS_KEY = 'diagnostics';
 
 /**
  * Store several types of configurations separately,
@@ -41,11 +43,14 @@ export class SettingsService {
       Preferences['strategy'] | undefined;
     const engine = this.repositories.settings.get(ENGINE_KEY)?.value as
       Partial<DuckDBEngineConfig> | undefined;
+    const diagnostics = this.repositories.settings.get(DIAGNOSTICS_KEY)?.value as
+      Partial<Preferences['diagnostics']> | undefined;
     return {
       theme: { ...DEFAULT_PREFERENCES.theme, ...theme },
       agent: { ...DEFAULT_PREFERENCES.agent, ...agent },
       strategy: { ...DEFAULT_PREFERENCES.strategy, ...strategy },
       engine: { ...DEFAULT_PREFERENCES.engine, ...engine },
+      diagnostics: { ...DEFAULT_PREFERENCES.diagnostics, ...diagnostics },
     };
   }
 
@@ -54,6 +59,7 @@ export class SettingsService {
     this.set(AGENT_KEY, preferences.agent);
     this.set(STRATEGY_KEY, preferences.strategy);
     this.set(ENGINE_KEY, preferences.engine);
+    this.set(DIAGNOSTICS_KEY, preferences.diagnostics);
   }
 
   getActiveModel(): ActiveModel {

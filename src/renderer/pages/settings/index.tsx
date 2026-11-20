@@ -1,4 +1,4 @@
-import { Archive, ChartLineUp, Cpu, Info, SlidersHorizontal } from '@phosphor-icons/react';
+import { Archive, ChartLineUp, Cpu, Info, ShieldCheck, SlidersHorizontal } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { useState } from 'react';
 import type { WorkspaceState } from '../../types';
@@ -7,8 +7,9 @@ import { AnalysisSettings } from './AnalysisSettings';
 import { ArchivedConversations } from './ArchivedConversations';
 import { GeneralSettings } from './GeneralSettings';
 import { ModelSettings } from './ModelSettings';
+import { PrivacySettings } from './PrivacySettings';
 
-type Section = 'general' | 'analysis' | 'models' | 'archived' | 'about';
+type Section = 'general' | 'analysis' | 'models' | 'archived' | 'privacy' | 'about';
 
 export function SettingsPage({ state }: { state: WorkspaceState }) {
   const [section, setSection] = useState<Section>('general');
@@ -22,6 +23,7 @@ export function SettingsPage({ state }: { state: WorkspaceState }) {
       icon: Archive,
       count: state.archivedConversations.length,
     },
+    { id: 'privacy' as const, label: '隐私与诊断', icon: ShieldCheck },
     { id: 'about' as const, label: '关于项目', icon: Info },
   ];
 
@@ -53,6 +55,7 @@ export function SettingsPage({ state }: { state: WorkspaceState }) {
         {section === 'archived' && (
           <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
         )}
+        {section === 'privacy' && <PrivacySettings preferences={state.preferences} />}
         {section === 'about' && <AboutSettings />}
       </div>
     </div>

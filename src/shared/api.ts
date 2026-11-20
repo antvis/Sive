@@ -27,6 +27,7 @@ export type Preferences = {
   agent: { maxSteps: number };
   strategy: AnalysisStrategyConfig;
   engine: DuckDBEngineConfig;
+  diagnostics: { nativeCrashReporting: boolean };
 };
 
 export const DEFAULT_PREFERENCES = {
@@ -40,6 +41,7 @@ export const DEFAULT_PREFERENCES = {
     queryTimeoutMs: 30000,
     maxTempDirectorySize: '1GB',
   },
+  diagnostics: { nativeCrashReporting: false },
 } satisfies Preferences;
 
 export function analysisStrategy(

@@ -1,8 +1,10 @@
 import path from 'node:path';
 import { app, BrowserWindow } from 'electron';
+import { captureException, flush } from '@sentry/electron/main';
 import { DBConnection } from './db';
 import { registerIpc } from './ipc';
 import { createServices } from './services';
+import { initializeSentry } from './util/sentry';
 
 let database: DBConnection | undefined;
 const iconPath = path.join(__dirname, '../assets/sive.png');
@@ -36,6 +38,7 @@ async function initialize() {
   database = await DBConnection.connect(app.getPath('userData'));
 
   const services = createServices(database);
+  initializeSentry(services.settings.getPreferences().diagnostics.nativeCrashReporting);
   registerIpc(services);
   createWindow();
 }
@@ -45,7 +48,8 @@ void app
   .then(initialize)
   .catch((error: unknown) => {
     console.error('Failed to initialize the main process.', error);
-    app.quit();
+    captureException(error);
+    void flush(2000).finally(() => app.quit());
   });
 
 app.on('activate', () => {

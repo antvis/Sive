@@ -1,3 +1,4 @@
+import '@sentry/electron/preload';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
 import type { UIMessageChunk } from 'ai';
