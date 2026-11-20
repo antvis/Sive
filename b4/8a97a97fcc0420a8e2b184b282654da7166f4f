@@ -7,6 +7,7 @@ src/renderer/pages/datasets/datasetDialogs/SupabaseDialog.tsx
   s_c2653db6be8445::t_a2c2b6b4c8bab6 27
   s_c2653db6be8445::t_2b704d988a5d48 80-82
   s_c2653db6be8445::t_cd54a371f48cf2 2-5,10-13,18-19,22-26,28-40,49,51-52,61-78,83-89
+  s_c2653db6be8445::t_9f5079551aec08 79
 src/main/db/schema/datasets.ts
   s_c2653db6be8445::t_f9e2c42d7811b7 42-43
   s_c2653db6be8445::t_35c5b6178889c7 12-13,16-27
