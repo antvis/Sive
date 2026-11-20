@@ -803,7 +803,15 @@ export const PromptInput = ({
         ref={formRef}
         {...props}
       >
-        <InputGroup className="overflow-hidden">{children}</InputGroup>
+        <InputGroup
+          className={cn(
+            "gap-1.5 overflow-hidden rounded-[14px]! border-border bg-background p-1.5",
+            "shadow-[0_1px_3px_rgb(0_0_0/5%),0_1px_1px_rgb(0_0_0/3%)] dark:shadow-[inset_0_1px_0_rgb(255_255_255/3%),0_1px_3px_rgb(0_0_0/20%)]",
+            "transition-[border-color,border-radius] duration-150 ease-[ease] focus-within:border-border! focus-within:ring-0!"
+          )}
+        >
+          {children}
+        </InputGroup>
       </form>
     </>
   );

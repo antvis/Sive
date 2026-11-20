@@ -111,7 +111,7 @@ export function ToolCallView({
       <ToolContent className="p-0">
         <div className="ml-4 border-l border-border py-3 pl-4">
           <ToolOutput
-            className="[&>div]:text-sm [&>div]:leading-6 [&_table]:text-xs"
+            className="[&_table]:text-xs"
             output={content ?? undefined}
             errorText={errorText}
           />

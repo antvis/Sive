@@ -162,7 +162,7 @@ export const ToolOutput = ({
       <div
         role={errorText ? "alert" : undefined}
         className={cn(
-          "overflow-x-auto rounded-md text-xs [&_table]:w-full",
+          "overflow-x-auto rounded-md text-sm leading-6",
           errorText && "bg-destructive/10 p-3 whitespace-pre-wrap break-words text-destructive"
         )}
       >

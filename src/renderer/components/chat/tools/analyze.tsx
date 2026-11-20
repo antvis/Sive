@@ -143,14 +143,14 @@ export function AnalyzeTool({ analysis }: { analysis: AnalysisResponse }) {
           )}
           {analysis.query && content && <hr className="m-0 border-border" />}
           {content && (
-            <MessageResponse className="space-y-2 text-sm leading-6 text-foreground [&_li]:leading-6">
+            <MessageResponse className="space-y-2 text-sm leading-6 text-foreground">
               {confirmation?.[2] ?? content}
             </MessageResponse>
           )}
           {limitations && (
             <div className="space-y-1">
               <p className="m-0 text-xs font-medium text-muted-foreground">分析局限</p>
-              <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground [&_li]:leading-5">
+              <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground">
                 {limitations}
               </MessageResponse>
             </div>
@@ -245,7 +245,7 @@ export function AnalyzeTool({ analysis }: { analysis: AnalysisResponse }) {
       </Tabs.Root>
       {confirmation && (
         <AnalysisSection title="核对说明">
-          <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground [&_li]:leading-5">
+          <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground">
             {confirmation[1]}
           </MessageResponse>
         </AnalysisSection>

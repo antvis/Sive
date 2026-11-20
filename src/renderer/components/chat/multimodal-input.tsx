@@ -61,13 +61,7 @@ export function MultimodalInput({
 
   return (
     <PromptInput
-      className={cn(
-        'motion-reduce:transition-none! motion-reduce:**:transition-none!',
-        '[&_[data-slot=input-group]]:gap-1.5 [&_[data-slot=input-group]]:rounded-[14px]! [&_[data-slot=input-group]]:border-border [&_[data-slot=input-group]]:bg-background [&_[data-slot=input-group]]:p-1.5',
-        '[&_[data-slot=input-group]]:shadow-[0_1px_3px_rgb(0_0_0/5%),0_1px_1px_rgb(0_0_0/3%)] dark:[&_[data-slot=input-group]]:shadow-[inset_0_1px_0_rgb(255_255_255/3%),0_1px_3px_rgb(0_0_0/20%)]',
-        '[&_[data-slot=input-group]]:transition-[border-color,border-radius] [&_[data-slot=input-group]]:duration-150 [&_[data-slot=input-group]]:ease-[ease]',
-        '[&_[data-slot=input-group]]:focus-within:border-border! [&_[data-slot=input-group]]:focus-within:ring-0!',
-      )}
+      className="motion-reduce:transition-none! motion-reduce:**:transition-none!"
       onSubmit={onSubmit}
       onResetCapture={(event) => {
         // Text is cleared by the caller; a native reset also changes the model and strategy.
