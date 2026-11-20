@@ -129,7 +129,9 @@ export class AnalysisService {
     dataset: DatasetRow,
     engine: DuckDBEngineConfig,
   ): Promise<AnalysisAgent> {
-    const engineKey = JSON.stringify(engine);
+    const credentialKey =
+      dataset.sourceConfig.type === 'supabase' ? dataset.sourceConfig.options.accessToken : '';
+    const engineKey = JSON.stringify([engine, credentialKey]);
     const existing = this.agents.get(conversationId);
     if (existing?.engineKey === engineKey) return existing.agent;
     // If the engine key has changed, dispose of the existing agent and create a new one, ensuring that the analysis uses the correct engine configuration,

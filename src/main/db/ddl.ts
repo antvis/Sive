@@ -4,6 +4,7 @@ export const SchemaDDL = `
     name TEXT NOT NULL,
     source_type TEXT NOT NULL,
     source_config TEXT NOT NULL,
+    extras TEXT,
     schema TEXT NOT NULL,
     profile TEXT NOT NULL,
     semantic TEXT NOT NULL DEFAULT '{}',

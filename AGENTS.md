@@ -12,6 +12,21 @@ Sive is a desktop data analysis workbench based on AntV AVA, built with Electron
 
 MUST USE THE BESE PRACTICES OF ELECTRON APPLICATION.
 
+## Architecture
+
+Data access follows a one-way call chain. No cross-layer or reverse dependencies:
+
+```
+renderer -> ipc -> service -> repository
+```
+
+- `renderer`: initiates calls only via `window.workbench`; no business logic or storage details.
+- `ipc`: validates parameters, orchestrates, and forwards only; no business rules.
+- `service`: holds business logic; depends only on DBConnection and repositories, never on other services.
+- `repository`: handles SQL and persistence only; no business logic.
+
+Keep each layer's code in its own directory; do not mix responsibilities.
+
 ## Code Style
 
 - Prefer Tailwind utilities for client styles. Keep CSS for shared theme tokens, global defaults, and custom keyframes only.

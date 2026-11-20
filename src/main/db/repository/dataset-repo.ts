@@ -40,6 +40,15 @@ export class DatasetRepo {
       .get();
   }
 
+  updateCredentials(id: string, values: Required<Pick<DatasetUpdate, 'sourceConfig' | 'extras'>>) {
+    return this.db
+      .update(datasets)
+      .set(values)
+      .where(and(eq(datasets.id, id), isNull(datasets.deletedAt)))
+      .returning()
+      .get();
+  }
+
   remove(id: string) {
     const row = this.get(id);
     if (!row) return;
