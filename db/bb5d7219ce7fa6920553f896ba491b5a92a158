@@ -2,6 +2,7 @@ src/main/util/supabase/oauth-provider.ts
   s_c2653db6be8445::t_9c74234e86549f 11
   s_c2653db6be8445::t_f56a6be485fcd9 8-10
   s_c2653db6be8445::t_5a626a398bd539 12-14
+  s_c2653db6be8445::t_edcd1a55b1feee 1-7,15-116
 src/renderer/pages/datasets/datasetDialogs/SupabaseDialog.tsx
   s_c2653db6be8445::t_a2c2b6b4c8bab6 27
   s_c2653db6be8445::t_2b704d988a5d48 80-82
@@ -37,6 +38,7 @@ src/main/util/supabase/oauth.ts
   s_c2653db6be8445::t_7fa47490c68075 2-3
   s_c2653db6be8445::t_66862a2ab5b98c 1
   s_c2653db6be8445::t_c91ce401b97149 4-6
+  s_c2653db6be8445::t_edcd1a55b1feee 7-69
 src/main/db/repository/dataset-repo.ts
   s_c2653db6be8445::t_6a37fa63012599 43,46
   s_c2653db6be8445::t_831f8498221a45 44-45,47-51
@@ -74,6 +76,8 @@ src/main/util/supabase/errors.ts
   s_c2653db6be8445::t_8c1dcfb98fa439 1-32
 src/main/util/supabase/loopback.ts
   s_c2653db6be8445::t_2343c30a2aec80 1-80
+package.json
+  s_c2653db6be8445::t_edcd1a55b1feee 33
 ---
 {
   "schema_version": "authorship/3.0.0",
