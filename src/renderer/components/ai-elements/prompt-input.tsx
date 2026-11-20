@@ -1188,7 +1188,10 @@ export const PromptInputSelectItem = ({
   className,
   ...props
 }: PromptInputSelectItemProps) => (
-  <SelectItem className={cn(className)} {...props} />
+  <SelectItem
+    className={cn("min-h-[30px] text-sm leading-4 font-normal", className)}
+    {...props}
+  />
 );
 
 export type PromptInputSelectValueProps = ComponentProps<typeof SelectValue>;

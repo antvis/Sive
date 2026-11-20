@@ -29,7 +29,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Streamdown } from "streamdown";
+import { defaultComponents, Streamdown } from "streamdown";
 import { MarkdownTable } from "./table";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
@@ -323,15 +323,27 @@ export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
 const streamdownPlugins = { cjk, code, math, mermaid };
 
-const streamdownComponents = { table: MarkdownTable };
+const streamdownComponents = {
+  table: MarkdownTable,
+  strong: ({ className, ...props }: ComponentProps<typeof defaultComponents.strong>) => (
+    <defaultComponents.strong className={cn("text-foreground", className)} {...props} />
+  ),
+  ul: ({ className, ...props }: ComponentProps<typeof defaultComponents.ul>) => (
+    <defaultComponents.ul className={cn("list-outside space-y-0 pl-7", className)} {...props} />
+  ),
+  ol: ({ className, ...props }: ComponentProps<typeof defaultComponents.ol>) => (
+    <defaultComponents.ol className={cn("list-outside space-y-0 pl-7", className)} {...props} />
+  ),
+  li: ({ className, ...props }: ComponentProps<typeof defaultComponents.li>) => (
+    <defaultComponents.li className={cn("py-0 leading-[inherit]", className)} {...props} />
+  ),
+};
 
 export const MessageResponse = memo(
   ({ className, ...props }: MessageResponseProps) => (
     <Streamdown
       className={cn(
         "size-full space-y-3 font-sans leading-[1.6] font-normal tracking-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-        "[&_:is(ul,ol)]:list-outside [&_:is(ul,ol)]:space-y-0 [&_:is(ul,ol)]:pl-7 [&_li]:py-0 [&_li]:leading-[inherit]",
-        "[&_[data-streamdown=strong]]:font-semibold [&_[data-streamdown=strong]]:text-foreground",
         className
       )}
       plugins={streamdownPlugins}

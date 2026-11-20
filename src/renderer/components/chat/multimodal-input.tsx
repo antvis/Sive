@@ -106,7 +106,7 @@ export function MultimodalInput({
               </TooltipContent>
             </Tooltip>
             <PromptInputSelectContent
-              className="chat-theme text-sm [&_[data-slot=select-item]]:min-h-[30px] [&_[data-slot=select-item]]:text-sm [&_[data-slot=select-item]]:leading-4 [&_[data-slot=select-item]]:font-normal"
+              className="chat-theme text-sm"
               side="top"
               onCloseAutoFocus={focusInput}
             >
@@ -135,7 +135,7 @@ export function MultimodalInput({
               </PromptInputSelectValue>
             </PromptInputSelectTrigger>
             <PromptInputSelectContent
-              className="chat-theme text-sm [&_[data-slot=select-item]]:min-h-[30px] [&_[data-slot=select-item]]:text-sm [&_[data-slot=select-item]]:leading-4 [&_[data-slot=select-item]]:font-normal"
+              className="chat-theme text-sm"
               side="top"
               onCloseAutoFocus={focusInput}
             >
