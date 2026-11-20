@@ -30,6 +30,7 @@
     "@antv/ava": "4.0.3",
     "@antv/gpt-vis": "^1.3.2",
     "@hookform/resolvers": "^7.0.2",
+    "@modelcontextprotocol/client": "^2.4.0",
     "@tanstack/react-query": "^5.106.0",
     "@tanstack/react-table": "^8.21.3",
     "ai": "^7.0.146",

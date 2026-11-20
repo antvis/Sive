@@ -1,18 +1,31 @@
 import { customType, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import type { DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
+import type { StoredOAuthClientInformation, StoredOAuthTokens } from '@modelcontextprotocol/client';
 import { decrypt, encrypt } from '../../util';
 
-const encryptedSourceConfig = customType<{ data: DataSourceConfig; driverData: string }>({
-  dataType() {
-    return 'text';
-  },
-  toDriver(value) {
-    return encrypt(JSON.stringify(value));
-  },
-  fromDriver(value) {
-    return JSON.parse(decrypt(value));
-  },
-});
+export type SupabaseOAuthCredentials = {
+  clients: Record<string, StoredOAuthClientInformation>;
+  tokens?: StoredOAuthTokens;
+  expiresAt?: number;
+};
+
+export type DatasetExtras = {
+  supabaseOAuth?: SupabaseOAuthCredentials;
+};
+
+function encryptedJson<T>() {
+  return customType<{ data: T; driverData: string }>({
+    dataType() {
+      return 'text';
+    },
+    toDriver(value) {
+      return encrypt(JSON.stringify(value));
+    },
+    fromDriver(value) {
+      return JSON.parse(decrypt(value)) as T;
+    },
+  });
+}
 
 export const datasets = sqliteTable('datasets', {
   // Unique identifier of the dataset.
@@ -24,8 +37,11 @@ export const datasets = sqliteTable('datasets', {
   // AVA data source type, mirrored from sourceConfig.type.
   sourceType: text('source_type').$type<DataSourceConfig['type']>().notNull(),
 
-  // Encrypted JSON object containing source configuration and credentials.
-  sourceConfig: encryptedSourceConfig('source_config').notNull(),
+  // JSON object with Encrypted AVA data source configuration.
+  sourceConfig: encryptedJson<DataSourceConfig>()('source_config').notNull(),
+
+  // Encrypted app-specific extras for the data source.
+  extras: encryptedJson<DatasetExtras>()('extras'),
 
   // JSON object containing the AVA data schema.
   schema: text('schema', { mode: 'json' }).$type<Schema>().notNull(),

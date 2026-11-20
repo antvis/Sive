@@ -8,7 +8,13 @@ export type { SettingInsert, SettingRow, SettingUpdate } from './settings';
 
 export { datasets } from './datasets';
 
-export type { DatasetInsert, DatasetRow, DatasetUpdate } from './datasets';
+export type {
+  DatasetExtras,
+  DatasetInsert,
+  DatasetRow,
+  DatasetUpdate,
+  SupabaseOAuthCredentials,
+} from './datasets';
 
 export { conversations } from './conversations';
 

@@ -60,6 +60,11 @@ export type UpdateResult = { currentVersion: string; latestVersion: string; hasU
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
 
+export type SupabaseOAuthResult = {
+  sessionId: string;
+  projects: { id: string; name: string }[];
+};
+
 export type ModelConnectionInput = {
   baseURL: string;
   apiKey?: string;
@@ -156,9 +161,15 @@ export type WorkbenchApi = {
     lastDirectory?: string,
   ): Promise<{ name: string; sourceConfig: DataSourceConfig; directory: string } | null>;
   datasetRefresh(id: string): Promise<void>;
-  datasetTest(sourceConfig: DataSourceConfig): Promise<void>;
+  datasetTest(sourceConfig: DataSourceConfig, authSessionId?: string): Promise<void>;
   datasetExtractText(text: string): Promise<Record<string, unknown>[]>;
-  datasetSave(name: string, sourceConfig: DataSourceConfig, id?: string): Promise<void>;
+  datasetSave(
+    name: string,
+    sourceConfig: DataSourceConfig,
+    id?: string,
+    authSessionId?: string,
+  ): Promise<void>;
+  oAuthStart(type: DataSourceConfig['type']): Promise<SupabaseOAuthResult>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
   datasetPreview(
