@@ -96,17 +96,17 @@ export function MultimodalInput({
                 <PromptInputSelectTrigger
                   aria-label="分析方式"
                   size="sm"
-                  className="shrink-0 rounded-lg px-1.5 font-normal transition-[background-color,color,transform] duration-150 ease-[ease] hover:bg-secondary active:scale-[0.94] data-[size=sm]:h-7"
+                  className="shrink-0 rounded-lg px-1.5 text-base font-normal transition-[background-color,color,transform] duration-150 ease-[ease] hover:bg-secondary active:scale-[0.94] data-[size=sm]:h-7"
                 >
                   <PromptInputSelectValue />
                 </PromptInputSelectTrigger>
               </TooltipTrigger>
               <TooltipContent className="chat-theme rounded-lg text-base" side="top" sideOffset={6}>
-                调整分析策略
+                选择分析策略
               </TooltipContent>
             </Tooltip>
             <PromptInputSelectContent
-              className="chat-theme text-base [&_[data-slot=select-item]]:min-h-7 [&_[data-slot=select-item]]:text-xs [&_[data-slot=select-item]]:leading-4 [&_[data-slot=select-item]]:font-normal"
+              className="chat-theme text-base [&_[data-slot=select-item]]:min-h-[30px] [&_[data-slot=select-item]]:text-base [&_[data-slot=select-item]]:leading-4 [&_[data-slot=select-item]]:font-normal"
               side="top"
               onCloseAutoFocus={focusInput}
             >
@@ -128,14 +128,14 @@ export function MultimodalInput({
             <PromptInputSelectTrigger
               aria-label="选择模型"
               size="sm"
-              className="ml-auto min-h-7 min-w-0 max-w-full rounded-lg px-1.5 py-1 text-left font-normal whitespace-normal transition-[background-color,color,transform] duration-150 ease-[ease] hover:bg-secondary active:scale-[0.94] data-[size=sm]:h-auto *:data-[slot=select-value]:line-clamp-none"
+              className="ml-auto min-h-7 min-w-0 max-w-full rounded-lg px-1.5 py-1 text-left text-base font-normal whitespace-normal transition-[background-color,color,transform] duration-150 ease-[ease] hover:bg-secondary active:scale-[0.94] data-[size=sm]:h-auto *:data-[slot=select-value]:line-clamp-none"
             >
               <PromptInputSelectValue className="min-w-0 break-all" placeholder="选择模型">
                 {provider?.model}
               </PromptInputSelectValue>
             </PromptInputSelectTrigger>
             <PromptInputSelectContent
-              className="chat-theme text-base [&_[data-slot=select-item]]:min-h-7 [&_[data-slot=select-item]]:text-xs [&_[data-slot=select-item]]:leading-4 [&_[data-slot=select-item]]:font-normal"
+              className="chat-theme text-base [&_[data-slot=select-item]]:min-h-[30px] [&_[data-slot=select-item]]:text-base [&_[data-slot=select-item]]:leading-4 [&_[data-slot=select-item]]:font-normal"
               side="top"
               onCloseAutoFocus={focusInput}
             >
