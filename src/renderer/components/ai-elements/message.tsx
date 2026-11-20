@@ -30,6 +30,7 @@ import {
   useState,
 } from "react";
 import { Streamdown } from "streamdown";
+import { MarkdownTable } from "./table";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
@@ -322,14 +323,19 @@ export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
 const streamdownPlugins = { cjk, code, math, mermaid };
 
+const streamdownComponents = { table: MarkdownTable };
+
 export const MessageResponse = memo(
   ({ className, ...props }: MessageResponseProps) => (
     <Streamdown
       className={cn(
-        "size-full space-y-4 leading-7 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_ul]:space-y-1 [&_ol]:space-y-1 [&_li]:py-0 [&_li]:leading-6",
+        "size-full space-y-3 font-sans leading-[1.6] font-normal tracking-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+        "[&_:is(ul,ol)]:list-outside [&_:is(ul,ol)]:space-y-0 [&_:is(ul,ol)]:pl-7 [&_li]:py-0 [&_li]:leading-[inherit]",
+        "[&_[data-streamdown=strong]]:font-semibold [&_[data-streamdown=strong]]:text-foreground",
         className
       )}
       plugins={streamdownPlugins}
+      components={streamdownComponents}
       {...props}
     />
   ),

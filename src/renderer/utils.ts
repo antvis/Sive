@@ -38,3 +38,7 @@ export function saveWidth(key: string, width: number) {
     // Resizing still works when storage is unavailable.
   }
 }
+
+export function formatMetric(value: number) {
+  return value.toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+}
