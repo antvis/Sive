@@ -182,7 +182,7 @@ export function AppShell({
               <img className="brand-logo" src="./sive.svg" alt="" />
               <strong className="text-xl leading-6 font-semibold">Sive</strong>
             </div>
-            <span className="mt-1.5 block text-[11px] leading-4 whitespace-nowrap text-muted">
+            <span className="mt-1.5 block text-xs leading-4 whitespace-nowrap text-muted">
               See it Live, Share it Real.
             </span>
           </div>

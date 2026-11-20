@@ -1,3 +1,5 @@
+@reference '../styles.css';
+
 .markdown-body {
   min-width: 0;
   overflow-wrap: anywhere;
@@ -29,15 +31,15 @@
 }
 
 .markdown-body h1 {
-  font-size: 18px;
+  @apply text-xl;
 }
 
 .markdown-body h2 {
-  font-size: 16px;
+  @apply text-lg;
 }
 
 .markdown-body h3 {
-  font-size: 14px;
+  @apply text-base;
 }
 
 .markdown-body ul,
@@ -74,18 +76,18 @@
 }
 
 .markdown-body pre code {
+  @apply text-sm;
   background: transparent;
   padding: 0;
-  font-size: 12px;
 }
 
 .markdown-body table {
+  @apply text-sm;
   display: block;
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
   border-collapse: collapse;
-  font-size: 12px;
 }
 
 .markdown-body th,

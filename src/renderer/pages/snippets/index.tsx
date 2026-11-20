@@ -41,7 +41,7 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
     <div className="w-full px-6 pt-8 pb-12">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="m-0 text-[26px] leading-[1.35] font-semibold text-balance">洞察 Snippet</h1>
+          <h1 className="m-0 text-3xl leading-[1.35] font-semibold text-balance">洞察 Snippet</h1>
           <p className="mt-2 mb-0 text-pretty text-muted">
             <span className="tabular-nums">{snippets.length}</span> 个已保存的数据洞察 · 把发现收集起来
           </p>

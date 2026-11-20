@@ -3,17 +3,16 @@
 import type { DynamicToolUIPart, ToolUIPart } from "ai";
 import type { ComponentProps, ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@renderer/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
+} from "@renderer/components/ui/collapsible";
+import { cn } from "@renderer/lib/utils";
 import {
-  CheckCircleIcon,
   ChevronDownIcon,
-  CircleIcon,
+  ChevronRightIcon,
   ClockIcon,
   WrenchIcon,
   XCircleIcon,
@@ -35,6 +34,7 @@ export type ToolPart = ToolUIPart | DynamicToolUIPart;
 
 export type ToolHeaderProps = {
   title?: string;
+  icon?: ReactNode;
   className?: string;
 } & (
   | { type: ToolUIPart["type"]; state: ToolUIPart["state"]; toolName?: never }
@@ -45,36 +45,30 @@ export type ToolHeaderProps = {
     }
 );
 
-const statusLabels: Record<ToolPart["state"], string> = {
-  "approval-requested": "Awaiting Approval",
-  "approval-responded": "Responded",
-  "input-available": "Running",
-  "input-streaming": "Pending",
-  "output-available": "Completed",
-  "output-denied": "Denied",
-  "output-error": "Error",
+const statusLabels: Partial<Record<ToolPart["state"], string>> = {
+  "approval-requested": "等待授权",
+  "output-denied": "已拒绝",
+  "output-error": "执行失败",
 };
 
-const statusIcons: Record<ToolPart["state"], ReactNode> = {
+const statusIcons: Partial<Record<ToolPart["state"], ReactNode>> = {
   "approval-requested": <ClockIcon className="size-4 text-yellow-600" />,
-  "approval-responded": <CheckCircleIcon className="size-4 text-blue-600" />,
-  "input-available": <ClockIcon className="size-4 animate-pulse" />,
-  "input-streaming": <CircleIcon className="size-4" />,
-  "output-available": <CheckCircleIcon className="size-4 text-green-600" />,
   "output-denied": <XCircleIcon className="size-4 text-orange-600" />,
   "output-error": <XCircleIcon className="size-4 text-red-600" />,
 };
 
-export const getStatusBadge = (status: ToolPart["state"]) => (
-  <Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
-    {statusIcons[status]}
-    {statusLabels[status]}
-  </Badge>
-);
+export const getStatusBadge = (status: ToolPart["state"]) =>
+  statusLabels[status] ? (
+    <Badge className="gap-1.5 rounded-full border-0 bg-transparent px-0 text-xs text-inherit" variant="secondary">
+      {statusIcons[status]}
+      {statusLabels[status]}
+    </Badge>
+  ) : null;
 
 export const ToolHeader = ({
   className,
   title,
+  icon,
   type,
   state,
   toolName,
@@ -82,21 +76,33 @@ export const ToolHeader = ({
 }: ToolHeaderProps) => {
   const derivedName =
     type === "dynamic-tool" ? toolName : type.split("-").slice(1).join("-");
+  const action = title ?? derivedName;
+  const running = state === "input-streaming" || state === "input-available";
 
   return (
     <CollapsibleTrigger
       className={cn(
-        "flex w-full items-center justify-between gap-4 p-3",
+        "group/tool-header flex min-h-6 w-full items-center justify-start gap-1 bg-transparent p-0 text-left text-muted-foreground outline-offset-2 transition-colors duration-150 ease-linear hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
         className
       )}
       {...props}
     >
-      <div className="flex items-center gap-2">
-        <WrenchIcon className="size-4 text-muted-foreground" />
-        <span className="font-medium text-sm">{title ?? derivedName}</span>
-        {getStatusBadge(state)}
+      <div className="flex min-w-0 flex-wrap items-center gap-2 gap-y-1">
+        {icon ?? <WrenchIcon className="size-4 text-muted-foreground" />}
+        <span className={cn(
+          "text-base font-normal",
+          running && "motion-safe:animate-chat-tool-shimmer motion-safe:bg-[linear-gradient(90deg,var(--muted-foreground)_35%,var(--foreground)_50%,var(--muted-foreground)_65%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:[-webkit-text-fill-color:transparent]"
+        )}>{running ? `正在${action}…` : action}</span>
       </div>
-      <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+      <ChevronRightIcon
+        className="size-4 shrink-0 text-inherit opacity-0 transition-opacity duration-150 ease-linear group-hover/tool-header:opacity-100 group-focus-visible/tool-header:opacity-100 group-data-[state=open]/tool-header:hidden group-data-[state=open]/tool-header:opacity-100"
+        aria-hidden="true"
+      />
+      <ChevronDownIcon
+        className="hidden size-4 shrink-0 text-inherit opacity-0 transition-opacity duration-150 ease-linear group-hover/tool-header:opacity-100 group-focus-visible/tool-header:opacity-100 group-data-[state=open]/tool-header:block group-data-[state=open]/tool-header:opacity-100"
+        aria-hidden="true"
+      />
+      {getStatusBadge(state)}
     </CollapsibleTrigger>
   );
 };
@@ -106,7 +112,7 @@ export type ToolContentProps = ComponentProps<typeof CollapsibleContent>;
 export const ToolContent = ({ className, ...props }: ToolContentProps) => (
   <CollapsibleContent
     className={cn(
-      "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 space-y-4 p-4 text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in",
+      "space-y-4 overflow-hidden p-4 text-popover-foreground outline-none motion-safe:data-[state=open]:animate-chat-tool-expand motion-safe:data-[state=closed]:animate-chat-tool-collapse",
       className
     )}
     {...props}

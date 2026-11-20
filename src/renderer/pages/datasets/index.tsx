@@ -154,12 +154,12 @@ function DatasetCard({
             <StatIcon size={17} className="shrink-0 text-muted" />
             <div className="min-w-0">
               <strong className="block truncate text-sm font-medium text-muted">{value}</strong>
-              <span className="mt-0.5 block text-[10px] text-muted/80">{label}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground/80">{label}</span>
             </div>
           </div>
         ))}
       </div>
-      <footer className="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-muted">
+      <footer className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted">
         <span>
           {sourceLabel}
           {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}
@@ -237,7 +237,7 @@ export function DatasetsPage({
     <div className="w-full px-6 pt-8 pb-12">
       <header className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="m-0 text-[26px] leading-[1.35] font-semibold tracking-[-0.03em]">数据源</h1>
+          <h1 className="m-0 text-3xl leading-[1.35] font-semibold tracking-[-0.03em]">数据源</h1>
           <p className="mt-2 mb-0 text-muted">{datasets.length} 个已添加的数据源</p>
         </div>
         <Button variant="primary" onClick={onAdd}>

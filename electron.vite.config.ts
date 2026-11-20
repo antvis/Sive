@@ -37,7 +37,7 @@ export default defineConfig(({ command }) => ({
     publicDir: resolve('assets'),
     resolve: {
       alias: {
-        '@': resolve('src/renderer'),
+        '@renderer': resolve('src/renderer'),
         '@assets': resolve('assets'),
         '@shared': resolve('src/shared'),
       },

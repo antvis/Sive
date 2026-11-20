@@ -100,10 +100,7 @@ export function TableNavigator({
                   >
                     <Table size={15} className="shrink-0" />
                     <span className="min-w-0 flex-1 truncate">{model.name}</span>
-                    <span
-                      className="shrink-0 text-[11px] text-muted"
-                      title={`${model.columns.length} 个字段`}
-                    >
+                    <span className="shrink-0 text-xs text-muted" title={`${model.columns.length} 个字段`}>
                       {model.columns.length}
                     </span>
                   </button>
@@ -125,7 +122,7 @@ export function TableNavigator({
                             aria-label={isPrimary ? '主键' : undefined}
                           />
                           <span className="min-w-0 flex-1 truncate">{column.name}</span>
-                          <span className="max-w-20 truncate text-[10px] text-muted">{column.type}</span>
+                          <span className="max-w-20 truncate text-xs text-muted">{column.type}</span>
                         </li>
                       );
                     })}

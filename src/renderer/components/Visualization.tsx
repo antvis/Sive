@@ -13,7 +13,7 @@ export function Visualization({ spec, height = 320 }: { spec: SnippetSpec; heigh
   useEffect(() => {
     const container = containerRef.current;
     if (!container || typeof spec === 'string') return;
-    const theme = templateTheme ?? createChartTheme(themeMode);
+    const theme = createChartTheme(themeMode, templateTheme);
     let chart: GPTVis | undefined;
     let width = 0;
 

@@ -8,15 +8,15 @@ import type {
   ThemedToken,
 } from "shiki";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@renderer/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+} from "@renderer/components/ui/select";
+import { cn } from "@renderer/lib/utils";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import {
   createContext,
@@ -34,10 +34,12 @@ import { createHighlighter } from "shiki";
 // biome-ignore lint/suspicious/noBitwiseOperators: shiki bitflag check
 // eslint-disable-next-line no-bitwise -- shiki bitflag check
 const isItalic = (fontStyle: number | undefined) => fontStyle && fontStyle & 1;
+
 // biome-ignore lint/suspicious/noBitwiseOperators: shiki bitflag check
 // eslint-disable-next-line no-bitwise -- shiki bitflag check
 // oxlint-disable-next-line eslint(no-bitwise)
 const isBold = (fontStyle: number | undefined) => fontStyle && fontStyle & 2;
+
 const isUnderline = (fontStyle: number | undefined) =>
   // biome-ignore lint/suspicious/noBitwiseOperators: shiki bitflag check
   // oxlint-disable-next-line eslint(no-bitwise)

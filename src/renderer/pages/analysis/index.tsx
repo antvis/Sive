@@ -3,7 +3,7 @@ import { Group, Panel } from 'react-resizable-panels';
 import { ResizeHandle } from '../../components/ResizeHandle';
 import { readWidth, saveWidth } from '../../utils';
 import type { ModelProfile, Preferences } from '../../types';
-import { ConversationPanel } from './ConversationPanel';
+import { Chat } from '../../components/chat/chat';
 import { DatasetPanel } from './DatasetPanel';
 
 type Props = {
@@ -38,7 +38,7 @@ export function AnalysisPage({
         className="h-full min-h-0"
         onResize={(size) => saveWidth('sive.conversation-width', size.inPixels)}
       >
-        <ConversationPanel
+        <Chat
           datasetId={datasetId}
           conversationId={conversationId}
           savedMessageIds={savedMessageIds}

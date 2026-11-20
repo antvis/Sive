@@ -1,6 +1,6 @@
-import type { UIMessage, UIMessageChunk } from 'ai';
+import type { UIMessageChunk } from 'ai';
 import { isTextUIPart } from 'ai';
-import type { AnalysisStartInput, DuckDBEngineConfig, Preferences } from '@shared/api';
+import type { AnalysisStartInput, ChatMessage, DuckDBEngineConfig, Preferences } from '@shared/api';
 import type { AnalysisOptions } from '@shared/schema';
 import { createAnalysisAgent } from '../../ai';
 import type { AnalysisAgent } from '../../ai';
@@ -60,11 +60,11 @@ export class AnalysisService {
     if (failed) throw failed.reason;
   }
 
-  getMessages(conversationId: string): UIMessage[] {
+  getMessages(conversationId: string): ChatMessage[] {
     required(this.repositories.conversations.get(conversationId), '会话不存在。');
     return this.repositories.messages
       .listByConversationId(conversationId)
-      .map(({ id, role, parts }) => ({ id, role, parts }));
+      .map(({ id, role, parts, createdAt }) => ({ id, role, parts, metadata: { createdAt } }));
   }
 
   start(input: AnalysisStartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
@@ -160,8 +160,10 @@ export class AnalysisService {
       const agent = await agentPromise;
       if (file) await checkLocalFile(file);
       controller.signal.throwIfAborted();
+      const createdAt = new Date().toISOString();
       const stream = await agent.stream({
         messages: this.getMessages(conversationId),
+        createdAt,
         strategy: analysisOptions.strategy,
         agent: agentConfig,
         abortSignal: controller.signal,
@@ -178,7 +180,7 @@ export class AnalysisService {
               role: 'assistant',
               parts: responseMessage.parts,
               analysisOptions,
-              createdAt: now,
+              createdAt,
               updatedAt: now,
             });
             this.repositories.conversations.update(conversationId, {});

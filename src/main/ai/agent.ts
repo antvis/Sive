@@ -17,6 +17,7 @@ type CreateAgentInput = {
 
 type StreamInput = {
   messages: UIMessage[];
+  createdAt: string;
   strategy: AnalysisStrategyConfig;
   agent: { maxSteps: number };
   abortSignal: AbortSignal;
@@ -58,7 +59,7 @@ export async function createAnalysisAgent({
   return {
     dispose: () => ava.dispose(),
 
-    stream({ messages, strategy, agent: agentConfig, abortSignal, onEnd }) {
+    stream({ messages, createdAt, strategy, agent: agentConfig, abortSignal, onEnd }) {
       options.strategy = strategy;
       options.agent = agentConfig;
       options.question =
@@ -73,6 +74,7 @@ export async function createAnalysisAgent({
         uiMessages: messages,
         abortSignal,
         generateMessageId: generateId,
+        messageMetadata: ({ part }) => (part.type === 'start' ? { createdAt } : undefined),
         sendReasoning: false,
         onError: (error) => (error instanceof Error ? error.message : String(error)),
         onEnd,

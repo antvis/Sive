@@ -160,6 +160,7 @@ export default function App() {
         position="bottom-right"
         visibleToasts={1}
         toastOptions={{
+          className: 'text-xs!',
           style: {
             width: 'max-content',
             maxWidth: 'calc(100vw - 32px)',
@@ -170,7 +171,6 @@ export default function App() {
             background: 'var(--surface)',
             color: 'var(--ink)',
             boxShadow: '0 4px 16px #00000012',
-            fontSize: '12px',
           },
         }}
       />
