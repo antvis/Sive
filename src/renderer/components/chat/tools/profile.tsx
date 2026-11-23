@@ -1,11 +1,11 @@
 import type { Profile } from '@antv/ava';
-import { ChartColumnIcon, CheckIcon, ChevronRightIcon, CircleDashedIcon } from 'lucide-react';
+import { ChartColumnIcon, CheckIcon, CircleDashedIcon } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { formatMetric } from '../../../utils';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
 import { Table } from '../../ui/table';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleRowTrigger } from '../../ui/collapsible';
 
 type Model = Profile['models'][number];
 
@@ -306,13 +306,7 @@ export function ProfileTool({ profile: { models } }: { profile: Profile }) {
               onOpenChange={(open) => setExpandedModel(open ? model.name : undefined)}
               className="min-w-0 scroll-mt-4"
             >
-              <CollapsibleTrigger className="group/profile flex w-full flex-wrap items-center gap-2 rounded-sm bg-transparent py-2 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-                <ChevronRightIcon
-                  className="size-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/profile:rotate-90 motion-reduce:transition-none"
-                  aria-hidden="true"
-                />
-                {heading}
-              </CollapsibleTrigger>
+              <CollapsibleRowTrigger>{heading}</CollapsibleRowTrigger>
               <CollapsibleContent className="min-w-0">
                 <ProfileFields model={model} stats={stats} />
               </CollapsibleContent>

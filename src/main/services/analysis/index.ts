@@ -207,12 +207,6 @@ export class AnalysisService {
         // Keep the renderer subscribed until the final traces have been written to SQLite.
         if (chunk.type === 'error' || chunk.type === 'abort') {
           terminal = chunk;
-        } else if (
-          chunk.type === 'tool-output-available' &&
-          isAnalysisToolResult(chunk.output) &&
-          chunk.output.trace
-        ) {
-          emit({ ...chunk, output: { result: chunk.output.result } });
         } else {
           emit(chunk);
         }

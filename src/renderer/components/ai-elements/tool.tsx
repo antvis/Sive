@@ -25,7 +25,7 @@ export type ToolProps = ComponentProps<typeof Collapsible>;
 
 export const Tool = ({ className, ...props }: ToolProps) => (
   <Collapsible
-    className={cn("group not-prose mb-4 w-full rounded-md border", className)}
+    className={cn("group not-prose w-full min-w-0", className)}
     {...props}
   />
 );
@@ -107,14 +107,18 @@ export const ToolHeader = ({
 
 export type ToolContentProps = ComponentProps<typeof CollapsibleContent>;
 
-export const ToolContent = ({ className, ...props }: ToolContentProps) => (
+export const ToolContent = ({ className, children, ...props }: ToolContentProps) => (
   <CollapsibleContent
     className={cn(
-      "space-y-4 overflow-hidden p-4 text-popover-foreground outline-none motion-safe:data-[state=open]:animate-chat-tool-expand motion-safe:data-[state=closed]:animate-chat-tool-collapse",
+      "overflow-hidden text-popover-foreground outline-none motion-safe:data-[state=open]:animate-chat-tool-expand motion-safe:data-[state=closed]:animate-chat-tool-collapse",
       className
     )}
     {...props}
-  />
+  >
+    <div className="ml-4 min-w-0 border-l border-border py-3 pl-4 [&_[data-slot=code-block]]:text-xs [&_table]:text-xs">
+      {children}
+    </div>
+  </CollapsibleContent>
 );
 
 export type ToolInputProps = ComponentProps<"div"> & {

@@ -75,38 +75,36 @@ function toolContent(
       );
     }
   }
-  return <ToolOutput className="[&_table]:text-xs" output={content} errorText={errorText} />;
+  return <ToolOutput output={content} errorText={errorText} />;
 }
 
 export function ToolCallView({
   call,
   messageId,
   savedMessageIds,
-  hasVisualization,
   isStreaming,
 }: {
   call: ToolPart;
   messageId: string;
   savedMessageIds: string[];
-  hasVisualization: boolean;
   isStreaming: boolean;
 }) {
   const toolName = getToolName(call);
   const ToolIcon = toolIcons[toolName];
+  const isAnalysis = toolName === 'analyze';
   const failedAnalysis =
-    toolName === 'analyze' &&
+    isAnalysis &&
     call.state === 'output-available' &&
     isAnalysisToolResult(call.output) &&
     call.output.result === null;
   const state = failedAnalysis ? 'output-error' : call.state;
   const completed = state === 'output-available' || state === 'output-error' || state === 'output-denied';
-  const [expanded, setExpanded] = useState(
-    !completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize',
-  );
+  const defaultExpanded = !completed || isAnalysis || toolName === 'visualize';
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
   useEffect(() => {
-    setExpanded(!completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize');
-  }, [completed, toolName, hasVisualization]);
+    setExpanded(defaultExpanded);
+  }, [defaultExpanded]);
 
   const header =
     call.type === 'dynamic-tool'
@@ -114,21 +112,13 @@ export function ToolCallView({
       : { type: call.type, state };
 
   return (
-    <Tool
-      className="mb-0 rounded-none border-0 bg-transparent p-0"
-      open={expanded}
-      onOpenChange={setExpanded}
-    >
+    <Tool open={expanded} onOpenChange={setExpanded}>
       <ToolHeader
         {...header}
         title={toolLabels[toolName] ?? toolName}
         icon={ToolIcon ? <ToolIcon className="size-4 text-muted-foreground" aria-hidden="true" /> : undefined}
       />
-      <ToolContent className="p-0">
-        <div className="ml-4 border-l border-border py-3 pl-4">
-          {toolContent(toolName, call, { messageId, savedMessageIds, isStreaming })}
-        </div>
-      </ToolContent>
+      <ToolContent>{toolContent(toolName, call, { messageId, savedMessageIds, isStreaming })}</ToolContent>
     </Tool>
   );
 }

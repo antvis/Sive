@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { sqlHighlightTheme } from "../../lib/sql-highlight-theme";
 import { cn } from "../../lib/utils";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import {
@@ -150,7 +151,7 @@ const getHighlighter = (
 
   const highlighterPromise = createHighlighter({
     langs: [language],
-    themes: ["github-light", "github-dark"],
+    themes: language === "sql" ? [sqlHighlightTheme] : ["github-light", "github-dark"],
   });
 
   highlighterCache.set(language, highlighterPromise);
@@ -206,8 +207,8 @@ export const highlightCode = (
       const result = highlighter.codeToTokens(code, {
         lang: langToUse,
         themes: {
-          dark: "github-dark",
-          light: "github-light",
+          dark: language === "sql" ? sqlHighlightTheme.name : "github-dark",
+          light: language === "sql" ? sqlHighlightTheme.name : "github-light",
         },
       });
 
@@ -278,14 +279,14 @@ const CodeBlockBody = memo(
     return (
       <pre
         className={cn(
-          "dark:!bg-[var(--shiki-dark-bg)] dark:!text-[var(--shiki-dark)] m-0 p-4 text-sm",
+          "dark:!bg-[var(--shiki-dark-bg)] dark:!text-[var(--shiki-dark)] m-0 p-4 text-[length:inherit]",
           className
         )}
         style={preStyle}
       >
         <code
           className={cn(
-            "font-mono text-sm",
+            "font-mono text-[length:inherit]",
             showLineNumbers && "[counter-increment:line_0] [counter-reset:line]"
           )}
         >
@@ -316,9 +317,11 @@ export const CodeBlockContainer = ({
 }: HTMLAttributes<HTMLDivElement> & { language: string }) => (
   <div
     className={cn(
-      "group relative w-full overflow-hidden rounded-md border bg-background text-foreground",
+      "group relative w-full overflow-hidden rounded-md border text-sm text-foreground",
+      language === "sql" ? "bg-muted/50" : "bg-background",
       className
     )}
+    data-slot="code-block"
     data-language={language}
     style={{
       containIntrinsicSize: "auto 200px",

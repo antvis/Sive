@@ -1,3 +1,5 @@
+@layer theme, base, xyflow, components, utilities;
+
 @import 'tailwindcss';
 
 @source '../../node_modules/streamdown/dist';
@@ -129,6 +131,11 @@
   --chart-node-palette: #177c72, #4f6fb0, #9b6b28, #ad5d4d, #367b6d, #626f95;
   --chart-text-palette: var(--chart-node-palette);
   --chart-stroke: #84939f;
+  --sql-keyword: #244fc4;
+  --sql-function: #734aa1;
+  --sql-string: #13704a;
+  --sql-literal: #8d4a08;
+  --sql-comment: #626b77;
 }
 
 :root[data-theme='dark'] {
@@ -144,6 +151,11 @@
   --chart-palette: var(--accent), #91a8df, #e7bd83, #e2a295, #a1c7bc, #b2bedc;
   --chart-text-palette: var(--chart-palette);
   --chart-stroke: #738695;
+  --sql-keyword: #9bbbff;
+  --sql-function: #c8a7f5;
+  --sql-string: #86d3a3;
+  --sql-literal: #efb57d;
+  --sql-comment: #a0a8b2;
 }
 
 /* Theme tokens from vercel/chatbot a8989b5. */
