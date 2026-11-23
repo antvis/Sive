@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { isStaticToolUIPart } from 'ai';
-import { isAnalysisToolResult } from '@shared/analysis-trace';
+import { getAnalysisTraces } from '@shared/analysis-trace';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
 import { i18n } from '../../util/i18n';
 import type { Repositories } from '../../db/repository';
@@ -24,18 +23,11 @@ export class SnippetService {
       if (existing) return existing;
 
       const analysisId = input.trace?.toolCallId;
-      const analysisOutput = analysisId
-        ? this.repositories.messages
-            .listByConversationId(message.conversationId)
-            .flatMap(({ parts }) => parts.filter(isStaticToolUIPart))
-            .find(
-              (part) =>
-                part.type === 'tool-analyze' &&
-                part.toolCallId === analysisId &&
-                part.state === 'output-available',
-            )?.output
-        : undefined;
-      const trace = isAnalysisToolResult(analysisOutput) ? (analysisOutput.trace ?? null) : null;
+      const trace = analysisId
+        ? (getAnalysisTraces(this.repositories.messages.listByConversationId(message.conversationId)).get(
+            analysisId,
+          ) ?? null)
+        : null;
       const now = new Date().toISOString();
       return this.repositories.snippets.insert({
         id: randomUUID(),

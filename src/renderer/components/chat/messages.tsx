@@ -1,5 +1,6 @@
 import type { ChatMessage } from '@shared/api';
 import { ArrowUpRightIcon, LoaderCircleIcon } from 'lucide-react';
+import { useMemo } from 'react';
 import type { SuggestResult } from '../../types';
 import {
   Conversation,
@@ -9,6 +10,7 @@ import {
 } from '../ai-elements/conversation';
 import { Suggestion, Suggestions } from '../ai-elements/suggestion';
 import { isVisibleAssistantPart, PreviewMessage } from './message';
+import { getMessagesForDisplay } from './util';
 
 type Props = {
   messages: ChatMessage[];
@@ -34,6 +36,7 @@ export function Messages({
   onSuggestion,
 }: Props) {
   const latestMessage = messages.at(-1);
+  const displayMessages = useMemo(() => getMessagesForDisplay(messages), [messages]);
 
   return (
     <Conversation className="min-h-0 touch-pan-y">
@@ -44,7 +47,7 @@ export function Messages({
             正在加载会话…
           </p>
         ) : messages.length ? (
-          messages.map((message) => (
+          displayMessages.map((message) => (
             <PreviewMessage
               key={message.id}
               message={message}

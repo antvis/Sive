@@ -1,5 +1,5 @@
 import type { AnalysisResponse, AnalysisStrategyConfig, QueryColumn } from '@antv/ava';
-import type { ModelMessage, ToolResultPart } from 'ai';
+import type { ModelMessage, ToolResultPart, UIMessage } from 'ai';
 
 export type AnalysisTraceStatus = 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -64,6 +64,26 @@ export type AnalysisToolOutput = AnalysisToolResult & { trace: AnalysisTrace };
  */
 export function isAnalysisToolResult(output: unknown): output is AnalysisToolResult {
   return typeof output === 'object' && output !== null && 'result' in output;
+}
+
+/**
+ * Indexes the analysis traces in UI messages by their tool call IDs.
+ */
+export function getAnalysisTraces(messages: readonly Pick<UIMessage, 'parts'>[]): Map<string, AnalysisTrace> {
+  const traces = new Map<string, AnalysisTrace>();
+  for (const { parts } of messages) {
+    for (const part of parts) {
+      if (
+        part.type === 'tool-analyze' &&
+        part.state === 'output-available' &&
+        isAnalysisToolResult(part.output) &&
+        part.output.trace
+      ) {
+        traces.set(part.toolCallId, part.output.trace);
+      }
+    }
+  }
+  return traces;
 }
 
 /**
