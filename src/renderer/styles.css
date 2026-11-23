@@ -102,6 +102,12 @@
 }
 
 @theme inline {
+  --color-sidebar-canvas: light-dark(oklch(96.1% .002 247.84), oklch(23.1% .004 264.487));
+  --color-sidebar-ink: light-dark(oklch(24.7% .006 258.361), oklch(96.4% .002 247.839));
+  --color-sidebar-text: light-dark(oklch(50.6% .01 264.477), oklch(73.1% .008 260.731));
+  --color-sidebar-muted: light-dark(oklch(69.5% .009 264.505), oklch(54.1% .01 264.484));
+  --color-sidebar-highlight: light-dark(oklch(93.3% .003 247.86), oklch(31.8% .007 274.747));
+  --color-sidebar-focus: light-dark(oklch(62.6% .205 254.947), oklch(68% .173 253.301));
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-ink: var(--ink);

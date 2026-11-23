@@ -1,5 +1,4 @@
 import { useChat } from '@ai-sdk/react';
-import { generateId } from 'ai';
 import { ArrowLeftIcon } from 'lucide-react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
@@ -16,6 +15,7 @@ import { MultimodalInput } from './multimodal-input';
 
 type Props = {
   datasetId: string;
+  chatId: string;
   conversationId: string | null;
   savedMessageIds: string[];
   onConversationChange: (id: string) => void;
@@ -27,6 +27,7 @@ type Props = {
 
 export function Chat({
   datasetId,
+  chatId,
   conversationId,
   savedMessageIds,
   onConversationChange,
@@ -36,7 +37,6 @@ export function Chat({
   preferences,
 }: Props) {
   const [question, setQuestion] = useState('');
-  const chatId = useMemo(() => conversationId ?? generateId(), [datasetId, conversationId]);
   const transport = useMemo(
     () => new IpcChatTransport(onConversationChange, (cause) => toast.error(errorMessage(cause))),
     [onConversationChange],
