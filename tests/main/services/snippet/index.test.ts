@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SnippetSaveInput } from '../../../../src/shared/schema';
 import { createRepositories } from '../../../../src/main/db/repository';
+import { setLocale } from '../../../../src/main/util/i18n';
 import { SnippetService } from '../../../../src/main/services/snippet';
 import { createTestDb } from '../../../helpers/db';
 
@@ -20,6 +21,7 @@ describe('SnippetService', () => {
   let service: SnippetService;
 
   beforeEach(async () => {
+    setLocale('zh-CN');
     testDb = await createTestDb();
     const repositories = createRepositories(testDb.database);
     const now = new Date().toISOString();
@@ -77,11 +79,13 @@ describe('SnippetService', () => {
     expect(service.list()).toEqual([]);
   });
 
-  it('keeps saved content intact when an edit has an empty title', () => {
+  it.each([
+    ['zh-CN', '标题不能为空。'],
+    ['en-US', 'Title is required.'],
+  ] as const)('keeps saved content intact when an edit has an empty title in %s', (language, message) => {
+    setLocale(language);
     const saved = service.save(input);
-    expect(() => service.update(input.messageId, { title: ' ', summary: '新洞察' })).toThrow(
-      '标题不能为空。',
-    );
+    expect(() => service.update(input.messageId, { title: ' ', summary: '新洞察' })).toThrow(message);
     expect(service.list()[0]).toEqual(saved);
   });
 });

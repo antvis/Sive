@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { IconButton } from '../../components/IconButton';
 import { errorMessage } from '../../utils';
+import { useI18n } from '../../i18n';
 import { SettingGroup, SettingRow } from './SettingControls';
 
 const FONT_SIZES = [12, 14, 16, 18, 20];
@@ -14,6 +15,7 @@ function formatSize(bytes: number) {
 }
 
 export function GeneralSettings({ preferences }: { preferences: Preferences }) {
+  const i18n = useI18n();
   const theme = preferences.theme;
   const [saving, setSaving] = useState(false);
   const [storage, setStorage] = useState<StorageInfo>();
@@ -48,6 +50,34 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
   return (
     <div>
       <SettingGroup title="外观">
+        <SettingRow
+          title={i18n('settings.language.title')}
+          description={i18n('settings.language.description')}
+        >
+          <div className="flex gap-3">
+            {(
+              [
+                ['zh-CN', '中文'],
+                ['en-US', 'English'],
+              ] as const
+            ).map(([language, label]) => (
+              <button
+                key={language}
+                aria-pressed={preferences.language === language}
+                disabled={saving}
+                onClick={() => void update({ ...preferences, language })}
+                className={clsx(
+                  'h-12 min-w-20 rounded-xl border px-3 text-sm',
+                  preferences.language === language
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'bg-surface text-muted-foreground',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </SettingRow>
         <SettingRow title="界面主题" description="选择适合当前环境的配色，或跟随系统自动切换。">
           <div className="flex gap-3">
             {(
