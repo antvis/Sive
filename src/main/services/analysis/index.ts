@@ -21,7 +21,7 @@ export class AnalysisService {
   private agents = new Map<
     string,
     {
-      datasetId: string;
+      dataset: Pick<DatasetRow, 'id' | 'name'>;
       engineKey: string;
       agent: Promise<AnalysisAgent>;
     }
@@ -54,7 +54,7 @@ export class AnalysisService {
   }
 
   private async disposeDatasetAgents(datasetId: string) {
-    const entries = [...this.agents.entries()].filter(([, entry]) => entry.datasetId === datasetId);
+    const entries = [...this.agents.entries()].filter(([, entry]) => entry.dataset.id === datasetId);
     for (const [id] of entries) this.agents.delete(id);
     const results = await Promise.allSettled(entries.map(async ([, entry]) => (await entry.agent).dispose()));
     const failed = results.find((result) => result.status === 'rejected');
@@ -146,7 +146,7 @@ export class AnalysisService {
       this.agents.delete(conversationId);
       throw error;
     });
-    this.agents.set(conversationId, { datasetId: dataset.id, engineKey, agent });
+    this.agents.set(conversationId, { dataset, engineKey, agent });
     return agent;
   }
 

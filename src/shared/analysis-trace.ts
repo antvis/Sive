@@ -43,7 +43,7 @@ export type AnalysisTrace = {
   toolCallId: string;
   query: string;
   strategy: AnalysisStrategyConfig;
-  start: { datasetId: string };
+  start: { datasetId: string; datasetName?: string };
   status: AnalysisTraceStatus;
   durationMs?: number;
   error?: string;

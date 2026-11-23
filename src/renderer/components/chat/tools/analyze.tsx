@@ -431,6 +431,8 @@ function TraceStep({ step, trace }: { step: AnalysisTraceStep; trace: AnalysisTr
 }
 
 function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
+  const datasetLabel = trace.start.datasetName || trace.start.datasetId;
+
   return (
     <div className="min-w-0 text-xs leading-relaxed text-muted-foreground">
       <TraceSection label="分析过程" status={trace.status} durationMs={trace.durationMs}>
@@ -438,11 +440,7 @@ function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
         {trace.error && (
           <p className="whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]">{trace.error}</p>
         )}
-        {trace.start.datasetId && (
-          <p>
-            数据集 ID <code>{trace.start.datasetId}</code>
-          </p>
-        )}
+        {datasetLabel && <p>数据集 {datasetLabel}</p>}
         {trace.steps.map((step) => (
           <TraceStep key={step.id} step={step} trace={trace} />
         ))}

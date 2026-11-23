@@ -80,11 +80,13 @@ export function createAnalysisTraceCollector(
   ava: AVA,
   {
     datasetId,
+    datasetName,
     query,
     strategy,
     toolCallId,
   }: {
     datasetId: string;
+    datasetName: string;
     query: string;
     strategy: AnalysisStrategyConfig;
     toolCallId: string;
@@ -95,7 +97,7 @@ export function createAnalysisTraceCollector(
       toolCallId,
       query,
       strategy,
-      start: { datasetId },
+      start: { datasetId, datasetName },
       status: 'running',
       steps: [],
     },

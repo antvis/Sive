@@ -96,7 +96,13 @@ export function createTools(ava: AVA, context: ToolContext, model: LanguageModel
       inputSchema: z.object({ query: z.string().min(1) }),
       contextSchema: z.object({ strategy: analysisStartSchema.shape.strategy }),
       async execute({ query }, { toolCallId, context: { strategy } }) {
-        const options = { datasetId: dataset.id, query, strategy, toolCallId };
+        const options = {
+          datasetId: dataset.id,
+          datasetName: dataset.name,
+          query,
+          strategy,
+          toolCallId,
+        };
         const collector = createAnalysisTraceCollector(ava, options);
         const result = await collector.run(() => ava.analyze(query, { strategy })).catch(() => null);
         if (result) context.latest = result;
