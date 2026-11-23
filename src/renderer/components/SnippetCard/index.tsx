@@ -16,6 +16,8 @@ export type SnippetCardProps = {
   onSave?: () => Promise<void>;
   onUpdate?: (input: SnippetUpdateInput) => Promise<void>;
   onDelete?: () => void;
+  onShare?: () => void;
+  mode?: 'view' | 'export';
 };
 
 export type SnippetTemplateProps = SnippetCardProps & {
@@ -35,7 +37,8 @@ const templates = [
     theme: THEME_PRESETS.find(({ id }) => id === 'neon-circuit'),
   },
 ];
-const templateOptions = templates.map(({ id, label, theme }) => ({ value: id, label, theme }));
+
+export const templateOptions = templates.map(({ id, label, theme }) => ({ value: id, label, theme }));
 
 export function SnippetCard({ templateId = 'default', ...props }: SnippetCardProps) {
   const template = templates.find(({ id }) => id === templateId) ?? templates[0];

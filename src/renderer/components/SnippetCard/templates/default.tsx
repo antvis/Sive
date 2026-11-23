@@ -1,5 +1,6 @@
 import {
   CalendarBlank,
+  Export,
   CaretDown,
   Quotes,
   LinkSimple,
@@ -16,7 +17,7 @@ import { TemplatePicker } from '../TemplatePicker';
 import { Summary } from '../../Summary';
 import { Visualization } from '../../Visualization';
 import { useSnippetCard } from '../useSnippetCard';
-import { getIntentIcon, titleClassName, summaryClassName, summaryToggleClassName } from '../utils';
+import { getIntentIcon } from '../utils';
 
 const chipClassName =
   "relative isolate inline-flex min-h-[26px] items-center justify-center gap-[5px] rounded border border-dashed border-[color-mix(in_srgb,var(--accent)_30%,var(--surface))]! px-2 py-[3px] leading-[18px] tabular-nums shadow-[0_2px_3px_color-mix(in_srgb,var(--ink)_5%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[url('/textures/paper-grain.svg')] before:opacity-[0.055] [&_svg]:shrink-0";
@@ -31,6 +32,8 @@ export default function DefaultTemplate({
   onSave,
   onUpdate,
   onDelete,
+  onShare,
+  mode = 'view',
 }: SnippetTemplateProps) {
   const {
     editing,
@@ -102,6 +105,9 @@ export default function DefaultTemplate({
               <IconButton icon={PencilSimple} label="编辑 Snippet" disabled={busy} onClick={startEditing} />
             </>
           )}
+          {onShare && !editing && (
+            <IconButton icon={Export} label="分享与导出" disabled={busy} onClick={onShare} />
+          )}
           {onDelete && !editing && (
             <IconButton
               icon={Trash}
@@ -134,13 +140,24 @@ export default function DefaultTemplate({
           onChange={(event) => setTitle(event.target.value)}
         />
       ) : (
-        <div id={titleId} role="heading" aria-level={3} className={twMerge('mt-3', titleClassName)}>
+        <div
+          id={titleId}
+          role="heading"
+          aria-level={3}
+          className={twMerge(
+            'mt-3 line-clamp-2 max-h-14 text-xl leading-7 font-semibold break-words text-balance tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-container]:text-xl! [&_.t8-p]:line-clamp-2 [&_.t8-p]:m-0! [&_.t8-p]:text-xl! [&_.t8-p]:leading-7! [&_.t8-p]:font-semibold!',
+            mode === 'export' && 'line-clamp-none max-h-none [&_.t8-p]:line-clamp-none',
+          )}
+        >
           <Summary syntax={data.title} />
         </div>
       )}
       {!editing && subtitle && (
         <p
-          className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted"
+          className={twMerge(
+            'mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted',
+            mode === 'export' && 'line-clamp-none',
+          )}
           title={subtitle}
         >
           {subtitle}
@@ -194,22 +211,25 @@ export default function DefaultTemplate({
             />
             <div
               className={twMerge(
-                summaryClassName,
+                'min-w-0 text-sm leading-7 text-pretty tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-p]:m-0! [&_.t8-p]:text-sm! [&_.t8-p]:leading-7!',
                 '[&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:rounded-xs [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:bg-accent/8 [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:font-semibold [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:text-accent [&_:is(.t8-metric\\_name,.t8-trend\\_desc)]:font-semibold',
               )}
             >
-              <div id={summaryId} className={summaryExpanded ? undefined : 'line-clamp-3 max-h-[84px]'}>
+              <div
+                id={summaryId}
+                className={mode === 'export' || summaryExpanded ? undefined : 'line-clamp-3 max-h-[84px]'}
+              >
                 <div ref={summaryRef}>
                   <Summary syntax={data.summary} />
                 </div>
               </div>
-              {summaryOverflow && (
+              {mode !== 'export' && summaryOverflow && (
                 <button
                   type="button"
                   aria-expanded={summaryExpanded}
                   aria-controls={summaryId}
                   onClick={() => setSummaryExpanded(!summaryExpanded)}
-                  className={summaryToggleClassName}
+                  className="mt-2 inline-flex items-center gap-1 p-0 text-xs leading-5 text-muted hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
                   {summaryExpanded ? '收起洞察' : '展开洞察'}
                   <CaretDown size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
@@ -229,19 +249,31 @@ export default function DefaultTemplate({
         <Visualization spec={chartSpec} height={360} />
       </figure>
       <footer className="mt-3 flex items-start justify-between gap-4 border-t border-line/65! pt-3 text-xs text-muted">
-        <details className="group/source min-w-0 flex-1">
-          <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
-            <LinkSimple size={13} aria-hidden />
-            分析来源
-            <CaretDown size={11} aria-hidden className="group-open/source:rotate-180" />
-          </summary>
-          <p className="mt-2 mb-0 leading-5 text-pretty wrap-anywhere">{data.question}</p>
-        </details>
+        {mode === 'export' ? (
+          <span className="inline-flex shrink-0 items-center gap-1.5 leading-6">
+            <span
+              aria-hidden
+              className="size-4 shrink-0 bg-current [mask:url('/sive.svg')_center/contain_no-repeat]"
+            />
+            <span>
+              Made with <span className="font-semibold text-ink">Sive</span>
+            </span>
+          </span>
+        ) : (
+          <details className="group/source min-w-0 flex-1">
+            <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+              <LinkSimple size={13} aria-hidden />
+              分析来源
+              <CaretDown size={11} aria-hidden className="group-open/source:rotate-180" />
+            </summary>
+            <p className="mt-2 mb-0 leading-5 text-pretty wrap-anywhere">{data.question}</p>
+          </details>
+        )}
         {createdAt && (
           <time
             dateTime={createdAt}
             title={`保存于 ${new Date(createdAt).toLocaleString('zh-CN')}`}
-            className="flex shrink-0 items-center gap-1.5 leading-6 tabular-nums"
+            className="ml-auto flex shrink-0 items-center gap-1.5 leading-6 tabular-nums"
           >
             <CalendarBlank size={13} aria-hidden />
             {new Date(createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}

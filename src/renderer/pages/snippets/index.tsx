@@ -5,10 +5,12 @@ import { toast } from 'sonner';
 import type { Snippet } from '@shared/schema';
 import { Button } from '../../components/Button';
 import { SnippetCard } from '../../components/SnippetCard';
+import { ShareDialog } from '../../components/SnippetCard/ShareDialog';
 import { errorMessage } from '../../utils';
 
 export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
   const [deleting, setDeleting] = useState<Snippet | null>(null);
+  const [sharing, setSharing] = useState<Snippet | null>(null);
   const [busy, setBusy] = useState(false);
   const [columnCount, setColumnCount] = useState(() =>
     window.matchMedia('(min-width: 1280px)').matches ? 2 : 1,
@@ -70,6 +72,7 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
                         toast.success('Snippet 已更新');
                       }}
                       onDelete={() => setDeleting(snippet)}
+                      onShare={() => setSharing(snippet)}
                     />
                   </div>
                 ) : null,
@@ -78,6 +81,8 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
           ))}
         </div>
       )}
+
+      {sharing && <ShareDialog snippet={sharing} onClose={() => setSharing(null)} />}
 
       <AlertDialog.Root open={!!deleting} onOpenChange={(open) => !busy && !open && setDeleting(null)}>
         <AlertDialog.Portal>

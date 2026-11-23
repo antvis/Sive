@@ -58,6 +58,14 @@ export type StorageInfo = { cache: CacheInfo; data: DataStorageInfo };
 
 export type UpdateResult = { currentVersion: string; latestVersion: string; hasUpdate: boolean };
 
+export const snippetExportSchema = z.object({
+  image: z.instanceof(Uint8Array),
+  title: z.string(),
+  target: z.enum(['clipboard', 'file']),
+});
+
+export type SnippetExportInput = z.infer<typeof snippetExportSchema>;
+
 export type DatasetPreviewOptions = { offset: number; limit: number };
 
 export type ModelConnectionInput = {
@@ -185,6 +193,7 @@ export type WorkbenchApi = {
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;
+  snippetExport(input: SnippetExportInput): Promise<boolean>;
   conversationRename(id: string, title: string): Promise<void>;
   conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;
