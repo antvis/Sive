@@ -1,22 +1,22 @@
-import {
-  Archive,
-  CaretRight,
-  Database,
-  FileText,
-  GearSix,
-  Lightbulb,
-  NotePencil,
-  PencilSimple,
-  SidebarSimple,
-} from '@phosphor-icons/react';
 import clsx from 'clsx';
+import {
+  ArchiveIcon,
+  ChevronRightIcon,
+  DatabaseIcon,
+  FileTextIcon,
+  LightbulbIcon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
+  PencilIcon,
+  SettingsIcon,
+  SquarePenIcon,
+} from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { toast } from 'sonner';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
-import { DataSourceLogo } from './DataSourceLogo';
 import { IconButton } from './IconButton';
 
 export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
@@ -102,7 +102,7 @@ function NewConversationButton({
   const title = disabled ? '请先添加数据源' : label;
   const button = compact ? (
     <IconButton
-      icon={NotePencil}
+      icon={SquarePenIcon}
       label={label}
       title={title}
       className={clsx(iconClass, 'size-[32px]!')}
@@ -117,7 +117,7 @@ function NewConversationButton({
       title={title}
       onClick={datasetId ? () => onCreate(datasetId) : undefined}
     >
-      <NotePencil size={16} className="shrink-0" aria-hidden />
+      <SquarePenIcon size={16} className="shrink-0" aria-hidden />
       <span className={collapsed ? 'sr-only' : undefined}>{label}</span>
     </button>
   );
@@ -137,19 +137,22 @@ function NewConversationButton({
           className="z-50 max-h-(--radix-popover-content-available-height) w-[208px] overflow-y-auto rounded-[8px] border border-line bg-surface p-1 shadow-lg"
         >
           <p className="px-[8px] py-1 text-[12.5px] font-medium text-sidebar-muted">选择数据源</p>
-          {datasets.map((dataset) => (
-            <Popover.Close key={dataset.id} asChild>
-              <button
-                type="button"
-                className={clsx(rowClass, 'w-full hover:bg-sidebar-highlight')}
-                title={dataset.name}
-                onClick={() => onCreate(dataset.id)}
-              >
-                <DataSourceLogo type={dataset.sourceType} size={16} />
-                <span className="truncate">{dataset.name}</span>
-              </button>
-            </Popover.Close>
-          ))}
+          {datasets.map((dataset) => {
+            const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
+            return (
+              <Popover.Close key={dataset.id} asChild>
+                <button
+                  type="button"
+                  className={clsx(rowClass, 'w-full hover:bg-sidebar-highlight')}
+                  title={dataset.name}
+                  onClick={() => onCreate(dataset.id)}
+                >
+                  <SourceIcon size={16} className="shrink-0" aria-hidden />
+                  <span className="truncate">{dataset.name}</span>
+                </button>
+              </Popover.Close>
+            );
+          })}
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
@@ -258,7 +261,7 @@ function ConversationItem({
           </button>
           <div className="absolute inset-y-0 end-1 flex items-center opacity-0 transition-opacity group-focus-within/conversation:opacity-100 group-hover/conversation:opacity-100">
             <IconButton
-              icon={PencilSimple}
+              icon={PencilIcon}
               iconSize={14}
               className={clsx(iconClass, 'size-[24px]!')}
               label={`重命名 ${conversation.title}`}
@@ -270,7 +273,7 @@ function ConversationItem({
               }}
             />
             <IconButton
-              icon={Archive}
+              icon={ArchiveIcon}
               iconSize={14}
               className={clsx(iconClass, 'size-[24px]!')}
               label={`归档 ${conversation.title}`}
@@ -339,7 +342,7 @@ export function WorkspaceSidebar({
           </>
         )}
         <IconButton
-          icon={SidebarSimple}
+          icon={collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon}
           label={collapsed ? '展开侧边栏' : '收起侧边栏'}
           aria-expanded={!collapsed}
           aria-controls="sidebar-history"
@@ -366,7 +369,7 @@ export function WorkspaceSidebar({
             title={collapsed ? '数据源' : undefined}
             onClick={() => onNavigate(datasets.length ? 'datasets' : 'welcome')}
           >
-            <Database size={16} aria-hidden />
+            <DatabaseIcon size={16} aria-hidden />
             <span className={labelClass}>数据源</span>
           </button>
           <button
@@ -376,7 +379,7 @@ export function WorkspaceSidebar({
             title={collapsed ? '洞察 Snippet' : undefined}
             onClick={() => onNavigate('snippets')}
           >
-            <Lightbulb size={16} aria-hidden />
+            <LightbulbIcon size={16} aria-hidden />
             <span className={labelClass}>洞察 Snippet</span>
           </button>
         </SidebarList>
@@ -395,7 +398,7 @@ export function WorkspaceSidebar({
             <SidebarList>
               {groups.map(({ dataset, conversations }) => {
                 const open = expanded[dataset.id] !== false;
-                const SourceIcon = dataset.localFile ? FileText : Database;
+                const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
                 const groupId = `sidebar-conversations-${dataset.id}`;
                 return (
                   <div key={dataset.id} className="grid min-w-0 gap-px">
@@ -415,13 +418,13 @@ export function WorkspaceSidebar({
                             open && 'rotate-90',
                           )}
                         >
-                          <CaretRight size={12} aria-hidden />
+                          <ChevronRightIcon size={12} aria-hidden />
                         </span>
                         <SourceIcon size={16} className="shrink-0" aria-hidden />
                         <span className="truncate">{dataset.name}</span>
                       </button>
                       <IconButton
-                        icon={NotePencil}
+                        icon={SquarePenIcon}
                         iconSize={16}
                         label={`在 ${dataset.name} 新建对话`}
                         className={clsx(iconClass, 'size-[32px]!')}
@@ -492,7 +495,7 @@ export function WorkspaceSidebar({
         title={collapsed ? '设置' : undefined}
         onClick={() => onNavigate('settings')}
       >
-        <GearSix size={16} aria-hidden />
+        <SettingsIcon size={16} aria-hidden />
         <span className={labelClass}>设置</span>
       </button>
     </aside>
