@@ -1,5 +1,5 @@
-import type { UIMessageChunk } from 'ai';
 import { isTextUIPart } from 'ai';
+import type { UIMessageChunk } from 'ai';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
 import type { AnalysisStartInput, ChatMessage, DuckDBEngineConfig, Preferences } from '@shared/api';
 import type { AnalysisOptions } from '@shared/schema';
@@ -112,7 +112,7 @@ export class AnalysisService {
     void this.run(
       conversation.id,
       agent,
-      { analysisOptions, question },
+      analysisOptions,
       preferences.agent,
       controller,
       emit,
@@ -153,7 +153,7 @@ export class AnalysisService {
   private async run(
     conversationId: string,
     agentPromise: Promise<AnalysisAgent>,
-    { analysisOptions, question }: { analysisOptions: Required<AnalysisOptions>; question: string },
+    analysisOptions: Required<AnalysisOptions>,
     agentConfig: Preferences['agent'],
     controller: AbortController,
     emit: Emit,
@@ -168,7 +168,7 @@ export class AnalysisService {
       const stream = await agent.stream({
         messages: this.getMessages(conversationId),
         createdAt,
-        toolOptions: { strategy: analysisOptions.strategy, question },
+        toolOptions: { strategy: analysisOptions.strategy },
         agent: agentConfig,
         abortSignal: controller.signal,
         onEnd: ({ responseMessage, outcome, isAborted }) => {

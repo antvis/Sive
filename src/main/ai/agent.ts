@@ -34,7 +34,7 @@ export type AnalysisAgent = {
 };
 
 const INSTRUCTIONS =
-  '你是数据分析助手。首次提问时必须依次调用 source、schema、profile、semantic 完成数据准备，后续轮次不要重复初始化。准备完成后使用 analyze 获取真实数据结论，必要时使用 visualize 创建图表。根据用户问题直接回答，不要编造数据。';
+  '你是数据分析助手。首次提问时必须依次调用 source、schema、profile、semantic 完成数据准备，后续轮次不要重复初始化。准备完成后使用 analyze 获取真实数据结论。图表有助于回答问题时，从已完成的分析中选择相关结果，将其 analysisId 传给 visualize。根据用户问题直接回答，不要编造数据。';
 
 export async function createAnalysisAgent({
   context,
@@ -55,12 +55,11 @@ export async function createAnalysisAgent({
     tools,
     toolsContext: {
       analyze: { strategy: DEFAULT_PREFERENCES.strategy },
-      visualize: { question: '' },
     },
     toolCallConcurrency: 1,
     prepareCall({
       options: {
-        toolOptions: { strategy, question },
+        toolOptions,
         agent: { maxSteps },
       },
       ...call
@@ -70,8 +69,7 @@ export async function createAnalysisAgent({
         instructions: `${INSTRUCTIONS}\n本轮开始时，分析引擎${ava.engine ? '已载入数据，可以继续使用' : '尚未载入数据，请先完成数据准备'}。`,
         stopWhen: isStepCount(maxSteps),
         toolsContext: {
-          analyze: { strategy },
-          visualize: { question },
+          analyze: toolOptions,
         },
       };
     },

@@ -1,17 +1,13 @@
-import { isTextUIPart } from 'ai';
 import type { ChatMessage } from '@shared/api';
 import { CopyIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 import { formatMessageTime } from '../../utils';
 import { MessageAction as Action, MessageActions as Actions } from '../ai-elements/message';
+import { getTextFromUIMessage } from './util';
 
 export function MessageActions({ message, isStreaming }: { message: ChatMessage; isStreaming: boolean }) {
-  const text = message.parts
-    .filter(isTextUIPart)
-    .map((part) => part.text)
-    .join('\n')
-    .trim();
+  const text = getTextFromUIMessage(message, '\n').trim();
   const createdAt = message.metadata?.createdAt;
   const time = createdAt ? formatMessageTime(createdAt) : '';
 
