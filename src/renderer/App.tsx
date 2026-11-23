@@ -60,14 +60,13 @@ export default function App() {
     }
   };
 
-  const mode =
-    state?.preferences.theme.mode === 'system'
-      ? systemDark
-        ? 'dark'
-        : 'light'
-      : (state?.preferences.theme.mode ?? 'light');
+  const preferredMode = state?.preferences.theme.mode ?? DEFAULT_PREFERENCES.theme.mode;
   const fontSize = state?.preferences.theme.fontSize ?? DEFAULT_PREFERENCES.theme.fontSize;
-  const theme = useMemo(() => ({ mode, fontSize }), [mode, fontSize]);
+  const isDark = preferredMode === 'system' ? systemDark : preferredMode === 'dark';
+  const theme = useMemo(
+    () => ({ mode: isDark ? 'dark' : 'light', fontSize }) as const,
+    [isDark, fontSize],
+  );
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -78,8 +77,8 @@ export default function App() {
   }, []);
 
   useLayoutEffect(() => {
-    document.documentElement.dataset.theme = mode;
-  }, [mode]);
+    document.documentElement.dataset.theme = theme.mode;
+  }, [theme.mode]);
 
   useLayoutEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}px`;
@@ -160,7 +159,7 @@ export default function App() {
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
       {state && page === 'settings' && <SettingsPage state={state} />}
       <Toaster
-        theme={mode}
+        theme={theme.mode}
         position="bottom-right"
         visibleToasts={1}
         toastOptions={{
