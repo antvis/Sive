@@ -1,0 +1,74 @@
+tests/main/services/snippet/index.test.ts
+  s_3a12622b066114::t_67d321341fa9f2 82-85
+  s_3a12622b066114::t_c962871da5e0c1 86,88
+  s_3a12622b066114::t_44d94cc0950131 4
+  s_3a12622b066114::t_ed8560d8432f8e 24
+src/renderer/App.tsx
+  s_3a12622b066114::t_3752cb0d45005b 181-185
+  s_3a12622b066114::t_c669ff1cfbf8e1 7
+src/main/index.ts
+  s_3a12622b066114::t_1ae42919c32eb5 42-46
+  s_3a12622b066114::t_47bc0a9faf7c5c 6
+tests/main/services/settings.test.ts
+  s_3a12622b066114::t_52515dcf12b262 33
+  s_3a12622b066114::t_864140d2bc7f11 24
+src/shared/i18n/zh-CN.ts
+  s_3a12622b066114::t_867ec624704375 1,5
+  s_3a12622b066114::t_6c5f40ae03a25a 2-4
+src/shared/api.ts
+  s_3a12622b066114::t_894eb35cdbf254 35
+  s_3a12622b066114::t_6cfc44e53a7163 26
+src/main/util/i18n.ts
+  s_3a12622b066114::t_ce85f7df3cf72d 6-9,16-17,26
+  s_3a12622b066114::t_f168686aaf84a4 2
+  s_3a12622b066114::t_194815a469416e 15
+  s_3a12622b066114::t_4fd27e5eb2303a 22
+  s_3a12622b066114::t_5ead0c9130c469 1,3-5,10-14,18-21,23-25
+src/renderer/i18n.tsx
+  s_3a12622b066114::t_77a9c8899b392b 1-11,13-14,16-25
+  s_3a12622b066114::t_1ec28e30380cea 12
+  s_3a12622b066114::t_a93b0369d60b64 15
+src/main/ipc/index.ts
+  s_3a12622b066114::t_6d00916f8a9a9a 17
+  s_3a12622b066114::t_2fd59eb2c08125 197
+src/main/services/snippet/index.ts
+  s_3a12622b066114::t_eb1277ca8d2a50 3
+  s_3a12622b066114::t_b7e5b923c5be38 45
+src/main/services/settings/index.ts
+  s_3a12622b066114::t_26e006e25d6bd8 8-9
+  s_3a12622b066114::t_6b01df61c7fbae 41-42
+  s_3a12622b066114::t_5aa08120ea121a 53
+  s_3a12622b066114::t_50efcac828814f 63
+src/shared/i18n/en-US.ts
+  s_3a12622b066114::t_fbd30a2e945040 2-4
+  s_3a12622b066114::t_803bf38ec38225 1,5
+src/shared/i18n/index.ts
+  s_3a12622b066114::t_f839046b5a4bd8 12
+  s_3a12622b066114::t_1b56ad0aeb0a27 6
+  s_3a12622b066114::t_4cfc174649154a 1-4,8-11,13-14
+  s_3a12622b066114::t_dbb6dc8ab5c431 5
+  s_3a12622b066114::t_8f2c76c9d18d39 7
+src/renderer/pages/settings/GeneralSettings.tsx
+  s_3a12622b066114::t_5d2e1a5e604130 18
+  s_3a12622b066114::t_14bf9eb18c835c 57-77
+  s_3a12622b066114::t_d885dd101cef19 7
+  s_3a12622b066114::t_6b01df61c7fbae 53,56
+  s_3a12622b066114::t_4d38f4162f9da9 54-55
+  s_3a12622b066114::t_54832e1067345a 78-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "da5ecb3454ed27b15dfdd8e76f9e0c0f8124f596",
+  "prompts": {},
+  "sessions": {
+    "s_3a12622b066114": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "a4569b4c-102d-490c-9f0c-2e78744f0a83",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
