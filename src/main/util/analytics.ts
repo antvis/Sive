@@ -14,7 +14,6 @@ export function initializeAnalytics() {
       captureAppLifecycleEvents: false,
       disableRemoteConfig: true,
       disableRemoteFeatureFlags: true,
-      disableGeoip: true,
       flushAt: 1,
       onError: (error) => console.error('[PostHog]', error),
     });

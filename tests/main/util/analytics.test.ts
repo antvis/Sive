@@ -26,7 +26,6 @@ describe('initializeAnalytics', () => {
         captureAppLifecycleEvents: false,
         disableRemoteConfig: true,
         disableRemoteFeatureFlags: true,
-        disableGeoip: true,
         flushAt: 1,
       }),
     );
