@@ -45,6 +45,7 @@ async function initialize() {
   setLocale(preferences.language);
   // Initialize Sentry after the locale is set to ensure that any error messages are localized.
   initializeSentry(preferences.diagnostics.nativeCrashReporting);
+  // Initialize PostHog analytics after the locale is set to ensure that any error messages are localized.
   initializeAnalytics();
   registerIpc(services);
   createWindow();
