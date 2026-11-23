@@ -6,6 +6,7 @@ import { registerIpc } from './ipc';
 import { setLocale } from './util/i18n';
 import { createServices } from './services';
 import { initializeSentry } from './util/sentry';
+import { initializeAnalytics } from './util/analytics';
 
 let database: DBConnection | undefined;
 const iconPath = path.join(__dirname, '../assets/sive.png');
@@ -44,6 +45,7 @@ async function initialize() {
   setLocale(preferences.language);
   // Initialize Sentry after the locale is set to ensure that any error messages are localized.
   initializeSentry(preferences.diagnostics.nativeCrashReporting);
+  initializeAnalytics();
   registerIpc(services);
   createWindow();
 }
