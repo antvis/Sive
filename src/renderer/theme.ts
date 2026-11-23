@@ -3,9 +3,9 @@ import { mergeTheme } from '@antv/gpt-vis/dist/esm/theme/merge';
 import { DEFAULT_PREFERENCES } from '@shared/api';
 import { createContext } from 'react';
 
-type ClientTheme = { mode: 'light' | 'dark'; fontSize: number };
+type Theme = { mode: 'light' | 'dark'; fontSize: number };
 
-export const ThemeContext = createContext<ClientTheme>({
+export const ThemeContext = createContext<Theme>({
   mode: 'light',
   fontSize: DEFAULT_PREFERENCES.theme.fontSize,
 });
@@ -14,7 +14,7 @@ export const ChartThemeContext = createContext<ThemeSpec | undefined>(undefined)
 
 // Read the active client palette after App applies data-theme, before rendering charts.
 export function createChartTheme(
-  { mode, fontSize: rootFontSize }: ClientTheme,
+  { mode, fontSize: rootFontSize }: Theme,
   templateTheme?: ThemeSpec,
 ): ThemeSpec {
   const styles = getComputedStyle(document.documentElement);

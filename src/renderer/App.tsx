@@ -60,14 +60,14 @@ export default function App() {
     }
   };
 
-  const theme =
+  const mode =
     state?.preferences.theme.mode === 'system'
       ? systemDark
         ? 'dark'
         : 'light'
       : (state?.preferences.theme.mode ?? 'light');
   const fontSize = state?.preferences.theme.fontSize ?? DEFAULT_PREFERENCES.theme.fontSize;
-  const clientTheme = useMemo(() => ({ mode: theme, fontSize }), [theme, fontSize]);
+  const theme = useMemo(() => ({ mode, fontSize }), [mode, fontSize]);
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -78,8 +78,8 @@ export default function App() {
   }, []);
 
   useLayoutEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    document.documentElement.dataset.theme = mode;
+  }, [mode]);
 
   useLayoutEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}px`;
@@ -160,7 +160,7 @@ export default function App() {
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
       {state && page === 'settings' && <SettingsPage state={state} />}
       <Toaster
-        theme={theme}
+        theme={mode}
         position="bottom-right"
         visibleToasts={1}
         toastOptions={{
@@ -183,7 +183,7 @@ export default function App() {
 
   return (
     <I18nProvider language={state?.preferences.language}>
-      <ThemeContext value={clientTheme}>{content}</ThemeContext>
+      <ThemeContext value={theme}>{content}</ThemeContext>
     </I18nProvider>
   );
 }

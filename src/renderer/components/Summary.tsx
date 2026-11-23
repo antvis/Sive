@@ -4,7 +4,7 @@ import { ChartThemeContext, createChartTheme, ThemeContext } from '../theme';
 
 export function Summary({ syntax }: { syntax: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const clientTheme = useContext(ThemeContext);
+  const theme = useContext(ThemeContext);
   const templateTheme = useContext(ChartThemeContext);
   const [failedSyntax, setFailedSyntax] = useState<string>();
   const renderT8 = Boolean(syntax && syntax !== failedSyntax);
@@ -13,7 +13,7 @@ export function Summary({ syntax }: { syntax: string }) {
     if (!containerRef.current || !syntax || !renderT8) return;
     const summary = GPTVisSummary({
       container: containerRef.current,
-      theme: createChartTheme(clientTheme, templateTheme),
+      theme: createChartTheme(theme, templateTheme),
     });
     try {
       summary.render(syntax);
@@ -21,7 +21,7 @@ export function Summary({ syntax }: { syntax: string }) {
       setFailedSyntax(syntax);
     }
     return () => summary.destroy();
-  }, [syntax, clientTheme, templateTheme, renderT8]);
+  }, [syntax, theme, templateTheme, renderT8]);
 
   return renderT8 ? <div ref={containerRef} /> : <div className="whitespace-pre-wrap">{syntax}</div>;
 }
