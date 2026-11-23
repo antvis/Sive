@@ -1,15 +1,22 @@
 import type { AnalysisResponse } from '@antv/ava';
+import { isAnalysisToolResult } from '@shared/analysis-trace';
 import { Tabs } from 'radix-ui';
-import { ChevronRightIcon } from 'lucide-react';
+import { ChevronRightIcon, CodeXmlIcon, FileTextIcon, ListTreeIcon, Table2Icon } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { toast } from 'sonner';
-import { errorMessage, formatMetric } from '../../../utils';
+import { formatMetric } from '../../../utils';
 import { cn } from '../../../lib/utils';
-import { CodeBlock, CodeBlockCopyButton } from '../../ai-elements/code-block';
 import { MessageResponse } from '../../ai-elements/message';
+import { SqlCodeBlock } from '../../ai-elements/sql';
+import type { ToolPart } from '../../ai-elements/tool';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
 import { Table } from '../../ui/table';
+import { AnalysisTraceView } from './analysis-trace-view';
+
+const scrollContentClass =
+  'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-contain [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring';
+
+const sectionTitleClass = 'text-sm font-semibold text-foreground';
 
 function cellText(value: unknown) {
   if (value === null || value === undefined) return '—';
@@ -34,15 +41,18 @@ function AnalysisTable({
     const value = data[0][column.name];
 
     return (
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1">
-        <span className="break-all text-3xl leading-tight font-medium tabular-nums" title={cellText(value)}>
+      <div className="grid gap-1 py-2.5">
+        <span className="text-xs text-muted-foreground [overflow-wrap:anywhere]" title={column.type}>
+          {column.name}
+          {column.type && <span className="sr-only"> · {column.type}</span>}
+        </span>
+        <span
+          className="text-2xl leading-tight font-semibold tabular-nums [overflow-wrap:anywhere]"
+          title={cellText(value)}
+        >
           {typeof value === 'number' && !originalPrecision
             ? value.toLocaleString('zh-CN', { maximumFractionDigits: 3 })
             : cellText(value)}
-        </span>
-        <span className="break-all text-xs text-muted-foreground" title={column.type}>
-          {column.name}
-          {column.type && <span className="sr-only"> · {column.type}</span>}
         </span>
       </div>
     );
@@ -105,154 +115,252 @@ function AnalysisTable({
   );
 }
 
-function AnalysisSection({ title, children }: { title: string; children: ReactNode }) {
+function AnalysisSection({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <Collapsible className="min-w-0 border-t border-border" role="region" aria-label={title}>
-      <CollapsibleTrigger className="group/analyze flex w-full flex-wrap items-center gap-2 rounded-sm bg-transparent py-2.5 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+    <Collapsible defaultOpen={defaultOpen} className="min-w-0 space-y-1.5" role="region" aria-label={title}>
+      <CollapsibleTrigger
+        className={cn(
+          sectionTitleClass,
+          'group/analyze flex w-full items-center justify-between gap-2 rounded-sm text-left hover:text-foreground/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+        )}
+      >
+        <span>{title}</span>
         <ChevronRightIcon
           className="size-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/analyze:rotate-90 motion-reduce:transition-none"
           aria-hidden="true"
         />
-        <span>{title}</span>
       </CollapsibleTrigger>
-      <CollapsibleContent className="min-w-0 pb-3">{children}</CollapsibleContent>
+      <CollapsibleContent className="min-w-0">{children}</CollapsibleContent>
     </Collapsible>
   );
 }
 
-export function AnalyzeTool({ analysis }: { analysis: AnalysisResponse }) {
-  const [originalPrecision, setOriginalPrecision] = useState(false);
-  const [view, setView] = useState('data');
-  const selectedView = analysis.sql ? view : 'data';
-  const content = analysis.markdown || analysis.text;
-  const limitations =
-    'limitations' in analysis && typeof analysis.limitations === 'string' && analysis.limitations.trim()
-      ? analysis.limitations
-      : undefined;
-  // shortcut: only split the known loop headings; keep other formats intact until AVA provides structured fields.
-  const confirmation = content.match(/^Verification:\s*\r?\n([\s\S]*?)\r?\n\s*Conclusion:\s*\r?\n([\s\S]+)$/);
-
+function AnalysisConclusion({
+  analysis,
+  content,
+  limitations,
+}: {
+  analysis: AnalysisResponse;
+  content: string;
+  limitations?: string;
+}) {
   return (
-    <div className="grid min-w-0 gap-4 text-sm leading-5 text-foreground/80">
-      {(analysis.query || content || limitations) && (
-        <section className="grid min-w-0 gap-2 rounded-lg bg-muted/50 p-3" aria-label="问题与结论">
-          {analysis.query && (
-            <p className="m-0 whitespace-pre-wrap break-words text-sm leading-6 text-foreground">
-              {analysis.query}
-            </p>
-          )}
-          {analysis.query && content && <hr className="m-0 border-border" />}
-          {content && (
-            <MessageResponse className="space-y-2 text-sm leading-6 text-foreground">
-              {confirmation?.[2] ?? content}
-            </MessageResponse>
-          )}
-          {limitations && (
-            <div className="space-y-1">
-              <p className="m-0 text-xs font-medium text-muted-foreground">分析局限</p>
-              <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground">
-                {limitations}
-              </MessageResponse>
-            </div>
-          )}
-        </section>
+    <div
+      className={cn(scrollContentClass, 'grid grid-cols-1 gap-3 [overflow-wrap:anywhere]')}
+      role="region"
+      aria-label="结论正文"
+      tabIndex={0}
+    >
+      {content && (
+        <MessageResponse className="space-y-2 text-sm leading-6 text-foreground">{content}</MessageResponse>
       )}
-      <Tabs.Root
-        value={selectedView}
-        onValueChange={setView}
-        className="grid min-w-0 gap-2 border-t border-border pt-3"
-      >
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-          <h4 className="m-0 text-sm font-semibold text-foreground">依据</h4>
-          <Tabs.List className="flex gap-3" aria-label="查询依据视图">
-            {analysis.sql && (
-              <Tabs.Trigger
-                value="sql"
-                className="rounded-sm bg-transparent px-0 py-1 underline-offset-4 data-[state=active]:font-medium data-[state=active]:text-foreground data-[state=active]:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              >
-                SQL
-              </Tabs.Trigger>
-            )}
-            <Tabs.Trigger
-              value="data"
-              className="rounded-sm bg-transparent px-0 py-1 underline-offset-4 data-[state=active]:font-medium data-[state=active]:text-foreground data-[state=active]:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              Data
-            </Tabs.Trigger>
-          </Tabs.List>
-          {selectedView === 'data' && (
-            <div
-              className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs text-muted-foreground"
-              role="group"
-              aria-label="查询结果信息"
-            >
-              <span>
-                {analysis.data.length} 行 · {analysis.schema.length} 列{analysis.truncated ? ' · 已截断' : ''}
-              </span>
-              {analysis.rowCount !== undefined && analysis.rowCount !== analysis.data.length && (
-                <span>查询行数 {analysis.rowCount}</span>
-              )}
-              {analysis.data.length > 0 && (
-                <label className="flex cursor-pointer items-center gap-1.5">
-                  <input
-                    type="checkbox"
-                    checked={originalPrecision}
-                    onChange={(event) => setOriginalPrecision(event.target.checked)}
-                  />
-                  <span>原始精度</span>
-                </label>
-              )}
-            </div>
-          )}
-        </div>
-        {analysis.sql && (
-          <Tabs.Content value="sql" className="min-w-0 focus-visible:outline-2 focus-visible:outline-ring">
-            <CodeBlock
-              code={analysis.sql}
-              language="sql"
-              role="region"
-              aria-label="执行 SQL"
-              tabIndex={0}
-              className="max-h-64 overflow-auto [&>div:last-child]:overflow-visible [&_pre]:p-3 [&_pre]:pr-12 [&_pre]:text-xs [&_pre]:leading-5 [&_code]:text-xs"
-            >
-              <div className="sticky top-0 left-0 z-10 h-0">
-                <CodeBlockCopyButton
-                  size="icon-xs"
-                  className="absolute top-2 right-2 text-muted-foreground"
-                  aria-label="复制完整 SQL"
-                  onError={(error) => toast.error(errorMessage(error))}
-                />
-              </div>
-            </CodeBlock>
-          </Tabs.Content>
-        )}
-        <Tabs.Content value="data" className="min-w-0 focus-visible:outline-2 focus-visible:outline-ring">
-          <div className="max-h-48 max-w-full overflow-auto" role="region" aria-label="结果数据" tabIndex={0}>
-            <AnalysisTable analysis={analysis} originalPrecision={originalPrecision} />
-          </div>
-          {analysis.truncated && (
-            <p className="m-0 text-xs text-muted-foreground" role="status">
-              查询结果已截断
-              {analysis.truncatedBy === 'maxRows'
-                ? '（达到行数限制）'
-                : analysis.truncatedBy === 'maxResultBytes'
-                  ? '（达到大小限制）'
-                  : ''}
-              ，已返回 {analysis.data.length} 行；完整查询结果可能包含更多数据。
-            </p>
-          )}
-        </Tabs.Content>
-      </Tabs.Root>
-      {confirmation && (
-        <AnalysisSection title="核对说明">
+      {limitations && (
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-foreground">分析局限</p>
           <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground">
-            {confirmation[1]}
+            {limitations}
           </MessageResponse>
-        </AnalysisSection>
+        </div>
       )}
       {analysis.markdown && analysis.text && analysis.markdown !== analysis.text && (
         <AnalysisSection title="原始文本">
-          <p className="m-0 whitespace-pre-wrap break-words text-xs text-muted-foreground">{analysis.text}</p>
+          <p className="whitespace-pre-wrap text-xs leading-5 text-muted-foreground">{analysis.text}</p>
+        </AnalysisSection>
+      )}
+    </div>
+  );
+}
+
+function AnalysisData({
+  analysis,
+  originalPrecision,
+  onPrecisionChange,
+}: {
+  analysis: AnalysisResponse;
+  originalPrecision: boolean;
+  onPrecisionChange: (value: boolean) => void;
+}) {
+  const { data, schema, rowCount, truncated, truncatedBy } = analysis;
+
+  return (
+    <div className="w-full min-w-0 space-y-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <span className="tabular-nums">
+          {data.length} 行 · {schema.length} 列
+          {rowCount !== undefined && rowCount !== data.length && ` · 查询共 ${rowCount} 行`}
+        </span>
+        {data.length > 0 && (
+          <label className="ml-auto flex cursor-pointer items-center gap-1.5">
+            <input
+              type="checkbox"
+              className="accent-primary"
+              checked={originalPrecision}
+              onChange={(event) => onPrecisionChange(event.target.checked)}
+            />
+            原始精度
+          </label>
+        )}
+      </div>
+      <div className={scrollContentClass} role="region" aria-label="结果数据" tabIndex={0}>
+        <AnalysisTable analysis={analysis} originalPrecision={originalPrecision} />
+      </div>
+      {truncated && (
+        <p className="text-xs leading-5 text-muted-foreground" role="status">
+          查询结果已截断
+          {truncatedBy === 'maxRows'
+            ? '（达到行数限制）'
+            : truncatedBy === 'maxResultBytes'
+              ? '（达到大小限制）'
+              : ''}
+          ，已返回 {data.length} 行。
+        </p>
+      )}
+    </div>
+  );
+}
+
+function isLegacyAnalysisResult(value: unknown): value is AnalysisResponse {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'query' in value &&
+    typeof value.query === 'string' &&
+    'text' in value &&
+    typeof value.text === 'string' &&
+    'schema' in value &&
+    Array.isArray(value.schema) &&
+    'data' in value &&
+    Array.isArray(value.data)
+  );
+}
+
+export function AnalyzeTool({ call, errorText }: { call: ToolPart; errorText?: string }) {
+  const [originalPrecision, setOriginalPrecision] = useState(false);
+  const output = call.state === 'output-available' ? call.output : undefined;
+  const savedResult = isAnalysisToolResult(output) ? output : undefined;
+  const analysis = savedResult ? savedResult.result : isLegacyAnalysisResult(output) ? output : undefined;
+  const trace = savedResult?.trace;
+  const error =
+    errorText ??
+    trace?.error ??
+    (analysis === null ? (trace?.status === 'cancelled' ? '分析已取消。' : '分析未完成。') : undefined);
+  const input = call.input;
+  const inputQuery =
+    input && typeof input === 'object' && 'query' in input && typeof input.query === 'string'
+      ? input.query
+      : undefined;
+  const query = analysis?.query || trace?.query || inputQuery;
+  const content = analysis?.markdown || analysis?.text || '';
+  // shortcut: only split the known loop headings; keep other formats intact until AVA provides structured fields.
+  const confirmation = content.match(/^Verification:\s*\r?\n([\s\S]*?)\r?\n\s*Conclusion:\s*\r?\n([\s\S]+)$/);
+  const conclusion = confirmation?.[2] ?? content;
+  const limitations =
+    analysis && 'limitations' in analysis && typeof analysis.limitations === 'string'
+      ? analysis.limitations.trim()
+      : undefined;
+
+  const views = [
+    {
+      value: 'conclusion',
+      label: '结论',
+      icon: FileTextIcon,
+      content:
+        analysis && (conclusion.trim() || limitations) ? (
+          <AnalysisConclusion analysis={analysis} content={conclusion} limitations={limitations} />
+        ) : null,
+    },
+    {
+      value: 'data',
+      label: '数据',
+      icon: Table2Icon,
+      content: analysis ? (
+        <AnalysisData
+          analysis={analysis}
+          originalPrecision={originalPrecision}
+          onPrecisionChange={setOriginalPrecision}
+        />
+      ) : null,
+    },
+    {
+      value: 'sql',
+      label: 'SQL',
+      icon: CodeXmlIcon,
+      content: analysis?.sql ? (
+        <SqlCodeBlock code={analysis.sql} label="执行 SQL" maxHeight="var(--analysis-view-max-height)" />
+      ) : null,
+    },
+    {
+      value: 'trace',
+      label: '过程回顾',
+      icon: ListTreeIcon,
+      content: trace ? <AnalysisTraceView trace={trace} /> : null,
+    },
+  ].filter((view) => view.content !== null);
+
+  if (!views.length && !error) return null;
+
+  return (
+    <div className="@container grid w-full min-w-0 grid-cols-1 gap-3.5 rounded-lg bg-muted/50 p-3">
+      {query && (
+        <section className="min-w-0 space-y-1.5" aria-label="分析问题">
+          <h4 className={sectionTitleClass}>分析问题</h4>
+          <p className="text-sm leading-6 whitespace-pre-wrap text-foreground [overflow-wrap:anywhere]">
+            {query}
+          </p>
+        </section>
+      )}
+      {error && (
+        <p
+          role="alert"
+          className="text-sm leading-5 whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]"
+        >
+          {error}
+        </p>
+      )}
+      {views.length > 0 && (
+        <Tabs.Root
+          defaultValue={views[0].value}
+          className="w-full min-w-0 [--analysis-view-max-height:min(24rem,50dvh)]"
+        >
+          <Tabs.List
+            aria-label="分析结果视图"
+            className="grid grid-cols-[repeat(auto-fit,minmax(min(3rem,100%),1fr))] gap-1"
+          >
+            {views.map(({ value, label, icon: Icon }) => (
+              <Tabs.Trigger
+                key={value}
+                value={value}
+                className="flex min-h-8 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-xs leading-4 font-medium whitespace-nowrap text-muted-foreground hover:bg-card/60 hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-[state=active]:bg-card data-[state=active]:font-semibold data-[state=active]:text-foreground @xs:flex-row @xs:gap-1.5 @xs:text-sm"
+              >
+                <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+                {label}
+              </Tabs.Trigger>
+            ))}
+          </Tabs.List>
+          {views.map(({ value, content }) => (
+            <Tabs.Content
+              key={value}
+              value={value}
+              className="mt-2.5 w-full min-w-0 rounded-lg bg-card px-3 py-2.5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+            >
+              {content}
+            </Tabs.Content>
+          ))}
+        </Tabs.Root>
+      )}
+      {confirmation && (
+        <AnalysisSection title="核对说明" defaultOpen>
+          <MessageResponse className="space-y-2 text-sm leading-6 text-foreground [overflow-wrap:anywhere]">
+            {confirmation[1]}
+          </MessageResponse>
         </AnalysisSection>
       )}
     </div>

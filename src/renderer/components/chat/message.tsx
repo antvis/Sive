@@ -1,14 +1,16 @@
 import { cn } from '../../lib/utils';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
-import { getToolName, isTextUIPart, isToolUIPart } from 'ai';
-import type { UIMessage } from 'ai';
+import { isTextUIPart, isToolUIPart } from 'ai';
 import { Message, MessageContent, MessageResponse } from '../ai-elements/message';
 import { Button } from '../ui/button';
 import type { ChatMessage } from '@shared/api';
 import { MessageActions } from './message-actions';
 import { ToolCallView } from './tool-call';
-import { hasChart } from './tools/visualize';
-import type { VisualizationResult } from './tools/visualize';
+
+export function isVisibleAssistantPart(part: ChatMessage['parts'][number]) {
+  if (isTextUIPart(part)) return Boolean(part.text.trim());
+  return isToolUIPart(part);
+}
 
 function StreamContent({
   parts,
@@ -16,41 +18,20 @@ function StreamContent({
   savedMessageIds,
   isStreaming,
 }: {
-  parts: UIMessage['parts'];
+  parts: ChatMessage['parts'];
   messageId: string;
   savedMessageIds: string[];
   isStreaming: boolean;
 }) {
-  const visualizedAnalysis = new Set<string>();
-  let analysisId: string | undefined;
-  for (const part of parts) {
-    if (!isToolUIPart(part)) continue;
-    const toolName = getToolName(part);
-    if (toolName === 'analyze') analysisId = part.toolCallId;
-    if (
-      toolName === 'visualize' &&
-      analysisId &&
-      part.state === 'output-available' &&
-      hasChart(part.output as VisualizationResult | null | undefined)
-    ) {
-      visualizedAnalysis.add(analysisId);
-    }
-  }
   return (
-    <div className="grid min-w-0 gap-4">
+    <div className="grid min-w-0 grid-cols-1 gap-4">
       {parts.map((part, index) => {
-        if (isTextUIPart(part))
-          return (
-            <MessageResponse key={index}>
-              {part.text}
-            </MessageResponse>
-          );
+        if (isTextUIPart(part)) return <MessageResponse key={index}>{part.text}</MessageResponse>;
         if (isToolUIPart(part))
           return (
             <ToolCallView
               key={part.toolCallId}
               call={part}
-              hasVisualization={visualizedAnalysis.has(part.toolCallId)}
               messageId={messageId}
               savedMessageIds={savedMessageIds}
               isStreaming={isStreaming}
@@ -117,14 +98,13 @@ export function PreviewMessage({
   isStreaming?: boolean;
 }) {
   const isUser = message.role === 'user';
+  const parts = isUser ? message.parts : message.parts.filter(isVisibleAssistantPart);
+  if (!isUser && !parts.length) return null;
 
   return (
     <Message
       from={message.role}
-      className={cn(
-        'group/message max-w-full',
-        isUser && 'motion-safe:animate-fade-up',
-      )}
+      className={cn('group/message max-w-full', isUser && 'motion-safe:animate-fade-up')}
     >
       <div className={isUser ? 'flex flex-col items-end gap-2' : 'flex min-w-0'}>
         <MessageContent
@@ -143,7 +123,7 @@ export function PreviewMessage({
             />
           ) : (
             <StreamContent
-              parts={message.parts}
+              parts={parts}
               messageId={message.id}
               savedMessageIds={savedMessageIds}
               isStreaming={isStreaming}

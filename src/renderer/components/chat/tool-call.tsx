@@ -10,7 +10,8 @@ import type { LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { getToolName, isToolOutputErrorUIPart } from 'ai';
-import type { AnalysisResponse, Profile, Schema, Semantic } from '@antv/ava';
+import type { Profile, Schema, Semantic } from '@antv/ava';
+import { isAnalysisToolResult } from '@shared/analysis-trace';
 import { Tool, ToolContent, ToolHeader, ToolOutput } from '../ai-elements/tool';
 import type { ToolPart } from '../ai-elements/tool';
 import { SourceTool } from './tools/source';
@@ -40,83 +41,84 @@ const toolIcons: Record<string, LucideIcon> = {
   visualize: ChartLineIcon,
 };
 
-function toolContent(toolName: string, output: unknown): ReactNode {
-  if (toolName === 'source') return <SourceTool source={output as SourceResult} />;
-  if (toolName === 'schema') return <SchemaTool schema={output as Schema} />;
-  if (toolName === 'profile') return <ProfileTool profile={output as Profile} />;
-  if (toolName === 'semantic') return <SemanticTool semantic={output as Semantic} />;
-  if (toolName === 'analyze') return <AnalyzeTool analysis={output as AnalysisResponse} />;
-  return null;
+function toolContent(
+  toolName: string,
+  call: ToolPart,
+  {
+    messageId,
+    savedMessageIds,
+    isStreaming,
+  }: { messageId: string; savedMessageIds: string[]; isStreaming: boolean },
+): ReactNode {
+  const errorText = isToolOutputErrorUIPart(call)
+    ? call.errorText
+    : call.state === 'output-denied'
+      ? '工具执行已拒绝。'
+      : undefined;
+  if (toolName === 'analyze') return <AnalyzeTool call={call} errorText={errorText} />;
+
+  let content: ReactNode;
+  if (call.state === 'output-available') {
+    const { output } = call;
+    if (toolName === 'source') content = <SourceTool source={output as SourceResult} />;
+    if (toolName === 'schema') content = <SchemaTool schema={output as Schema} />;
+    if (toolName === 'profile') content = <ProfileTool profile={output as Profile} />;
+    if (toolName === 'semantic') content = <SemanticTool semantic={output as Semantic} />;
+    if (toolName === 'visualize') {
+      content = (
+        <VisualizeTool
+          visualization={output as VisualizationResult | null | undefined}
+          messageId={messageId}
+          saved={savedMessageIds.includes(messageId)}
+          isStreaming={isStreaming}
+        />
+      );
+    }
+  }
+  return <ToolOutput output={content} errorText={errorText} />;
 }
 
 export function ToolCallView({
   call,
   messageId,
   savedMessageIds,
-  hasVisualization,
   isStreaming,
 }: {
   call: ToolPart;
   messageId: string;
   savedMessageIds: string[];
-  hasVisualization: boolean;
   isStreaming: boolean;
 }) {
   const toolName = getToolName(call);
   const ToolIcon = toolIcons[toolName];
-  const completed =
-    call.state === 'output-available' || call.state === 'output-error' || call.state === 'output-denied';
-  const [expanded, setExpanded] = useState(
-    !completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize',
-  );
+  const isAnalysis = toolName === 'analyze';
+  const failedAnalysis =
+    isAnalysis &&
+    call.state === 'output-available' &&
+    isAnalysisToolResult(call.output) &&
+    call.output.result === null;
+  const state = failedAnalysis ? 'output-error' : call.state;
+  const completed = state === 'output-available' || state === 'output-error' || state === 'output-denied';
+  const defaultExpanded = !completed || isAnalysis || toolName === 'visualize';
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
   useEffect(() => {
-    setExpanded(!completed || (toolName === 'analyze' && !hasVisualization) || toolName === 'visualize');
-  }, [completed, toolName, hasVisualization]);
+    setExpanded(defaultExpanded);
+  }, [defaultExpanded]);
 
-  const content =
-    call.state === 'output-available' ? (
-      toolName === 'visualize' ? (
-        <VisualizeTool
-          visualization={call.output as VisualizationResult | null | undefined}
-          messageId={messageId}
-          saved={savedMessageIds.includes(messageId)}
-          isStreaming={isStreaming}
-        />
-      ) : (
-        toolContent(toolName, call.output)
-      )
-    ) : null;
   const header =
     call.type === 'dynamic-tool'
-      ? { type: call.type, toolName: call.toolName, state: call.state }
-      : { type: call.type, state: call.state };
-  const errorText = isToolOutputErrorUIPart(call)
-    ? call.errorText
-    : call.state === 'output-denied'
-      ? '工具执行已拒绝。'
-      : undefined;
+      ? { type: call.type, toolName: call.toolName, state }
+      : { type: call.type, state };
 
   return (
-    <Tool
-      className="mb-0 rounded-none border-0 bg-transparent p-0"
-      open={expanded}
-      onOpenChange={setExpanded}
-    >
+    <Tool open={expanded} onOpenChange={setExpanded}>
       <ToolHeader
         {...header}
         title={toolLabels[toolName] ?? toolName}
         icon={ToolIcon ? <ToolIcon className="size-4 text-muted-foreground" aria-hidden="true" /> : undefined}
       />
-      <ToolContent className="p-0">
-        <div className="ml-4 border-l border-border py-3 pl-4">
-          <ToolOutput
-            className="[&_table]:text-xs"
-            output={content ?? undefined}
-            errorText={errorText}
-          />
-        </div>
-      </ToolContent>
+      <ToolContent>{toolContent(toolName, call, { messageId, savedMessageIds, isStreaming })}</ToolContent>
     </Tool>
   );
 }

@@ -65,6 +65,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/coverage-v8": "^5.1.0",
+    "@xyflow/react": "^13.0.2",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "electron": "44.9.1",

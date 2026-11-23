@@ -45,7 +45,6 @@ export function Chat({
     messages,
     setMessages,
     sendMessage,
-    stop,
     status,
     error: chatError,
   } = useChat<ChatMessage>({ id: chatId, transport });
@@ -176,7 +175,7 @@ export function Chat({
             value={question}
             onChange={setQuestion}
             onSubmit={start}
-            onStop={() => void stop()}
+            onStop={() => transport.stop(chatId)}
             status={status}
             disabled={!activeModelId || historyLoading}
             models={models}

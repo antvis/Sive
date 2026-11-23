@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { sqlHighlightTheme } from "../../lib/sql-highlight-theme";
 import { cn } from "../../lib/utils";
 import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
@@ -321,7 +322,17 @@ export const MessageBranchPage = ({
 
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
-const streamdownPlugins = { cjk, code, math, mermaid };
+const streamdownCode: typeof code = {
+  ...code,
+  highlight(options, callback) {
+    if (options.language.toLowerCase() === "sql") {
+      return code.highlight({ ...options, themes: [sqlHighlightTheme, sqlHighlightTheme] }, callback);
+    }
+    return code.highlight(options, callback);
+  },
+};
+
+const streamdownPlugins = { cjk, code: streamdownCode, math, mermaid };
 
 const streamdownComponents = {
   table: MarkdownTable,
@@ -344,6 +355,7 @@ export const MessageResponse = memo(
     <Streamdown
       className={cn(
         "size-full space-y-3 font-sans leading-[1.6] font-normal tracking-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+        "[&_[data-streamdown=code-block][data-language=sql_i]]:bg-muted/50 [&_[data-streamdown=code-block-body][data-language=sql_i]]:bg-transparent",
         className
       )}
       plugins={streamdownPlugins}
