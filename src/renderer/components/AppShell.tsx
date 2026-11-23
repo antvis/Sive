@@ -2,7 +2,7 @@ import { X } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { useState } from 'react';
 import type { PropsWithChildren } from 'react';
-import { Group, Panel } from 'react-resizable-panels';
+import { Group, Panel, usePanelRef } from 'react-resizable-panels';
 import { readWidth, saveWidth } from '../utils';
 import type { DatasetSummary } from '../types';
 import { DataSourceLogo } from './DataSourceLogo';
@@ -10,11 +10,16 @@ import { ResizeHandle } from './ResizeHandle';
 import { WorkspaceSidebar } from './WorkspaceSidebar';
 import type { WorkspaceSidebarProps } from './WorkspaceSidebar';
 
-type AppShellProps = PropsWithChildren<WorkspaceSidebarProps & {
-  datasetTabs: DatasetSummary[];
-  onDatasetSelect: (id: string) => void;
-  onDatasetClose: (id: string) => void;
-}>;
+type AppShellProps = PropsWithChildren<
+  WorkspaceSidebarProps & {
+    datasetTabs: DatasetSummary[];
+    onDatasetSelect: (id: string) => void;
+    onDatasetClose: (id: string) => void;
+  }
+>;
+
+const SIDEBAR_MIN_WIDTH = 160;
+const SIDEBAR_COLLAPSED_WIDTH = 52;
 
 export function AppShell({
   page,
@@ -25,18 +30,40 @@ export function AppShell({
   children,
   ...sidebar
 }: AppShellProps) {
-  const [sidebarWidth] = useState(() => readWidth('sive.sidebar-width', 224));
+  const [sidebarWidth] = useState(() => Math.max(SIDEBAR_MIN_WIDTH, readWidth('sive.sidebar-width', 224)));
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const sidebarPanel = usePanelRef();
+
+  const toggleSidebar = () => {
+    if (sidebarCollapsed) sidebarPanel.current?.expand();
+    else sidebarPanel.current?.collapse();
+  };
+
   return (
     <Group orientation="horizontal" className="h-screen overflow-hidden bg-page">
       <Panel
         id="app-sidebar"
+        panelRef={sidebarPanel}
         defaultSize={sidebarWidth}
-        minSize={160}
+        minSize={SIDEBAR_MIN_WIDTH}
         maxSize={280}
+        collapsible
+        collapsedSize={SIDEBAR_COLLAPSED_WIDTH}
+        groupResizeBehavior="preserve-pixel-size"
         className="h-full min-h-0"
-        onResize={(size) => saveWidth('sive.sidebar-width', size.inPixels)}
+        onResize={({ inPixels }) => {
+          const collapsed = inPixels < SIDEBAR_MIN_WIDTH;
+          setSidebarCollapsed(collapsed);
+          if (!collapsed) saveWidth('sive.sidebar-width', inPixels);
+        }}
       >
-        <WorkspaceSidebar page={page} activeDatasetId={activeDatasetId} {...sidebar} />
+        <WorkspaceSidebar
+          {...sidebar}
+          page={page}
+          activeDatasetId={activeDatasetId}
+          collapsed={sidebarCollapsed}
+          onToggle={toggleSidebar}
+        />
       </Panel>
       <ResizeHandle />
       <Panel id="workspace-content" minSize="50%" className="h-full min-h-0 min-w-0 flex-1">

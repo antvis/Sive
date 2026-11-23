@@ -7,6 +7,7 @@ import {
   Lightbulb,
   NotePencil,
   PencilSimple,
+  SidebarSimple,
 } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { Popover } from 'radix-ui';
@@ -87,11 +88,13 @@ function NewConversationButton({
   datasets,
   datasetId,
   compact = false,
+  collapsed = false,
   onCreate,
 }: {
   datasets: DatasetSummary[];
   datasetId?: string | null;
   compact?: boolean;
+  collapsed?: boolean;
   onCreate: (datasetId: string) => void;
 }) {
   const label = compact ? '新建对话' : '新建分析';
@@ -108,14 +111,14 @@ function NewConversationButton({
   ) : (
     <button
       type="button"
-      className={rowClass}
+      className={clsx(rowClass, collapsed && 'justify-center')}
       data-sidebar-row
       disabled={disabled}
       title={title}
       onClick={datasetId ? () => onCreate(datasetId) : undefined}
     >
       <NotePencil size={16} className="shrink-0" aria-hidden />
-      {label}
+      <span className={collapsed ? 'sr-only' : undefined}>{label}</span>
     </button>
   );
 
@@ -127,7 +130,7 @@ function NewConversationButton({
       <Popover.Portal>
         <Popover.Content
           aria-label="选择数据源"
-          side={compact ? 'top' : 'bottom'}
+          side={compact ? 'top' : collapsed ? 'right' : 'bottom'}
           align={compact ? 'end' : 'start'}
           sideOffset={4}
           collisionPadding={8}
@@ -283,6 +286,8 @@ function ConversationItem({
 
 export function WorkspaceSidebar({
   page,
+  collapsed,
+  onToggle,
   datasets,
   conversationsByDataset,
   recentConversations,
@@ -292,7 +297,7 @@ export function WorkspaceSidebar({
   onConversationCreate,
   onConversationArchive,
   onNavigate,
-}: WorkspaceSidebarProps) {
+}: WorkspaceSidebarProps & { collapsed: boolean; onToggle: () => void }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [recentSelection, setRecentSelection] = useState<string | null>(null);
   const groups = datasets.flatMap((dataset) => {
@@ -302,6 +307,8 @@ export function WorkspaceSidebar({
   const activeInRecent =
     recentSelection === activeConversationId &&
     recentConversations.some((conversation) => conversation.id === activeConversationId);
+  const railRowClass = collapsed && 'justify-center';
+  const labelClass = collapsed ? 'sr-only' : undefined;
 
   const createConversation = (datasetId: string) => {
     setExpanded((current) => ({ ...current, [datasetId]: true }));
@@ -314,43 +321,72 @@ export function WorkspaceSidebar({
       className="flex h-full min-h-0 flex-col bg-sidebar-canvas pt-12 pb-[8px]"
       aria-label="工作台侧边栏"
     >
-      <div className="mx-3 mb-6 shrink-0 px-2">
-        <div className="flex items-center gap-2">
-          <img className="size-7 dark:invert" src="./sive.svg" alt="" />
-          <strong className="text-xl leading-6 font-semibold">Sive</strong>
-        </div>
-        <span className="mt-1.5 block text-xs leading-4 text-muted-foreground">
-          See it Live, Share it Real.
-        </span>
+      <div
+        className={clsx(
+          'relative mb-6 shrink-0',
+          collapsed ? 'mx-[8px] grid place-items-center' : 'mx-3 px-2',
+        )}
+      >
+        {!collapsed && (
+          <>
+            <div className="flex items-center gap-2">
+              <img className="size-7 dark:invert" src="./sive.svg" alt="" />
+              <strong className="text-xl leading-6 font-semibold">Sive</strong>
+            </div>
+            <span className="mt-1.5 block text-xs leading-4 text-muted-foreground">
+              See it Live, Share it Real.
+            </span>
+          </>
+        )}
+        <IconButton
+          icon={SidebarSimple}
+          label={collapsed ? '展开侧边栏' : '收起侧边栏'}
+          aria-expanded={!collapsed}
+          aria-controls="sidebar-history"
+          className={clsx(iconClass, 'size-[32px]!', !collapsed && 'absolute! -top-1 end-0')}
+          onClick={onToggle}
+        />
       </div>
       <nav className="mx-[8px]" aria-label="工作台">
         <SidebarList>
           <NewConversationButton
             datasets={datasets}
             datasetId={activeDatasetId}
+            collapsed={collapsed}
             onCreate={createConversation}
           />
           <button
             type="button"
             data-sidebar-row
-            className={clsx(rowClass, (page === 'welcome' || page === 'datasets') && activeClass)}
+            className={clsx(
+              rowClass,
+              railRowClass,
+              (page === 'welcome' || page === 'datasets') && activeClass,
+            )}
+            title={collapsed ? '数据源' : undefined}
             onClick={() => onNavigate(datasets.length ? 'datasets' : 'welcome')}
           >
             <Database size={16} aria-hidden />
-            数据源
+            <span className={labelClass}>数据源</span>
           </button>
           <button
             type="button"
             data-sidebar-row
-            className={clsx(rowClass, page === 'snippets' && activeClass)}
+            className={clsx(rowClass, railRowClass, page === 'snippets' && activeClass)}
+            title={collapsed ? '洞察 Snippet' : undefined}
             onClick={() => onNavigate('snippets')}
           >
             <Lightbulb size={16} aria-hidden />
-            洞察 Snippet
+            <span className={labelClass}>洞察 Snippet</span>
           </button>
         </SidebarList>
       </nav>
-      <nav className="mx-[8px] mt-[12px] min-h-0 flex-1 overflow-y-auto" aria-label="分析历史">
+      <nav
+        id="sidebar-history"
+        hidden={collapsed}
+        className="mx-[8px] mt-[12px] min-h-0 flex-1 overflow-y-auto"
+        aria-label="分析历史"
+      >
         {groups.length > 0 && (
           <section aria-labelledby="sidebar-datasets-heading">
             <h2 id="sidebar-datasets-heading" className={clsx(headingClass, 'mb-1')}>
@@ -449,13 +485,15 @@ export function WorkspaceSidebar({
         type="button"
         className={clsx(
           rowClass,
-          'mx-[8px] mt-[8px] shrink-0 hover:bg-sidebar-highlight',
+          'mx-[8px] shrink-0 hover:bg-sidebar-highlight',
+          collapsed ? 'mt-auto justify-center' : 'mt-[8px]',
           page === 'settings' && activeClass,
         )}
+        title={collapsed ? '设置' : undefined}
         onClick={() => onNavigate('settings')}
       >
         <GearSix size={16} aria-hidden />
-        设置
+        <span className={labelClass}>设置</span>
       </button>
     </aside>
   );
