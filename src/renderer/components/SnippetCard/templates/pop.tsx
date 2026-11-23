@@ -1,16 +1,9 @@
-import {
-  CalendarBlank,
-  CaretDown,
-  LinkSimple,
-  PencilSimple,
-  PushPin,
-  Tag,
-  Trash,
-} from '@phosphor-icons/react';
+import { CalendarBlank, CaretDown, PencilSimple, PushPin, Tag, Trash } from '@phosphor-icons/react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
 import { Button } from '../../Button';
 import { IconButton } from '../../IconButton';
+import { AnalysisSource } from '../AnalysisSource';
 import { TemplatePicker } from '../TemplatePicker';
 import { Summary } from '../../Summary';
 import { Visualization } from '../../Visualization';
@@ -236,14 +229,7 @@ export default function PopTemplate({
         )}
       </div>
       <footer className="mt-3 flex items-start justify-between gap-4 border-t-2 border-ink! pt-3 text-xs text-muted-foreground">
-        <details className="group/source min-w-0 flex-1">
-          <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
-            <LinkSimple size={13} aria-hidden />
-            分析来源
-            <CaretDown size={11} aria-hidden className="group-open/source:rotate-180" />
-          </summary>
-          <p className="mt-2 mb-0 leading-5 text-pretty wrap-anywhere">{data.question}</p>
-        </details>
+        <AnalysisSource question={data.question} trace={data.trace} />
         {createdAt && (
           <time
             dateTime={createdAt}

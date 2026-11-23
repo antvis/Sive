@@ -2,21 +2,14 @@ import { statSync } from 'node:fs';
 import { tool } from 'ai';
 import type { LanguageModel, Tool } from 'ai';
 import { z } from 'zod';
-import type {
-  AnalysisResponse,
-  AnalysisStrategyConfig,
-  AVA,
-  DataSourceConfig,
-  Profile,
-  Schema,
-  Semantic,
-} from '@antv/ava';
-import { isAnalysisToolResult } from '@shared/analysis-trace';
+import type { AnalysisStrategyConfig, AVA, DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
+import { isAnalysisToolResult, requireAnalysisResult } from '@shared/analysis-trace';
 import type { AnalysisToolOutput } from '@shared/analysis-trace';
 import { analysisStartSchema } from '@shared/api';
 import type { SnippetContent } from '@shared/api';
 import { createAnalysisTraceCollector } from '../util/ava';
 import { localFilePath } from '../util/localFile';
+import { getTextFromLastUserMessage } from '../util/message';
 import { generateSnippet } from './snippet-agent';
 
 export type ToolDataset = {
@@ -31,26 +24,20 @@ export type ToolDataset = {
 
 export type ToolContext = {
   dataset: ToolDataset;
-  latest?: AnalysisResponse;
 };
 
 export type ToolOptions = {
   strategy: AnalysisStrategyConfig;
-  question: string;
 };
 
 type ExecutableTool<T extends Tool = Tool> = T & Required<Pick<T, 'execute'>>;
 
 type AnalysisTools = Record<'source' | 'schema' | 'profile' | 'semantic', ExecutableTool> & {
-  analyze: ExecutableTool<Tool<{ query: string }, AnalysisToolOutput, Pick<ToolOptions, 'strategy'>>>;
-  visualize: ExecutableTool<
-    Tool<Record<string, never>, SnippetContent | null, Pick<ToolOptions, 'question'>>
-  >;
+  analyze: ExecutableTool<Tool<{ query: string }, AnalysisToolOutput, ToolOptions>>;
+  visualize: ExecutableTool<Tool<{ analysisId: string }, SnippetContent | null>>;
 };
 
-export function createTools(ava: AVA, context: ToolContext, model: LanguageModel): AnalysisTools {
-  const { dataset } = context;
-
+export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageModel): AnalysisTools {
   return {
     source: tool({
       description: 'Load the configured dataset before the first analysis.',
@@ -105,28 +92,27 @@ export function createTools(ava: AVA, context: ToolContext, model: LanguageModel
         };
         const collector = createAnalysisTraceCollector(ava, options);
         const result = await collector.run(() => ava.analyze(query, { strategy })).catch(() => null);
-        if (result) context.latest = result;
         return { result, trace: collector.toJSON() };
       },
-      toModelOutput({ output }) {
+      toModelOutput({ output, toolCallId }) {
         if (!isAnalysisToolResult(output) || output.result === null) {
           return { type: 'error-text', value: '分析未完成。' };
         }
         return {
           type: 'json',
-          value: JSON.parse(JSON.stringify(output.result)),
+          value: JSON.parse(JSON.stringify({ analysisId: toolCallId, result: output.result })),
         };
       },
     }),
     visualize: tool({
-      description: 'Create a visualization for the latest analysis result. Call analyze first.',
-      inputSchema: z.object({}),
-      contextSchema: z.object({ question: z.string() }),
-      async execute(_input, { abortSignal, context: { question } }) {
-        const analysis = context.latest;
-        if (!analysis) return null;
+      description: 'Create a chart for a relevant analysis result using the analysisId returned by analyze.',
+      inputSchema: z.object({ analysisId: z.string().min(1) }),
+      async execute({ analysisId }, { abortSignal, messages }): Promise<SnippetContent | null> {
+        const analysis = requireAnalysisResult(messages, analysisId);
         const visualization = await ava.visualize(analysis);
         if (!visualization) return null;
+
+        const question = getTextFromLastUserMessage(messages)?.trim() || analysis.query;
         const spec = visualization.config;
         const title = (typeof spec !== 'string' && spec.title) || question;
         const formatted = await generateSnippet({
@@ -147,6 +133,11 @@ export function createTools(ava: AVA, context: ToolContext, model: LanguageModel
           tags: formatted?.tags ?? [],
           metrics: formatted?.metrics ?? [],
         };
+      },
+      toModelOutput({ output }) {
+        if (!output) return { type: 'json', value: null };
+        const { trace: _trace, ...content } = output;
+        return { type: 'json', value: JSON.parse(JSON.stringify(content)) };
       },
     }),
   };

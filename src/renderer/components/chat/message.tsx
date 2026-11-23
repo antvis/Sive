@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import type { ChatMessage } from '@shared/api';
 import { MessageActions } from './message-actions';
 import { ToolCallView } from './tool-call';
+import { getTextFromUIMessage } from './util';
 
 export function isVisibleAssistantPart(part: ChatMessage['parts'][number]) {
   if (isTextUIPart(part)) return Boolean(part.text.trim());
@@ -115,12 +116,7 @@ export function PreviewMessage({
           )}
         >
           {isUser ? (
-            <UserMessageContent
-              text={message.parts
-                .filter(isTextUIPart)
-                .map((part) => part.text)
-                .join('')}
-            />
+            <UserMessageContent text={getTextFromUIMessage(message)} />
           ) : (
             <StreamContent
               parts={parts}
