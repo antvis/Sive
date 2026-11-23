@@ -1,7 +1,6 @@
 import { cn } from '../../lib/utils';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { getToolName, isTextUIPart, isToolUIPart } from 'ai';
-import type { UIMessage } from 'ai';
 import { Message, MessageContent, MessageResponse } from '../ai-elements/message';
 import { Button } from '../ui/button';
 import type { ChatMessage } from '@shared/api';
@@ -10,13 +9,18 @@ import { ToolCallView } from './tool-call';
 import { hasChart } from './tools/visualize';
 import type { VisualizationResult } from './tools/visualize';
 
+export function isVisibleAssistantPart(part: ChatMessage['parts'][number]) {
+  if (isTextUIPart(part)) return Boolean(part.text.trim());
+  return isToolUIPart(part);
+}
+
 function StreamContent({
   parts,
   messageId,
   savedMessageIds,
   isStreaming,
 }: {
-  parts: UIMessage['parts'];
+  parts: ChatMessage['parts'];
   messageId: string;
   savedMessageIds: string[];
   isStreaming: boolean;
@@ -36,6 +40,7 @@ function StreamContent({
       visualizedAnalysis.add(analysisId);
     }
   }
+
   return (
     <div className="grid min-w-0 gap-4">
       {parts.map((part, index) => {
@@ -117,6 +122,8 @@ export function PreviewMessage({
   isStreaming?: boolean;
 }) {
   const isUser = message.role === 'user';
+  const parts = isUser ? message.parts : message.parts.filter(isVisibleAssistantPart);
+  if (!isUser && !parts.length) return null;
 
   return (
     <Message
@@ -143,7 +150,7 @@ export function PreviewMessage({
             />
           ) : (
             <StreamContent
-              parts={message.parts}
+              parts={parts}
               messageId={message.id}
               savedMessageIds={savedMessageIds}
               isStreaming={isStreaming}

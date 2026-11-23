@@ -128,7 +128,7 @@ export const analysisStartSchema = z.object({
   chatId: z.string().min(1),
   datasetId: z.string().min(1),
   message: z.unknown().transform(async (value) => {
-    const [message] = await validateUIMessages({ messages: [value] });
+    const [message] = await validateUIMessages<ChatMessage>({ messages: [value] });
     if (message.role !== 'user' || !message.parts.every(isTextUIPart)) {
       throw new Error('仅支持发送用户文本消息。');
     }

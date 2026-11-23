@@ -8,7 +8,7 @@ import {
   ConversationScrollButton,
 } from '../ai-elements/conversation';
 import { Suggestion, Suggestions } from '../ai-elements/suggestion';
-import { PreviewMessage } from './message';
+import { isVisibleAssistantPart, PreviewMessage } from './message';
 
 type Props = {
   messages: ChatMessage[];
@@ -33,6 +33,8 @@ export function Messages({
   error,
   onSuggestion,
 }: Props) {
+  const latestMessage = messages.at(-1);
+
   return (
     <Conversation className="min-h-0 touch-pan-y">
       <ConversationContent className="mx-auto min-h-full w-full min-w-0 max-w-3xl gap-6 px-5 pt-6 pb-8">
@@ -47,7 +49,7 @@ export function Messages({
               key={message.id}
               message={message}
               savedMessageIds={savedMessageIds}
-              isStreaming={isStreaming && message.id === messages.at(-1)?.id}
+              isStreaming={isStreaming && message.id === latestMessage?.id}
             />
           ))
         ) : (
@@ -81,12 +83,13 @@ export function Messages({
             )}
           </>
         )}
-        {isStreaming && (messages.at(-1)?.role === 'user' || !messages.at(-1)?.parts.length) && (
-          <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
-            <LoaderCircleIcon className="size-4 animate-spin" aria-hidden="true" />
-            正在分析…
-          </p>
-        )}
+        {isStreaming &&
+          (latestMessage?.role !== 'assistant' || !latestMessage.parts.some(isVisibleAssistantPart)) && (
+            <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
+              <LoaderCircleIcon className="size-4 animate-spin" aria-hidden="true" />
+              正在分析…
+            </p>
+          )}
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error}

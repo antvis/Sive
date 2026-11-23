@@ -1,4 +1,11 @@
 import type { AnalysisResponse } from '@antv/ava';
+import { isAnalysisToolResult } from '@shared/analysis-trace';
+import type {
+  AnalysisTrace,
+  AnalysisTraceOperation,
+  AnalysisTraceStatus,
+  AnalysisTraceStep,
+} from '@shared/analysis-trace';
 import { Tabs } from 'radix-ui';
 import { ChevronRightIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -8,6 +15,8 @@ import { errorMessage, formatMetric } from '../../../utils';
 import { cn } from '../../../lib/utils';
 import { CodeBlock, CodeBlockCopyButton } from '../../ai-elements/code-block';
 import { MessageResponse } from '../../ai-elements/message';
+import { ToolOutput } from '../../ai-elements/tool';
+import type { ToolPart } from '../../ai-elements/tool';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
 import { Table } from '../../ui/table';
 
@@ -120,7 +129,7 @@ function AnalysisSection({ title, children }: { title: string; children: ReactNo
   );
 }
 
-export function AnalyzeTool({ analysis }: { analysis: AnalysisResponse }) {
+function AnalysisResult({ analysis }: { analysis: AnalysisResponse }) {
   const [originalPrecision, setOriginalPrecision] = useState(false);
   const [view, setView] = useState('data');
   const selectedView = analysis.sql ? view : 'data';
@@ -255,6 +264,209 @@ export function AnalyzeTool({ analysis }: { analysis: AnalysisResponse }) {
           <p className="m-0 whitespace-pre-wrap break-words text-xs text-muted-foreground">{analysis.text}</p>
         </AnalysisSection>
       )}
+    </div>
+  );
+}
+
+const statusLabels: Record<AnalysisTraceStatus, string> = {
+  running: '进行中',
+  completed: '成功',
+  failed: '失败',
+  cancelled: '已取消',
+};
+
+function TraceSection({
+  label,
+  status,
+  durationMs,
+  defaultOpen,
+  usage,
+  children,
+}: {
+  label: string;
+  status?: AnalysisTraceStatus;
+  durationMs?: number;
+  defaultOpen?: boolean;
+  usage?: AnalysisTraceOperation['usage'];
+  children: ReactNode;
+}) {
+  let duration: string | undefined;
+  if (durationMs !== undefined) {
+    duration = durationMs < 1000 ? `${durationMs} ms` : `${(durationMs / 1000).toFixed(1)} 秒`;
+  }
+
+  return (
+    <Collapsible defaultOpen={defaultOpen} className="min-w-0">
+      <CollapsibleTrigger className="group/trace flex w-full items-start gap-2 rounded-sm px-1 py-1.5 text-left text-sm hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+        <ChevronRightIcon
+          aria-hidden="true"
+          className="mt-0.5 size-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/trace:rotate-90 motion-reduce:transition-none"
+        />
+        <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="font-medium text-foreground">{label}</span>
+          {status && (
+            <span
+              className={cn('text-xs', status === 'failed' ? 'text-destructive' : 'text-muted-foreground')}
+            >
+              {statusLabels[status]}
+            </span>
+          )}
+          {duration && <span className="text-xs text-muted-foreground tabular-nums">{duration}</span>}
+        </span>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="ml-2.5 min-w-0 space-y-2 border-l border-border pb-1 pl-3 [overflow-wrap:anywhere]">
+        {children}
+        {usage && (usage.inputTokens !== undefined || usage.outputTokens !== undefined) && (
+          <p>
+            输入 {usage.inputTokens ?? '—'} tokens · 输出 {usage.outputTokens ?? '—'} tokens
+          </p>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+const actionLabels = { EXPLORE: '探索', REFINE: '调整方案', SQL: '生成答案查询', CONFIRM: '核验结果' };
+const operationLabels = { translate: '生成语句', query: '执行查询', summarize: '总结结果' };
+
+function TraceCode({ label, text }: { label: string; text: string }) {
+  return (
+    <pre
+      aria-label={label}
+      tabIndex={0}
+      className="max-h-45 overflow-auto whitespace-pre-wrap rounded-md bg-muted/50 p-2 text-xs [overflow-wrap:anywhere] focus-visible:outline-2 focus-visible:outline-ring"
+    >
+      <code>{text}</code>
+    </pre>
+  );
+}
+
+function TraceOperation({
+  operation,
+  queryNumber = 0,
+}: {
+  operation: AnalysisTraceOperation;
+  queryNumber?: number;
+}) {
+  const { kind, error, dsl, result, queryExplanation, conclusion, limitations, nextStep, usage } = operation;
+  return (
+    <TraceSection
+      label={operationLabels[kind]}
+      status={operation.status}
+      durationMs={operation.durationMs}
+      usage={usage}
+    >
+      <p>开始于 +{operation.atMs} ms</p>
+      {error && <p className="whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]">{error}</p>}
+      {dsl && <TraceCode label="查询语句" text={dsl} />}
+      {result && (
+        <div className="space-y-1">
+          <p>
+            返回 {result.returnedRows} 行 · {result.columns.length} 列{result.truncated ? ' · 已截断' : ''}
+          </p>
+          {result.columns.length > 0 && (
+            <p className="[overflow-wrap:anywhere]">
+              {result.columns.map(({ name, type }) => (type ? `${name} (${type})` : name)).join('、')}
+            </p>
+          )}
+          {result.preview && <TraceCode label="结果预览" text={result.preview} />}
+        </div>
+      )}
+      {queryNumber > 0 && <p>依据本步第 {queryNumber} 次查询</p>}
+      {queryExplanation && <p className="whitespace-pre-wrap">{queryExplanation}</p>}
+      {conclusion && <p className="whitespace-pre-wrap">{conclusion}</p>}
+      {limitations && <p className="whitespace-pre-wrap">局限 · {limitations}</p>}
+      {nextStep && <p className="whitespace-pre-wrap">后续建议 · {nextStep}</p>}
+    </TraceSection>
+  );
+}
+
+function TraceStep({ step, trace }: { step: AnalysisTraceStep; trace: AnalysisTrace }) {
+  const action = trace.strategy.type === 'loop' && step.action ? actionLabels[step.action] : undefined;
+  const parents = trace.steps.filter(({ id }) => step.parentStepIds.includes(id));
+  const queries = step.operations.filter(({ kind }) => kind === 'query');
+  const attempts = new Map<number, AnalysisTraceOperation[]>();
+  const operations: AnalysisTraceOperation[] = [];
+  for (const operation of step.operations) {
+    if (operation.attempt === undefined) {
+      operations.push(operation);
+    } else {
+      const group = attempts.get(operation.attempt) ?? [];
+      group.push(operation);
+      attempts.set(operation.attempt, group);
+    }
+  }
+
+  return (
+    <TraceSection
+      label={`第 ${step.index + 1} 步${step.finalAttempt ? ' · 最终尝试' : action ? ` · ${action}` : ''}`}
+      status={step.status}
+      durationMs={step.durationMs}
+      defaultOpen={trace.strategy.type === 'direct'}
+      usage={step.usage}
+    >
+      {parents.length > 0 && <p>依赖第 {parents.map(({ index }) => index + 1).join('、')} 步</p>}
+      {step.error && (
+        <p className="whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]">{step.error}</p>
+      )}
+      {[...attempts].map(([index, group]) => (
+        <TraceSection key={index} label={`第 ${index + 1} 次尝试`} status={group.at(-1)!.status} defaultOpen>
+          {group.map((operation) => (
+            <TraceOperation key={operation.id} operation={operation} />
+          ))}
+        </TraceSection>
+      ))}
+      {operations.map((operation) => (
+        <TraceOperation
+          key={operation.id}
+          operation={operation}
+          queryNumber={queries.findIndex(({ id }) => id === operation.queryId) + 1}
+        />
+      ))}
+      {trace.strategy.type === 'loop' && step.text && (
+        <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{step.text}</p>
+      )}
+    </TraceSection>
+  );
+}
+
+function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
+  return (
+    <div className="min-w-0 text-xs leading-relaxed text-muted-foreground">
+      <TraceSection label="分析过程" status={trace.status} durationMs={trace.durationMs}>
+        <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{trace.query}</p>
+        {trace.error && (
+          <p className="whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]">{trace.error}</p>
+        )}
+        {trace.start.datasetId && (
+          <p>
+            数据集 ID <code>{trace.start.datasetId}</code>
+          </p>
+        )}
+        {trace.steps.map((step) => (
+          <TraceStep key={step.id} step={step} trace={trace} />
+        ))}
+      </TraceSection>
+    </div>
+  );
+}
+
+export function AnalyzeTool({ call, errorText }: { call: ToolPart; errorText?: string }) {
+  const output =
+    call.state === 'output-available' && isAnalysisToolResult(call.output) ? call.output : undefined;
+  const analysis = output?.result;
+  const trace = output?.trace;
+  const error = errorText ?? (analysis === null ? (trace?.error ?? '分析未完成。') : undefined);
+  if (!analysis && !trace && !error) return null;
+
+  return (
+    <div className="min-w-0 space-y-2">
+      <ToolOutput
+        className="[&_table]:text-xs"
+        output={analysis ? <AnalysisResult analysis={analysis} /> : undefined}
+        errorText={error}
+      />
+      {trace && <AnalysisTraceView trace={trace} />}
     </div>
   );
 }

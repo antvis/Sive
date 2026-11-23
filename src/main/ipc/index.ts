@@ -24,7 +24,7 @@ export function registerIpc(services: Services) {
 
   const changed = (event: IpcMainInvokeEvent) => {
     revision += 1;
-    event.sender.send(WORKSPACE_CHANGED_CHANNEL);
+    if (!event.sender.isDestroyed()) event.sender.send(WORKSPACE_CHANGED_CHANNEL);
   };
 
   ipcMain.handle('workspaceGetState', () => {
@@ -156,13 +156,16 @@ export function registerIpc(services: Services) {
   });
 
   ipcMain.handle('analysisStart', async (event, input: AnalysisStartInput) => {
+    const { sender } = event;
     input = await analysisStartSchema.parseAsync(input);
     await services.dataset.prepareOAuth(input.datasetId);
     services.analysis.start(
       input,
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
-      (chunk) => event.sender.send('analysis:chunk', input.message.id, chunk),
+      (chunk) => {
+        if (!sender.isDestroyed()) sender.send('analysis:chunk', input.message.id, chunk);
+      },
     );
     changed(event);
   });
