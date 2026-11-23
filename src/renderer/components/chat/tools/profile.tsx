@@ -253,7 +253,7 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
 }
 
 export function ProfileTool({ profile: { models } }: { profile: Profile }) {
-  const [expandedModel, setExpandedModel] = useState<string | undefined>(models[0]?.name);
+  const [expandedModel, setExpandedModel] = useState<string>();
   const summaries = models.map(summarize);
   const columnCount = models.reduce((total, model) => total + model.columns.length, 0);
   const nullColumnCount = summaries.reduce((total, stats) => total + stats.nullFields.length, 0);

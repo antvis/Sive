@@ -94,7 +94,7 @@ function SchemaFields({ model }: { model: Schema['models'][number] }) {
 
 export function SchemaTool({ schema }: { schema: Schema }) {
   const { models, relationships = [] } = schema;
-  const [expandedModel, setExpandedModel] = useState<string | undefined>(models[0]?.name);
+  const [expandedModel, setExpandedModel] = useState<string>();
   const columnCount = models.reduce((total, model) => total + model.columns.length, 0);
 
   if (!models.length) return <p className="m-0 text-sm leading-6 text-muted-foreground">未识别到数据表。</p>;
