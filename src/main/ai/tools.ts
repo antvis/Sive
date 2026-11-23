@@ -4,7 +4,7 @@ import type { LanguageModel, Tool } from 'ai';
 import { z } from 'zod';
 import type { AnalysisStrategyConfig, AVA, DataSourceConfig, Profile, Schema, Semantic } from '@antv/ava';
 import { isAnalysisToolResult, requireAnalysisResult } from '@shared/analysis-trace';
-import type { AnalysisToolOutput } from '@shared/analysis-trace';
+import type { AnalysisToolOutput, AnalysisTrace } from '@shared/analysis-trace';
 import { analysisStartSchema } from '@shared/api';
 import type { SnippetContent } from '@shared/api';
 import { createAnalysisTraceCollector } from '../util/ava';
@@ -34,7 +34,9 @@ type ExecutableTool<T extends Tool = Tool> = T & Required<Pick<T, 'execute'>>;
 
 type AnalysisTools = Record<'source' | 'schema' | 'profile' | 'semantic', ExecutableTool> & {
   analyze: ExecutableTool<Tool<{ query: string }, AnalysisToolOutput, ToolOptions>>;
-  visualize: ExecutableTool<Tool<{ analysisId: string }, SnippetContent | null>>;
+  visualize: ExecutableTool<
+    Tool<{ analysisId: string }, SnippetContent | null, { traces: ReadonlyMap<string, AnalysisTrace> }>
+  >;
 };
 
 export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageModel): AnalysisTools {
@@ -107,7 +109,10 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
     visualize: tool({
       description: 'Create a chart for a relevant analysis result using the analysisId returned by analyze.',
       inputSchema: z.object({ analysisId: z.string().min(1) }),
-      async execute({ analysisId }, { abortSignal, messages }) {
+      contextSchema: z.object({
+        traces: z.custom<ReadonlyMap<string, AnalysisTrace>>((value) => value instanceof Map),
+      }),
+      async execute({ analysisId }, { abortSignal, messages, context: { traces } }): Promise<SnippetContent | null> {
         const analysis = requireAnalysisResult(messages, analysisId);
         const visualization = await ava.visualize(analysis);
         if (!visualization) return null;
@@ -125,6 +130,7 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
           abortSignal,
         });
         return {
+          trace: traces.get(analysisId) ?? null,
           question,
           intent: formatted?.intent ?? '数据笔记',
           title: formatted?.title ?? title,
@@ -133,6 +139,11 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
           tags: formatted?.tags ?? [],
           metrics: formatted?.metrics ?? [],
         };
+      },
+      toModelOutput({ output }) {
+        if (!output) return { type: 'json', value: null };
+        const { trace: _trace, ...content } = output;
+        return { type: 'json', value: JSON.parse(JSON.stringify(content)) };
       },
     }),
   };

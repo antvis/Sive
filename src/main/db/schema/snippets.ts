@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import type { AnalysisTrace } from '@shared/analysis-trace';
 import type { SnippetMetric, SnippetSpec } from '@shared/schema';
 import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
@@ -11,6 +12,9 @@ export const snippets = sqliteTable(
     // Logical foreign key: messages.id.
     // Each message can have at most one snippet.
     messageId: text('message_id').notNull().unique(),
+
+    // Snapshot of the analysis that produced the chart.
+    trace: text('trace', { mode: 'json' }).$type<AnalysisTrace>(),
 
     question: text('question').notNull(),
 

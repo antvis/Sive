@@ -44,6 +44,7 @@ export const SchemaDDL = `
   CREATE TABLE IF NOT EXISTS snippets (
     id TEXT PRIMARY KEY,
     message_id TEXT NOT NULL UNIQUE,
+    trace TEXT,
     question TEXT NOT NULL,
     intent TEXT NOT NULL,
     title TEXT NOT NULL,

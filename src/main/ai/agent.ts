@@ -2,6 +2,8 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA } from '@antv/ava';
 import { ToolLoopAgent, createAgentUIStream, generateId, isStepCount } from 'ai';
 import type { InferUIMessageChunk, UIMessageStreamOnEndCallback } from 'ai';
+import { isAnalysisToolResult } from '@shared/analysis-trace';
+import type { AnalysisTrace } from '@shared/analysis-trace';
 import { DEFAULT_PREFERENCES } from '@shared/api';
 import type { ChatMessage, DuckDBEngineConfig } from '@shared/api';
 import type { ModelConfig } from '../services/model';
@@ -26,7 +28,7 @@ type StreamInput = {
 };
 
 type AnalysisChunk = InferUIMessageChunk<ChatMessage>;
-type AgentCallOptions = Pick<StreamInput, 'toolOptions' | 'agent'>;
+type AgentCallOptions = Pick<StreamInput, 'messages' | 'toolOptions' | 'agent'>;
 
 export type AnalysisAgent = {
   stream(input: StreamInput): Promise<ReadableStream<AnalysisChunk>>;
@@ -55,21 +57,46 @@ export async function createAnalysisAgent({
     tools,
     toolsContext: {
       analyze: { strategy: DEFAULT_PREFERENCES.strategy },
+      visualize: { traces: new Map() },
     },
     toolCallConcurrency: 1,
     prepareCall({
       options: {
+        messages,
         toolOptions,
         agent: { maxSteps },
       },
       ...call
     }) {
+      const traces = new Map<string, AnalysisTrace>();
+      for (const { parts } of messages) {
+        for (const part of parts) {
+          if (
+            part.type === 'tool-analyze' &&
+            part.state === 'output-available' &&
+            isAnalysisToolResult(part.output) &&
+            part.output.trace
+          ) {
+            traces.set(part.toolCallId, part.output.trace);
+          }
+        }
+      }
+
       return {
         ...call,
         instructions: `${INSTRUCTIONS}\n本轮开始时，分析引擎${ava.engine ? '已载入数据，可以继续使用' : '尚未载入数据，请先完成数据准备'}。`,
         stopWhen: isStepCount(maxSteps),
         toolsContext: {
           analyze: toolOptions,
+          visualize: { traces },
+        },
+        prepareStep({ steps }) {
+          for (const { toolName, toolCallId, output } of steps.at(-1)?.staticToolResults ?? []) {
+            if (toolName === 'analyze' && isAnalysisToolResult(output) && output.trace) {
+              traces.set(toolCallId, output.trace);
+            }
+          }
+          return undefined;
         },
       };
     },
@@ -88,7 +115,7 @@ export async function createAnalysisAgent({
       >({
         agent,
         uiMessages: messages,
-        options: { toolOptions, agent: agentConfig },
+        options: { messages, toolOptions, agent: agentConfig },
         abortSignal,
         generateMessageId: generateId,
         messageMetadata: ({ part }) => (part.type === 'start' ? { createdAt } : undefined),
