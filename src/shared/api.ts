@@ -23,6 +23,7 @@ export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
 export const DEFAULT_PREVIEW_PAGE_SIZE = 100;
 
 export type Preferences = {
+  language: 'zh-CN' | 'en-US';
   theme: { mode: 'light' | 'dark' | 'system'; fontSize: number };
   agent: { maxSteps: number };
   strategy: AnalysisStrategyConfig;
@@ -31,6 +32,7 @@ export type Preferences = {
 };
 
 export const DEFAULT_PREFERENCES = {
+  language: 'zh-CN',
   theme: { mode: 'light', fontSize: 14 },
   agent: { maxSteps: 10 },
   strategy: { type: 'direct' },

@@ -21,6 +21,7 @@ describe('SettingsService', () => {
 
   it('saves preferences as separate JSON records', () => {
     service.savePreferences({
+      language: 'en-US',
       theme: DEFAULT_PREFERENCES.theme,
       agent: { maxSteps: 15 },
       strategy: { type: 'loop', maxSteps: 6 },
@@ -29,6 +30,7 @@ describe('SettingsService', () => {
     });
 
     const settings = createRepositories(testDb.database).settings;
+    expect(settings.get('language')?.value).toBe('en-US');
     expect(settings.get('theme')?.value).toEqual(DEFAULT_PREFERENCES.theme);
     expect(settings.get('agent')?.value).toEqual({ maxSteps: 15 });
     expect(settings.get('strategy')?.value).toEqual({ type: 'loop', maxSteps: 6 });

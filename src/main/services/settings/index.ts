@@ -5,6 +5,8 @@ import type { Preferences } from '@shared/api';
 import { DEFAULT_PREFERENCES } from '../../../shared/api';
 import type { DuckDBEngineConfig } from '../../../shared/api';
 
+// 界面语言
+const LANGUAGE_KEY = 'language';
 // 主题风格
 const THEME_KEY = 'theme';
 // Agent 设置
@@ -36,6 +38,8 @@ export class SettingsService {
   }
 
   getPreferences(): Preferences {
+    const language = this.repositories.settings.get(LANGUAGE_KEY)?.value as
+      Preferences['language'] | undefined;
     const theme = this.repositories.settings.get(THEME_KEY)?.value as
       Partial<Preferences['theme']> | undefined;
     const agent = this.repositories.settings.get(AGENT_KEY)?.value as Preferences['agent'] | undefined;
@@ -46,6 +50,7 @@ export class SettingsService {
     const diagnostics = this.repositories.settings.get(DIAGNOSTICS_KEY)?.value as
       Partial<Preferences['diagnostics']> | undefined;
     return {
+      language: language ?? DEFAULT_PREFERENCES.language,
       theme: { ...DEFAULT_PREFERENCES.theme, ...theme },
       agent: { ...DEFAULT_PREFERENCES.agent, ...agent },
       strategy: { ...DEFAULT_PREFERENCES.strategy, ...strategy },
@@ -55,6 +60,7 @@ export class SettingsService {
   }
 
   savePreferences(preferences: Preferences) {
+    this.set(LANGUAGE_KEY, preferences.language);
     this.set(THEME_KEY, preferences.theme);
     this.set(AGENT_KEY, preferences.agent);
     this.set(STRATEGY_KEY, preferences.strategy);

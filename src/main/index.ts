@@ -3,6 +3,7 @@ import { app, BrowserWindow } from 'electron';
 import { captureException, flush } from '@sentry/electron/main';
 import { DBConnection } from './db';
 import { registerIpc } from './ipc';
+import { setLocale } from './util/i18n';
 import { createServices } from './services';
 import { initializeSentry } from './util/sentry';
 
@@ -38,7 +39,11 @@ async function initialize() {
   database = await DBConnection.connect(app.getPath('userData'));
 
   const services = createServices(database);
-  initializeSentry(services.settings.getPreferences().diagnostics.nativeCrashReporting);
+  const preferences = services.settings.getPreferences();
+  // Initialize the locale before creating the window to ensure that the UI is displayed in the correct language.
+  setLocale(preferences.language);
+  // Initialize Sentry after the locale is set to ensure that any error messages are localized.
+  initializeSentry(preferences.diagnostics.nativeCrashReporting);
   registerIpc(services);
   createWindow();
 }

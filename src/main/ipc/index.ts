@@ -14,6 +14,7 @@ import type {
 import { FILE_SOURCES } from '@shared/dataSource';
 import { analysisStartSchema } from '@shared/api';
 import type { LocalFileFormat } from '@shared/dataSource';
+import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
 import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
 
@@ -193,6 +194,7 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('settingsSavePreferences', (event, preferences: Preferences) => {
     services.settings.savePreferences(preferences);
+    setLocale(preferences.language);
     changed(event);
   });
 

@@ -4,6 +4,7 @@ import { AppShell } from './components/AppShell';
 import type { AppPage } from './components/AppShell';
 import { Button } from './components/Button';
 import { useWorkspace } from './hooks/useWorkspace';
+import { I18nProvider } from './i18n';
 import { AnalysisPage } from './pages/analysis';
 import { DatasetsPage } from './pages/datasets';
 import { SettingsPage } from './pages/settings';
@@ -177,5 +178,9 @@ export default function App() {
     </AppShell>
   );
 
-  return <ThemeContext value={theme}>{content}</ThemeContext>;
+  return (
+    <I18nProvider language={state?.preferences.language}>
+      <ThemeContext value={theme}>{content}</ThemeContext>
+    </I18nProvider>
+  );
 }
