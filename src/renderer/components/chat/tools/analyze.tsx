@@ -59,7 +59,7 @@ function AnalysisTable({
   }
 
   if (!columns.length) {
-    return <pre className="m-0 whitespace-pre-wrap break-all text-xs">{JSON.stringify(data, null, 2)}</pre>;
+    return <pre className="m-0 whitespace-pre-wrap break-all text-sm">{JSON.stringify(data, null, 2)}</pre>;
   }
 
   return (
@@ -160,19 +160,19 @@ function AnalysisConclusion({
       tabIndex={0}
     >
       {content && (
-        <MessageResponse className="space-y-2 text-sm leading-6 text-foreground">{content}</MessageResponse>
+        <MessageResponse className="space-y-2 text-base leading-6 text-foreground">{content}</MessageResponse>
       )}
       {limitations && (
         <div className="space-y-1">
           <p className="text-xs font-medium text-foreground">分析局限</p>
-          <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground">
+          <MessageResponse className="space-y-1 text-sm leading-5 text-muted-foreground">
             {limitations}
           </MessageResponse>
         </div>
       )}
       {analysis.markdown && analysis.text && analysis.markdown !== analysis.text && (
         <AnalysisSection title="原始文本">
-          <p className="whitespace-pre-wrap text-xs leading-5 text-muted-foreground">{analysis.text}</p>
+          <p className="whitespace-pre-wrap text-sm leading-5 text-muted-foreground">{analysis.text}</p>
         </AnalysisSection>
       )}
     </div>
@@ -338,7 +338,7 @@ export function AnalyzeTool({ call, errorText }: { call: ToolPart; errorText?: s
               <Tabs.Trigger
                 key={value}
                 value={value}
-                className="flex min-h-8 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-xs leading-4 font-medium whitespace-nowrap text-muted-foreground hover:bg-card/60 hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-[state=active]:bg-card data-[state=active]:font-semibold data-[state=active]:text-foreground @xs:flex-row @xs:gap-1.5 @xs:text-sm"
+                className="flex min-h-8 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-sm leading-5 font-medium whitespace-nowrap text-muted-foreground hover:bg-card/60 hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-[state=active]:bg-card data-[state=active]:font-semibold data-[state=active]:text-foreground @xs:flex-row @xs:gap-1.5"
               >
                 <Icon className="size-3.5 shrink-0" aria-hidden="true" />
                 {label}

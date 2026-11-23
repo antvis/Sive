@@ -22,7 +22,7 @@ export function SqlCodeBlock({
       aria-label={label}
       style={maxHeight ? ({ '--sql-max-height': maxHeight } as CSSProperties) : undefined}
       className={cn(
-        'group/sql rounded-none border-0 bg-transparent text-[length:inherit] [&>div:last-child]:overflow-x-hidden [&_pre]:py-1 [&_pre]:pr-9 [&_pre]:pl-0 [&_pre]:whitespace-pre-wrap [&_pre]:[overflow-wrap:anywhere]',
+        'group/sql rounded-none border-0 bg-transparent [&>div:last-child]:overflow-x-hidden [&_pre]:py-1 [&_pre]:pr-9 [&_pre]:pl-0 [&_pre]:whitespace-pre-wrap [&_pre]:[overflow-wrap:anywhere]',
         maxHeight &&
           '[&>div:last-child]:max-h-(--sql-max-height) [&>div:last-child]:overflow-y-auto [&>div:last-child]:overscroll-contain [&>div:last-child]:[scrollbar-gutter:stable]',
       )}

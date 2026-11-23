@@ -55,7 +55,7 @@ export function TableNavigator({
             placeholder="搜索数据表…"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="w-full min-w-0 rounded-lg border bg-page py-1.5 pr-2 pl-8 text-xs outline-none focus:border-accent"
+            className="w-full min-w-0 rounded-lg border bg-page py-1.5 pr-2 pl-8 text-sm outline-none focus:border-accent"
           />
         </div>
         <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
@@ -96,7 +96,7 @@ export function TableNavigator({
                       setExpanded(model.name);
                       onSelect(model.name);
                     }}
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-2 pr-2 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-accent aria-[current=true]:font-medium"
+                    className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-2 pr-2 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent aria-[current=true]:font-medium"
                   >
                     <Table size={15} className="shrink-0" />
                     <span className="min-w-0 flex-1 truncate">{model.name}</span>
@@ -126,14 +126,14 @@ export function TableNavigator({
                         </li>
                       );
                     })}
-                    {!model.columns.length && <li className="py-1.5 text-xs text-muted-foreground">暂无字段</li>}
+                    {!model.columns.length && <li className="py-1.5 text-sm text-muted-foreground">暂无字段</li>}
                   </ul>
                 )}
               </li>
             );
           })}
         </ul>
-        {!tables.length && <p className="px-2 py-6 text-center text-xs text-muted-foreground">无匹配数据表</p>}
+        {!tables.length && <p className="px-2 py-6 text-center text-sm text-muted-foreground">无匹配数据表</p>}
       </nav>
     </>
   );

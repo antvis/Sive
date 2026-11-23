@@ -1,18 +1,26 @@
 import type { ThemeSpec } from '@antv/gpt-vis';
 import { mergeTheme } from '@antv/gpt-vis/dist/esm/theme/merge';
+import { DEFAULT_PREFERENCES } from '@shared/api';
 import { createContext } from 'react';
 
-export const ThemeContext = createContext<'light' | 'dark'>('light');
+type ClientTheme = { mode: 'light' | 'dark'; fontSize: number };
+
+export const ThemeContext = createContext<ClientTheme>({
+  mode: 'light',
+  fontSize: DEFAULT_PREFERENCES.theme.fontSize,
+});
 
 export const ChartThemeContext = createContext<ThemeSpec | undefined>(undefined);
 
 // Read the active client palette after App applies data-theme, before rendering charts.
-export function createChartTheme(mode: 'light' | 'dark', templateTheme?: ThemeSpec): ThemeSpec {
+export function createChartTheme(
+  { mode, fontSize: rootFontSize }: ClientTheme,
+  templateTheme?: ThemeSpec,
+): ThemeSpec {
   const styles = getComputedStyle(document.documentElement);
-  const rootFontSize = Number.parseFloat(styles.fontSize);
 
   // Chart renderers need pixels; derive them from the text-* rem scale.
-  const fontSize = (name: 'sm' | 'lg' | '3xl') =>
+  const fontSize = (name: 'xs' | 'sm' | 'base' | 'lg' | '3xl') =>
     Number.parseFloat(styles.getPropertyValue(`--text-${name}`)) * rootFontSize;
 
   const lineHeight = rootFontSize * 1.5;
@@ -20,15 +28,18 @@ export function createChartTheme(mode: 'light' | 'dark', templateTheme?: ThemeSp
   const typography: Pick<ThemeSpec, 'tokens' | 'style'> = {
     tokens: { fontSize: fontSize('sm') },
     style: {
-      title: { titleFontSize: fontSize('lg'), subtitleFontSize: fontSize('sm') },
-      axis: { labelFontSize: fontSize('sm'), titleFontSize: fontSize('sm') },
-      legend: { itemLabelFontSize: fontSize('sm') },
-      label: { fontSize: fontSize('sm') },
+      title: { titleFontSize: fontSize('lg'), subtitleFontSize: fontSize('xs') },
+      axis: { labelFontSize: fontSize('xs'), titleFontSize: fontSize('xs') },
+      legend: { titleFontSize: fontSize('xs'), itemLabelFontSize: fontSize('xs') },
+      label: { fontSize: fontSize('xs') },
       mark: {
         liquid: { contentFontSize: fontSize('3xl') },
-        sankey: { labelFontSize: fontSize('sm') },
+        sankey: { labelFontSize: fontSize('xs') },
       },
-      summary: { fontSize: fontSize('sm') },
+      node: { labelFontSize: fontSize('xs') },
+      edge: { labelFontSize: fontSize('xs') },
+      table: { header: { fontSize: fontSize('xs') }, cell: { fontSize: fontSize('xs') } },
+      summary: { fontSize: fontSize('base') },
     },
   };
 

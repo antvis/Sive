@@ -248,6 +248,7 @@ const LINE_NUMBER_CLASSES = cn(
   "before:w-8",
   "before:mr-4",
   "before:text-right",
+  "before:text-xs",
   "before:text-muted-foreground/50",
   "before:font-mono",
   "before:select-none"
@@ -279,14 +280,14 @@ const CodeBlockBody = memo(
     return (
       <pre
         className={cn(
-          "dark:!bg-[var(--shiki-dark-bg)] dark:!text-[var(--shiki-dark)] m-0 p-4 text-[length:inherit]",
+          "dark:!bg-[var(--shiki-dark-bg)] dark:!text-[var(--shiki-dark)] m-0 p-4",
           className
         )}
         style={preStyle}
       >
         <code
           className={cn(
-            "font-mono text-[length:inherit]",
+            "font-mono",
             showLineNumbers && "[counter-increment:line_0] [counter-reset:line]"
           )}
         >

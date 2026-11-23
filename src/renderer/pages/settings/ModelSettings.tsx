@@ -158,12 +158,12 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
           </div>
         </fieldset>
         {progress && (
-          <div className="mt-4 rounded-lg bg-accent-soft p-3 text-xs leading-5 text-accent" role="status">
+          <div className="mt-4 rounded-lg bg-accent-soft p-3 text-sm leading-5 text-accent" role="status">
             已完成 {progress.completed} / {progress.total}
             {progress.active.length ? `，正在测试：${progress.active.join('、')}` : '，正在保存配置…'}
           </div>
         )}
-        {error && <p className="mt-4 mb-0 text-xs text-danger">{error}</p>}
+        {error && <p className="mt-4 mb-0 text-sm text-danger">{error}</p>}
       </form>
     </Modal>
   );
@@ -197,7 +197,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
           添加服务
         </Button>
       </div>
-      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
       <div className="grid gap-3">
         {models.map((model) => (
           <article

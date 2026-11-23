@@ -155,10 +155,10 @@ function EventNode({ data, selected }: NodeProps<TraceNode>) {
           <Icon className="size-3.5" aria-hidden="true" />
         </span>
         <span className="grid min-w-0">
-          <span className="truncate text-xs font-semibold">{data.label}</span>
+          <span className="truncate text-sm font-semibold">{data.label}</span>
           <span
             className={cn(
-              'truncate text-[11px] tabular-nums',
+              'truncate text-xs tabular-nums',
               data.failed ? 'text-destructive' : 'text-muted-foreground',
             )}
           >
