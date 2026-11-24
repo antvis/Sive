@@ -1,6 +1,6 @@
-import { mkdir, readdir, stat, statfs } from 'node:fs/promises';
+import { mkdir, stat, statfs } from 'node:fs/promises';
 import path from 'node:path';
-import { app, shell } from 'electron';
+import { app, session, shell } from 'electron';
 import { DB_FILE_NAME } from '../db/repository/db-connection';
 
 const REPOSITORY_URL = 'https://github.com/antvis/Sive';
@@ -16,28 +16,30 @@ function cacheDirectory() {
   return path.join(app.getPath('sessionData'), 'Cache');
 }
 
-async function directorySize(directory: string): Promise<number> {
-  const entries = await readdir(directory, { withFileTypes: true });
-  let size = 0;
-  for (const entry of entries) {
-    const target = path.join(directory, entry.name);
-    if (entry.isDirectory()) size += await directorySize(target);
-    else if (entry.isFile()) size += (await stat(target)).size;
-  }
-  return size;
-}
-
 async function getCacheInfo() {
   const cachePath = cacheDirectory();
   await mkdir(cachePath, { recursive: true });
-  const [usedBytes, fileSystem] = await Promise.all([directorySize(cachePath), statfs(cachePath)]);
+  const [usedBytes, fileSystem] = await Promise.all([
+    session.defaultSession.getCacheSize(),
+    statfs(cachePath),
+  ]);
   return { path: cachePath, usedBytes, freeBytes: fileSystem.bavail * fileSystem.bsize };
 }
 
 async function getDataStorageInfo() {
   const directory = app.getPath('userData');
   const filePath = path.join(directory, DB_FILE_NAME);
-  return { path: filePath, directory, sizeBytes: (await stat(filePath)).size };
+  const sizes = await Promise.all(
+    ['', '-wal', '-shm'].map(async (suffix) => {
+      try {
+        return (await stat(filePath + suffix)).size;
+      } catch (error) {
+        if (suffix && (error as NodeJS.ErrnoException).code === 'ENOENT') return 0;
+        throw error;
+      }
+    }),
+  );
+  return { path: filePath, directory, sizeBytes: sizes.reduce((total, size) => total + size, 0) };
 }
 
 /**

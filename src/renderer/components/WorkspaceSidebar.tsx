@@ -19,7 +19,7 @@ import { errorMessage } from '../utils';
 import { IconButton } from './IconButton';
 import { ConversationStatus } from './ConversationStatus';
 
-export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
+export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets';
 
 export const WORKSPACE_SIDEBAR_ID = 'workspace-sidebar';
 
@@ -47,8 +47,7 @@ const iconClass = clsx(
   'relative rounded-[8px]! text-sidebar-muted! hover:bg-sidebar-highlight! hover:text-sidebar-ink!',
   focusClass,
 );
-const headingClass =
-  'flex min-h-9 items-center justify-between gap-1 ps-[8px] text-sm text-sidebar-muted';
+const headingClass = 'flex min-h-9 items-center justify-between gap-1 ps-[8px] text-sm text-sidebar-muted';
 
 function SidebarList({ children, className }: PropsWithChildren<{ className?: string }>) {
   const highlight = useRef<HTMLSpanElement>(null);
@@ -59,9 +58,14 @@ function SidebarList({ children, className }: PropsWithChildren<{ className?: st
         className="relative grid gap-px overflow-clip"
         data-sidebar-list
         onPointerOver={(event) => {
-          if (event.pointerType === 'touch' || !highlight.current || !(event.target instanceof Element)) return;
+          if (event.pointerType === 'touch' || !highlight.current || !(event.target instanceof Element))
+            return;
           const row = event.target.closest('[data-sidebar-row]');
-          if (!row || row.closest('[data-sidebar-list]') !== event.currentTarget || row.matches(':disabled')) {
+          if (
+            !row ||
+            row.closest('[data-sidebar-list]') !== event.currentTarget ||
+            row.matches(':disabled')
+          ) {
             highlight.current.style.opacity = '0';
             return;
           }
@@ -477,12 +481,10 @@ export function WorkspaceSidebar({
       </nav>
       <button
         type="button"
-        className={clsx(
-          rowClass,
-          'mx-[8px] mt-[8px] shrink-0 hover:bg-sidebar-highlight',
-          page === 'settings' && activeClass,
-        )}
-        onClick={() => onNavigate('settings')}
+        className={clsx(rowClass, 'mx-[8px] mt-[8px] shrink-0 hover:bg-sidebar-highlight')}
+        onClick={() =>
+          void window.workbench.settingsOpen().catch((cause) => toast.error(errorMessage(cause)))
+        }
       >
         <SettingsIcon size={16} aria-hidden />
         <span>设置</span>

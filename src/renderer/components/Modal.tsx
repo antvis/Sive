@@ -13,7 +13,7 @@ export function Modal({ open, onOpenChange, title, footer, children }: ModalProp
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-[#15202bcc]" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[#15202bcc] [-webkit-app-region:no-drag]" />
         <Dialog.Content
           aria-describedby={undefined}
           className="fixed top-1/2 left-1/2 z-50 max-h-[85vh] w-[480px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-2xl border bg-surface p-6 shadow-2xl"

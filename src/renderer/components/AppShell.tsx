@@ -93,7 +93,7 @@ export function AppShell({
   );
 
   return (
-    <div className="h-screen overflow-hidden bg-workspace-canvas p-(--workspace-gutter)">
+    <div className="h-screen min-w-[800px] overflow-hidden bg-workspace-canvas p-(--workspace-gutter)">
       <Group
         orientation="horizontal"
         elementRef={workspace}

@@ -1,63 +1,146 @@
-import { Archive, ChartLineUp, Cpu, Info, ShieldCheck, SlidersHorizontal } from '@phosphor-icons/react';
 import clsx from 'clsx';
+import {
+  ArchiveIcon,
+  ChartLineIcon,
+  CpuIcon,
+  HardDriveIcon,
+  InfoIcon,
+  MonitorIcon,
+  ShieldCheckIcon,
+  XIcon,
+} from 'lucide-react';
 import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { IconButton } from '../../components/IconButton';
 import type { WorkspaceState } from '../../types';
 import { AboutSettings } from './AboutSettings';
 import { AnalysisSettings } from './AnalysisSettings';
+import { AppearanceSettings } from './AppearanceSettings';
 import { ArchivedConversations } from './ArchivedConversations';
-import { GeneralSettings } from './GeneralSettings';
 import { ModelSettings } from './ModelSettings';
 import { PrivacySettings } from './PrivacySettings';
+import { StorageSettings } from './StorageSettings';
 
-type Section = 'general' | 'analysis' | 'models' | 'archived' | 'privacy' | 'about';
+const sections = {
+  appearance: { label: '偏好设置', description: '调整界面语言、主题亮暗和界面字号', icon: MonitorIcon },
+  models: { label: '模型服务', description: '管理模型服务、可用模型和默认模型', icon: CpuIcon },
+  analysis: {
+    label: '分析配置',
+    description: '设置默认分析方式、Agent 行为和 DuckDB 引擎',
+    icon: ChartLineIcon,
+  },
+  storage: { label: '存储空间', description: '查看工作台数据库和应用缓存的占用', icon: HardDriveIcon },
+  archived: { label: '归档会话', description: '查找和管理已归档的分析会话', icon: ArchiveIcon },
+  privacy: { label: '隐私与诊断', description: undefined, icon: ShieldCheckIcon },
+  about: { label: '关于 Sive', description: '查看版本、更新和开源项目信息', icon: InfoIcon },
+};
 
-export function SettingsPage({ state }: { state: WorkspaceState }) {
-  const [section, setSection] = useState<Section>('general');
-  const sections = [
-    { id: 'general' as const, label: '通用', icon: SlidersHorizontal },
-    { id: 'analysis' as const, label: '分析配置', icon: ChartLineUp },
-    { id: 'models' as const, label: '模型配置', icon: Cpu, count: state.models.length },
-    {
-      id: 'archived' as const,
-      label: '已归档分析',
-      icon: Archive,
-      count: state.archivedConversations.length,
-    },
-    { id: 'privacy' as const, label: '隐私与诊断', icon: ShieldCheck },
-    { id: 'about' as const, label: '关于项目', icon: Info },
-  ];
+type Section = keyof typeof sections;
+
+const groups: { label: string; items: Section[] }[] = [
+  { label: '常规', items: ['appearance', 'models', 'analysis'] },
+  { label: '数据管理', items: ['storage', 'archived'] },
+  { label: '应用', items: ['privacy', 'about'] },
+];
+
+export function SettingsWindow({ state, fallback }: { state: WorkspaceState | null; fallback: ReactNode }) {
+  const { isMacOS } = window.workbench;
 
   return (
-    <div className="mx-auto flex max-w-6xl gap-10 px-6 py-6 max-md:flex-col max-md:gap-5">
-      <aside className="w-44 shrink-0 max-md:w-full">
-        <h1 className="mt-0 mb-4 px-3 text-xl font-semibold">工作台设置</h1>
-        <nav className="grid gap-1 max-md:flex max-md:flex-wrap">
-          {sections.map(({ id, label, icon: Icon, count }) => (
-            <button
-              key={id}
-              onClick={() => setSection(id)}
-              className={clsx(
-                'flex items-center gap-2 rounded-lg px-3 py-2 text-left text-base',
-                section === id ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-page hover:text-ink',
-              )}
-            >
-              <Icon size={17} />
-              <span className="flex-1">{label}</span>
-              {count !== undefined && <span className="text-xs">{count}</span>}
-            </button>
-          ))}
-        </nav>
-      </aside>
-      <div className="min-w-0 flex-1 pb-10">
-        {section === 'general' && <GeneralSettings preferences={state.preferences} />}
-        {section === 'analysis' && <AnalysisSettings preferences={state.preferences} />}
-        {section === 'models' && <ModelSettings models={state.models} activeModelId={state.activeModelId} />}
-        {section === 'archived' && (
-          <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
-        )}
-        {section === 'privacy' && <PrivacySettings preferences={state.preferences} />}
-        {section === 'about' && <AboutSettings preferences={state.preferences} />}
-      </div>
+    <div
+      data-settings-window
+      className="relative flex h-screen flex-col overflow-hidden bg-white select-none [-webkit-app-region:drag] dark:bg-preview-surface"
+    >
+      {!isMacOS && (
+        <IconButton
+          icon={XIcon}
+          iconSize={18}
+          label="关闭设置"
+          variant="danger"
+          className="absolute top-2 right-2 z-10 size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
+          onClick={() => window.workbench.settingsClose()}
+        />
+      )}
+      {state ? <SettingsContent state={state} /> : <main className="min-h-0 flex-1">{fallback}</main>}
     </div>
+  );
+}
+
+function SettingsContent({ state }: { state: WorkspaceState }) {
+  const [section, setSection] = useState<Section>('appearance');
+  const { label, description } = sections[section];
+  const counts: Partial<Record<Section, number>> = {
+    models: state.models.length,
+    archived: state.archivedConversations.length,
+  };
+
+  return (
+    <main className="grid min-h-0 flex-1 grid-cols-[clamp(176px,26%,224px)_minmax(0,1fr)] overflow-hidden">
+      <nav
+        aria-label="设置分类"
+        className="grid min-h-0 content-start gap-7 overflow-y-auto bg-preview-row px-3 pt-12 pb-6"
+      >
+        {groups.map(({ label, items }) => (
+          <div key={label}>
+            <p id={`settings-group-${items[0]}`} className="m-0 mb-2 px-2 text-sm text-sidebar-muted">
+              {label}
+            </p>
+            <ul aria-labelledby={`settings-group-${items[0]}`} className="m-0 grid list-none gap-1 p-0">
+              {items.map((id) => {
+                const { label, icon: Icon } = sections[id];
+                const count = counts[id] ?? 0;
+                return (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      aria-current={section === id ? 'true' : undefined}
+                      aria-controls="settings-panel"
+                      onClick={() => setSection(id)}
+                      className={clsx(
+                        'flex min-h-10 w-full items-center gap-2.5 rounded-[12px] px-2.5 py-1.5 text-left text-base transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus',
+                        section === id
+                          ? 'bg-ink/5 font-medium text-sidebar-ink'
+                          : 'text-sidebar-text hover:bg-ink/3',
+                      )}
+                    >
+                      <Icon size={16} aria-hidden className="shrink-0" />
+                      <span className="min-w-0 flex-1">{label}</span>
+                      {count > 0 && <span className="text-xs tabular-nums text-sidebar-muted">{count}</span>}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+
+      <section
+        key={section}
+        id="settings-panel"
+        aria-labelledby="settings-panel-title"
+        className="min-h-0 min-w-0 overflow-y-auto px-[clamp(20px,5vw,40px)] pt-7 pb-8"
+      >
+        <div className="mb-8">
+          <h1 id="settings-panel-title" className="m-0 text-xl font-medium text-ink/85">
+            {label}
+          </h1>
+          {description && <p className="mt-1 mb-0 text-sm font-light text-muted-foreground">{description}</p>}
+        </div>
+        <div className="flex flex-col gap-8">
+          {section === 'appearance' && <AppearanceSettings preferences={state.preferences} />}
+          {section === 'models' && (
+            <ModelSettings models={state.models} activeModelId={state.activeModelId} />
+          )}
+          {section === 'analysis' && <AnalysisSettings preferences={state.preferences} />}
+          {section === 'storage' && <StorageSettings />}
+          {section === 'archived' && (
+            <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
+          )}
+          {section === 'privacy' && <PrivacySettings preferences={state.preferences} />}
+          {section === 'about' && <AboutSettings preferences={state.preferences} />}
+        </div>
+      </section>
+    </main>
   );
 }

@@ -13,10 +13,10 @@ import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../../li
 import type { DatasetSummary, ModelProfile, Preferences } from '../../types';
 import { readWidth, saveWidth } from '../../utils';
 import { AnalysisSidePanel, DATASET_PREVIEW_ID } from './AnalysisSidePanel';
-import { DATASET_PREVIEW_TAB, useAnalysisTabs } from './useAnalysisTabs';
+import { useAnalysisTabs } from './useAnalysisTabs';
 
 const cardClassName =
-  'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] motion-safe:transition-opacity motion-safe:duration-150';
+  'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] bg-surface motion-safe:transition-opacity motion-safe:duration-150 dark:bg-background';
 const bodyClassName = 'min-h-0 min-w-0 flex-1 overflow-hidden';
 const MIN_ANALYSIS_PANEL_WIDTH = 240;
 const DEFAULT_CONVERSATION_WIDTH = 380;
@@ -61,7 +61,7 @@ export function AnalysisPage({
   const conversationPanel = usePanelRef();
   const previewPanel = usePanelRef();
   const rememberToggleFocus = usePanelToggleFocus(workspace, DATASET_PREVIEW_ID, datasetCollapsed);
-  const { activeTabId, tabs, selectTab, openTab, closeTab } = useAnalysisTabs(chatId);
+  const { activeTabId, tabs, selectTab, openDataset, openResult, closeTab } = useAnalysisTabs(chatId);
 
   const changePreviewCollapsed = (collapsed: boolean) => {
     rememberToggleFocus();
@@ -102,8 +102,13 @@ export function AnalysisPage({
     if (datasetCollapsed) changePreviewCollapsed(false);
   };
 
-  const openResult = (tab: ToolPreviewTab) => {
-    openTab(tab);
+  const showResult = (tab: ToolPreviewTab) => {
+    openResult(tab);
+    openSidePanel();
+  };
+
+  const showDataset = () => {
+    openDataset();
     openSidePanel();
   };
 
@@ -124,11 +129,7 @@ export function AnalysisPage({
         minSize={MIN_ANALYSIS_PANEL_WIDTH}
         style={{ overflow: 'hidden' }}
       >
-        <section
-          className={clsx(cardClassName, 'chat-theme bg-background')}
-          aria-label="对话面板"
-          inert={fullscreen}
-        >
+        <section className={cardClassName} aria-label="对话面板" inert={fullscreen}>
           <div className="relative top-(--workspace-titlebar-row-offset) flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]">
             {!fullscreen && titleBar}
             {datasetCollapsed && !fullscreen && (
@@ -145,14 +146,11 @@ export function AnalysisPage({
             )}
           </div>
           <div className={bodyClassName}>
-            <ToolPreviewContext value={openResult}>
+            <ToolPreviewContext value={showResult}>
               <Chat
                 datasetId={dataset.id}
                 datasetName={dataset.name}
-                onOpenDatasetPreview={() => {
-                  selectTab(DATASET_PREVIEW_TAB);
-                  openSidePanel();
-                }}
+                onOpenDatasetPreview={showDataset}
                 chatId={chatId}
                 conversationId={conversationId}
                 visible={!fullscreen}
@@ -197,6 +195,7 @@ export function AnalysisPage({
           activeTabId={activeTabId}
           onTabChange={selectTab}
           onTabClose={closeTab}
+          onOpenDataset={showDataset}
           onFullscreenChange={onFullscreenChange}
           onToggleCollapsed={togglePreview}
         />

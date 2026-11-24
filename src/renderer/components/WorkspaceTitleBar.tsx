@@ -12,7 +12,6 @@ const pageTitles: Record<AppPage, string> = {
   datasets: '数据源',
   analysis: '数据分析',
   snippets: '洞察 Snippet',
-  settings: '设置',
 };
 
 type Props = {
