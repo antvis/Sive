@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@shared/api';
-import { ArrowUpRightIcon, LoaderCircleIcon } from 'lucide-react';
+import { ArrowUpRightIcon, ChartColumnIcon, LoaderCircleIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import type { SuggestResult } from '../../types';
 import {
@@ -9,10 +9,13 @@ import {
   ConversationScrollButton,
 } from '../ai-elements/conversation';
 import { Suggestion, Suggestions } from '../ai-elements/suggestion';
+import { Badge } from '../ui/badge';
 import { isVisibleAssistantPart, PreviewMessage } from './message';
 import { getMessagesForDisplay } from './util';
 
 type Props = {
+  datasetName: string;
+  onOpenDatasetPreview: () => void;
   messages: ChatMessage[];
   savedMessageIds: string[];
   historyLoading: boolean;
@@ -25,6 +28,8 @@ type Props = {
 };
 
 export function Messages({
+  datasetName,
+  onOpenDatasetPreview,
   messages,
   savedMessageIds,
   historyLoading,
@@ -59,7 +64,27 @@ export function Messages({
           <>
             <ConversationEmptyState
               className="flex-1 items-start p-0 py-8 text-left"
-              title="向数据提问"
+              title={
+                <span className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1.5">
+                  向
+                  <Badge
+                    asChild
+                    variant="outline"
+                    className="h-auto max-w-full min-w-0 rounded-lg px-2.5 py-1 text-lg hover:bg-muted active:bg-secondary motion-safe:active:scale-[0.97] motion-reduce:transition-none [&>svg]:size-4!"
+                  >
+                    <button
+                      type="button"
+                      title={datasetName}
+                      aria-label={`预览数据源 ${datasetName}`}
+                      onClick={onOpenDatasetPreview}
+                    >
+                      <ChartColumnIcon aria-hidden />
+                      <span className="min-w-0 truncate">{datasetName}</span>
+                    </button>
+                  </Badge>
+                  提问
+                </span>
+              }
               description={hasModel ? '选择推荐问题，或输入你关心的问题。' : '请先在设置中配置默认模型服务。'}
             />
             {suggestionsLoading ? (

@@ -1,16 +1,18 @@
 import type { AnalysisResponse } from '@antv/ava';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
 import { Tabs } from 'radix-ui';
-import { ChevronRightIcon, CodeXmlIcon, FileTextIcon, ListTreeIcon, Table2Icon } from 'lucide-react';
+import { CodeXmlIcon, FileTextIcon, ListTreeIcon, SquareArrowOutUpRightIcon, Table2Icon } from 'lucide-react';
 import { useState } from 'react';
-import type { ReactNode } from 'react';
 import { formatMetric } from '../../../utils';
 import { cn } from '../../../lib/utils';
 import { MessageResponse } from '../../ai-elements/message';
 import { SqlCodeBlock } from '../../ai-elements/sql';
+import { getToolErrorText } from '../../ai-elements/tool';
 import type { ToolPart } from '../../ai-elements/tool';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
+import { buttonVariants } from '../../ui/button';
+import { CollapsibleSection } from '../../ui/collapsible-section';
 import { Table } from '../../ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
 import { AnalysisTraceView } from './analysis-trace-view';
 
 const scrollContentClass =
@@ -115,34 +117,6 @@ function AnalysisTable({
   );
 }
 
-function AnalysisSection({
-  title,
-  defaultOpen = false,
-  children,
-}: {
-  title: string;
-  defaultOpen?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <Collapsible defaultOpen={defaultOpen} className="min-w-0 space-y-1.5" role="region" aria-label={title}>
-      <CollapsibleTrigger
-        className={cn(
-          sectionTitleClass,
-          'group/analyze flex w-full items-center justify-between gap-2 rounded-sm text-left hover:text-foreground/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-        )}
-      >
-        <span>{title}</span>
-        <ChevronRightIcon
-          className="size-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/analyze:rotate-90 motion-reduce:transition-none"
-          aria-hidden="true"
-        />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="min-w-0">{children}</CollapsibleContent>
-    </Collapsible>
-  );
-}
-
 function AnalysisConclusion({
   analysis,
   content,
@@ -171,9 +145,9 @@ function AnalysisConclusion({
         </div>
       )}
       {analysis.markdown && analysis.text && analysis.markdown !== analysis.text && (
-        <AnalysisSection title="原始文本">
+        <CollapsibleSection title="原始文本">
           <p className="whitespace-pre-wrap text-sm leading-5 text-muted-foreground">{analysis.text}</p>
-        </AnalysisSection>
+        </CollapsibleSection>
       )}
     </div>
   );
@@ -242,14 +216,22 @@ function isLegacyAnalysisResult(value: unknown): value is AnalysisResponse {
   );
 }
 
-export function AnalyzeTool({ call, errorText }: { call: ToolPart; errorText?: string }) {
+export function AnalyzeTool({
+  call,
+  onOpenPreview,
+  sidePanel,
+}: {
+  call: ToolPart;
+  onOpenPreview?: (title: string) => void;
+  sidePanel?: boolean;
+}) {
   const [originalPrecision, setOriginalPrecision] = useState(false);
   const output = call.state === 'output-available' ? call.output : undefined;
   const savedResult = isAnalysisToolResult(output) ? output : undefined;
   const analysis = savedResult ? savedResult.result : isLegacyAnalysisResult(output) ? output : undefined;
   const trace = savedResult?.trace;
   const error =
-    errorText ??
+    getToolErrorText(call) ??
     trace?.error ??
     (analysis === null ? (trace?.status === 'cancelled' ? '分析已取消。' : '分析未完成。') : undefined);
   const input = call.input;
@@ -294,7 +276,11 @@ export function AnalyzeTool({ call, errorText }: { call: ToolPart; errorText?: s
       label: 'SQL',
       icon: CodeXmlIcon,
       content: analysis?.sql ? (
-        <SqlCodeBlock code={analysis.sql} label="执行 SQL" maxHeight="var(--analysis-view-max-height)" />
+        <SqlCodeBlock
+          code={analysis.sql}
+          label="执行 SQL"
+          maxHeight={sidePanel ? undefined : 'var(--analysis-view-max-height)'}
+        />
       ) : null,
     },
     {
@@ -307,25 +293,68 @@ export function AnalyzeTool({ call, errorText }: { call: ToolPart; errorText?: s
 
   if (!views.length && !error) return null;
 
+  const queryContent = query && (
+    <p
+      className={cn(
+        'leading-6 whitespace-pre-wrap text-foreground [overflow-wrap:anywhere]',
+        sidePanel ? 'text-base' : 'text-sm',
+      )}
+    >
+      {query}
+    </p>
+  );
+  const errorContent = error && (
+    <p role="alert" className="text-sm leading-5 whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]">
+      {error}
+    </p>
+  );
+
   return (
-    <div className="@container grid w-full min-w-0 grid-cols-1 gap-3.5 rounded-lg bg-muted/50 p-3">
-      {query && (
-        <section className="min-w-0 space-y-1.5" aria-label="分析问题">
-          <h4 className={sectionTitleClass}>分析问题</h4>
-          <p className="text-sm leading-6 whitespace-pre-wrap text-foreground [overflow-wrap:anywhere]">
-            {query}
-          </p>
-        </section>
+    <div
+      className={cn(
+        '@container grid w-full min-w-0 grid-cols-1',
+        sidePanel ? 'gap-3 [--analysis-view-max-height:none]' : 'gap-3.5 rounded-lg bg-muted/50 p-3',
       )}
-      {error && (
-        <p
-          role="alert"
-          className="text-sm leading-5 whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]"
-        >
-          {error}
-        </p>
+    >
+      {sidePanel && queryContent && (
+        <CollapsibleSection title="分析问题" variant="panel">{queryContent}</CollapsibleSection>
       )}
-      {views.length > 0 && (
+      {!sidePanel && (queryContent || onOpenPreview) && (
+        <div className="flex items-start gap-2">
+          {queryContent && (
+            <section className="min-w-0 flex-1 space-y-1.5" aria-label="分析问题">
+              <h4 className={sectionTitleClass}>分析问题</h4>
+              {queryContent}
+            </section>
+          )}
+          {onOpenPreview && (
+            <Tooltip>
+              <TooltipTrigger
+                type="button"
+                aria-label="在右侧打开分析结果"
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+                  'ms-auto size-7 text-muted-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-ring',
+                )}
+                onClick={() => onOpenPreview(query?.trim() || '分析结果')}
+              >
+                <SquareArrowOutUpRightIcon className="size-[15px]" aria-hidden />
+              </TooltipTrigger>
+              <TooltipContent className="chat-theme" sideOffset={6}>
+                在右侧标签页打开
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      )}
+      {errorContent && (sidePanel ? <CollapsibleSection title="分析状态" variant="panel">{errorContent}</CollapsibleSection> : errorContent)}
+      {sidePanel &&
+        views.map(({ value, label, icon, content }) => (
+          <CollapsibleSection key={value} title={label} icon={icon} variant="panel">
+            {content}
+          </CollapsibleSection>
+        ))}
+      {!sidePanel && views.length > 0 && (
         <Tabs.Root
           defaultValue={views[0].value}
           className="w-full min-w-0 [--analysis-view-max-height:min(24rem,50dvh)]"
@@ -357,11 +386,11 @@ export function AnalyzeTool({ call, errorText }: { call: ToolPart; errorText?: s
         </Tabs.Root>
       )}
       {confirmation && (
-        <AnalysisSection title="核对说明" defaultOpen>
+        <CollapsibleSection title="核对说明" defaultOpen variant={sidePanel ? 'panel' : 'inline'}>
           <MessageResponse className="space-y-2 text-sm leading-6 text-foreground [overflow-wrap:anywhere]">
             {confirmation[1]}
           </MessageResponse>
-        </AnalysisSection>
+        </CollapsibleSection>
       )}
     </div>
   );
