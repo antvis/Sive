@@ -53,10 +53,6 @@ export async function getStorageInfo() {
   return { cache, data };
 }
 
-export function clearCache() {
-  return session.defaultSession.clearCache();
-}
-
 /**
  * Open a directory or URL in the system's default application.
  * @remarks

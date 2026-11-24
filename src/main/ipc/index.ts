@@ -12,12 +12,12 @@ import type {
   Preferences,
 } from '@shared/api';
 import { FILE_SOURCES } from '@shared/dataSource';
-import { analysisStartSchema, storageClearTargetSchema } from '@shared/api';
+import { analysisStartSchema } from '@shared/api';
 import { githubRepositoryListSchema, githubConnectionIdSchema } from '@shared/github';
 import type { LocalFileFormat } from '@shared/dataSource';
 import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
-import { clearCache, getStorageInfo, systemOpen } from '../util/system';
+import { getStorageInfo, systemOpen } from '../util/system';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -26,8 +26,6 @@ export function registerIpc(
   settingsWindow: { open: () => Promise<void>; close: (sender: WebContents) => void },
 ) {
   let revision = 0;
-  let pendingDatasetSaves = 0;
-  let clearingStorage = false;
 
   services.update.onUpdateAvailable(() => {
     const window = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
@@ -131,18 +129,13 @@ export function registerIpc(
   ipcMain.handle(
     'datasetSave',
     async (_event, name: string, sourceConfig: DataSourceConfig, id?: string, authSessionId?: string) => {
-      pendingDatasetSaves += 1;
+      if (id) await services.analysis.beginDatasetUpdate(id);
       try {
-        if (id) await services.analysis.beginDatasetUpdate(id);
-        try {
-          await services.dataset.save(name, sourceConfig, id, authSessionId);
-        } finally {
-          if (id) services.analysis.endDatasetUpdate(id);
-        }
-        changed();
+        await services.dataset.save(name, sourceConfig, id, authSessionId);
       } finally {
-        pendingDatasetSaves -= 1;
+        if (id) services.analysis.endDatasetUpdate(id);
       }
+      changed();
     },
   );
 
@@ -236,49 +229,6 @@ export function registerIpc(
   });
 
   ipcMain.handle('systemGetStorageInfo', () => getStorageInfo());
-
-  ipcMain.handle('systemClearStorage', async ({ sender }, input: unknown) => {
-    const target = storageClearTargetSchema.parse(input);
-    if (clearingStorage) throw new Error('正在清除存储，请稍候');
-    clearingStorage = true;
-    try {
-      if (target !== 'cache') {
-        const owner = BrowserWindow.fromWebContents(sender);
-        if (!owner) throw new Error('找不到存储设置窗口');
-        const { response } = await dialog.showMessageBox(owner, {
-          type: 'warning',
-          message: target === 'all' ? '清除全部可清理的存储？' : '清除工作台数据？',
-          detail:
-            target === 'all'
-              ? '将清除应用缓存并永久删除会话、收藏和数据源记录'
-              : '将永久删除会话、收藏和数据源记录',
-          buttons: ['取消', '清除'],
-          defaultId: 0,
-          cancelId: 0,
-        });
-        if (response !== 1) return null;
-        if (pendingDatasetSaves) throw new Error('请等数据源保存结束后再清除工作台数据');
-        services.analysis.prepareWorkspaceClear();
-        try {
-          services.storage.clearWorkspace();
-        } finally {
-          changed();
-        }
-      }
-      if (target !== 'data') {
-        try {
-          await clearCache();
-        } catch (cause) {
-          throw new Error(target === 'all' ? '工作台记录已清除，应用缓存清除失败' : '应用缓存清除失败', {
-            cause,
-          });
-        }
-      }
-      return await getStorageInfo();
-    } finally {
-      clearingStorage = false;
-    }
-  });
 
   ipcMain.handle('systemOpen', (_event, type: 'directory' | 'url', path: string) => systemOpen(type, path));
 
