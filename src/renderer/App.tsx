@@ -36,10 +36,7 @@ export default function App({ settingsWindow }: { settingsWindow: boolean }) {
 
   const preferredMode = state?.preferences.theme.mode ?? DEFAULT_PREFERENCES.theme.mode;
   const isDark = preferredMode === 'system' ? systemDark : preferredMode === 'dark';
-  const theme = useMemo(
-    () => ({ mode: isDark ? 'dark' : 'light', fontSize: DEFAULT_PREFERENCES.theme.fontSize }) as const,
-    [isDark],
-  );
+  const themeMode = isDark ? 'dark' : 'light';
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -50,8 +47,8 @@ export default function App({ settingsWindow }: { settingsWindow: boolean }) {
   }, []);
 
   useLayoutEffect(() => {
-    document.documentElement.dataset.theme = theme.mode;
-  }, [theme.mode]);
+    document.documentElement.dataset.theme = themeMode;
+  }, [themeMode]);
 
   const fallback =
     !state &&
@@ -66,14 +63,14 @@ export default function App({ settingsWindow }: { settingsWindow: boolean }) {
 
   return (
     <I18nProvider language={state?.preferences.language}>
-      <ThemeContext value={theme}>
+      <ThemeContext value={themeMode}>
         {settingsWindow ? (
           <SettingsWindow state={state} fallback={fallback} />
         ) : (
           <Workspace state={state} fallback={fallback} />
         )}
         <Toaster
-          theme={theme.mode}
+          theme={themeMode}
           position="bottom-right"
           visibleToasts={1}
           toastOptions={{

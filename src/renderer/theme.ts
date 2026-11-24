@@ -1,26 +1,20 @@
 import type { ThemeSpec } from '@antv/gpt-vis';
 import { mergeTheme } from '@antv/gpt-vis/dist/esm/theme/merge';
-import { DEFAULT_PREFERENCES } from '@shared/api';
 import { createContext } from 'react';
 
-type Theme = { mode: 'light' | 'dark'; fontSize: number };
+type ThemeMode = 'light' | 'dark';
 
-export const ThemeContext = createContext<Theme>({
-  mode: 'light',
-  fontSize: DEFAULT_PREFERENCES.theme.fontSize,
-});
+export const ThemeContext = createContext<ThemeMode>('light');
 
 export const ChartThemeContext = createContext<ThemeSpec | undefined>(undefined);
 
 // Read the active client palette after App applies data-theme, before rendering charts.
-export function createChartTheme(
-  { mode, fontSize: rootFontSize }: Theme,
-  templateTheme?: ThemeSpec,
-): ThemeSpec {
+export function createChartTheme(mode: ThemeMode, templateTheme?: ThemeSpec): ThemeSpec {
   const styles = getComputedStyle(document.documentElement);
+  const rootFontSize = Number.parseFloat(styles.fontSize);
 
   // Chart renderers need pixels; derive them from the text-* rem scale.
-  const fontSize = (name: 'xs' | 'sm' | 'base' | 'lg' | '3xl') =>
+  const fontSize = (name: 'xs' | 'sm' | 'lg' | '3xl') =>
     Number.parseFloat(styles.getPropertyValue(`--text-${name}`)) * rootFontSize;
 
   const lineHeight = rootFontSize * 1.5;
@@ -39,7 +33,7 @@ export function createChartTheme(
       node: { labelFontSize: fontSize('xs') },
       edge: { labelFontSize: fontSize('xs') },
       table: { header: { fontSize: fontSize('xs') }, cell: { fontSize: fontSize('xs') } },
-      summary: { fontSize: fontSize('base') },
+      summary: { fontSize: rootFontSize },
     },
   };
 

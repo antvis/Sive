@@ -9,12 +9,11 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 @theme {
-  /* The workspace uses a 14px root size. */
   --text-xs: 0.857142857rem;
   --text-xs--line-height: calc(16 / 12);
   --text-sm: 0.928571429rem;
   --text-sm--line-height: calc(18 / 13);
-  --text-base: 1rem;
+  --text-base: 14px;
   --text-base--line-height: 1.5;
   --text-lg: 1.142857143rem;
   --text-lg--line-height: calc(22 / 16);
@@ -144,14 +143,8 @@
 }
 
 :root {
+  font-size: var(--text-base);
   color-scheme: light;
-  --workspace-text-xs: var(--text-xs);
-  --workspace-text-sm: var(--text-sm);
-  --workspace-text-base: var(--text-base);
-  --workspace-text-lg: var(--text-lg);
-  --workspace-text-xl: var(--text-xl);
-  --workspace-text-2xl: var(--text-2xl);
-  --workspace-text-3xl: var(--text-3xl);
   --workspace-gutter: 8px;
   --workspace-titlebar-height: 44px;
   --window-controls-end: env(titlebar-area-x, 0px);
@@ -274,18 +267,17 @@
   --sidebar-ring: oklch(0.45 0 0);
 }
 
-.chat-typography {
-  --text-xs: calc(var(--workspace-text-xs) * var(--chat-font-scale));
-  --text-sm: calc(var(--workspace-text-sm) * var(--chat-font-scale));
-  --text-base: calc(var(--workspace-text-base) * var(--chat-font-scale));
-  --text-lg: calc(var(--workspace-text-lg) * var(--chat-font-scale));
-  --text-xl: calc(var(--workspace-text-xl) * var(--chat-font-scale));
-  --text-2xl: calc(var(--workspace-text-2xl) * var(--chat-font-scale));
-  --text-3xl: calc(var(--workspace-text-3xl) * var(--chat-font-scale));
-}
-
 /* Match the supplied Codex desktop reference within the conversation area. */
 .chat-theme {
+  --text-base: var(--chat-font-size, 1rem);
+  --chat-font-scale: calc(var(--text-base) / 1rem);
+  --text-xs: calc(--theme(--text-xs inline) * var(--chat-font-scale));
+  --text-sm: calc(--theme(--text-sm inline) * var(--chat-font-scale));
+  --text-lg: calc(--theme(--text-lg inline) * var(--chat-font-scale));
+  --text-xl: calc(--theme(--text-xl inline) * var(--chat-font-scale));
+  --text-2xl: calc(--theme(--text-2xl inline) * var(--chat-font-scale));
+  --text-3xl: calc(--theme(--text-3xl inline) * var(--chat-font-scale));
+
   --background: #ffffff;
   --foreground: #191c1f;
   --card: #ffffff;
