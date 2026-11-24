@@ -79,7 +79,6 @@ export function AppShell({
       datasets={sidebar.datasets}
       activeDatasetId={activeDatasetId}
       showSidebarActions={showSidebarActions}
-      fullscreen={previewFullscreen}
       conversationTitle={
         hasAnalysis && !previewFullscreen ? (
           <ConversationSwitcher

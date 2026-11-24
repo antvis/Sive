@@ -5,6 +5,8 @@ import { useLayoutEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { IconButton } from '../IconButton';
 
+const tabScrollOptions = { block: 'nearest', inline: 'nearest', container: 'nearest' } as const;
+
 type PanelTab = {
   id: string;
   title: string;
@@ -13,7 +15,6 @@ type PanelTab = {
 
 type Props = {
   label: string;
-  pinnedTab: PanelTab;
   tabs: readonly PanelTab[];
   activeTabId: string;
   visible: boolean;
@@ -21,13 +22,13 @@ type Props = {
   onClose: (id: string) => void;
 };
 
-export function PanelTabList({ label, pinnedTab, tabs, activeTabId, visible, className, onClose }: Props) {
+export function PanelTabList({ label, tabs, activeTabId, visible, className, onClose }: Props) {
   const activeTab = useRef<HTMLButtonElement>(null);
   const restoreFocus = useRef(false);
 
   useLayoutEffect(() => {
     if (!visible || !activeTab.current) return;
-    activeTab.current.parentElement?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    activeTab.current.parentElement?.scrollIntoView(tabScrollOptions);
     if (restoreFocus.current) {
       restoreFocus.current = false;
       activeTab.current.focus({ preventScroll: true });
@@ -39,54 +40,43 @@ export function PanelTabList({ label, pinnedTab, tabs, activeTabId, visible, cla
     onClose(id);
   };
 
-  const renderTab = ({ id, title, icon }: PanelTab, pinned: boolean) => (
-    <div
-      key={id}
-      className={clsx(
-        'flex shrink-0 items-center rounded-md [-webkit-app-region:no-drag]',
-        pinned && tabs.length ? 'max-w-[min(55%,176px)]' : 'max-w-[min(100%,176px)]',
-        activeTabId === id && 'bg-workspace-control',
-      )}
-    >
-      <Tabs.Trigger
-        ref={activeTabId === id ? activeTab : undefined}
-        value={id}
-        title={pinned ? `${title}（固定标签）` : title}
-        className={clsx(
-          'flex h-[32px] min-w-0 items-center gap-1.5 rounded-md px-2 text-base text-muted-foreground -outline-offset-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-sidebar-focus data-[state=active]:text-ink',
-          !pinned && 'pe-1',
-        )}
-        aria-keyshortcuts={pinned ? undefined : 'Delete'}
-        onKeyDown={(event) => {
-          if (pinned || event.key !== 'Delete') return;
-          event.preventDefault();
-          closeTab(id);
-        }}
-      >
-        {icon}
-        <span className="truncate">{title}</span>
-      </Tabs.Trigger>
-      {!pinned && (
-        <IconButton
-          icon={XIcon}
-          iconSize={12}
-          label={`关闭${title}标签`}
-          tabIndex={-1}
-          className="me-1 size-6! hover:bg-workspace-control-active!"
-          onClick={() => closeTab(id)}
-        />
-      )}
-    </div>
-  );
-
   return (
-    <Tabs.List aria-label={label} className={clsx('flex min-w-0 items-center gap-1', className)}>
-      {renderTab(pinnedTab, true)}
-      {!!tabs.length && (
-        <div className="flex min-w-0 items-center gap-1 overflow-x-auto scrollbar-none [-webkit-app-region:no-drag]">
-          {tabs.map((tab) => renderTab(tab, false))}
-        </div>
-      )}
+    <Tabs.List aria-label={label} className={clsx('flex min-w-0 items-center', className)}>
+      <div className="flex min-w-0 items-center gap-1 overflow-x-auto scrollbar-none [-webkit-app-region:no-drag]">
+        {tabs.map(({ id, title, icon }) => (
+          <div
+            key={id}
+            className={clsx(
+              'flex max-w-[min(100%,176px)] shrink-0 items-center rounded-md',
+              activeTabId === id && 'bg-workspace-control',
+            )}
+          >
+            <Tabs.Trigger
+              ref={activeTabId === id ? activeTab : undefined}
+              value={id}
+              title={title}
+              className="flex h-[32px] min-w-0 items-center gap-1.5 rounded-md ps-2 pe-1 text-base text-muted-foreground -outline-offset-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-sidebar-focus data-[state=active]:text-ink"
+              aria-keyshortcuts="Delete"
+              onKeyDown={(event) => {
+                if (event.key !== 'Delete') return;
+                event.preventDefault();
+                closeTab(id);
+              }}
+            >
+              {icon}
+              <span className="truncate">{title}</span>
+            </Tabs.Trigger>
+            <IconButton
+              icon={XIcon}
+              iconSize={12}
+              label={`关闭${title}标签`}
+              tabIndex={-1}
+              className="me-1 size-6! hover:bg-workspace-control-active!"
+              onClick={() => closeTab(id)}
+            />
+          </div>
+        ))}
+      </div>
     </Tabs.List>
   );
 }

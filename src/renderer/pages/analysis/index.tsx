@@ -11,7 +11,7 @@ import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../../li
 import type { DatasetSummary, ModelProfile, Preferences } from '../../types';
 import { AnalysisSidePanel } from './AnalysisSidePanel';
 import { DATASET_PREVIEW_ID, MIN_ANALYSIS_PANEL_WIDTH, useAnalysisPreview } from './useAnalysisPreview';
-import { DATASET_PREVIEW_TAB, useAnalysisTabs } from './useAnalysisTabs';
+import { useAnalysisTabs } from './useAnalysisTabs';
 import { useFullscreenPreview } from './useFullscreenPreview';
 
 const cardClassName =
@@ -81,14 +81,19 @@ export function AnalysisPage({
   });
   const { card, changeFullscreen } = useFullscreenPreview(fullscreen, onFullscreenChange);
 
-  const { activeTabId, tabs, selectTab, openTab, closeTab } = useAnalysisTabs(chatId);
+  const { activeTabId, tabs, selectTab, openDataset, openResult, closeTab } = useAnalysisTabs(chatId);
 
   const openSidePanel = () => {
     if (datasetCollapsed) preview.toggle();
   };
 
-  const openResult = (tab: ToolPreviewTab) => {
-    openTab(tab);
+  const showResult = (tab: ToolPreviewTab) => {
+    openResult(tab);
+    openSidePanel();
+  };
+
+  const showDataset = () => {
+    openDataset();
     openSidePanel();
   };
 
@@ -129,14 +134,11 @@ export function AnalysisPage({
             )}
           </div>
           <div className={bodyClassName}>
-            <ToolPreviewContext value={openResult}>
+            <ToolPreviewContext value={showResult}>
               <Chat
                 datasetId={dataset.id}
                 datasetName={dataset.name}
-                onOpenDatasetPreview={() => {
-                  selectTab(DATASET_PREVIEW_TAB);
-                  openSidePanel();
-                }}
+                onOpenDatasetPreview={showDataset}
                 chatId={chatId}
                 conversationId={conversationId}
                 savedMessageIds={savedMessageIds}
@@ -171,7 +173,6 @@ export function AnalysisPage({
       >
         <AnalysisSidePanel
           dataset={dataset}
-          titleBar={titleBar}
           fullscreen={fullscreen}
           collapsed={datasetCollapsed}
           cardRef={card}
@@ -180,6 +181,7 @@ export function AnalysisPage({
           previewShortcut={previewShortcut}
           onTabChange={selectTab}
           onTabClose={closeTab}
+          onOpenDataset={showDataset}
           onToggleFullscreen={() => changeFullscreen(!fullscreen)}
           onCollapse={preview.toggle}
         />
