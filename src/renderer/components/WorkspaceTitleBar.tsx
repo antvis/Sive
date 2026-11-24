@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { PanelLeftIcon } from 'lucide-react';
 import { panelContentTiming } from '../lib/panel-layout';
 import type { DatasetSummary } from '../types';
-import { IconButton, panelControlClassName } from './IconButton';
+import { IconButton } from './IconButton';
 import { NewConversationButton, WORKSPACE_SIDEBAR_ID } from './WorkspaceSidebar';
 import type { AppPage } from './WorkspaceSidebar';
 
@@ -56,7 +56,7 @@ export function WorkspaceTitleBar({
             label="展开侧边栏"
             aria-controls={WORKSPACE_SIDEBAR_ID}
             aria-expanded={false}
-            className={panelControlClassName}
+            className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
             onClick={onOpenSidebar}
           />
           <NewConversationButton

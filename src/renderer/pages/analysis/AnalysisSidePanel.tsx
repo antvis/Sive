@@ -3,7 +3,7 @@ import { Maximize2Icon, Minimize2Icon, PanelRightIcon } from 'lucide-react';
 import { Tabs } from 'radix-ui';
 import type { RefObject } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
-import { IconButton, panelControlClassName } from '../../components/IconButton';
+import { IconButton } from '../../components/IconButton';
 import type { ToolPreviewTab } from '../../components/chat/tool-preview';
 import { AnalyzeTool } from '../../components/chat/tools/analyze';
 import { PanelTabList } from '../../components/ui/panel-tabs';
@@ -81,7 +81,7 @@ export function AnalysisSidePanel({
             icon={fullscreen ? Minimize2Icon : Maximize2Icon}
             label={fullscreen ? '退出右侧面板全屏' : '全屏查看右侧面板'}
             title={fullscreen ? '退出右侧面板全屏（Esc）' : '全屏查看右侧面板'}
-            className={panelControlClassName}
+            className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
             aria-pressed={fullscreen}
             onClick={onToggleFullscreen}
           />
@@ -90,7 +90,7 @@ export function AnalysisSidePanel({
               icon={PanelRightIcon}
               iconSize={18}
               label="收起右侧面板"
-              className={panelControlClassName}
+              className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
               aria-controls={DATASET_PREVIEW_ID}
               aria-expanded
               aria-keyshortcuts={previewShortcut}

@@ -3,7 +3,7 @@ import { PanelRightIcon } from 'lucide-react';
 import { useEffect, useEffectEvent } from 'react';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import type { AnalysisFrameProps } from '../../components/AppShell';
-import { IconButton, panelControlClassName } from '../../components/IconButton';
+import { IconButton } from '../../components/IconButton';
 import { Chat } from '../../components/chat/chat';
 import { ToolPreviewContext } from '../../components/chat/tool-preview';
 import type { ToolPreviewTab } from '../../components/chat/tool-preview';
@@ -119,7 +119,7 @@ export function AnalysisPage({
                 icon={PanelRightIcon}
                 iconSize={18}
                 label="展开右侧面板"
-                className={panelControlClassName}
+                className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
                 aria-controls={DATASET_PREVIEW_ID}
                 aria-expanded={false}
                 aria-keyshortcuts={previewShortcut}
