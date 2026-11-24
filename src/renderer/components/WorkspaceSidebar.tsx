@@ -39,7 +39,7 @@ export type WorkspaceSidebarProps = {
 const focusClass =
   'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus';
 const rowClass = clsx(
-  'relative flex h-[32px] min-w-0 items-center gap-[6px] rounded-[8px] px-[8px] text-left text-sm font-medium text-sidebar-text transition-[color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45',
+  'relative flex min-h-9 min-w-0 items-center gap-[6px] rounded-[8px] px-[8px] text-left text-sm text-sidebar-text transition-[color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45',
   focusClass,
 );
 const activeClass = 'bg-sidebar-highlight text-sidebar-ink!';
@@ -48,7 +48,7 @@ const iconClass = clsx(
   focusClass,
 );
 const headingClass =
-  'flex h-[32px] items-center justify-between gap-1 ps-[8px] text-xs font-medium text-sidebar-text';
+  'flex min-h-9 items-center justify-between gap-1 ps-[8px] text-xs text-sidebar-muted';
 
 function SidebarList({ children }: PropsWithChildren) {
   const highlight = useRef<HTMLSpanElement>(null);
@@ -138,7 +138,7 @@ export function NewConversationButton({
           collisionPadding={8}
           className="z-50 max-h-(--radix-popover-content-available-height) w-[208px] overflow-y-auto rounded-[8px] border border-line bg-surface p-1 shadow-lg"
         >
-          <p className="px-[8px] py-1 text-xs font-medium text-sidebar-muted">选择数据源</p>
+          <p className="px-[8px] py-1 text-xs text-sidebar-muted">选择数据源</p>
           {datasets.map((dataset) => {
             const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
             return (
@@ -339,7 +339,7 @@ export function WorkspaceSidebar({
               src="./sive.svg"
               alt=""
             />
-            <strong className="truncate text-xl leading-6 font-semibold">Sive</strong>
+            <span className="truncate text-xl text-sidebar-ink">Sive</span>
           </div>
         </div>
         <div className="absolute end-[8px] top-(--workspace-titlebar-center) flex -translate-y-1/2">
@@ -354,7 +354,7 @@ export function WorkspaceSidebar({
           />
         </div>
       </header>
-      <p className="mt-1 mb-5 shrink-0 px-[16px] text-xs leading-4 text-muted-foreground">
+      <p className="mt-1 mb-5 shrink-0 px-[16px] text-xs text-muted-foreground">
         See it Live, Share it Real.
       </p>
       <nav className="mx-[8px]" aria-label="工作台">

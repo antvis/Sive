@@ -102,13 +102,13 @@
 }
 
 @theme inline {
-  --color-sidebar-canvas: light-dark(#f6f6f6, #1c1c1c);
+  --color-sidebar-canvas: light-dark(#fcfcfc, #242424);
   --color-sidebar-ink: light-dark(oklch(24.7% .006 258.361), oklch(96.4% .002 247.839));
-  --color-sidebar-text: light-dark(oklch(50.6% .01 264.477), oklch(73.1% .008 260.731));
-  --color-sidebar-muted: light-dark(oklch(69.5% .009 264.505), oklch(54.1% .01 264.484));
-  --color-sidebar-highlight: light-dark(#eaeaea, #303030);
+  --color-sidebar-text: light-dark(#222222, #b3b3b3);
+  --color-sidebar-muted: light-dark(#6e6e6e, #a1a1a1);
+  --color-sidebar-highlight: light-dark(#f2f2f2, #303030);
   --color-sidebar-focus: light-dark(oklch(62.6% .205 254.947), oklch(68% .173 253.301));
-  --color-workspace-canvas: light-dark(#ededed, #151515);
+  --color-workspace-canvas: light-dark(#f1f1f1, #181818);
   --color-workspace-control: light-dark(#f2f2f2, #1b1b1b);
   --color-workspace-control-active: light-dark(#ffffff, #2c2c2c);
   --color-preview-surface: light-dark(#fdfdfd, #212121);
