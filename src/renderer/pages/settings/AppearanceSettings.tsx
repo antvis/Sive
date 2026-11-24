@@ -48,7 +48,10 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
   return (
     <>
       <SettingGroup>
-        <SettingRow title={i18n('settings.language.title')}>
+        <SettingRow
+          title={i18n('settings.language.title')}
+          description={i18n('settings.language.description')}
+        >
           <SegmentedControl
             label={i18n('settings.language.title')}
             options={languageOptions}
@@ -57,7 +60,7 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
             onValueChange={(language) => void update({ ...preferences, language })}
           />
         </SettingRow>
-        <SettingRow title="界面主题">
+        <SettingRow title="界面主题" description="选择跟随系统时，界面会随系统外观切换。">
           <SegmentedControl
             label="界面主题"
             options={themeOptions}
@@ -66,7 +69,7 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
             onValueChange={(mode) => void update({ ...preferences, theme: { ...theme, mode } })}
           />
         </SettingRow>
-        <SettingRow title="字体大小">
+        <SettingRow title="字体大小" description="调整设置、对话和数据面板的基础字号。">
           <div className="w-56 max-w-full">
             <input
               aria-label="字体大小"

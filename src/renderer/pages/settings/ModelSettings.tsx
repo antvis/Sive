@@ -9,7 +9,7 @@ import { Select } from '../../components/Select';
 import type { ModelProfile, ModelTestProgress } from '../../types';
 import { errorMessage } from '../../utils';
 import { ModelPicker } from './ModelPicker';
-import { SettingInput } from './SettingControls';
+import { SettingField } from './SettingControls';
 
 type Catalog = { baseURL: string; apiKey: string; ids: string[] };
 
@@ -102,33 +102,30 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
     >
       <form id="model-form" onSubmit={(event) => void save(event)}>
         <fieldset disabled={saving} className="grid min-w-0 gap-4 border-0 p-0">
-          <label className="grid gap-1.5 text-sm">
-            服务名称
-            <SettingInput
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="例如：云端模型服务"
-              required
-            />
-          </label>
-          <label className="grid gap-1.5 text-sm">
-            服务地址
-            <SettingInput
-              value={baseURL}
-              onChange={(e) => setBaseURL(e.target.value)}
-              placeholder="https://example.com/v1"
-              required
-            />
-          </label>
-          <label className="grid gap-1.5 text-sm">
-            密钥
-            <SettingInput
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder={model?.hasKey ? '留空复用已保存的密钥' : '本地无认证服务可留空'}
-            />
-          </label>
+          <SettingField
+            label="服务名称"
+            description="用来区分不同的模型服务。"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="例如：云端模型服务"
+            required
+          />
+          <SettingField
+            label="服务地址"
+            description="填写服务商提供的 API 基础地址。"
+            value={baseURL}
+            onChange={(e) => setBaseURL(e.target.value)}
+            placeholder="https://example.com/v1"
+            required
+          />
+          <SettingField
+            label="密钥"
+            description="服务要求认证时，填写服务商提供的 API 密钥。"
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder={model?.hasKey ? '留空复用已保存的密钥' : '本地无认证服务可留空'}
+          />
           <div className="grid gap-1.5 text-sm">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -147,6 +144,9 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
                 />
               </div>
             </div>
+            <p className="m-0 text-xs text-muted-foreground">
+              从列表中选择要启用的模型，也可以手动添加模型 ID。
+            </p>
             <ModelPicker
               options={currentCatalog?.ids ?? []}
               value={modelIds}
@@ -255,8 +255,11 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                 最近更新：{new Date(model.updatedAt).toLocaleString('zh-CN')}
               </span>
               {activeModelId === model.id && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>默认模型</span>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <div className="grid gap-1">
+                    <span>默认模型</span>
+                    <span className="text-xs text-muted-foreground">分析对话会预选此模型。</span>
+                  </div>
                   <Select
                     compact
                     aria-label="默认模型"
