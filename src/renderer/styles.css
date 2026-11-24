@@ -339,6 +339,14 @@
     @apply [-webkit-app-region:no-drag] enabled:cursor-pointer disabled:cursor-not-allowed;
   }
 
+  [data-settings-window] :is(a[href], input, label, select, textarea) {
+    @apply [-webkit-app-region:no-drag];
+  }
+
+  [data-settings-window] :is(input, textarea) {
+    @apply select-text;
+  }
+
   ::-webkit-scrollbar {
     @apply size-[5px];
   }

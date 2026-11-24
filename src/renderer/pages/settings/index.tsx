@@ -43,8 +43,10 @@ export function SettingsWindow({ state, fallback }: { state: WorkspaceState | nu
   const { isMacOS } = window.workbench;
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-white dark:bg-preview-surface">
-      <div aria-hidden className="absolute inset-x-0 top-0 h-5 [-webkit-app-region:drag]" />
+    <div
+      data-settings-window
+      className="relative flex h-screen flex-col overflow-hidden bg-white select-none [-webkit-app-region:drag] dark:bg-preview-surface"
+    >
       {!isMacOS && (
         <IconButton
           icon={XIcon}
