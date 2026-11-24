@@ -14,8 +14,6 @@ import { DATASET_PREVIEW_TAB } from './useAnalysisTabs';
 
 export const DATASET_PREVIEW_ID = 'dataset';
 
-export const PREVIEW_SHORTCUT = 'Meta+Shift+B Control+Shift+B';
-
 const tabContentClassName = 'min-h-0 min-w-0 flex-1 bg-surface data-[state=inactive]:hidden';
 
 type Props = {
@@ -148,7 +146,7 @@ export function AnalysisSidePanel({
               className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
               aria-controls={DATASET_PREVIEW_ID}
               aria-expanded
-              aria-keyshortcuts={PREVIEW_SHORTCUT}
+              aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
               onClick={onToggleCollapsed}
             />
           )}

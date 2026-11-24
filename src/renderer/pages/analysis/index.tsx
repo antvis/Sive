@@ -12,7 +12,7 @@ import { usePanelToggleFocus } from '../../hooks/usePanelToggleFocus';
 import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../../lib/panel-layout';
 import type { DatasetSummary, ModelProfile, Preferences } from '../../types';
 import { readWidth, saveWidth } from '../../utils';
-import { AnalysisSidePanel, DATASET_PREVIEW_ID, PREVIEW_SHORTCUT } from './AnalysisSidePanel';
+import { AnalysisSidePanel, DATASET_PREVIEW_ID } from './AnalysisSidePanel';
 import { DATASET_PREVIEW_TAB, useAnalysisTabs } from './useAnalysisTabs';
 
 const cardClassName =
@@ -139,7 +139,7 @@ export function AnalysisPage({
                 className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
                 aria-controls={DATASET_PREVIEW_ID}
                 aria-expanded={false}
-                aria-keyshortcuts={PREVIEW_SHORTCUT}
+                aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
                 onClick={togglePreview}
               />
             )}
