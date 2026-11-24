@@ -10,7 +10,6 @@ import {
   SettingsIcon,
   SquarePenIcon,
 } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { toast } from 'sonner';
@@ -39,15 +38,16 @@ export type WorkspaceSidebarProps = {
 const focusClass =
   'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus';
 const rowClass = clsx(
-  'relative flex min-h-9 min-w-0 items-center gap-[6px] rounded-[8px] px-[8px] text-left text-base text-sidebar-text transition-[color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45',
+  'relative flex min-h-9 min-w-0 items-center gap-[6px] rounded-[8px] px-[8px] text-left transition-[color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45',
   focusClass,
 );
-const activeClass = 'bg-sidebar-highlight text-sidebar-ink!';
+const activeClass = 'bg-sidebar-highlight font-semibold text-sidebar-ink!';
 const iconClass = clsx(
   'relative rounded-[8px]! text-sidebar-muted! hover:bg-sidebar-highlight! hover:text-sidebar-ink!',
   focusClass,
 );
-const headingClass = 'flex min-h-9 items-center justify-between gap-1 ps-[8px] text-sm text-sidebar-muted';
+const headingClass =
+  'flex min-h-9 items-center justify-between gap-1 ps-[8px] text-xs font-normal text-sidebar-text/80';
 
 function SidebarList({ children, className }: PropsWithChildren<{ className?: string }>) {
   const highlight = useRef<HTMLSpanElement>(null);
@@ -97,25 +97,33 @@ export function NewConversationButton({
   datasets,
   datasetId,
   compact = false,
+  iconSize = 16,
   onCreate,
 }: {
   datasets: DatasetSummary[];
-  datasetId?: string | null;
+  datasetId: string | null;
   compact?: boolean;
+  iconSize?: number;
   onCreate: (datasetId: string) => void;
 }) {
   const label = compact ? '新建对话' : '新建分析';
-  const disabled = !datasets.length;
+  const initialDatasetId = datasetId ?? datasets[0]?.id;
+  const disabled = !initialDatasetId;
   const title = disabled ? '请先添加数据源' : label;
-  const createForActiveDataset = datasetId ? () => onCreate(datasetId) : undefined;
-  const button = compact ? (
+
+  const create = () => {
+    if (initialDatasetId) onCreate(initialDatasetId);
+  };
+
+  return compact ? (
     <IconButton
       icon={SquarePenIcon}
+      iconSize={iconSize}
       label={label}
       title={title}
       className={clsx(iconClass, 'size-[32px]! [-webkit-app-region:no-drag]')}
       disabled={disabled}
-      onClick={createForActiveDataset}
+      onClick={create}
     />
   ) : (
     <button
@@ -124,47 +132,11 @@ export function NewConversationButton({
       data-sidebar-row
       disabled={disabled}
       title={title}
-      onClick={createForActiveDataset}
+      onClick={create}
     >
-      <SquarePenIcon size={16} className="shrink-0" aria-hidden />
+      <SquarePenIcon size={iconSize} className="shrink-0" aria-hidden />
       <span>{label}</span>
     </button>
-  );
-
-  if (datasetId) return button;
-
-  return (
-    <Popover.Root>
-      <Popover.Trigger asChild>{button}</Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          aria-label="选择数据源"
-          side={compact ? 'top' : 'bottom'}
-          align={compact ? 'end' : 'start'}
-          sideOffset={4}
-          collisionPadding={8}
-          className="z-50 max-h-(--radix-popover-content-available-height) w-[208px] overflow-y-auto rounded-[8px] border border-line bg-surface p-1 shadow-lg scrollbar-none"
-        >
-          <p className="px-[8px] py-1 text-sm text-sidebar-muted">选择数据源</p>
-          {datasets.map((dataset) => {
-            const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
-            return (
-              <Popover.Close key={dataset.id} asChild>
-                <button
-                  type="button"
-                  className={clsx(rowClass, 'w-full hover:bg-sidebar-highlight')}
-                  title={dataset.name}
-                  onClick={() => onCreate(dataset.id)}
-                >
-                  <SourceIcon size={16} className="shrink-0" aria-hidden />
-                  <span className="truncate">{dataset.name}</span>
-                </button>
-              </Popover.Close>
-            );
-          })}
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
   );
 }
 
@@ -254,8 +226,8 @@ function ConversationItem({
             title={`${conversation.title}\n${new Date(conversation.updatedAt).toLocaleString('zh-CN')}`}
             className={clsx(
               rowClass,
-              'w-full group-focus-within/conversation:pe-[52px] group-hover/conversation:pe-[52px]',
-              active && 'text-sidebar-ink!',
+              'w-full text-sidebar-text group-focus-within/conversation:pe-[52px] group-hover/conversation:pe-[52px]',
+              active && 'font-semibold text-sidebar-ink!',
             )}
             onClick={onSelect}
           >
@@ -325,11 +297,18 @@ export function WorkspaceSidebar({
   return (
     <aside
       id={WORKSPACE_SIDEBAR_ID}
-      className="flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-[16px] bg-sidebar-canvas pb-[8px]"
+      className="flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-[16px] bg-sidebar-canvas pb-[8px] text-base text-sidebar-ink"
       aria-label="工作台侧边栏"
       inert={inert}
     >
-      <header className="relative shrink-0 pt-(--workspace-sidebar-titlebar-offset) [-webkit-app-region:drag]">
+      <header
+        className={clsx(
+          'relative shrink-0 [-webkit-app-region:drag]',
+          window.workbench.isMacOS
+            ? 'pt-[max(var(--workspace-sidebar-titlebar-offset),calc(var(--workspace-titlebar-height)-var(--workspace-gutter)))]'
+            : 'pt-(--workspace-sidebar-titlebar-offset)',
+        )}
+      >
         <div className="@container flex h-(--workspace-titlebar-height) items-center ps-[16px] pe-[44px]">
           <div className="flex items-center">
             <img
@@ -421,7 +400,7 @@ export function WorkspaceSidebar({
                       </button>
                       <IconButton
                         icon={SquarePenIcon}
-                        iconSize={16}
+                        iconSize={14}
                         label={`在 ${dataset.name} 新建对话`}
                         className={clsx(iconClass, 'size-[32px]!')}
                         onClick={() => createConversation(dataset.id)}
@@ -458,7 +437,13 @@ export function WorkspaceSidebar({
         <section className="flex min-h-0 flex-col" aria-labelledby="sidebar-recent-heading">
           <div className={clsx(headingClass, 'mb-1 shrink-0')}>
             <h2 id="sidebar-recent-heading">最近</h2>
-            <NewConversationButton compact datasets={datasets} onCreate={createConversation} />
+            <NewConversationButton
+              compact
+              iconSize={14}
+              datasets={datasets}
+              datasetId={activeDatasetId}
+              onCreate={createConversation}
+            />
           </div>
           <SidebarList className="min-h-0 overflow-y-auto scrollbar-none">
             {recentConversations.map((conversation) => (
@@ -474,7 +459,7 @@ export function WorkspaceSidebar({
               />
             ))}
             {!recentConversations.length && (
-              <p className="px-[8px] py-1 text-base text-sidebar-muted">暂无对话</p>
+              <p className="px-[8px] py-1 text-sm text-sidebar-text">暂无对话</p>
             )}
           </SidebarList>
         </section>

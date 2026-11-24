@@ -25,7 +25,10 @@ const PREVIEW_WIDTH_KEY = 'sive.preview-width';
 
 type Props = AnalysisFrameProps & {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
+  datasets: DatasetSummary[];
+  onDatasetChange: (datasetId: string) => void;
   chatId: string;
+  draftId: string;
   conversationId: string | null;
   datasetCollapsed: boolean;
   onDatasetCollapsedChange: (collapsed: boolean) => void;
@@ -38,11 +41,14 @@ type Props = AnalysisFrameProps & {
 
 export function AnalysisPage({
   dataset,
+  datasets,
+  onDatasetChange,
   titleBar,
   fullscreen,
   onFullscreenChange,
   onPreviewOpen,
   chatId,
+  draftId,
   conversationId,
   datasetCollapsed,
   onDatasetCollapsedChange,
@@ -148,8 +154,10 @@ export function AnalysisPage({
           <div className={bodyClassName}>
             <ToolPreviewContext value={showResult}>
               <Chat
-                datasetId={dataset.id}
-                datasetName={dataset.name}
+                key={draftId}
+                dataset={dataset}
+                datasets={datasets}
+                onDatasetChange={onDatasetChange}
                 onOpenDatasetPreview={showDataset}
                 chatId={chatId}
                 conversationId={conversationId}
