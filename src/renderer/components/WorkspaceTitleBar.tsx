@@ -39,11 +39,10 @@ export function WorkspaceTitleBar({
   return (
     <header
       className={clsx(
-        'flex h-(--workspace-titlebar-height) min-w-0 flex-1 items-center px-3 [-webkit-app-region:drag] motion-safe:transition-[padding-inline-start]',
+        'flex h-(--workspace-titlebar-height) min-w-0 items-center px-3 [-webkit-app-region:drag] motion-safe:transition-[padding-inline-start]',
         panelContentTiming,
-        fullscreen
-          ? 'ps-(--window-titlebar-padding)'
-          : showSidebarActions && 'ps-(--workspace-titlebar-padding)',
+        fullscreen ? 'shrink-0' : 'flex-1',
+        showSidebarActions && 'ps-(--workspace-titlebar-padding)',
       )}
     >
       <div
