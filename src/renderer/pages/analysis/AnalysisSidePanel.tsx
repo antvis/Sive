@@ -1,16 +1,20 @@
 import clsx from 'clsx';
 import { Maximize2Icon, Minimize2Icon, PanelRightIcon } from 'lucide-react';
 import { Tabs } from 'radix-ui';
-import type { RefObject } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { IconButton } from '../../components/IconButton';
 import type { ToolPreviewTab } from '../../components/chat/tool-preview';
 import { AnalyzeTool } from '../../components/chat/tools/analyze';
 import { PanelTabList } from '../../components/ui/panel-tabs';
+import { panelAnimationTiming } from '../../lib/panel-layout';
 import type { DatasetSummary } from '../../types';
 import { DatasetPanel } from './DatasetPanel';
-import { DATASET_PREVIEW_ID } from './useAnalysisPreview';
 import { DATASET_PREVIEW_TAB } from './useAnalysisTabs';
+
+export const DATASET_PREVIEW_ID = 'dataset';
+
+export const PREVIEW_SHORTCUT = 'Meta+Shift+B Control+Shift+B';
 
 const tabContentClassName = 'min-h-0 min-w-0 flex-1 bg-surface data-[state=inactive]:hidden';
 
@@ -18,33 +22,84 @@ type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
   fullscreen: boolean;
   collapsed: boolean;
-  cardRef: RefObject<HTMLElement | null>;
   tabs: readonly ToolPreviewTab[];
   activeTabId: string;
-  previewShortcut: string;
   onTabChange: (id: string) => void;
   onTabClose: (id: string) => void;
-  onToggleFullscreen: () => void;
-  onCollapse: () => void;
+  onFullscreenChange: (fullscreen: boolean) => void;
+  onToggleCollapsed: () => void;
 };
 
 export function AnalysisSidePanel({
   dataset,
   fullscreen,
   collapsed,
-  cardRef,
   tabs,
   activeTabId,
-  previewShortcut,
   onTabChange,
   onTabClose,
-  onToggleFullscreen,
-  onCollapse,
+  onFullscreenChange,
+  onToggleCollapsed,
 }: Props) {
+  const card = useRef<HTMLElement>(null);
+  const previousBounds = useRef<DOMRect | null>(null);
+
+  useLayoutEffect(() => {
+    const element = card.current;
+    const from = previousBounds.current;
+    previousBounds.current = null;
+    if (!element || !from) return;
+
+    const to = element.getBoundingClientRect();
+    const animation = element.animate(
+      [
+        {
+          width: `${from.width}px`,
+          height: `${from.height}px`,
+          transform: `translate(${from.right - to.right}px, ${from.top - to.top}px)`,
+        },
+        { width: '100%', height: '100%', transform: 'translate(0px, 0px)' },
+      ],
+      panelAnimationTiming,
+    );
+    return () => animation.cancel();
+  }, [fullscreen]);
+
+  const toggleFullscreen = () => {
+    previousBounds.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? null
+      : (card.current?.getBoundingClientRect() ?? null);
+    onFullscreenChange(!fullscreen);
+  };
+
+  const handleShortcut = useEffectEvent((event: KeyboardEvent) => {
+    if (event.defaultPrevented || event.repeat) return;
+
+    if (fullscreen && event.key === 'Escape') {
+      event.preventDefault();
+      toggleFullscreen();
+    } else if (
+      !fullscreen &&
+      (event.metaKey || event.ctrlKey) &&
+      event.shiftKey &&
+      !event.altKey &&
+      event.key.toLowerCase() === 'b'
+    ) {
+      event.preventDefault();
+      onToggleCollapsed();
+    }
+  });
+
+  useEffect(() => {
+    const keydown = (event: KeyboardEvent) => handleShortcut(event);
+    window.addEventListener('keydown', keydown);
+    return () => window.removeEventListener('keydown', keydown);
+  }, []);
+
   return (
     <Tabs.Root asChild value={activeTabId} onValueChange={onTabChange}>
       <section
-        ref={cardRef}
+        ref={card}
         id={DATASET_PREVIEW_ID}
         className={clsx(
           'flex h-full min-h-0 w-full min-w-0 flex-col justify-self-end overflow-hidden rounded-[16px] bg-preview-surface motion-safe:transition-opacity motion-safe:duration-150',
@@ -83,7 +138,7 @@ export function AnalysisSidePanel({
             title={fullscreen ? '退出右侧面板全屏（Esc）' : '全屏查看右侧面板'}
             className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
             aria-pressed={fullscreen}
-            onClick={onToggleFullscreen}
+            onClick={toggleFullscreen}
           />
           {!collapsed && !fullscreen && (
             <IconButton
@@ -93,8 +148,8 @@ export function AnalysisSidePanel({
               className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
               aria-controls={DATASET_PREVIEW_ID}
               aria-expanded
-              aria-keyshortcuts={previewShortcut}
-              onClick={onCollapse}
+              aria-keyshortcuts={PREVIEW_SHORTCUT}
+              onClick={onToggleCollapsed}
             />
           )}
         </div>
