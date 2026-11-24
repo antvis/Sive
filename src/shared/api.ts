@@ -23,8 +23,6 @@ export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
 
 export const DEFAULT_PREVIEW_PAGE_SIZE = 100;
 
-export const SETTINGS_WINDOW_HASH = 'settings';
-
 export type Preferences = {
   language: 'zh-CN' | 'en-US';
   theme: { mode: 'light' | 'dark' | 'system'; fontSize: number };

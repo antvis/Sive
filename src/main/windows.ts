@@ -1,7 +1,6 @@
 import path from 'node:path';
 import { BrowserWindow } from 'electron';
 import type { BrowserWindowConstructorOptions, WebContents } from 'electron';
-import { SETTINGS_WINDOW_HASH } from '@shared/api';
 import { configureMacCloseOnlyTitleBar } from './util/macosTitleBar';
 
 type AppWindow = 'workspace' | 'settings';
@@ -35,7 +34,7 @@ const windowDefinitions: Record<AppWindow, { options: BrowserWindowConstructorOp
     },
   },
   settings: {
-    hash: SETTINGS_WINDOW_HASH,
+    hash: 'settings',
     options: {
       title: '设置',
       width: 864,

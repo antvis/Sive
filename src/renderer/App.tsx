@@ -28,7 +28,8 @@ const analysisSelection = (datasetId: string, conversationId?: string): Analysis
   saved: conversationId !== undefined,
 });
 
-export default function App({ settingsWindow }: { settingsWindow: boolean }) {
+export default function App() {
+  const settingsWindow = window.location.hash === '#settings';
   const { state, error, refresh } = useWorkspace();
   const [systemDark, setSystemDark] = useState(
     () => window.matchMedia('(prefers-color-scheme: dark)').matches,
