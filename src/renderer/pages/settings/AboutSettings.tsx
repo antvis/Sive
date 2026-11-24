@@ -1,4 +1,4 @@
-import { ArrowSquareOut, GithubLogo } from '@phosphor-icons/react';
+import { SquareArrowOutUpRightIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
 import { Switch } from 'radix-ui';
 import { useEffect, useState } from 'react';
@@ -56,7 +56,7 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
           onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}
         >
           https://github.com/antvis/Sive
-          <ArrowSquareOut size={14} />
+          <SquareArrowOutUpRightIcon size={14} />
         </button>
         <div className="mt-7 flex justify-center gap-3">
           <Button
@@ -71,7 +71,7 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
             variant="primary"
             onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}
           >
-            <GithubLogo size={17} />
+            <img src="./logos/github.svg" width={17} height={17} alt="" />
             关注开源项目
           </Button>
         </div>

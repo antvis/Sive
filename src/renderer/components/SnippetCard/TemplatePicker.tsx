@@ -1,4 +1,4 @@
-import { ChartBar, Check, SquaresFour } from '@phosphor-icons/react';
+import { ChartColumnIncreasingIcon, CheckIcon, Grid2X2Icon } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useContext, useState } from 'react';
 import type { RefObject } from 'react';
@@ -27,7 +27,7 @@ export function TemplatePicker({
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger ref={buttonRef} asChild>
         <IconButton
-          icon={SquaresFour}
+          icon={Grid2X2Icon}
           label={`切换模板，当前：${value}`}
           disabled={disabled}
           className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -64,7 +64,7 @@ export function TemplatePicker({
                     style={{ background: tokens?.colorBackground, color: tokens?.colorDefault }}
                     className="flex h-14 items-center justify-center rounded-t-md"
                   >
-                    <ChartBar size={30} weight="duotone" />
+                    <ChartColumnIncreasingIcon size={30} />
                   </span>
                   <span aria-hidden className="flex h-2 overflow-hidden rounded-b-sm">
                     {tokens?.category10?.slice(0, 5).map((color, index) => (
@@ -73,7 +73,7 @@ export function TemplatePicker({
                   </span>
                   <span className="flex items-center justify-between gap-1 px-1 pt-2 pb-1 text-xs">
                     {template.label}
-                    {value === template.value && <Check size={12} aria-hidden className="text-accent" />}
+                    {value === template.value && <CheckIcon size={12} aria-hidden className="text-accent" />}
                   </span>
                 </button>
               );

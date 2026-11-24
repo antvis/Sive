@@ -1,4 +1,4 @@
-import { Lightbulb } from '@phosphor-icons/react';
+import { LightbulbIcon } from 'lucide-react';
 import { AlertDialog } from 'radix-ui';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -50,7 +50,7 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
 
       {!snippets.length ? (
         <div className="mt-6 grid justify-items-center rounded-xl border border-dashed px-6 py-14 text-center">
-          <Lightbulb size={32} className="text-muted-foreground" />
+          <LightbulbIcon size={32} className="text-muted-foreground" />
           <h2 className="mt-4 mb-2 text-base font-medium">暂无数据洞察</h2>
           <p className="m-0 text-muted-foreground">在分析图表中点击“保存 Snippet”后即可查看。</p>
         </div>

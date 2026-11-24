@@ -1,13 +1,11 @@
-import type { Icon, IconWeight } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
 import type { ButtonHTMLAttributes } from 'react';
 
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
-  icon: Icon | LucideIcon;
+  icon: LucideIcon;
   label: string;
   iconSize?: number;
-  weight?: IconWeight;
   iconClassName?: string;
   variant?: 'ghost' | 'danger';
 };
@@ -16,7 +14,6 @@ export function IconButton({
   icon: ButtonIcon,
   label,
   iconSize = 16,
-  weight,
   iconClassName,
   className,
   variant = 'ghost',
@@ -36,7 +33,7 @@ export function IconButton({
       )}
       {...props}
     >
-      <ButtonIcon size={iconSize} weight={weight} className={iconClassName} />
+      <ButtonIcon size={iconSize} className={iconClassName} />
     </button>
   );
 }
