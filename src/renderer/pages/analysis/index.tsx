@@ -155,6 +155,7 @@ export function AnalysisPage({
                 }}
                 chatId={chatId}
                 conversationId={conversationId}
+                visible={!fullscreen}
                 savedMessageIds={savedMessageIds}
                 onConversationChange={onConversationChange}
                 models={models}
