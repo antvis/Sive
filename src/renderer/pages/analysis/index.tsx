@@ -90,7 +90,7 @@ function DatasetPreviewPane({
         {fullscreen ? (
           titleBar
         ) : (
-          <span className="flex h-full min-w-0 flex-1 items-center text-sm font-medium text-ink [-webkit-app-region:drag]">
+          <span className="flex h-full min-w-0 flex-1 items-center text-base font-medium text-ink [-webkit-app-region:drag]">
             数据预览
           </span>
         )}

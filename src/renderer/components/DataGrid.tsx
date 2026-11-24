@@ -44,7 +44,7 @@ export function DataGrid({
   return (
     <div ref={viewport} className="min-h-0 min-w-0 flex-1 overflow-auto">
       <table
-        className="table-fixed border-collapse text-xs"
+        className="table-fixed border-collapse text-base"
         style={{
           width: columns.reduce((sum, column) => sum + (widths.get(column.name) ?? DEFAULT_WIDTH), 0),
           minWidth: '100%',
@@ -55,7 +55,7 @@ export function DataGrid({
             <col key={column.name} style={{ width: widths.get(column.name) ?? DEFAULT_WIDTH }} />
           ))}
         </colgroup>
-        <thead className="sticky top-0 z-10 bg-preview-surface">
+        <thead className="sticky top-0 z-10 bg-preview-surface text-sm">
           <tr>
             {columns.map((column) => {
               const sorted = sorting?.name === column.name ? sorting : null;

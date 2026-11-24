@@ -29,7 +29,7 @@ export type AnalysisFrameProps = {
 };
 
 const SIDEBAR_MIN_WIDTH = 160;
-const SIDEBAR_MAX_WIDTH = 280;
+const SIDEBAR_MAX_WIDTH = 320;
 const SIDEBAR_DEFAULT_WIDTH = 224;
 
 export function AppShell({

@@ -12,7 +12,7 @@ import { errorMessage } from '../../utils';
 import { TableNavigator } from './TableNavigator';
 
 const previewTabClassName =
-  'rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/60 data-[state=active]:bg-workspace-control-active data-[state=active]:text-ink data-[state=active]:shadow-xs';
+  'rounded-lg px-3 py-1.5 text-base font-medium text-muted-foreground outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/60 data-[state=active]:bg-workspace-control-active data-[state=active]:text-ink data-[state=active]:shadow-xs';
 
 function DataPreview({
   datasetId,
@@ -240,7 +240,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             aria-controls={treeId}
             onClick={() => setNavigation((current) => ({ ...current, open: !current.open }))}
             className={clsx(
-              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-base outline-none focus-visible:ring-2 focus-visible:ring-accent',
               showTree ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-workspace-control',
             )}
           >
@@ -282,7 +282,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-2 pb-3 text-xs text-muted-foreground">
             <div className="flex min-w-0 items-center gap-2">
               <Table size={14} className="shrink-0" />
-              <span className="truncate text-sm font-medium text-ink" title={model?.name}>
+              <span className="truncate text-base font-medium text-ink" title={model?.name}>
                 {model?.name ?? '没有可预览的数据表'}
               </span>
             </div>
@@ -306,9 +306,9 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
               placeholder="搜索字段"
               value={fieldSearch}
               onChange={(event) => setFieldSearch(event.target.value)}
-              className="mb-3 w-full rounded-lg bg-workspace-control px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+              className="mb-3 w-full rounded-lg bg-workspace-control px-3 py-2 text-base outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
             />
-            <table className="w-full table-fixed border-collapse text-xs">
+            <table className="w-full table-fixed border-collapse text-sm">
               <thead>
                 <tr className="border-b border-ink/10 text-left text-muted-foreground">
                   <th className="w-2/5 py-2 pr-3 font-medium">字段名</th>
@@ -319,7 +319,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
               <tbody>
                 {fields.map((column) => (
                   <tr key={column.name} className="border-b border-ink/7 last:border-0">
-                    <td className="py-3 pr-3 break-all">{column.name}</td>
+                    <td className="py-3 pr-3 text-base break-all">{column.name}</td>
                     <td className="py-3 pr-3 break-all text-muted-foreground">{column.type}</td>
                     <td className="py-3 text-muted-foreground">
                       {[primaryKey.includes(column.name) && '主键', column.notNull && '非空']
@@ -346,10 +346,10 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             )}
           </Tabs.Content>
           <Tabs.Content value="semantic" className="min-h-0 flex-1 overflow-auto p-5">
-            <label className="grid gap-2 text-sm">
+            <label className="grid gap-2 text-base">
               数据集业务说明
               <textarea
-                className="min-h-48 resize-none rounded-xl bg-workspace-control p-3 text-sm leading-6 outline-none focus:bg-accent-soft"
+                className="min-h-48 resize-none rounded-xl bg-workspace-control p-3 text-base leading-6 outline-none focus:bg-accent-soft"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 placeholder="描述数据集中的业务概念、字段含义和分析注意事项…"

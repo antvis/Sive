@@ -34,7 +34,7 @@ function DatasetTab({ dataset, active, onSelect, onClose }: DatasetTabProps) {
       <button
         type="button"
         className={clsx(
-          'flex h-full min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 pr-7 text-left text-sm [-webkit-app-region:no-drag]',
+          'flex h-full min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 pr-7 text-left text-base [-webkit-app-region:no-drag]',
           active ? 'text-ink' : 'text-muted-foreground hover:bg-workspace-control/70',
         )}
         onClick={() => onSelect(dataset.id)}
@@ -144,7 +144,7 @@ export function WorkspaceTitleBar({
             ))}
           </div>
         ) : (
-          !conversationTitle && <span className="text-xs text-muted-foreground">{pageTitles[page]}</span>
+          !conversationTitle && <span className="truncate text-base text-muted-foreground">{pageTitles[page]}</span>
         )}
       </div>
     </header>

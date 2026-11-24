@@ -35,7 +35,7 @@ export function ConversationSwitcher({
   });
 
   if (!groups.length)
-    return <span className="min-w-0 flex-1 truncate px-2 text-sm font-semibold">{title}</span>;
+    return <span className="min-w-0 flex-1 truncate px-2 text-base font-semibold">{title}</span>;
 
   return (
     <div className="min-w-0 flex-1">
@@ -45,7 +45,7 @@ export function ConversationSwitcher({
             type="button"
             aria-label={`切换对话，当前对话：${title}`}
             title={title}
-            className="flex h-8 max-w-full items-center gap-1 rounded-lg px-2 text-left text-sm font-semibold text-ink transition-colors [-webkit-app-region:no-drag] hover:bg-workspace-control focus-visible:outline-2 focus-visible:outline-sidebar-focus data-[state=open]:bg-workspace-control"
+            className="flex h-8 max-w-full items-center gap-1 rounded-lg px-2 text-left text-base font-semibold text-ink transition-colors [-webkit-app-region:no-drag] hover:bg-workspace-control focus-visible:outline-2 focus-visible:outline-sidebar-focus data-[state=open]:bg-workspace-control"
           >
             <span className="min-w-0 truncate">{title}</span>
             <ChevronDownIcon size={14} className="shrink-0 text-muted-foreground" aria-hidden />
@@ -59,7 +59,7 @@ export function ConversationSwitcher({
           <DropdownMenuRadioGroup value={activeConversationId ?? ''}>
             {groups.map(({ dataset, conversations }) => (
               <DropdownMenuGroup key={dataset.id} aria-label={dataset.name}>
-                <DropdownMenuLabel className="truncate" title={dataset.name}>
+                <DropdownMenuLabel className="truncate text-sm" title={dataset.name}>
                   {dataset.name}
                 </DropdownMenuLabel>
                 {conversations.map((conversation) => (
@@ -68,7 +68,7 @@ export function ConversationSwitcher({
                     value={conversation.id}
                     textValue={conversation.title}
                     title={conversation.title}
-                    className="focus:bg-workspace-control focus:text-ink focus:**:text-ink"
+                    className="text-base focus:bg-workspace-control focus:text-ink focus:**:text-ink"
                     onSelect={() => {
                       if (conversation.id !== activeConversationId) onConversationSelect(conversation);
                     }}

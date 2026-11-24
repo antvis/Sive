@@ -40,13 +40,13 @@ function SourceCard({
         >
           <DataSourceLogo type={source.type} size={24} />
         </span>
-        <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
+        <strong className="text-base leading-6 font-normal wrap-anywhere">{name}</strong>
       </span>
       <span
         aria-hidden
         className="invisible [grid-area:1/1] flex flex-col items-center justify-center gap-1 text-center group-hover:visible group-focus-visible:visible"
       >
-        <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
+        <strong className="text-base leading-6 font-normal wrap-anywhere">{name}</strong>
         <small className="text-xs text-muted-foreground">{description}</small>
         <span className="mt-0.5 text-xs" style={{ color }}>
           {actionLabel}
