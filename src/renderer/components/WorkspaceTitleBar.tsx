@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { PanelLeftIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { panelContentTiming } from '../hooks/usePanelMotion';
+import { panelContentTiming } from '../lib/panel-layout';
 import type { DatasetSummary } from '../types';
 import { IconButton, panelControlClassName } from './IconButton';
 import { NewConversationButton, WORKSPACE_SIDEBAR_ID } from './WorkspaceSidebar';

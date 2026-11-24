@@ -4,7 +4,6 @@ import { Tabs } from 'radix-ui';
 import type { RefObject } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { IconButton, panelControlClassName } from '../../components/IconButton';
-import { panelCollapsePreviewClassName } from '../../components/ResizeHandle';
 import type { ToolPreviewTab } from '../../components/chat/tool-preview';
 import { AnalyzeTool } from '../../components/chat/tools/analyze';
 import { PanelTabList } from '../../components/ui/panel-tabs';
@@ -19,7 +18,6 @@ type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
   fullscreen: boolean;
   collapsed: boolean;
-  collapsePending: boolean;
   cardRef: RefObject<HTMLElement | null>;
   tabs: readonly ToolPreviewTab[];
   activeTabId: string;
@@ -34,7 +32,6 @@ export function AnalysisSidePanel({
   dataset,
   fullscreen,
   collapsed,
-  collapsePending,
   cardRef,
   tabs,
   activeTabId,
@@ -51,7 +48,6 @@ export function AnalysisSidePanel({
         id={DATASET_PREVIEW_ID}
         className={clsx(
           'flex h-full min-h-0 w-full min-w-0 flex-col justify-self-end overflow-hidden rounded-[16px] bg-preview-surface motion-safe:transition-opacity motion-safe:duration-150',
-          panelCollapsePreviewClassName,
           collapsed && !fullscreen && 'opacity-0',
           fullscreen ? 'fixed inset-y-0 right-0 z-40 rounded-none!' : 'relative z-10',
         )}
@@ -59,7 +55,6 @@ export function AnalysisSidePanel({
         aria-modal={fullscreen || undefined}
         aria-label="右侧面板"
         inert={collapsed && !fullscreen}
-        data-collapse-pending={(!fullscreen && collapsePending) || undefined}
       >
         <div
           className={clsx(
