@@ -27,6 +27,7 @@ async function initialize() {
     close: (sender) => closeAppWindow('settings', sender),
   });
   await openAppWindow('workspace');
+  services.update.setAutomatic(preferences.autoCheckUpdates);
 }
 
 void app

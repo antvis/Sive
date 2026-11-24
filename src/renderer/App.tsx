@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
 import { Button } from './components/Button';
+import { UpdateNotification } from './components/UpdateNotification';
 import type { AppPage } from './components/WorkspaceSidebar';
 import { useWorkspace } from './hooks/useWorkspace';
 import { I18nProvider } from './i18n';
@@ -90,6 +91,7 @@ export default function App({ settingsWindow }: { settingsWindow: boolean }) {
             },
           }}
         />
+        <UpdateNotification />
       </ThemeContext>
     </I18nProvider>
   );
