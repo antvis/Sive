@@ -11,6 +11,9 @@ import type { DatasetDetail } from '../../types';
 import { errorMessage } from '../../utils';
 import { TableNavigator } from './TableNavigator';
 
+const previewTabClassName =
+  'rounded-lg px-3 py-1.5 text-base font-medium text-muted-foreground outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/60 data-[state=active]:bg-workspace-control-active data-[state=active]:text-ink data-[state=active]:shadow-xs';
+
 function DataPreview({
   datasetId,
   model,
@@ -57,13 +60,13 @@ function DataPreview({
         <DataGrid rows={rows} columns={model.columns} profile={profile} resetKey={offset} />
         {loading ? (
           <div
-            className="absolute inset-0 grid place-items-center bg-surface text-sm text-muted-foreground"
+            className="absolute inset-0 grid place-items-center bg-preview-surface text-sm text-muted-foreground"
             role="status"
           >
             正在读取数据…
           </div>
         ) : error ? (
-          <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 bg-surface p-4 text-center text-sm">
+          <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 bg-preview-surface p-4 text-center text-sm">
             <p className="m-0 text-danger">{error}</p>
             <Button
               onClick={() => {
@@ -76,7 +79,7 @@ function DataPreview({
           </div>
         ) : null}
       </div>
-      <footer className="flex shrink-0 flex-wrap items-center gap-3 border-t px-4 py-3 text-xs text-muted-foreground">
+      <footer className="flex shrink-0 flex-wrap items-center gap-3 border-t border-ink/10 px-4 py-3 text-xs text-muted-foreground">
         <span className="mr-auto" aria-live="polite">
           {loading
             ? '正在读取…'
@@ -94,20 +97,27 @@ function DataPreview({
           </span>
           <Select
             compact
-            className="w-28"
+            className="w-28 max-w-full [&>select]:border-transparent [&>select]:bg-workspace-control"
             aria-label="每页行数"
             value={String(pageSize)}
             onChange={(value) => onPageSizeChange(Number(value))}
             options={PREVIEW_PAGE_SIZES.map((size) => ({ value: String(size), label: `${size} 行 / 页` }))}
           />
           <Button
+            variant="ghost"
+            className="text-xs"
             disabled={loading || offset === 0}
             onClick={() => setOffset(Math.max(0, offset - pageSize))}
           >
             上一页
           </Button>
           <span>第 {offset / pageSize + 1} 页</span>
-          <Button disabled={loading || !!error || !hasMore} onClick={() => setOffset(offset + pageSize)}>
+          <Button
+            variant="ghost"
+            className="text-xs"
+            disabled={loading || !!error || !hasMore}
+            onClick={() => setOffset(offset + pageSize)}
+          >
             下一页
           </Button>
         </div>
@@ -209,24 +219,15 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
       }}
       className="flex h-full min-h-0 min-w-0 flex-col"
     >
-      <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
-        <Tabs.List aria-label="数据集信息" className="flex rounded-lg bg-page p-1">
-          <Tabs.Trigger
-            value="data"
-            className="rounded-md px-3 py-1 text-sm text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
-          >
+      <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 px-4 py-2">
+        <Tabs.List aria-label="数据集信息" className="flex rounded-[10px] bg-workspace-control p-0.5">
+          <Tabs.Trigger value="data" className={previewTabClassName}>
             数据
           </Tabs.Trigger>
-          <Tabs.Trigger
-            value="fields"
-            className="rounded-md px-3 py-1 text-sm text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
-          >
+          <Tabs.Trigger value="fields" className={previewTabClassName}>
             字段
           </Tabs.Trigger>
-          <Tabs.Trigger
-            value="semantic"
-            className="rounded-md px-3 py-1 text-sm text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
-          >
+          <Tabs.Trigger value="semantic" className={previewTabClassName}>
             语义层
           </Tabs.Trigger>
         </Tabs.List>
@@ -239,8 +240,8 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             aria-controls={treeId}
             onClick={() => setNavigation((current) => ({ ...current, open: !current.open }))}
             className={clsx(
-              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              showTree ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-page',
+              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-base outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              showTree ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-workspace-control',
             )}
           >
             <SidebarSimple size={16} />
@@ -255,8 +256,8 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             hidden={!showTree}
             aria-label="表结构"
             className={clsx(
-              'flex min-h-0 min-w-0 flex-col bg-surface hidden:hidden',
-              compact ? 'w-full' : 'w-56 shrink-0 border-r',
+              'flex min-h-0 min-w-0 flex-col hidden:hidden',
+              compact ? 'w-full' : 'w-56 shrink-0 bg-workspace-control/55',
             )}
             onKeyDown={(event) => {
               if (compact && event.key === 'Escape') {
@@ -278,10 +279,10 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           </aside>
         )}
         <div hidden={compact && showTree} className="flex min-h-0 min-w-0 flex-1 flex-col hidden:hidden">
-          <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-2 text-xs text-muted-foreground">
+          <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-2 pb-3 text-xs text-muted-foreground">
             <div className="flex min-w-0 items-center gap-2">
               <Table size={14} className="shrink-0" />
-              <span className="truncate text-sm text-ink" title={model?.name}>
+              <span className="truncate text-base font-medium text-ink" title={model?.name}>
                 {model?.name ?? '没有可预览的数据表'}
               </span>
             </div>
@@ -299,17 +300,17 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
               />
             )}
           </Tabs.Content>
-          <Tabs.Content value="fields" className="min-h-0 flex-1 overflow-auto p-4">
+          <Tabs.Content value="fields" className="min-h-0 flex-1 overflow-auto px-4 pt-1 pb-4">
             <input
               aria-label="搜索字段"
               placeholder="搜索字段"
               value={fieldSearch}
               onChange={(event) => setFieldSearch(event.target.value)}
-              className="mb-3 w-full rounded-lg border bg-page px-3 py-2 text-sm outline-none focus:border-accent"
+              className="mb-3 w-full rounded-lg bg-workspace-control px-3 py-2 text-base outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
             />
-            <table className="w-full table-fixed border-collapse text-xs">
+            <table className="w-full table-fixed border-collapse text-sm">
               <thead>
-                <tr className="border-b text-left text-muted-foreground">
+                <tr className="border-b border-ink/10 text-left text-muted-foreground">
                   <th className="w-2/5 py-2 pr-3 font-medium">字段名</th>
                   <th className="w-2/5 py-2 pr-3 font-medium">数据类型</th>
                   <th className="py-2 font-medium">约束</th>
@@ -317,8 +318,8 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
               </thead>
               <tbody>
                 {fields.map((column) => (
-                  <tr key={column.name} className="border-b last:border-0">
-                    <td className="py-3 pr-3 break-all">{column.name}</td>
+                  <tr key={column.name} className="border-b border-ink/7 last:border-0">
+                    <td className="py-3 pr-3 text-base break-all">{column.name}</td>
                     <td className="py-3 pr-3 break-all text-muted-foreground">{column.type}</td>
                     <td className="py-3 text-muted-foreground">
                       {[primaryKey.includes(column.name) && '主键', column.notNull && '非空']
@@ -345,10 +346,10 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             )}
           </Tabs.Content>
           <Tabs.Content value="semantic" className="min-h-0 flex-1 overflow-auto p-5">
-            <label className="grid gap-2 text-sm">
+            <label className="grid gap-2 text-base">
               数据集业务说明
               <textarea
-                className="min-h-48 resize-none rounded-xl bg-page p-3 text-sm leading-6 outline-none focus:bg-accent-soft"
+                className="min-h-48 resize-none rounded-xl bg-workspace-control p-3 text-base leading-6 outline-none focus:bg-accent-soft"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 placeholder="描述数据集中的业务概念、字段含义和分析注意事项…"

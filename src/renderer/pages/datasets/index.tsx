@@ -250,7 +250,7 @@ export function DatasetsPage({
           type="search"
           aria-label="搜索数据源"
           placeholder="按名称搜索数据源…"
-          className="w-72 max-w-full rounded-lg border bg-surface px-3 py-2 text-sm"
+          className="w-72 max-w-full rounded-lg border bg-surface px-3 py-2 text-base"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
