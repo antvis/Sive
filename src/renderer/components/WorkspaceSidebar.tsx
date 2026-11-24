@@ -50,38 +50,41 @@ const iconClass = clsx(
 const headingClass =
   'flex min-h-9 items-center justify-between gap-1 ps-[8px] text-xs text-sidebar-muted';
 
-function SidebarList({ children }: PropsWithChildren) {
+function SidebarList({ children, className }: PropsWithChildren<{ className?: string }>) {
   const highlight = useRef<HTMLSpanElement>(null);
 
   return (
-    <div
-      className="relative grid gap-px"
-      onPointerOver={(event) => {
-        if (event.pointerType === 'touch' || !highlight.current || !(event.target instanceof Element)) return;
-        const row = event.target.closest('[data-sidebar-row]');
-        if (!row || row.matches(':disabled')) {
-          highlight.current.style.opacity = '0';
-          return;
-        }
-        const list = event.currentTarget.getBoundingClientRect();
-        const bounds = row.getBoundingClientRect();
-        Object.assign(highlight.current.style, {
-          transform: `translate(${bounds.left - list.left}px, ${bounds.top - list.top}px)`,
-          width: `${bounds.width}px`,
-          height: `${bounds.height}px`,
-          opacity: '1',
-        });
-      }}
-      onPointerLeave={() => {
-        if (highlight.current) highlight.current.style.opacity = '0';
-      }}
-    >
-      <span
-        ref={highlight}
-        aria-hidden
-        className="pointer-events-none absolute start-0 top-0 rounded-[7px] bg-sidebar-highlight opacity-0 transition-[transform,width,height,opacity] duration-[220ms] ease-[cubic-bezier(.23,1,.32,1)] motion-reduce:transition-none"
-      />
-      {children}
+    <div className={className}>
+      <div
+        className="relative grid gap-px overflow-clip"
+        data-sidebar-list
+        onPointerOver={(event) => {
+          if (event.pointerType === 'touch' || !highlight.current || !(event.target instanceof Element)) return;
+          const row = event.target.closest('[data-sidebar-row]');
+          if (!row || row.closest('[data-sidebar-list]') !== event.currentTarget || row.matches(':disabled')) {
+            highlight.current.style.opacity = '0';
+            return;
+          }
+          const list = event.currentTarget.getBoundingClientRect();
+          const bounds = row.getBoundingClientRect();
+          Object.assign(highlight.current.style, {
+            transform: `translate(${bounds.left - list.left}px, ${bounds.top - list.top}px)`,
+            width: `${bounds.width}px`,
+            height: `${bounds.height}px`,
+            opacity: '1',
+          });
+        }}
+        onPointerLeave={() => {
+          if (highlight.current) highlight.current.style.opacity = '0';
+        }}
+      >
+        <span
+          ref={highlight}
+          aria-hidden
+          className="pointer-events-none absolute start-0 top-0 rounded-[7px] bg-sidebar-highlight opacity-0 transition-[transform,width,height,opacity] duration-[220ms] ease-[cubic-bezier(.23,1,.32,1)] motion-reduce:transition-none"
+        />
+        {children}
+      </div>
     </div>
   );
 }
@@ -136,7 +139,7 @@ export function NewConversationButton({
           align={compact ? 'end' : 'start'}
           sideOffset={4}
           collisionPadding={8}
-          className="z-50 max-h-(--radix-popover-content-available-height) w-[208px] overflow-y-auto rounded-[8px] border border-line bg-surface p-1 shadow-lg"
+          className="z-50 max-h-(--radix-popover-content-available-height) w-[208px] overflow-y-auto rounded-[8px] border border-line bg-surface p-1 shadow-lg scrollbar-none"
         >
           <p className="px-[8px] py-1 text-xs text-sidebar-muted">选择数据源</p>
           {datasets.map((dataset) => {
@@ -163,13 +166,11 @@ export function NewConversationButton({
 
 function ConversationItem({
   conversation,
-  sourceName,
   active,
   onSelect,
   onArchive,
 }: {
   conversation: Conversation;
-  sourceName?: string;
   active: boolean;
   onSelect: () => void;
   onArchive: () => void;
@@ -255,11 +256,6 @@ function ConversationItem({
             onClick={onSelect}
           >
             <span className="min-w-0 flex-1 truncate">{conversation.title}</span>
-            {sourceName && (
-              <span className="max-w-[40%] shrink-0 truncate text-xs font-normal text-sidebar-muted group-focus-within/conversation:hidden group-hover/conversation:hidden">
-                {sourceName}
-              </span>
-            )}
           </button>
           <div className="absolute inset-y-0 end-1 flex items-center opacity-0 transition-opacity group-focus-within/conversation:opacity-100 group-hover/conversation:opacity-100">
             <IconButton
@@ -384,13 +380,13 @@ export function WorkspaceSidebar({
           </button>
         </SidebarList>
       </nav>
-      <nav className="mx-[8px] mt-[12px] min-h-0 flex-1 overflow-y-auto" aria-label="分析历史">
+      <nav className="mx-[8px] mt-[12px] flex min-h-0 flex-1 flex-col gap-[12px]" aria-label="分析历史">
         {groups.length > 0 && (
-          <section aria-labelledby="sidebar-datasets-heading">
-            <h2 id="sidebar-datasets-heading" className={clsx(headingClass, 'mb-1')}>
+          <section className="flex max-h-1/2 min-h-0 flex-col" aria-labelledby="sidebar-datasets-heading">
+            <h2 id="sidebar-datasets-heading" className={clsx(headingClass, 'mb-1 shrink-0')}>
               数据源
             </h2>
-            <SidebarList>
+            <SidebarList className="min-h-0 overflow-y-auto scrollbar-none">
               {groups.map(({ dataset, conversations }) => {
                 const open = expanded[dataset.id] !== false;
                 const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
@@ -428,7 +424,7 @@ export function WorkspaceSidebar({
                     </div>
                     <div id={groupId} hidden={!open}>
                       {open && (
-                        <div className="grid min-w-0 gap-px ps-[24px]">
+                        <SidebarList className="max-h-56 min-w-0 overflow-y-auto ps-[24px] scrollbar-none">
                           {conversations.map((conversation) => (
                             <ConversationItem
                               key={conversation.id}
@@ -445,7 +441,7 @@ export function WorkspaceSidebar({
                               onArchive={() => onConversationArchive(conversation)}
                             />
                           ))}
-                        </div>
+                        </SidebarList>
                       )}
                     </div>
                   </div>
@@ -454,17 +450,16 @@ export function WorkspaceSidebar({
             </SidebarList>
           </section>
         )}
-        <section className="mt-[12px]" aria-labelledby="sidebar-recent-heading">
-          <div className={clsx(headingClass, 'mb-1')}>
+        <section className="flex min-h-0 flex-col" aria-labelledby="sidebar-recent-heading">
+          <div className={clsx(headingClass, 'mb-1 shrink-0')}>
             <h2 id="sidebar-recent-heading">最近</h2>
             <NewConversationButton compact datasets={datasets} onCreate={createConversation} />
           </div>
-          <SidebarList>
+          <SidebarList className="min-h-0 overflow-y-auto scrollbar-none">
             {recentConversations.map((conversation) => (
               <ConversationItem
                 key={conversation.id}
                 conversation={conversation}
-                sourceName={datasets.find((dataset) => dataset.id === conversation.datasetId)?.name}
                 active={page === 'analysis' && activeInRecent && conversation.id === activeConversationId}
                 onSelect={() => {
                   setRecentSelection(conversation.id);
