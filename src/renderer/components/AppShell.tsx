@@ -114,7 +114,7 @@ export function AppShell({
   );
 
   return (
-    <div className="h-screen overflow-hidden bg-workspace-canvas p-(--workspace-gutter)">
+    <div className="h-screen min-w-[800px] overflow-hidden bg-workspace-canvas p-(--workspace-gutter)">
       <div
         ref={workspace}
         className={clsx('grid h-full overflow-hidden', panelMotionClassName)}

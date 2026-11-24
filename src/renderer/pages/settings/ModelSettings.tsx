@@ -9,6 +9,7 @@ import { Select } from '../../components/Select';
 import type { ModelProfile, ModelTestProgress } from '../../types';
 import { errorMessage } from '../../utils';
 import { ModelPicker } from './ModelPicker';
+import { SettingInput } from './SettingControls';
 
 type Catalog = { baseURL: string; apiKey: string; ids: string[] };
 
@@ -103,8 +104,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
         <fieldset disabled={saving} className="grid min-w-0 gap-4 border-0 p-0">
           <label className="grid gap-1.5 text-sm">
             服务名称
-            <input
-              className="rounded-lg border bg-surface px-3 py-2"
+            <SettingInput
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例如：云端模型服务"
@@ -113,8 +113,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
           </label>
           <label className="grid gap-1.5 text-sm">
             服务地址
-            <input
-              className="rounded-lg border bg-surface px-3 py-2"
+            <SettingInput
               value={baseURL}
               onChange={(e) => setBaseURL(e.target.value)}
               placeholder="https://example.com/v1"
@@ -123,8 +122,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
           </label>
           <label className="grid gap-1.5 text-sm">
             密钥
-            <input
-              className="rounded-lg border bg-surface px-3 py-2"
+            <SettingInput
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
@@ -188,25 +186,23 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
     }
   };
 
+  const addService = (
+    <Button variant="primary" onClick={() => setEditing('new')}>
+      <Plus size={16} />
+      添加服务
+    </Button>
+  );
+
   return (
     <section>
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="m-0 text-muted-foreground">连接兼容 OpenAI 的服务，获取并选择可用模型。</p>
-        <Button variant="primary" onClick={() => setEditing('new')}>
-          <Plus size={16} />
-          添加服务
-        </Button>
-      </div>
+      {models.length > 0 && <div className="mb-5 flex justify-end">{addService}</div>}
       {error && <p className="mt-0 text-sm text-danger">{error}</p>}
       <div className="grid gap-3">
         {models.map((model) => (
-          <article
-            key={model.id}
-            className="group rounded-xl border bg-surface p-4 transition-colors hover:border-accent/40"
-          >
+          <article key={model.id} className="group rounded-xl bg-workspace-control/70 p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-2">
-                <h3 className="m-0 truncate text-base font-semibold">{model.name}</h3>
+                <h2 className="m-0 truncate text-base font-semibold">{model.name}</h2>
                 {activeModelId === model.id && (
                   <span className="shrink-0 rounded-md bg-accent-soft px-2 py-0.5 text-xs text-accent">
                     默认服务
@@ -254,7 +250,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
               </div>
             </dl>
 
-            <div className="mt-3 flex items-center justify-between gap-4 border-t pt-3 max-sm:flex-col max-sm:items-start">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <span className="text-sm text-muted-foreground">
                 最近更新：{new Date(model.updatedAt).toLocaleString('zh-CN')}
               </span>
@@ -278,14 +274,11 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
         ))}
       </div>
       {!models.length && (
-        <div className="grid justify-items-center rounded-xl border border-dashed px-6 py-14 text-center">
+        <div className="grid justify-items-center gap-3 px-6 py-14 text-center">
           <Cpu size={32} className="text-accent" />
-          <h3 className="mt-4 mb-2 text-base font-medium">连接你的第一个模型服务</h3>
+          <h2 className="m-0 text-base font-medium">连接你的第一个模型服务</h2>
           <p className="m-0 leading-6 text-muted-foreground">支持兼容 OpenAI 接口的云端或本地服务。</p>
-          <Button className="mt-5" onClick={() => setEditing('new')}>
-            <Plus size={16} />
-            添加模型服务
-          </Button>
+          <div className="mt-2">{addService}</div>
         </div>
       )}
       {editing && (

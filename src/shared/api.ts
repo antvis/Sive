@@ -22,6 +22,8 @@ export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
 
 export const DEFAULT_PREVIEW_PAGE_SIZE = 100;
 
+export const SETTINGS_WINDOW_HASH = 'settings';
+
 export type Preferences = {
   language: 'zh-CN' | 'en-US';
   theme: { mode: 'light' | 'dark' | 'system'; fontSize: number };
@@ -158,6 +160,7 @@ export type WorkspaceState = {
 };
 
 export type WorkbenchApi = {
+  isMacOS: boolean;
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
   datasetSelectLocal(
@@ -185,6 +188,8 @@ export type WorkbenchApi = {
   datasetSaveSemantic(id: string, semantic: Semantic): Promise<void>;
   datasetRename(id: string, name: string): Promise<void>;
   datasetDelete(id: string): Promise<void>;
+  settingsOpen(): Promise<void>;
+  settingsClose(): void;
   settingsSavePreferences(preferences: Preferences): Promise<void>;
   systemGetStorageInfo(): Promise<StorageInfo>;
   systemOpen(type: 'directory' | 'url', path: string): Promise<void>;
