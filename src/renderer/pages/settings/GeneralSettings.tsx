@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { IconButton } from '../../components/IconButton';
 import { errorMessage } from '../../utils';
+import { useI18n } from '../../i18n';
 import { SettingGroup, SettingRow } from './SettingControls';
 
 const FONT_SIZES = [12, 14, 16, 18, 20];
@@ -14,6 +15,7 @@ function formatSize(bytes: number) {
 }
 
 export function GeneralSettings({ preferences }: { preferences: Preferences }) {
+  const i18n = useI18n();
   const theme = preferences.theme;
   const [saving, setSaving] = useState(false);
   const [storage, setStorage] = useState<StorageInfo>();
@@ -48,8 +50,36 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
   return (
     <div>
       <SettingGroup title="外观">
+        <SettingRow
+          title={i18n('settings.language.title')}
+          description={i18n('settings.language.description')}
+        >
+          <div className="flex flex-wrap gap-3">
+            {(
+              [
+                ['zh-CN', '中文'],
+                ['en-US', 'English'],
+              ] as const
+            ).map(([language, label]) => (
+              <button
+                key={language}
+                aria-pressed={preferences.language === language}
+                disabled={saving}
+                onClick={() => void update({ ...preferences, language })}
+                className={clsx(
+                  'h-12 min-w-20 rounded-xl border px-3 text-sm',
+                  preferences.language === language
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'bg-surface text-muted-foreground',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </SettingRow>
         <SettingRow title="界面主题" description="选择适合当前环境的配色，或跟随系统自动切换。">
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {(
               [
                 ['light', '浅色', Sun],
@@ -65,7 +95,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
                 onClick={() => void update({ ...preferences, theme: { ...preferences.theme, mode } })}
                 className={clsx(
                   'grid size-12 place-items-center rounded-xl border',
-                  theme.mode === mode ? 'border-accent bg-accent-soft text-accent' : 'bg-surface text-muted',
+                  theme.mode === mode ? 'border-accent bg-accent-soft text-accent' : 'bg-surface text-muted-foreground',
                 )}
               >
                 <Icon size={22} className={mode === 'dark' ? 'text-ink' : undefined} />
@@ -74,7 +104,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
           </div>
         </SettingRow>
         <SettingRow title="字体大小" description="调整工作台界面的基础字号。">
-          <div className="w-56">
+          <div className="w-56 max-w-full">
             <input
               aria-label="字体大小"
               aria-valuetext={`${theme.fontSize}px`}
@@ -98,7 +128,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
                 <option key={size} value={index} label={`${size}px`} />
               ))}
             </datalist>
-            <div className="grid grid-cols-5 text-xs text-muted">
+            <div className="grid grid-cols-5 text-xs text-muted-foreground">
               <span>小</span>
               <span className="text-center">默认</span>
               <span />
@@ -136,7 +166,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
         <SettingRow title="数据存储" description={dataStorage?.path ?? '正在读取数据存储信息…'}>
           <div className="flex items-center justify-end gap-4">
             {dataStorage && (
-              <span className="text-sm whitespace-nowrap text-muted">
+              <span className="text-sm whitespace-nowrap text-muted-foreground">
                 {formatSize(dataStorage.sizeBytes)}
               </span>
             )}
@@ -151,9 +181,9 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
           </div>
         </SettingRow>
         <SettingRow title="系统缓存目录" description={cache?.path ?? '正在读取缓存信息…'}>
-          <div className="flex items-center justify-end gap-4 max-sm:w-full max-sm:flex-col max-sm:items-stretch">
+          <div className="flex flex-wrap items-center justify-end gap-4 @max-sm/settings:justify-start">
             {cache && (
-              <div className="w-72">
+              <div className="w-72 max-w-full">
                 <div
                   className="flex h-2 overflow-hidden rounded-full bg-line/40"
                   role="img"
@@ -161,7 +191,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
                 >
                   <div className="bg-accent" style={{ width: `${usedPercent}%` }} />
                 </div>
-                <p className="mt-2 mb-0 text-xs whitespace-nowrap text-muted">
+                <p className="mt-2 mb-0 text-xs text-muted-foreground">
                   已用 {formatSize(cache.usedBytes)}，可用 {formatSize(cache.freeBytes)}，使用{' '}
                   {usedPercent.toFixed(4)}%
                 </p>
@@ -177,7 +207,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
         </SettingRow>
       </SettingGroup>
 
-      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
     </div>
   );
 }

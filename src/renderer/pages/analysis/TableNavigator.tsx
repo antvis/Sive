@@ -46,7 +46,7 @@ export function TableNavigator({
         <div className="relative">
           <MagnifyingGlass
             size={14}
-            className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-muted"
+            className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-muted-foreground"
           />
           <input
             ref={searchInput}
@@ -55,10 +55,10 @@ export function TableNavigator({
             placeholder="搜索数据表…"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="w-full min-w-0 rounded-lg border bg-page py-1.5 pr-2 pl-8 text-xs outline-none focus:border-accent"
+            className="w-full min-w-0 rounded-lg border bg-page py-1.5 pr-2 pl-8 text-sm outline-none focus:border-accent"
           />
         </div>
-        <div className="mt-3 flex items-center justify-between text-xs text-muted">
+        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
           <span>数据表</span>
           <span>{query ? `${tables.length} / ${models.length}` : models.length} 张</span>
         </div>
@@ -96,14 +96,11 @@ export function TableNavigator({
                       setExpanded(model.name);
                       onSelect(model.name);
                     }}
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-2 pr-2 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-accent aria-[current=true]:font-medium"
+                    className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-2 pr-2 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent aria-[current=true]:font-medium"
                   >
                     <Table size={15} className="shrink-0" />
                     <span className="min-w-0 flex-1 truncate">{model.name}</span>
-                    <span
-                      className="shrink-0 text-[11px] text-muted"
-                      title={`${model.columns.length} 个字段`}
-                    >
+                    <span className="shrink-0 text-xs text-muted-foreground" title={`${model.columns.length} 个字段`}>
                       {model.columns.length}
                     </span>
                   </button>
@@ -121,22 +118,22 @@ export function TableNavigator({
                         >
                           <Icon
                             size={13}
-                            className={clsx('shrink-0', isPrimary ? 'text-accent' : 'text-muted')}
+                            className={clsx('shrink-0', isPrimary ? 'text-accent' : 'text-muted-foreground')}
                             aria-label={isPrimary ? '主键' : undefined}
                           />
                           <span className="min-w-0 flex-1 truncate">{column.name}</span>
-                          <span className="max-w-20 truncate text-[10px] text-muted">{column.type}</span>
+                          <span className="max-w-20 truncate text-xs text-muted-foreground">{column.type}</span>
                         </li>
                       );
                     })}
-                    {!model.columns.length && <li className="py-1.5 text-xs text-muted">暂无字段</li>}
+                    {!model.columns.length && <li className="py-1.5 text-sm text-muted-foreground">暂无字段</li>}
                   </ul>
                 )}
               </li>
             );
           })}
         </ul>
-        {!tables.length && <p className="px-2 py-6 text-center text-xs text-muted">无匹配数据表</p>}
+        {!tables.length && <p className="px-2 py-6 text-center text-sm text-muted-foreground">无匹配数据表</p>}
       </nav>
     </>
   );

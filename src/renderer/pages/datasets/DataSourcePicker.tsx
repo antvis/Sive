@@ -47,7 +47,7 @@ function SourceCard({
         className="invisible [grid-area:1/1] flex flex-col items-center justify-center gap-1 text-center group-hover:visible group-focus-visible:visible"
       >
         <strong className="text-sm leading-6 font-normal wrap-anywhere">{name}</strong>
-        <small className="text-xs text-muted">{description}</small>
+        <small className="text-xs text-muted-foreground">{description}</small>
         <span className="mt-0.5 text-xs" style={{ color }}>
           {actionLabel}
         </span>
@@ -93,8 +93,8 @@ export function DataSourcePicker() {
           const GroupIcon = groupIcons[icon];
           return (
             <section key={title} aria-label={title}>
-              <h2 className="mt-0 mr-0 mb-3.5 ml-0 flex items-center gap-2 text-base font-normal tracking-[0.01em]">
-                <GroupIcon size={18} className="text-muted" aria-hidden />
+              <h2 className="mt-0 mr-0 mb-3.5 ml-0 flex items-center gap-2 text-lg font-normal tracking-[0.01em]">
+                <GroupIcon size={18} className="text-muted-foreground" aria-hidden />
                 {title}
               </h2>
               <div className="grid grid-cols-[repeat(auto-fill,min(200px,100%))] gap-4">

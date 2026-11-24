@@ -21,7 +21,7 @@ export function TemplatePicker({
   onChange: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const mode = useContext(ThemeContext);
+  const theme = useContext(ThemeContext);
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
@@ -41,11 +41,10 @@ export function TemplatePicker({
           collisionPadding={16}
           className="z-50 w-80 max-w-[calc(100vw-32px)] rounded-xl border bg-surface p-3 font-sans text-ink shadow-xl"
         >
-          <p className="mt-0 mb-3 text-xs font-medium text-muted">选择模板</p>
+          <p className="mt-0 mb-3 text-xs font-medium text-muted-foreground">选择模板</p>
           <div className="grid grid-cols-3 gap-2">
             {templates.map((template) => {
-              const theme = template.theme ?? createChartTheme(mode);
-              const tokens = theme.tokens;
+              const { tokens } = template.theme ?? createChartTheme(theme);
               return (
                 <button
                   key={template.value}

@@ -12,6 +12,6 @@ export function DataSourceLogo({ type, size }: { type: string; size: number }) {
       alt=""
     />
   ) : (
-    <Database size={size} className="shrink-0 text-muted" aria-hidden />
+    <Database size={size} className="shrink-0 text-muted-foreground" aria-hidden />
   );
 }

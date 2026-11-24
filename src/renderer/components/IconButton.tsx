@@ -29,7 +29,7 @@ export function IconButton({
       title={label}
       className={clsx(
         'inline-flex size-8 min-h-0 shrink-0 items-center justify-center rounded-lg p-0 transition-colors disabled:opacity-45',
-        variant === 'ghost' && 'text-muted hover:bg-page hover:text-ink',
+        variant === 'ghost' && 'text-muted-foreground hover:bg-page hover:text-ink',
         variant === 'danger' && 'text-danger hover:bg-danger/10',
         className,
       )}

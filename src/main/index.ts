@@ -1,8 +1,12 @@
 import path from 'node:path';
 import { app, BrowserWindow } from 'electron';
+import { captureException, flush } from '@sentry/electron/main';
 import { DBConnection } from './db';
 import { registerIpc } from './ipc';
+import { setLocale } from './util/i18n';
 import { createServices } from './services';
+import { initializeSentry } from './util/sentry';
+import { initializeAnalytics } from './util/analytics';
 
 let database: DBConnection | undefined;
 const iconPath = path.join(__dirname, '../assets/sive.png');
@@ -36,6 +40,13 @@ async function initialize() {
   database = await DBConnection.connect(app.getPath('userData'));
 
   const services = createServices(database);
+  const preferences = services.settings.getPreferences();
+  // Initialize the locale before creating the window to ensure that the UI is displayed in the correct language.
+  setLocale(preferences.language);
+  // Initialize Sentry after the locale is set to ensure that any error messages are localized.
+  initializeSentry(preferences.diagnostics.nativeCrashReporting);
+  // Initialize PostHog analytics after the locale is set to ensure that any error messages are localized.
+  initializeAnalytics();
   registerIpc(services);
   createWindow();
 }
@@ -45,7 +56,8 @@ void app
   .then(initialize)
   .catch((error: unknown) => {
     console.error('Failed to initialize the main process.', error);
-    app.quit();
+    captureException(error);
+    void flush(2000).finally(() => app.quit());
   });
 
 app.on('activate', () => {

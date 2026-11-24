@@ -31,7 +31,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
     <div className="rounded-lg bg-page p-3">
       <div className="max-h-36 overflow-auto">
         {all.map((id) => (
-          <label key={id} className="flex items-center gap-2 rounded px-1 py-1.5 text-xs hover:bg-page">
+          <label key={id} className="flex items-center gap-2 rounded px-1 py-1.5 text-sm hover:bg-page">
             <input
               type="checkbox"
               checked={value.includes(id)}
@@ -43,14 +43,14 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
             <span className="break-all">{id}</span>
           </label>
         ))}
-        {!all.length && <p className="m-0 px-1 py-3 text-center text-xs text-muted">请获取或手动添加模型</p>}
+        {!all.length && <p className="m-0 px-1 py-3 text-center text-sm text-muted-foreground">请获取或手动添加模型</p>}
       </div>
 
       {adding ? (
         <div className="mt-2">
           <div className="flex items-center gap-1.5 rounded-md bg-surface px-2 py-0.5">
             <input
-              className="min-w-0 flex-1 bg-transparent text-xs outline-none"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
               value={manual}
               disabled={disabled}
               autoFocus
@@ -89,12 +89,12 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
               <Check size={16} />
             </Button>
           </div>
-          {error && <p className="mt-1 mb-0 px-1 text-xs text-danger">{error}</p>}
+          {error && <p className="mt-1 mb-0 px-1 text-sm text-danger">{error}</p>}
         </div>
       ) : (
         <Button
           variant="ghost"
-          className="mt-2 w-full justify-start px-1 text-muted"
+          className="mt-2 w-full justify-start px-1 text-muted-foreground"
           disabled={disabled}
           onClick={() => setAdding(true)}
         >

@@ -36,7 +36,7 @@ export function Modal({ open, onOpenChange, title, footer, className, children }
           <div className="mb-5 flex items-center justify-between">
             <Dialog.Title className="m-0 text-lg font-semibold">{title}</Dialog.Title>
             <Dialog.Close
-              className="rounded-md p-1 text-muted hover:bg-page hover:text-ink"
+              className="rounded-md p-1 text-muted-foreground hover:bg-page hover:text-ink"
               aria-label="关闭"
             >
               <X size={18} />

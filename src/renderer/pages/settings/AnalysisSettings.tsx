@@ -42,7 +42,7 @@ function NumberInput({
           if (Number.isInteger(next) && next >= min) onChange(next);
         }}
       />
-      <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted">
+      <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted-foreground">
         {unit}
       </span>
     </div>
@@ -108,14 +108,14 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
               <Tabs.Trigger
                 value="direct"
                 disabled={saving}
-                className="flex-1 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-sm"
+                className="flex-1 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-sm"
               >
                 直接分析
               </Tabs.Trigger>
               <Tabs.Trigger
                 value="loop"
                 disabled={saving}
-                className="flex-1 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-sm"
+                className="flex-1 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-sm"
               >
                 多步探索
               </Tabs.Trigger>
@@ -194,7 +194,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
           />
         </SettingRow>
       </SettingGroup>
-      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
     </div>
   );
 }

@@ -1,22 +1,14 @@
-import {
-  CalendarBlank,
-  Export,
-  CaretDown,
-  LinkSimple,
-  PencilSimple,
-  PushPin,
-  Tag,
-  Trash,
-} from '@phosphor-icons/react';
+import { CalendarBlank, Export, CaretDown, PencilSimple, PushPin, Tag, Trash } from '@phosphor-icons/react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
 import { Button } from '../../Button';
 import { IconButton } from '../../IconButton';
+import { AnalysisSource } from '../AnalysisSource';
 import { TemplatePicker } from '../TemplatePicker';
 import { Summary } from '../../Summary';
 import { Visualization } from '../../Visualization';
 import { useSnippetCard } from '../useSnippetCard';
-import { getIntentIcon } from '../utils';
+import { getIntentIcon, titleClassName, summaryClassName, summaryToggleClassName } from '../utils';
 
 const chipClassName =
   'inline-flex min-h-7 items-center gap-1.5 border-2 border-ink! px-2 py-1 text-xs tabular-nums [&_svg]:shrink-0';
@@ -88,7 +80,7 @@ export default function PopTemplate({
               key={tag}
               className={twMerge(
                 chipClassName,
-                'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-muted',
+                'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-muted-foreground',
               )}
             >
               <Tag size={13} aria-hidden />
@@ -136,7 +128,7 @@ export default function PopTemplate({
       {editing ? (
         <div className="mt-4">
           <textarea
-            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-base leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             value={summary}
             disabled={busy}
             aria-label="Snippet 洞察描述"
@@ -157,10 +149,10 @@ export default function PopTemplate({
             aria-label="关键洞察"
             className="relative isolate mt-6 border-l-4 border-(--accent-secondary)! bg-[linear-gradient(100deg,color-mix(in_srgb,var(--accent-secondary)_6%,transparent),transparent_75%)] py-2 pr-3 pl-4"
           >
-            <div className="min-w-0 text-sm leading-7 text-pretty tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-p]:m-0! [&_.t8-p]:text-sm! [&_.t8-p]:leading-7!">
+            <div className={summaryClassName}>
               <div
                 id={summaryId}
-                className={mode === 'export' || summaryExpanded ? undefined : 'line-clamp-3 max-h-[84px]'}
+                className={mode === 'export' || summaryExpanded ? undefined : 'line-clamp-3 max-h-[3lh]'}
               >
                 <div ref={summaryRef}>
                   <Summary syntax={data.summary} />
@@ -172,7 +164,7 @@ export default function PopTemplate({
                   aria-expanded={summaryExpanded}
                   aria-controls={summaryId}
                   onClick={() => setSummaryExpanded(!summaryExpanded)}
-                  className="mt-2 inline-flex items-center gap-1 p-0 text-xs leading-5 text-muted hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  className={summaryToggleClassName}
                 >
                   {summaryExpanded ? '收起洞察' : '展开洞察'}
                   <CaretDown size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
@@ -198,10 +190,10 @@ export default function PopTemplate({
         <dl aria-label="关键指标" className="mt-6 grid grid-flow-col auto-cols-fr gap-4 bg-accent-soft p-4">
           {data.metrics.map((metric, index) => (
             <div key={index} className="min-w-0">
-              <dt className="text-xs leading-5 text-pretty text-muted">{metric.label}</dt>
+              <dt className="text-xs leading-5 text-pretty text-muted-foreground">{metric.label}</dt>
               <dd className="m-0 mt-1 flex flex-wrap items-baseline gap-x-1 tabular-nums">
-                <span className="text-3xl leading-9 font-black wrap-anywhere text-ink">{metric.value}</span>
-                <span className="text-xs text-muted">{metric.unit}</span>
+                <span className="text-2xl leading-8 font-black wrap-anywhere text-ink">{metric.value}</span>
+                <span className="text-xs text-muted-foreground">{metric.unit}</span>
               </dd>
             </div>
           ))}
@@ -213,7 +205,7 @@ export default function PopTemplate({
         </p>
       )}
       <figure className="mx-0 mt-6 mb-0 min-w-0 border-t-2 border-ink! pt-4">
-        <figcaption className="mb-2 flex items-center gap-2 text-xs font-bold text-muted">
+        <figcaption className="mb-2 flex items-center gap-2 text-xs font-bold text-muted-foreground">
           <span className="inline-block size-2 bg-accent" aria-hidden />
           图表分析
         </figcaption>
@@ -236,7 +228,7 @@ export default function PopTemplate({
             role="heading"
             aria-level={3}
             className={twMerge(
-              'line-clamp-2 max-h-14 text-xl leading-7 font-semibold break-words text-balance tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-container]:text-xl! [&_.t8-p]:line-clamp-2 [&_.t8-p]:m-0! [&_.t8-p]:text-xl! [&_.t8-p]:leading-7! [&_.t8-p]:font-semibold!',
+              titleClassName,
               mode === 'export' && 'line-clamp-none max-h-none [&_.t8-p]:line-clamp-none',
             )}
           >
@@ -246,7 +238,7 @@ export default function PopTemplate({
         {!editing && subtitle && (
           <p
             className={twMerge(
-              'mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted',
+              'mt-2 mb-0 line-clamp-2 max-w-[65ch] text-sm leading-5 text-pretty text-muted-foreground',
               mode === 'export' && 'line-clamp-none',
             )}
             title={subtitle}
@@ -255,7 +247,7 @@ export default function PopTemplate({
           </p>
         )}
       </div>
-      <footer className="mt-3 flex items-start justify-between gap-4 border-t-2 border-ink! pt-3 text-xs text-muted">
+      <footer className="mt-3 flex items-start justify-between gap-4 border-t-2 border-ink! pt-3 text-xs text-muted-foreground">
         {mode === 'export' ? (
           <span className="inline-flex shrink-0 items-center gap-1.5 leading-6">
             <span
@@ -267,14 +259,7 @@ export default function PopTemplate({
             </span>
           </span>
         ) : (
-          <details className="group/source min-w-0 flex-1">
-            <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
-              <LinkSimple size={13} aria-hidden />
-              分析来源
-              <CaretDown size={11} aria-hidden className="group-open/source:rotate-180" />
-            </summary>
-            <p className="mt-2 mb-0 leading-5 text-pretty wrap-anywhere">{data.question}</p>
-          </details>
+          <AnalysisSource question={data.question} trace={data.trace} />
         )}
         {createdAt && (
           <time

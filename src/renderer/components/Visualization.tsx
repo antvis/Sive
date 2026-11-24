@@ -5,15 +5,23 @@ import { useContext, useEffect, useRef } from 'react';
 import { ChartThemeContext, createChartTheme, ThemeContext } from '../theme';
 import { Summary } from './Summary';
 
-export function Visualization({ spec, height = 320 }: { spec: SnippetSpec; height?: number }) {
+export function Visualization({
+  spec,
+  height = 320,
+  preserveSpec = false,
+}: {
+  spec: SnippetSpec;
+  height?: number;
+  preserveSpec?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const themeMode = useContext(ThemeContext);
+  const theme = useContext(ThemeContext);
   const templateTheme = useContext(ChartThemeContext);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container || typeof spec === 'string') return;
-    const theme = templateTheme ?? createChartTheme(themeMode);
+    const chartTheme = createChartTheme(theme, templateTheme);
     let chart: GPTVis | undefined;
     let width = 0;
 
@@ -22,9 +30,8 @@ export function Visualization({ spec, height = 320 }: { spec: SnippetSpec; heigh
       if (!nextWidth || nextWidth === width) return;
       width = nextWidth;
       chart?.destroy();
-      chart = new GPTVis({ container, width: nextWidth, height, theme });
-      // Keep model-generated themes from overriding the client appearance.
-      chart.render({ ...spec, theme });
+      chart = new GPTVis({ container, width: nextWidth, height, theme: chartTheme });
+      chart.render(preserveSpec ? spec : { ...spec, theme: chartTheme });
     };
 
     render();
@@ -33,10 +40,10 @@ export function Visualization({ spec, height = 320 }: { spec: SnippetSpec; heigh
       unbind();
       chart?.destroy();
     };
-  }, [spec, height, themeMode, templateTheme]);
+  }, [spec, height, preserveSpec, theme, templateTheme]);
 
   if (typeof spec === 'string') {
-    const syntax = spec.replace(/^theme\s+(light|dark)\s*$/gim, '');
+    const syntax = preserveSpec ? spec : spec.replace(/^theme\s+(light|dark)\s*$/gim, '');
     return <Summary syntax={syntax} />;
   }
 

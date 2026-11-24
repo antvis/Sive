@@ -1,12 +1,13 @@
-import type { UIMessage, UIMessageChunk } from 'ai';
 import { isTextUIPart } from 'ai';
-import type { AnalysisStartInput, DuckDBEngineConfig, Preferences } from '@shared/api';
+import type { UIMessageChunk } from 'ai';
+import { isAnalysisToolResult } from '@shared/analysis-trace';
+import type { AnalysisStartInput, ChatMessage, DuckDBEngineConfig, Preferences } from '@shared/api';
 import type { AnalysisOptions } from '@shared/schema';
 import { createAnalysisAgent } from '../../ai';
 import type { AnalysisAgent } from '../../ai';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
-import { required } from '../../util';
+import { errorText, required } from '../../util';
 import type { ModelConfig } from '../model';
 import type { DatasetRow } from '../../db/schema/datasets';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
@@ -20,7 +21,7 @@ export class AnalysisService {
   private agents = new Map<
     string,
     {
-      datasetId: string;
+      dataset: Pick<DatasetRow, 'id' | 'name'>;
       engineKey: string;
       agent: Promise<AnalysisAgent>;
     }
@@ -53,18 +54,18 @@ export class AnalysisService {
   }
 
   private async disposeDatasetAgents(datasetId: string) {
-    const entries = [...this.agents.entries()].filter(([, entry]) => entry.datasetId === datasetId);
+    const entries = [...this.agents.entries()].filter(([, entry]) => entry.dataset.id === datasetId);
     for (const [id] of entries) this.agents.delete(id);
     const results = await Promise.allSettled(entries.map(async ([, entry]) => (await entry.agent).dispose()));
     const failed = results.find((result) => result.status === 'rejected');
     if (failed) throw failed.reason;
   }
 
-  getMessages(conversationId: string): UIMessage[] {
+  getMessages(conversationId: string): ChatMessage[] {
     required(this.repositories.conversations.get(conversationId), '会话不存在。');
     return this.repositories.messages
       .listByConversationId(conversationId)
-      .map(({ id, role, parts }) => ({ id, role, parts }));
+      .map(({ id, role, parts, createdAt }) => ({ id, role, parts, metadata: { createdAt } }));
   }
 
   start(input: AnalysisStartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
@@ -129,7 +130,9 @@ export class AnalysisService {
     dataset: DatasetRow,
     engine: DuckDBEngineConfig,
   ): Promise<AnalysisAgent> {
-    const engineKey = JSON.stringify(engine);
+    const credentialKey =
+      dataset.sourceConfig.type === 'supabase' ? dataset.sourceConfig.options.accessToken : '';
+    const engineKey = JSON.stringify([engine, credentialKey]);
     const existing = this.agents.get(conversationId);
     if (existing?.engineKey === engineKey) return existing.agent;
     // If the engine key has changed, dispose of the existing agent and create a new one, ensuring that the analysis uses the correct engine configuration,
@@ -139,11 +142,11 @@ export class AnalysisService {
       void existing.agent.then((agent) => agent.dispose()).catch(() => {});
     }
 
-    const agent = createAnalysisAgent({ dataset, model, engine }).catch((error) => {
+    const agent = createAnalysisAgent({ context: { dataset }, model, engine }).catch((error) => {
       this.agents.delete(conversationId);
       throw error;
     });
-    this.agents.set(conversationId, { datasetId: dataset.id, engineKey, agent });
+    this.agents.set(conversationId, { dataset, engineKey, agent });
     return agent;
   }
 
@@ -156,50 +159,68 @@ export class AnalysisService {
     emit: Emit,
     file?: string,
   ) {
+    let terminal: Extract<UIMessageChunk, { type: 'error' | 'abort' }> | undefined;
     try {
       const agent = await agentPromise;
       if (file) await checkLocalFile(file);
       controller.signal.throwIfAborted();
+      const createdAt = new Date().toISOString();
       const stream = await agent.stream({
         messages: this.getMessages(conversationId),
-        strategy: analysisOptions.strategy,
+        createdAt,
+        toolOptions: { strategy: analysisOptions.strategy },
         agent: agentConfig,
         abortSignal: controller.signal,
         onEnd: ({ responseMessage, outcome, isAborted }) => {
-          if (outcome.status === 'failed') throw outcome.error ?? new Error('分析失败，请重试。');
-          if (isAborted || controller.signal.aborted) return;
-          if (outcome.status !== 'completed') throw new Error('分析流意外结束。');
-          const now = new Date().toISOString();
-          this.database.write(() => {
-            this.repositories.messages.insert({
-              id: responseMessage.id,
-              conversationId,
-              sequence: this.repositories.messages.nextSequence(conversationId),
-              role: 'assistant',
-              parts: responseMessage.parts,
-              analysisOptions,
-              createdAt: now,
-              updatedAt: now,
+          const cancelled = isAborted || controller.signal.aborted;
+          const completed = !cancelled && outcome.status === 'completed';
+          const parts = completed
+            ? responseMessage.parts
+            : responseMessage.parts.filter(
+                (part) =>
+                  part.type === 'tool-analyze' &&
+                  part.state === 'output-available' &&
+                  isAnalysisToolResult(part.output) &&
+                  part.output.trace !== undefined,
+              );
+          if (completed || parts.length) {
+            this.database.write(() => {
+              this.repositories.messages.insert({
+                id: responseMessage.id,
+                conversationId,
+                sequence: this.repositories.messages.nextSequence(conversationId),
+                role: 'assistant',
+                parts,
+                analysisOptions,
+                createdAt,
+                updatedAt: new Date().toISOString(),
+              });
+              this.repositories.conversations.update(conversationId, {});
             });
-            this.repositories.conversations.update(conversationId, {});
-          });
+          }
+          if (cancelled) return;
+          if (outcome.status === 'failed') throw outcome.error ?? new Error('分析失败，请重试。');
+          if (!completed) throw new Error('分析流意外结束。');
         },
       });
-      for await (const chunk of stream) emit(chunk);
+      for await (const chunk of stream) {
+        // Keep the renderer subscribed until the final traces have been written to SQLite.
+        if (chunk.type === 'error' || chunk.type === 'abort') {
+          terminal = chunk;
+        } else {
+          emit(chunk);
+        }
+      }
       controller.signal.throwIfAborted();
     } catch (error) {
       this.agents.delete(conversationId);
       await agentPromise.then((agent) => agent.dispose()).catch(() => {});
-      emit(
-        controller.signal.aborted
-          ? { type: 'abort' }
-          : {
-              type: 'error',
-              errorText: error instanceof Error ? error.message : String(error),
-            },
-      );
+      terminal = controller.signal.aborted
+        ? { type: 'abort' }
+        : { type: 'error', errorText: errorText(error) };
     } finally {
       this.tasks.delete(conversationId);
+      if (terminal) emit(terminal);
       emit(null);
     }
   }

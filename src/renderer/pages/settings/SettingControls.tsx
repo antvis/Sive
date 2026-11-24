@@ -10,10 +10,10 @@ export function SettingGroup({
   children: ReactNode;
 }) {
   return (
-    <section className="mb-5 overflow-hidden rounded-xl border">
+    <section className="@container/settings mb-5 overflow-hidden rounded-xl border">
       <div className="border-b bg-page px-5 py-4">
-        <h2 className="m-0 text-base font-medium">{title}</h2>
-        {description && <div className="mt-1 text-sm text-muted">{description}</div>}
+        <h2 className="m-0 text-lg font-medium">{title}</h2>
+        {description && <div className="mt-1 text-sm text-muted-foreground">{description}</div>}
       </div>
       <div className="divide-y">{children}</div>
     </section>
@@ -30,12 +30,12 @@ export function SettingRow({
   children: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-6 p-5 max-sm:flex-col max-sm:items-start">
-      <div>
+    <div className="flex items-center justify-between gap-6 p-5 @max-sm/settings:flex-col @max-sm/settings:items-start">
+      <div className="min-w-0 flex-1">
         <h3 className="m-0 text-base font-medium">{title}</h3>
-        <p className="mt-1 mb-0 max-w-lg text-sm leading-5 text-muted">{description}</p>
+        <p className="mt-1 mb-0 text-sm leading-5 text-muted-foreground">{description}</p>
       </div>
-      <div className="shrink-0">{children}</div>
+      <div className="max-w-full shrink-0">{children}</div>
     </div>
   );
 }

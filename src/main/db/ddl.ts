@@ -4,6 +4,7 @@ export const SchemaDDL = `
     name TEXT NOT NULL,
     source_type TEXT NOT NULL,
     source_config TEXT NOT NULL,
+    extras TEXT,
     schema TEXT NOT NULL,
     profile TEXT NOT NULL,
     semantic TEXT NOT NULL DEFAULT '{}',
@@ -43,6 +44,7 @@ export const SchemaDDL = `
   CREATE TABLE IF NOT EXISTS snippets (
     id TEXT PRIMARY KEY,
     message_id TEXT NOT NULL UNIQUE,
+    trace TEXT,
     question TEXT NOT NULL,
     intent TEXT NOT NULL,
     title TEXT NOT NULL,

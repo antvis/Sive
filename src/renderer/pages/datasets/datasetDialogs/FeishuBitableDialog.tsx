@@ -53,7 +53,7 @@ export function FeishuBitableDialog({ datasetId, onClose }: ConnectionDialogProp
         value={form.appSecret}
         onValueChange={(value) => setForm({ ...form, appSecret: value })}
       />
-      <p className="m-0 text-xs text-muted">
+      <p className="m-0 text-xs text-muted-foreground">
         请粘贴具体数据表链接，并为应用授予读取权限；读取整张表，不应用视图筛选。
       </p>
     </ConnectionDialog>

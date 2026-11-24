@@ -2,12 +2,27 @@ import { defineConfig } from 'electron-vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'node:path';
+import { accessSync, constants } from 'node:fs';
 
 // Electron must launch as a desktop app even when the parent runs in Node mode.
 delete process.env.ELECTRON_RUN_AS_NODE;
 
 export default defineConfig(({ command }) => ({
   main: {
+    plugins: [
+      {
+        name: 'github-mcp-resources',
+        apply: 'build',
+        buildStart() {
+          const root = resolve('resources/github-mcp');
+          accessSync(
+            resolve(root, process.platform === 'win32' ? 'github-mcp-server.exe' : 'github-mcp-server'),
+            process.platform === 'win32' ? constants.R_OK : constants.R_OK | constants.X_OK,
+          );
+          accessSync(resolve(root, 'LICENSE'));
+        },
+      },
+    ],
     resolve: { alias: { '@main': resolve('src/main'), '@shared': resolve('src/shared') } },
     build: {
       outDir: 'dist-electron',
@@ -36,7 +51,10 @@ export default defineConfig(({ command }) => ({
     root: 'src/renderer',
     publicDir: resolve('assets'),
     resolve: {
-      alias: { '@assets': resolve('assets'), '@shared': resolve('src/shared') },
+      alias: {
+        '@assets': resolve('assets'),
+        '@shared': resolve('src/shared'),
+      },
     },
     base: './',
     plugins: [react(), tailwindcss()],
@@ -44,6 +62,7 @@ export default defineConfig(({ command }) => ({
     build: {
       outDir: resolve('dist'),
       minify: true,
+      sourcemap: 'hidden',
       chunkSizeWarningLimit: 1600,
       rolldownOptions: { input: resolve('src/renderer/index.html') },
     },

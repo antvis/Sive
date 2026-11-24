@@ -14,7 +14,9 @@ import type {
 } from '@shared/api';
 import { FILE_SOURCES } from '@shared/dataSource';
 import { analysisStartSchema } from '@shared/api';
+import { githubRepositoryListSchema, githubConnectionIdSchema } from '@shared/github';
 import type { LocalFileFormat } from '@shared/dataSource';
+import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
 import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
 import { exportSnippet } from '../util/snippetExport';
@@ -26,7 +28,7 @@ export function registerIpc(services: Services) {
 
   const changed = (event: IpcMainInvokeEvent) => {
     revision += 1;
-    event.sender.send(WORKSPACE_CHANGED_CHANNEL);
+    if (!event.sender.isDestroyed()) event.sender.send(WORKSPACE_CHANGED_CHANNEL);
   };
 
   ipcMain.handle('workspaceGetState', () => {
@@ -84,23 +86,47 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetGet', (_event, id: string) => services.dataset.getDetail(id));
 
-  ipcMain.handle('datasetTest', (_event, sourceConfig: DataSourceConfig) =>
-    services.dataset.test(sourceConfig),
+  ipcMain.handle('datasetTest', (_event, sourceConfig: DataSourceConfig, authSessionId?: string) =>
+    services.dataset.test(sourceConfig, authSessionId),
   );
+
+  ipcMain.handle('githubConnect', (_event, connectionId: unknown) =>
+    services.dataset.connectGitHub(githubConnectionIdSchema.parse(connectionId)),
+  );
+
+  ipcMain.handle('githubConnectCancel', (_event, connectionId: unknown) =>
+    services.dataset.cancelGitHubConnect(githubConnectionIdSchema.parse(connectionId)),
+  );
+
+  ipcMain.handle('githubRepositories', (_event, input: unknown) =>
+    services.dataset.githubRepositories(githubRepositoryListSchema.parse(input)),
+  );
+
+  ipcMain.handle('oAuthStart', async (event, type: DataSourceConfig['type']) => {
+    const result = await services.dataset.oAuthStart(type);
+    if (process.platform === 'darwin') app.focus({ steal: true });
+    const window = BrowserWindow.fromWebContents(event.sender);
+    window?.show();
+    window?.focus();
+    return result;
+  });
 
   ipcMain.handle('datasetExtractText', (_event, text: string) =>
     services.dataset.extractText(text, services.model.getDefaultModelConfig()),
   );
 
-  ipcMain.handle('datasetSave', async (event, name: string, sourceConfig: DataSourceConfig, id?: string) => {
-    if (id) await services.analysis.beginDatasetUpdate(id);
-    try {
-      await services.dataset.save(name, sourceConfig, id);
-    } finally {
-      if (id) services.analysis.endDatasetUpdate(id);
-    }
-    changed(event);
-  });
+  ipcMain.handle(
+    'datasetSave',
+    async (event, name: string, sourceConfig: DataSourceConfig, id?: string, authSessionId?: string) => {
+      if (id) await services.analysis.beginDatasetUpdate(id);
+      try {
+        await services.dataset.save(name, sourceConfig, id, authSessionId);
+      } finally {
+        if (id) services.analysis.endDatasetUpdate(id);
+      }
+      changed(event);
+    },
+  );
 
   ipcMain.handle('datasetPreview', (_event, id: string, table?: string, options?: DatasetPreviewOptions) =>
     services.dataset.preview(id, table, options),
@@ -146,12 +172,16 @@ export function registerIpc(services: Services) {
   });
 
   ipcMain.handle('analysisStart', async (event, input: AnalysisStartInput) => {
+    const { sender } = event;
     input = await analysisStartSchema.parseAsync(input);
+    await services.dataset.prepareOAuth(input.datasetId);
     services.analysis.start(
       input,
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
-      (chunk) => event.sender.send('analysis:chunk', input.message.id, chunk),
+      (chunk) => {
+        if (!sender.isDestroyed()) sender.send('analysis:chunk', input.message.id, chunk);
+      },
     );
     changed(event);
   });
@@ -186,6 +216,7 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('settingsSavePreferences', (event, preferences: Preferences) => {
     services.settings.savePreferences(preferences);
+    setLocale(preferences.language);
     changed(event);
   });
 

@@ -1,3 +1,4 @@
+import '@sentry/electron/preload';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
 import type { UIMessageChunk } from 'ai';
@@ -13,9 +14,15 @@ const api = {
   datasetSelectLocal: (format, lastDirectory) =>
     ipcRenderer.invoke('datasetSelectLocal', format, lastDirectory),
   datasetRefresh: (id) => ipcRenderer.invoke('datasetRefresh', id),
-  datasetTest: (sourceConfig) => ipcRenderer.invoke('datasetTest', sourceConfig),
+  datasetTest: (sourceConfig, authSessionId) =>
+    ipcRenderer.invoke('datasetTest', sourceConfig, authSessionId),
   datasetExtractText: (text) => ipcRenderer.invoke('datasetExtractText', text),
-  datasetSave: (name, sourceConfig, id) => ipcRenderer.invoke('datasetSave', name, sourceConfig, id),
+  datasetSave: (name, sourceConfig, id, authSessionId) =>
+    ipcRenderer.invoke('datasetSave', name, sourceConfig, id, authSessionId),
+  oAuthStart: (type) => ipcRenderer.invoke('oAuthStart', type),
+  githubConnect: (connectionId) => ipcRenderer.invoke('githubConnect', connectionId),
+  githubConnectCancel: (connectionId) => ipcRenderer.invoke('githubConnectCancel', connectionId),
+  githubRepositories: (input) => ipcRenderer.invoke('githubRepositories', input),
   datasetGet: (id) => ipcRenderer.invoke('datasetGet', id),
   datasetPreview: (id, table, options) => ipcRenderer.invoke('datasetPreview', id, table, options),
   datasetSuggest: (id) => ipcRenderer.invoke('datasetSuggest', id),

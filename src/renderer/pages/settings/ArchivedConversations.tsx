@@ -41,9 +41,9 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
   if (!conversations.length) {
     return (
       <div className="grid justify-items-center rounded-xl border border-dashed px-6 py-14 text-center">
-        <Archive size={32} className="text-muted" />
+        <Archive size={32} className="text-muted-foreground" />
         <h3 className="mt-4 mb-2 text-base font-medium">暂无已归档分析</h3>
-        <p className="m-0 text-muted">归档的会话会显示在这里。</p>
+        <p className="m-0 text-muted-foreground">归档的会话会显示在这里。</p>
       </div>
     );
   }
@@ -56,20 +56,20 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="搜索分析会话或者数据源"
       />
-      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
       <div className="grid gap-5">
         {[...groups].map(([datasetId, items]) => (
           <section key={datasetId}>
             <h3 className="mt-0 mb-2 text-base font-medium">
               {sourceName(datasetId)}
-              <span className="ml-2 text-sm font-normal text-muted">{items.length} 个分析会话</span>
+              <span className="ml-2 text-sm font-normal text-muted-foreground">{items.length} 个分析会话</span>
             </h3>
             <div className="rounded-xl border px-4">
               {items.map((conversation) => (
                 <div key={conversation.id} className="flex items-center gap-3 border-t py-4 first:border-t-0">
                   <div className="min-w-0 flex-1">
                     <strong className="block truncate text-base font-medium">{conversation.title}</strong>
-                    <time className="mt-1 block text-sm text-muted">
+                    <time className="mt-1 block text-xs text-muted-foreground">
                       归档于 {new Date(conversation.archivedAt!).toLocaleString('zh-CN')}
                     </time>
                   </div>
@@ -94,7 +94,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
         ))}
       </div>
       {!groups.size && (
-        <p className="py-12 text-center text-muted">没有匹配的会话，试试其他关键词或数据源。</p>
+        <p className="py-12 text-center text-sm text-muted-foreground">没有匹配的会话，试试其他关键词或数据源。</p>
       )}
       <Modal
         open={!!deleting}
@@ -118,7 +118,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
           </>
         }
       >
-        <p className="m-0 leading-6 text-muted">
+        <p className="m-0 leading-6 text-muted-foreground">
           会话的分析结果和收藏将一并删除，数据源不受影响。此操作无法恢复。
         </p>
       </Modal>

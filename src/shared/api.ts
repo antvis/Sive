@@ -11,6 +11,7 @@ import type { UIMessage, UIMessageChunk } from 'ai';
 import { isTextUIPart, validateUIMessages } from 'ai';
 import { z } from 'zod';
 import type { LocalFileFormat } from './dataSource';
+import type { GitHubRepositoryPage, GitHubRepositoryListInput } from './github';
 
 import type { Snippet, SnippetSpec, SnippetContent, SnippetSaveInput, SnippetUpdateInput } from './schema';
 
@@ -23,13 +24,16 @@ export const PREVIEW_PAGE_SIZES = [50, 100, 200] as const;
 export const DEFAULT_PREVIEW_PAGE_SIZE = 100;
 
 export type Preferences = {
+  language: 'zh-CN' | 'en-US';
   theme: { mode: 'light' | 'dark' | 'system'; fontSize: number };
   agent: { maxSteps: number };
   strategy: AnalysisStrategyConfig;
   engine: DuckDBEngineConfig;
+  diagnostics: { nativeCrashReporting: boolean };
 };
 
 export const DEFAULT_PREFERENCES = {
+  language: 'zh-CN',
   theme: { mode: 'light', fontSize: 14 },
   agent: { maxSteps: 10 },
   strategy: { type: 'direct' },
@@ -40,6 +44,7 @@ export const DEFAULT_PREFERENCES = {
     queryTimeoutMs: 30000,
     maxTempDirectorySize: '1GB',
   },
+  diagnostics: { nativeCrashReporting: false },
 } satisfies Preferences;
 
 export function analysisStrategy(
@@ -67,6 +72,11 @@ export const snippetExportSchema = z.object({
 export type SnippetExportInput = z.infer<typeof snippetExportSchema>;
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
+
+export type SupabaseOAuthResult = {
+  sessionId: string;
+  projects: { id: string; name: string }[];
+};
 
 export type ModelConnectionInput = {
   baseURL: string;
@@ -105,6 +115,8 @@ export type Conversation = {
   deletedAt: string | null;
 };
 
+export type ChatMessage = UIMessage<{ createdAt: string }>;
+
 export type DatasetSummary = {
   id: string;
   name: string;
@@ -129,7 +141,7 @@ export const analysisStartSchema = z.object({
   chatId: z.string().min(1),
   datasetId: z.string().min(1),
   message: z.unknown().transform(async (value) => {
-    const [message] = await validateUIMessages({ messages: [value] });
+    const [message] = await validateUIMessages<ChatMessage>({ messages: [value] });
     if (message.role !== 'user' || !message.parts.every(isTextUIPart)) {
       throw new Error('仅支持发送用户文本消息。');
     }
@@ -162,9 +174,18 @@ export type WorkbenchApi = {
     lastDirectory?: string,
   ): Promise<{ name: string; sourceConfig: DataSourceConfig; directory: string } | null>;
   datasetRefresh(id: string): Promise<void>;
-  datasetTest(sourceConfig: DataSourceConfig): Promise<void>;
+  datasetTest(sourceConfig: DataSourceConfig, authSessionId?: string): Promise<void>;
   datasetExtractText(text: string): Promise<Record<string, unknown>[]>;
-  datasetSave(name: string, sourceConfig: DataSourceConfig, id?: string): Promise<void>;
+  datasetSave(
+    name: string,
+    sourceConfig: DataSourceConfig,
+    id?: string,
+    authSessionId?: string,
+  ): Promise<void>;
+  oAuthStart(type: DataSourceConfig['type']): Promise<SupabaseOAuthResult>;
+  githubConnect(connectionId: string): Promise<{ login: string }>;
+  githubConnectCancel(connectionId: string): Promise<void>;
+  githubRepositories(input: GitHubRepositoryListInput): Promise<GitHubRepositoryPage>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
   datasetPreview(
@@ -188,7 +209,7 @@ export type WorkbenchApi = {
   modelDelete(id: string): Promise<void>;
   analysisStart(input: AnalysisStartInput): Promise<void>;
   analysisCancel(conversationId: string): Promise<void>;
-  analysisGetMessages(conversationId: string): Promise<UIMessage[]>;
+  analysisGetMessages(conversationId: string): Promise<ChatMessage[]>;
   analysisOnChunk(callback: (messageId: string, chunk: UIMessageChunk | null) => void): () => void;
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;

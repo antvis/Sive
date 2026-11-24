@@ -3,7 +3,6 @@ import {
   Export,
   CaretDown,
   Quotes,
-  LinkSimple,
   PencilSimple,
   PushPin,
   Tag,
@@ -13,11 +12,12 @@ import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
 import { Button } from '../../Button';
 import { IconButton } from '../../IconButton';
+import { AnalysisSource } from '../AnalysisSource';
 import { TemplatePicker } from '../TemplatePicker';
 import { Summary } from '../../Summary';
 import { Visualization } from '../../Visualization';
 import { useSnippetCard } from '../useSnippetCard';
-import { getIntentIcon } from '../utils';
+import { getIntentIcon, titleClassName, summaryClassName, summaryToggleClassName } from '../utils';
 
 const chipClassName =
   'inline-flex min-h-7 items-center gap-1.5 rounded-sm border border-line! px-2 py-1 text-xs tabular-nums [&_svg]:shrink-0';
@@ -154,7 +154,7 @@ export default function CircuitTemplate({
             role="heading"
             aria-level={3}
             className={twMerge(
-              'line-clamp-2 max-h-14 text-xl leading-7 font-semibold break-words text-balance tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-container]:text-xl! [&_.t8-p]:line-clamp-2 [&_.t8-p]:m-0! [&_.t8-p]:text-xl! [&_.t8-p]:leading-7! [&_.t8-p]:font-semibold!',
+              titleClassName,
               mode === 'export' && 'line-clamp-none max-h-none [&_.t8-p]:line-clamp-none',
             )}
           >
@@ -164,7 +164,7 @@ export default function CircuitTemplate({
         {!editing && subtitle && (
           <p
             className={twMerge(
-              'mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted',
+              'mt-2 mb-0 line-clamp-2 max-w-[65ch] text-sm leading-5 text-pretty text-muted-foreground',
               mode === 'export' && 'line-clamp-none',
             )}
             title={subtitle}
@@ -180,12 +180,12 @@ export default function CircuitTemplate({
         >
           {data.metrics.map((metric, index) => (
             <div key={index} className="min-w-0">
-              <dt className="text-xs leading-5 text-pretty text-muted">{metric.label}</dt>
+              <dt className="text-xs leading-5 text-pretty text-muted-foreground">{metric.label}</dt>
               <dd className="m-0 mt-1 flex flex-wrap items-baseline gap-x-1 tabular-nums">
                 <span className="text-2xl leading-8 font-medium wrap-anywhere text-accent">
                   {metric.value}
                 </span>
-                <span className="text-xs text-muted">{metric.unit}</span>
+                <span className="text-xs text-muted-foreground">{metric.unit}</span>
               </dd>
             </div>
           ))}
@@ -194,7 +194,7 @@ export default function CircuitTemplate({
       {editing ? (
         <div className="mt-4">
           <textarea
-            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-base leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             value={summary}
             disabled={busy}
             aria-label="Snippet 洞察描述"
@@ -221,10 +221,10 @@ export default function CircuitTemplate({
               aria-hidden
               className="pointer-events-none absolute top-1 right-2 -z-10 text-accent/7"
             />
-            <div className="min-w-0 text-sm leading-7 text-pretty tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-p]:m-0! [&_.t8-p]:text-sm! [&_.t8-p]:leading-7!">
+            <div className={summaryClassName}>
               <div
                 id={summaryId}
-                className={mode === 'export' || summaryExpanded ? undefined : 'line-clamp-3 max-h-[84px]'}
+                className={mode === 'export' || summaryExpanded ? undefined : 'line-clamp-3 max-h-[3lh]'}
               >
                 <div ref={summaryRef}>
                   <Summary syntax={data.summary} />
@@ -236,7 +236,7 @@ export default function CircuitTemplate({
                   aria-expanded={summaryExpanded}
                   aria-controls={summaryId}
                   onClick={() => setSummaryExpanded(!summaryExpanded)}
-                  className="mt-2 inline-flex items-center gap-1 p-0 text-xs leading-5 text-muted hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  className={summaryToggleClassName}
                 >
                   {summaryExpanded ? '收起洞察' : '展开洞察'}
                   <CaretDown size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
@@ -252,7 +252,7 @@ export default function CircuitTemplate({
         </p>
       )}
       <figure className="relative mx-0 mt-6 mb-0 min-w-0 border-y border-line/60! pt-3 pb-2">
-        <figcaption className="mb-3 flex items-center gap-3 text-xs text-muted">
+        <figcaption className="mb-3 flex items-center gap-3 text-xs text-muted-foreground">
           <span className="text-accent">图表分析</span>
           <span aria-hidden className="h-px flex-1 bg-line" />
           <svg viewBox="0 0 80 80" aria-hidden className="size-6 text-accent" fill="none">
@@ -268,7 +268,7 @@ export default function CircuitTemplate({
           <Visualization spec={chartSpec} height={360} />
         </div>
       </figure>
-      <footer className="mt-3 flex items-start justify-between gap-4 border-t border-line/65! pt-3 text-xs text-muted">
+      <footer className="mt-3 flex items-start justify-between gap-4 border-t border-line/65! pt-3 text-xs text-muted-foreground">
         {mode === 'export' ? (
           <span className="inline-flex shrink-0 items-center gap-1.5 leading-6">
             <span
@@ -280,14 +280,7 @@ export default function CircuitTemplate({
             </span>
           </span>
         ) : (
-          <details className="group/source min-w-0 flex-1">
-            <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
-              <LinkSimple size={13} aria-hidden />
-              分析来源
-              <CaretDown size={11} aria-hidden className="group-open/source:rotate-180" />
-            </summary>
-            <p className="mt-2 mb-0 leading-5 text-pretty wrap-anywhere">{data.question}</p>
-          </details>
+          <AnalysisSource question={data.question} trace={data.trace} />
         )}
         {createdAt && (
           <time

@@ -44,12 +44,16 @@ export function ConnectionDialog({
   label,
   name,
   sourceConfig,
+  authSessionId,
+  submitDisabled = false,
   onLoad,
   children,
 }: ConnectionDialogProps & {
   label: string;
   name: string;
   sourceConfig: DataSourceConfig;
+  authSessionId?: string;
+  submitDisabled?: boolean;
   onLoad: (connection: DatasetDetail) => void;
   children: ReactNode;
 }) {
@@ -82,16 +86,16 @@ export function ConnectionDialog({
   }, [datasetId, onLoad]);
 
   const submit = async (action: 'test' | 'save') => {
-    if (busy || loading || !formRef.current?.reportValidity()) return;
+    if (busy || loading || submitDisabled || !formRef.current?.reportValidity()) return;
     setError('');
     setTested(false);
     setBusy(action);
     try {
       if (action === 'test') {
-        await window.workbench.datasetTest(sourceConfig);
+        await window.workbench.datasetTest(sourceConfig, authSessionId);
         setTested(true);
       } else {
-        await window.workbench.datasetSave(name, sourceConfig, datasetId);
+        await window.workbench.datasetSave(name, sourceConfig, datasetId, authSessionId);
         toast.success(datasetId ? `${label} 连接已更新` : `${label} 数据源已添加`);
         onClose();
       }
@@ -111,17 +115,22 @@ export function ConnectionDialog({
       title={datasetId ? `编辑 ${label} 连接` : `连接 ${label}`}
       footer={
         <>
-          <Button disabled={loading || !!busy} onClick={() => submit('test')}>
+          <Button disabled={loading || !!busy || submitDisabled} onClick={() => submit('test')}>
             {busy === 'test' ? '正在测试…' : '测试连接'}
           </Button>
-          <Button type="submit" form={formId} variant="primary" disabled={loading || !!busy}>
+          <Button
+            type="submit"
+            form={formId}
+            variant="primary"
+            disabled={loading || !!busy || submitDisabled}
+          >
             {busy === 'save' ? '正在保存…' : '保存连接'}
           </Button>
         </>
       }
     >
       {loading ? (
-        <p className="text-sm text-muted">正在读取连接…</p>
+        <p className="text-sm text-muted-foreground">正在读取连接…</p>
       ) : (
         <form
           id={formId}
@@ -145,7 +154,7 @@ export function ConnectionDialog({
       )}
       {tested && (
         <p role="status" className="mb-0 text-sm text-accent">
-          连接成功，数据库结构可读取。
+          连接成功，数据表可读取。
         </p>
       )}
     </Modal>

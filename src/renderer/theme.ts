@@ -1,13 +1,47 @@
 import type { ThemeSpec } from '@antv/gpt-vis';
+import { mergeTheme } from '@antv/gpt-vis/dist/esm/theme/merge';
+import { DEFAULT_PREFERENCES } from '@shared/api';
 import { createContext } from 'react';
 
-export const ThemeContext = createContext<'light' | 'dark'>('light');
+type Theme = { mode: 'light' | 'dark'; fontSize: number };
+
+export const ThemeContext = createContext<Theme>({
+  mode: 'light',
+  fontSize: DEFAULT_PREFERENCES.theme.fontSize,
+});
 
 export const ChartThemeContext = createContext<ThemeSpec | undefined>(undefined);
 
 // Read the active client palette after App applies data-theme, before rendering charts.
-export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
+export function createChartTheme(
+  { mode, fontSize: rootFontSize }: Theme,
+  templateTheme?: ThemeSpec,
+): ThemeSpec {
   const styles = getComputedStyle(document.documentElement);
+
+  // Chart renderers need pixels; derive them from the text-* rem scale.
+  const fontSize = (name: 'xs' | 'sm' | 'base' | 'lg' | '3xl') =>
+    Number.parseFloat(styles.getPropertyValue(`--text-${name}`)) * rootFontSize;
+
+  const lineHeight = rootFontSize * 1.5;
+
+  const typography: Pick<ThemeSpec, 'tokens' | 'style'> = {
+    tokens: { fontSize: fontSize('sm') },
+    style: {
+      title: { titleFontSize: fontSize('lg'), subtitleFontSize: fontSize('xs') },
+      axis: { labelFontSize: fontSize('xs'), titleFontSize: fontSize('xs') },
+      legend: { titleFontSize: fontSize('xs'), itemLabelFontSize: fontSize('xs') },
+      label: { fontSize: fontSize('xs') },
+      mark: {
+        liquid: { contentFontSize: fontSize('3xl') },
+        sankey: { labelFontSize: fontSize('xs') },
+      },
+      node: { labelFontSize: fontSize('xs') },
+      edge: { labelFontSize: fontSize('xs') },
+      table: { header: { fontSize: fontSize('xs') }, cell: { fontSize: fontSize('xs') } },
+      summary: { fontSize: fontSize('base') },
+    },
+  };
 
   const color = (name: string) => styles.getPropertyValue(`--${name}`).trim();
 
@@ -16,7 +50,7 @@ export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
       .split(',')
       .map((value) => value.trim());
 
-  return {
+  const theme: ThemeSpec = {
     id: `sive-desktop-${mode}`,
     label: 'Sive Desktop',
     description:
@@ -35,9 +69,8 @@ export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
       colorNeutral: color('muted'),
       category10: palette('chart-palette'),
       fontFamily: styles.fontFamily,
-      fontSize: 12,
       fontWeight: 400,
-      lineHeight: 20,
+      lineHeight,
       spacingSmall: 6,
       spacingMedium: 12,
       lineWidth: 1,
@@ -46,9 +79,7 @@ export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
     style: {
       title: {
         align: 'left',
-        titleFontSize: 16,
         titleFontWeight: 600,
-        subtitleFontSize: 12,
         subtitleFontWeight: 400,
         spacing: 6,
       },
@@ -58,25 +89,21 @@ export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
         gridLineWidth: 0.75,
         gridLineDash: [3, 4],
         gridStrokeOpacity: 0.8,
-        labelFontSize: 12,
         labelFontWeight: 400,
-        titleFontSize: 12,
         titleFontWeight: 400,
       },
       legend: {
         titleFontWeight: 600,
-        itemLabelFontSize: 12,
         itemLabelFontWeight: 400,
-        itemLabelLineHeight: 20,
+        itemLabelLineHeight: lineHeight,
         itemMarkerSize: 8,
         itemSpacing: 6,
         rowPadding: 8,
         colPadding: 16,
       },
       label: {
-        fontSize: 12,
         fontWeight: 500,
-        lineHeight: 20,
+        lineHeight,
       },
       mark: {
         line: { shape: 'line', lineWidth: 2.25, lineCap: 'round', lineJoin: 'round' },
@@ -87,9 +114,9 @@ export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
         density: { fillOpacity: 0.2, lineWidth: 1.25 },
         connector: { lineWidth: 1 },
         link: { lineWidth: 1, strokeOpacity: 0.6 },
-        liquid: { contentFontSize: 30, contentFontWeight: 600, outlineBorder: 1 },
+        liquid: { contentFontWeight: 600, outlineBorder: 1 },
         treemap: { stroke: color('surface'), lineWidth: 2, radius: 4 },
-        sankey: { nodeLineWidth: 1, linkFillOpacity: 0.25, linkLineWidth: 0, labelFontSize: 12 },
+        sankey: { nodeLineWidth: 1, linkFillOpacity: 0.25, linkLineWidth: 0 },
       },
       node: {
         fillOpacity: 0.2,
@@ -107,11 +134,11 @@ export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
         labelFontWeight: 400,
       },
       table: {
-        header: { fontWeight: 600, padding: [10, 12], lineHeight: 20 },
-        cell: { backgroundColor: color('surface'), padding: [9, 12], lineHeight: 20 },
+        header: { fontWeight: 600, padding: [10, 12], lineHeight },
+        cell: { backgroundColor: color('surface'), padding: [9, 12], lineHeight },
         border: { width: 1, style: 'solid', radius: 8 },
       },
-      summary: { fontSize: 14, lineHeight: 28 },
+      summary: { lineHeight },
     },
     charts: {
       pie: { style: { mark: { interval: { stroke: color('surface'), lineWidth: 2, radius: 0 } } } },
@@ -127,4 +154,6 @@ export function createChartTheme(mode: 'light' | 'dark'): ThemeSpec {
       waterfall: { style: { palette: [color('accent'), color('danger'), palette('chart-palette')[1]] } },
     },
   };
+
+  return mergeTheme(templateTheme ?? theme, typography) as ThemeSpec;
 }

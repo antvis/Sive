@@ -64,7 +64,7 @@ export function DataGrid({
                 <th
                   key={column.name}
                   scope="col"
-                  className="relative border-b px-4 py-2 text-left font-medium text-muted"
+                  className="relative border-b px-4 py-2 text-left font-medium text-muted-foreground"
                   aria-sort={sorted ? (sorted.descending ? 'descending' : 'ascending') : 'none'}
                 >
                   <button
@@ -161,7 +161,7 @@ export function DataGrid({
           ))}
           {!visible.length && (
             <tr>
-              <td colSpan={Math.max(columns.length, 1)} className="p-8 text-center text-muted">
+              <td colSpan={Math.max(columns.length, 1)} className="p-8 text-center text-muted-foreground">
                 暂无数据
               </td>
             </tr>

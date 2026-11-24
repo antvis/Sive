@@ -1,11 +1,37 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { AnalysisToolOutput, AnalysisTrace } from '../../../../src/shared/analysis-trace';
 import type { SnippetSaveInput } from '../../../../src/shared/schema';
 import { createRepositories } from '../../../../src/main/db/repository';
+import { setLocale } from '../../../../src/main/util/i18n';
 import { SnippetService } from '../../../../src/main/services/snippet';
 import { createTestDb } from '../../../helpers/db';
 
-const input: SnippetSaveInput = {
+const trace: AnalysisTrace = {
+  toolCallId: 'analysis-1',
+  query: '按月统计销售额',
+  strategy: { type: 'direct' },
+  start: { datasetId: 'sales' },
+  status: 'completed',
+  steps: [
+    {
+      id: 'step-1',
+      kind: 'step',
+      status: 'completed',
+      atMs: 0,
+      index: 0,
+      parentStepIds: [],
+      operations: [{ id: 'query-1', kind: 'query', status: 'completed', atMs: 1 }],
+    },
+  ],
+};
+const analysisOutput: AnalysisToolOutput = {
+  result: { query: trace.query, text: '销售额为 120 万元。', data: [], schema: [] },
+  trace,
+};
+
+const input = {
   messageId: 'message-1',
+  trace,
   question: '对比前5个月的销售额',
   intent: '趋势观察',
   title: '月度[销售额](metric_name)',
@@ -13,22 +39,48 @@ const input: SnippetSaveInput = {
   spec: { type: 'column', title: '月度销售额', data: [{ category: '一月', value: 120 }] },
   tags: ['月度'],
   metrics: [{ label: '一月销售额', value: '120', unit: '万元' }],
-};
+} satisfies SnippetSaveInput;
 
 describe('SnippetService', () => {
   let testDb: Awaited<ReturnType<typeof createTestDb>>;
   let service: SnippetService;
 
   beforeEach(async () => {
+    setLocale('zh-CN');
     testDb = await createTestDb();
     const repositories = createRepositories(testDb.database);
     const now = new Date().toISOString();
     repositories.messages.insert({
-      id: input.messageId,
+      id: 'analysis-message',
       conversationId: 'conversation-1',
       sequence: 0,
       role: 'assistant',
-      parts: [],
+      parts: [
+        {
+          type: 'tool-analyze',
+          toolCallId: trace.toolCallId,
+          state: 'output-available',
+          input: { query: trace.query },
+          output: analysisOutput,
+        },
+      ],
+      createdAt: now,
+      updatedAt: now,
+    });
+    repositories.messages.insert({
+      id: input.messageId,
+      conversationId: 'conversation-1',
+      sequence: 1,
+      role: 'assistant',
+      parts: [
+        {
+          type: 'tool-analyze',
+          toolCallId: 'analysis-2',
+          state: 'output-available',
+          input: { query: '总销售额' },
+          output: { ...analysisOutput, trace: { ...trace, toolCallId: 'analysis-2' } },
+        },
+      ],
       createdAt: now,
       updatedAt: now,
     });
@@ -37,8 +89,8 @@ describe('SnippetService', () => {
 
   afterEach(() => testDb.close());
 
-  it('persists content and metrics without changing T8 and saves each message once', () => {
-    const saved = service.save(input);
+  it('persists the selected analysis trace from an earlier message and saves each message once', () => {
+    const saved = service.save({ ...input, trace: { ...trace, query: '替换来源查询' } });
     expect(saved).toMatchObject({ ...input, templateId: 'default' });
     expect(service.list()).toEqual([saved]);
     expect(service.save({ ...input, title: '另一个标题' })).toEqual(saved);
@@ -77,11 +129,19 @@ describe('SnippetService', () => {
     expect(service.list()).toEqual([]);
   });
 
-  it('keeps saved content intact when an edit has an empty title', () => {
+  it('saves a snippet with a null trace when no analysis is selected', () => {
+    const saved = service.save({ ...input, trace: undefined });
+    expect(saved.trace).toBeNull();
+    expect(service.list()).toEqual([saved]);
+  });
+
+  it.each([
+    ['zh-CN', '标题不能为空。'],
+    ['en-US', 'Title is required.'],
+  ] as const)('keeps saved content intact when an edit has an empty title in %s', (language, message) => {
+    setLocale(language);
     const saved = service.save(input);
-    expect(() => service.update(input.messageId, { title: ' ', summary: '新洞察' })).toThrow(
-      '标题不能为空。',
-    );
+    expect(() => service.update(input.messageId, { title: ' ', summary: '新洞察' })).toThrow(message);
     expect(service.list()[0]).toEqual(saved);
   });
 });

@@ -1,9 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { DEFAULT_PREFERENCES } from '@shared/api';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
 import type { AppPage } from './components/AppShell';
 import { Button } from './components/Button';
 import { useWorkspace } from './hooks/useWorkspace';
+import { I18nProvider } from './i18n';
 import { AnalysisPage } from './pages/analysis';
 import { DatasetsPage } from './pages/datasets';
 import { SettingsPage } from './pages/settings';
@@ -58,12 +60,13 @@ export default function App() {
     }
   };
 
-  const theme =
-    state?.preferences.theme.mode === 'system'
-      ? systemDark
-        ? 'dark'
-        : 'light'
-      : (state?.preferences.theme.mode ?? 'light');
+  const preferredMode = state?.preferences.theme.mode ?? DEFAULT_PREFERENCES.theme.mode;
+  const fontSize = state?.preferences.theme.fontSize ?? DEFAULT_PREFERENCES.theme.fontSize;
+  const isDark = preferredMode === 'system' ? systemDark : preferredMode === 'dark';
+  const theme = useMemo(
+    () => ({ mode: isDark ? 'dark' : 'light', fontSize }) as const,
+    [isDark, fontSize],
+  );
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -74,12 +77,12 @@ export default function App() {
   }, []);
 
   useLayoutEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    document.documentElement.dataset.theme = theme.mode;
+  }, [theme.mode]);
 
-  useEffect(() => {
-    document.documentElement.style.fontSize = `${state?.preferences.theme.fontSize ?? 14}px`;
-  }, [state?.preferences.theme.fontSize]);
+  useLayoutEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}px`;
+  }, [fontSize]);
 
   useEffect(() => {
     const previous = previousDatasetCount.current;
@@ -121,7 +124,7 @@ export default function App() {
       }}
       onNavigate={setPage}
     >
-      {!state && !error && <div className="grid h-full place-items-center text-muted">正在加载工作台…</div>}
+      {!state && !error && <div className="grid h-full place-items-center text-muted-foreground">正在加载工作台…</div>}
       {!state && error && (
         <div className="grid h-full place-content-center justify-items-center gap-4">
           <p className="m-0 text-danger">{error}</p>
@@ -156,10 +159,11 @@ export default function App() {
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
       {state && page === 'settings' && <SettingsPage state={state} />}
       <Toaster
-        theme={theme}
+        theme={theme.mode}
         position="bottom-right"
         visibleToasts={1}
         toastOptions={{
+          className: 'text-sm!',
           style: {
             width: 'max-content',
             maxWidth: 'calc(100vw - 32px)',
@@ -170,12 +174,15 @@ export default function App() {
             background: 'var(--surface)',
             color: 'var(--ink)',
             boxShadow: '0 4px 16px #00000012',
-            fontSize: '12px',
           },
         }}
       />
     </AppShell>
   );
 
-  return <ThemeContext value={theme}>{content}</ThemeContext>;
+  return (
+    <I18nProvider language={state?.preferences.language}>
+      <ThemeContext value={theme}>{content}</ThemeContext>
+    </I18nProvider>
+  );
 }

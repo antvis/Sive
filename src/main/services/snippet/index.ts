@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { getAnalysisTraces } from '@shared/analysis-trace';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
+import { i18n } from '../../util/i18n';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import { required } from '../../util/assert';
@@ -15,14 +17,22 @@ export class SnippetService {
   }
 
   save(input: SnippetSaveInput) {
-    required(this.repositories.messages.get(input.messageId), '分析消息不存在。');
     return this.database.write(() => {
+      const message = required(this.repositories.messages.get(input.messageId), '分析消息不存在。');
       const existing = this.repositories.snippets.getByMessageId(input.messageId);
       if (existing) return existing;
+
+      const analysisId = input.trace?.toolCallId;
+      const trace = analysisId
+        ? (getAnalysisTraces(this.repositories.messages.listByConversationId(message.conversationId)).get(
+            analysisId,
+          ) ?? null)
+        : null;
       const now = new Date().toISOString();
       return this.repositories.snippets.insert({
         id: randomUUID(),
         messageId: input.messageId,
+        trace,
         question: input.question,
         intent: input.intent,
         title: input.title,
@@ -41,7 +51,7 @@ export class SnippetService {
     this.database.write(() => {
       const snippet = required(this.repositories.snippets.getByMessageId(messageId), 'Snippet 不存在。');
       const title = input.title?.trim();
-      if (title === '') throw new Error('标题不能为空。');
+      if (title === '') throw new Error(i18n('errors.snippetTitleRequired'));
       this.repositories.snippets.update(snippet.id, {
         title,
         summary: input.summary?.trim(),
