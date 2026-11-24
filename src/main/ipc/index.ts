@@ -10,6 +10,7 @@ import type {
   ModelConnectionInput,
   ModelInput,
   Preferences,
+  SnippetExportInput,
 } from '@shared/api';
 import { FILE_SOURCES } from '@shared/dataSource';
 import { analysisStartSchema } from '@shared/api';
@@ -18,6 +19,7 @@ import type { LocalFileFormat } from '@shared/dataSource';
 import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
 import { getStorageInfo, systemOpen } from '../util/system';
+import { exportSnippet } from '../util/snippetExport';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -220,6 +222,10 @@ export function registerIpc(
     services.snippet.update(messageId, input);
     changed();
   });
+
+  ipcMain.handle('snippetExport', (event, input: SnippetExportInput) =>
+    exportSnippet(input, BrowserWindow.fromWebContents(event.sender)!),
+  );
 
   ipcMain.handle('settingsSavePreferences', (_event, preferences: Preferences) => {
     services.settings.savePreferences(preferences);
