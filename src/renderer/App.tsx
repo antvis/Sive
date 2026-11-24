@@ -2,6 +2,7 @@ import { DEFAULT_PREFERENCES } from '@shared/api';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
+import { UpdateNotification } from './components/UpdateNotification';
 import type { AppPage } from './components/AppShell';
 import { Button } from './components/Button';
 import { useWorkspace } from './hooks/useWorkspace';
@@ -177,6 +178,7 @@ export default function App() {
           },
         }}
       />
+      <UpdateNotification />
     </AppShell>
   );
 

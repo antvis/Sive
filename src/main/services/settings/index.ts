@@ -17,6 +17,8 @@ const STRATEGY_KEY = 'strategy';
 const ENGINE_KEY = 'engine';
 // 异常诊断配置
 const DIAGNOSTICS_KEY = 'diagnostics';
+// 自动检查更新设置
+const AUTO_CHECK_UPDATES_KEY = 'autoCheckUpdates';
 
 /**
  * Store several types of configurations separately,
@@ -49,6 +51,8 @@ export class SettingsService {
       Partial<DuckDBEngineConfig> | undefined;
     const diagnostics = this.repositories.settings.get(DIAGNOSTICS_KEY)?.value as
       Partial<Preferences['diagnostics']> | undefined;
+    const autoCheckUpdates = this.repositories.settings.get(AUTO_CHECK_UPDATES_KEY)?.value as
+      boolean | undefined;
     return {
       language: language ?? DEFAULT_PREFERENCES.language,
       theme: { ...DEFAULT_PREFERENCES.theme, ...theme },
@@ -56,6 +60,7 @@ export class SettingsService {
       strategy: { ...DEFAULT_PREFERENCES.strategy, ...strategy },
       engine: { ...DEFAULT_PREFERENCES.engine, ...engine },
       diagnostics: { ...DEFAULT_PREFERENCES.diagnostics, ...diagnostics },
+      autoCheckUpdates: autoCheckUpdates ?? DEFAULT_PREFERENCES.autoCheckUpdates,
     };
   }
 
@@ -66,6 +71,7 @@ export class SettingsService {
     this.set(STRATEGY_KEY, preferences.strategy);
     this.set(ENGINE_KEY, preferences.engine);
     this.set(DIAGNOSTICS_KEY, preferences.diagnostics);
+    this.set(AUTO_CHECK_UPDATES_KEY, preferences.autoCheckUpdates);
   }
 
   getActiveModel(): ActiveModel {

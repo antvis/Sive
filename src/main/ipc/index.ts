@@ -17,12 +17,17 @@ import { githubRepositoryListSchema, githubConnectionIdSchema } from '@shared/gi
 import type { LocalFileFormat } from '@shared/dataSource';
 import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
-import { checkForUpdates, getStorageInfo, systemOpen } from '../util/system';
+import { getStorageInfo, systemOpen } from '../util/system';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
 export function registerIpc(services: Services) {
   let revision = 0;
+
+  services.update.onUpdateAvailable(() => {
+    const window = BrowserWindow.getAllWindows()[0];
+    if (window && !window.isDestroyed()) window.webContents.send('about:update-available');
+  });
 
   const changed = (event: IpcMainInvokeEvent) => {
     revision += 1;
@@ -210,6 +215,7 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('settingsSavePreferences', (event, preferences: Preferences) => {
     services.settings.savePreferences(preferences);
+    services.update.setAutomatic(preferences.autoCheckUpdates);
     setLocale(preferences.language);
     changed(event);
   });
@@ -220,7 +226,9 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('aboutGetVersion', () => app.getVersion());
 
-  ipcMain.handle('aboutCheckUpdates', () => checkForUpdates());
+  ipcMain.handle('aboutCheckUpdates', () => services.update.check());
+
+  ipcMain.handle('aboutTakeUpdateNotification', () => services.update.takeNotification());
 
   ipcMain.handle('modelListAvailable', (_event, input: ModelConnectionInput) =>
     services.model.listAvailable(input),
