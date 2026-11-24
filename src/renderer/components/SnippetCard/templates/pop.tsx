@@ -1,31 +1,16 @@
-import { CalendarBlank, Export, CaretDown, PencilSimple, PushPin, Tag, Trash } from '@phosphor-icons/react';
+import { CalendarBlank, CaretDown, Check, Tag } from '@phosphor-icons/react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
 import { Button } from '../../Button';
-import { IconButton } from '../../IconButton';
 import { AnalysisSource } from '../AnalysisSource';
-import { TemplatePicker } from '../TemplatePicker';
 import { Summary } from '../../Summary';
 import { Visualization } from '../../Visualization';
-import { useSnippetCard } from '../useSnippetCard';
 import { getIntentIcon, titleClassName, summaryClassName, summaryToggleClassName } from '../utils';
 
 const chipClassName =
   'inline-flex min-h-7 items-center gap-1.5 border-2 border-ink! px-2 py-1 text-xs tabular-nums [&_svg]:shrink-0';
 
-export default function PopTemplate({
-  data,
-  templateId,
-  templateButtonRef,
-  templates,
-  createdAt,
-  saved,
-  onSave,
-  onUpdate,
-  onDelete,
-  onShare,
-  mode = 'view',
-}: SnippetTemplateProps) {
+export default function PopTemplate({ data, createdAt, mode = 'view', card }: SnippetTemplateProps) {
   const {
     editing,
     title,
@@ -42,11 +27,9 @@ export default function PopTemplate({
     summaryOverflow,
     style,
     chartSpec,
-    run,
-    startEditing,
     cancelEditing,
     saveEdits,
-  } = useSnippetCard(data, onUpdate);
+  } = card;
   const IntentIcon = getIntentIcon(data.intent);
   const subtitle = typeof data.spec !== 'string' ? data.spec.subtitle : undefined;
 
@@ -63,85 +46,44 @@ export default function PopTemplate({
         <span className="absolute bottom-1 left-6 h-1 w-16 bg-[radial-gradient(circle,var(--ink)_0.75px,transparent_1px)] bg-size-[4px_4px] opacity-40" />
         <span className="absolute right-0 bottom-0 size-5 bg-[linear-gradient(135deg,transparent_46%,var(--ink)_48%,var(--accent-soft)_51%,var(--surface)_85%)]" />
       </div>
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
+      <header className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
+        <span
+          className={twMerge(
+            chipClassName,
+            '-rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_25%,var(--surface))] font-semibold text-ink',
+          )}
+          title={`分析类别：${data.intent}`}
+        >
+          <IntentIcon size={13} aria-hidden className="text-accent" />
+          {data.intent}
+        </span>
+        {data.tags.map((tag) => (
           <span
+            key={tag}
             className={twMerge(
               chipClassName,
-              '-rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_25%,var(--surface))] font-semibold text-ink',
+              'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-muted-foreground',
             )}
-            title={`分析类别：${data.intent}`}
           >
-            <IntentIcon size={13} aria-hidden className="text-accent" />
-            {data.intent}
+            <Tag size={13} aria-hidden />
+            {tag}
           </span>
-          {data.tags.map((tag) => (
-            <span
-              key={tag}
-              className={twMerge(
-                chipClassName,
-                'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-muted-foreground',
-              )}
-            >
-              <Tag size={13} aria-hidden />
-              {tag}
-            </span>
-          ))}
-        </div>
-        <div className="ml-auto flex shrink-0 items-center gap-1">
-          {onUpdate && !editing && (
-            <>
-              <TemplatePicker
-                buttonRef={templateButtonRef}
-                value={templateId}
-                templates={templates}
-                disabled={busy}
-                onChange={(value) => void run(() => onUpdate({ templateId: value }))}
-              />
-              <IconButton icon={PencilSimple} label="编辑 Snippet" disabled={busy} onClick={startEditing} />
-            </>
-          )}
-          {onShare && !editing && (
-            <IconButton icon={Export} label="分享与导出" disabled={busy} onClick={onShare} />
-          )}
-          {onDelete && !editing && (
-            <IconButton
-              icon={Trash}
-              label="删除 Snippet"
-              disabled={busy}
-              className="hover:text-danger"
-              onClick={onDelete}
-            />
-          )}
-          {onSave && (
-            <IconButton
-              icon={PushPin}
-              weight={saved ? 'fill' : 'regular'}
-              label={saved ? '已保存 Snippet' : busy ? '保存中…' : '保存 Snippet'}
-              disabled={saved || busy}
-              className={saved ? 'text-accent disabled:opacity-100' : undefined}
-              onClick={() => void run(onSave)}
-            />
-          )}
-        </div>
+        ))}
       </header>
       {editing ? (
-        <div className="mt-4">
+        <div className="mt-6 border-l-4 border-(--accent-secondary)! bg-accent-soft/40 py-2 pr-3 pl-4 focus-within:border-accent!">
+          <label htmlFor={summaryId} className="text-xs font-medium text-muted-foreground">
+            关键洞察
+          </label>
           <textarea
-            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-base leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            id={summaryId}
+            className="mt-2 block field-sizing-content max-h-72 min-h-24 w-full resize-none border-0 bg-transparent p-0 text-base leading-relaxed text-pretty text-ink outline-none placeholder:text-muted-foreground disabled:opacity-50"
             value={summary}
             disabled={busy}
             aria-label="Snippet 洞察描述"
+            placeholder="记录数据里的关键发现…"
             onChange={(event) => setSummary(event.target.value)}
           />
-          <div className="mt-3 flex justify-end gap-2">
-            <Button disabled={busy} onClick={cancelEditing}>
-              取消
-            </Button>
-            <Button variant="primary" disabled={busy || !title.trim()} onClick={() => void saveEdits()}>
-              {busy ? '保存中…' : '保存'}
-            </Button>
-          </div>
         </div>
       ) : (
         data.summary.trim() && (
@@ -213,15 +155,21 @@ export default function PopTemplate({
       </figure>
       <div className="mt-5 border-2 border-ink! bg-accent-soft p-4 shadow-[4px_4px_0_var(--ink)]">
         {editing ? (
-          <input
-            id={titleId}
-            className="mt-4 w-full rounded-lg border bg-surface px-3 py-2 text-xl leading-7 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            value={title}
-            disabled={busy}
-            autoFocus
-            aria-label="Snippet 标题"
-            onChange={(event) => setTitle(event.target.value)}
-          />
+          <div>
+            <label htmlFor={titleId} className="text-xs font-medium text-muted-foreground">
+              标题
+            </label>
+            <textarea
+              id={titleId}
+              className="mt-1 block field-sizing-content max-h-40 min-h-14 w-full resize-none border-0 border-b border-ink/25! bg-transparent px-0 py-2 text-xl leading-7 font-semibold text-balance text-ink outline-none placeholder:text-muted-foreground focus:border-accent! disabled:opacity-50"
+              value={title}
+              disabled={busy}
+              autoFocus
+              aria-label="Snippet 标题"
+              placeholder="为这份洞察起个标题"
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </div>
         ) : (
           <div
             id={titleId}
@@ -247,6 +195,27 @@ export default function PopTemplate({
           </p>
         )}
       </div>
+      {editing && (
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            className="h-9 rounded-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            disabled={busy}
+            onClick={cancelEditing}
+          >
+            取消
+          </Button>
+          <Button
+            variant="primary"
+            className="h-9 rounded-none bg-ink! px-4 text-surface! shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            disabled={busy || !title.trim()}
+            onClick={() => void saveEdits()}
+          >
+            <Check size={14} aria-hidden />
+            {busy ? '保存中…' : '保存修改'}
+          </Button>
+        </div>
+      )}
       <footer className="mt-3 flex items-start justify-between gap-4 border-t-2 border-ink! pt-3 text-xs text-muted-foreground">
         {mode === 'export' ? (
           <span className="inline-flex shrink-0 items-center gap-1.5 leading-6">
