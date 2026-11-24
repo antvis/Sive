@@ -1,49 +1,27 @@
 import clsx from 'clsx';
 import { PanelRightIcon } from 'lucide-react';
-import { useEffect, useEffectEvent } from 'react';
-import { Group, Panel, Separator } from 'react-resizable-panels';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
 import type { AnalysisFrameProps } from '../../components/AppShell';
-import { IconButton, panelControlClassName } from '../../components/IconButton';
+import { IconButton } from '../../components/IconButton';
 import { Chat } from '../../components/chat/chat';
 import { ToolPreviewContext } from '../../components/chat/tool-preview';
 import type { ToolPreviewTab } from '../../components/chat/tool-preview';
+import { usePanelCollapsePreview } from '../../hooks/usePanelCollapsePreview';
+import { usePanelToggleFocus } from '../../hooks/usePanelToggleFocus';
 import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../../lib/panel-layout';
 import type { DatasetSummary, ModelProfile, Preferences } from '../../types';
-import { AnalysisSidePanel } from './AnalysisSidePanel';
-import { DATASET_PREVIEW_ID, MIN_ANALYSIS_PANEL_WIDTH, useAnalysisPreview } from './useAnalysisPreview';
+import { readWidth, saveWidth } from '../../utils';
+import { AnalysisSidePanel, DATASET_PREVIEW_ID } from './AnalysisSidePanel';
 import { DATASET_PREVIEW_TAB, useAnalysisTabs } from './useAnalysisTabs';
-import { useFullscreenPreview } from './useFullscreenPreview';
 
 const cardClassName =
   'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] motion-safe:transition-opacity motion-safe:duration-150';
 const bodyClassName = 'min-h-0 min-w-0 flex-1 overflow-hidden';
-const previewShortcut = 'Meta+Shift+B Control+Shift+B';
-
-function useAnalysisShortcuts(fullscreen: boolean, exitFullscreen: () => void, togglePreview: () => void) {
-  const handleKey = useEffectEvent((event: KeyboardEvent) => {
-    if (event.defaultPrevented || event.repeat) return;
-
-    if (fullscreen && event.key === 'Escape') {
-      event.preventDefault();
-      exitFullscreen();
-    } else if (
-      !fullscreen &&
-      (event.metaKey || event.ctrlKey) &&
-      event.shiftKey &&
-      !event.altKey &&
-      event.key.toLowerCase() === 'b'
-    ) {
-      event.preventDefault();
-      togglePreview();
-    }
-  });
-
-  useEffect(() => {
-    const keydown = (event: KeyboardEvent) => handleKey(event);
-    window.addEventListener('keydown', keydown);
-    return () => window.removeEventListener('keydown', keydown);
-  }, []);
-}
+const MIN_ANALYSIS_PANEL_WIDTH = 240;
+const DEFAULT_CONVERSATION_WIDTH = 380;
+const CONVERSATION_WIDTH_KEY = 'sive.conversation-width';
+const PREVIEW_WIDTH_KEY = 'sive.preview-width';
 
 type Props = AnalysisFrameProps & {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
@@ -74,16 +52,54 @@ export function AnalysisPage({
   activeModelId,
   preferences,
 }: Props) {
-  const preview = useAnalysisPreview({
-    collapsed: datasetCollapsed,
-    onCollapsedChange: onDatasetCollapsedChange,
-    onOpen: onPreviewOpen,
-  });
-  const { card, changeFullscreen } = useFullscreenPreview(fullscreen, onFullscreenChange);
+  const [initialPreviewWidth] = useState(() => readWidth(PREVIEW_WIDTH_KEY, 0) || undefined);
+  const [initialConversationWidth] = useState(() =>
+    initialPreviewWidth ? undefined : readWidth(CONVERSATION_WIDTH_KEY, DEFAULT_CONVERSATION_WIDTH),
+  );
+  const preferredPreviewWidth = useRef(initialPreviewWidth);
+  const workspace = useRef<HTMLDivElement>(null);
+  const conversationPanel = usePanelRef();
+  const previewPanel = usePanelRef();
+  const rememberToggleFocus = usePanelToggleFocus(workspace, DATASET_PREVIEW_ID, datasetCollapsed);
   const { activeTabId, tabs, selectTab, openTab, closeTab } = useAnalysisTabs(chatId);
 
+  const changePreviewCollapsed = (collapsed: boolean) => {
+    rememberToggleFocus();
+    if (!collapsed) onPreviewOpen();
+    onDatasetCollapsedChange(collapsed);
+  };
+
+  const collapsePreview = usePanelCollapsePreview(previewPanel, MIN_ANALYSIS_PANEL_WIDTH, () => {
+    changePreviewCollapsed(true);
+  });
+
+  useLayoutEffect(() => {
+    if (datasetCollapsed) return;
+
+    const frame = requestAnimationFrame(() => {
+      const panel = previewPanel.current;
+      if (!panel) return;
+
+      if (preferredPreviewWidth.current) panel.resize(preferredPreviewWidth.current);
+      else preferredPreviewWidth.current = panel.getSize().inPixels;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [datasetCollapsed, previewPanel]);
+
+  const persistPreviewWidth = () => {
+    requestAnimationFrame(() => {
+      const width = previewPanel.current?.getSize().inPixels;
+      if (!width) return;
+
+      preferredPreviewWidth.current = width;
+      saveWidth(PREVIEW_WIDTH_KEY, width);
+    });
+  };
+
+  const togglePreview = () => changePreviewCollapsed(!datasetCollapsed);
+
   const openSidePanel = () => {
-    if (datasetCollapsed) preview.toggle();
+    if (datasetCollapsed) changePreviewCollapsed(false);
   };
 
   const openResult = (tab: ToolPreviewTab) => {
@@ -91,19 +107,20 @@ export function AnalysisPage({
     openSidePanel();
   };
 
-  useAnalysisShortcuts(fullscreen, () => changeFullscreen(false), preview.toggle);
-
   return (
     <Group
       orientation="horizontal"
-      elementRef={preview.workspace}
-      onPointerDownCapture={preview.collapsePreview.onPointerDownCapture}
-      onLayoutChanged={preview.onLayoutChanged}
+      elementRef={workspace}
+      onPointerDownCapture={collapsePreview.onPointerDownCapture}
+      onLayoutChanged={(_, { isUserInteraction }) => {
+        if (!isUserInteraction || datasetCollapsed || collapsePreview.shouldCollapse()) return;
+        persistPreviewWidth();
+      }}
     >
       <Panel
         id="conversation"
-        panelRef={preview.conversationPanel}
-        defaultSize={preview.initialConversationWidth}
+        panelRef={conversationPanel}
+        defaultSize={initialConversationWidth}
         minSize={MIN_ANALYSIS_PANEL_WIDTH}
         style={{ overflow: 'hidden' }}
       >
@@ -119,11 +136,11 @@ export function AnalysisPage({
                 icon={PanelRightIcon}
                 iconSize={18}
                 label="展开右侧面板"
-                className={panelControlClassName}
+                className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
                 aria-controls={DATASET_PREVIEW_ID}
                 aria-expanded={false}
-                aria-keyshortcuts={previewShortcut}
-                onClick={preview.toggle}
+                aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
+                onClick={togglePreview}
               />
             )}
           </div>
@@ -153,15 +170,18 @@ export function AnalysisPage({
         className={clsx(panelSeparatorClassName, datasetCollapsed ? 'w-0' : 'w-(--workspace-gutter)')}
         disabled={datasetCollapsed || fullscreen}
         disableDoubleClick
-        elementRef={preview.collapsePreview.separatorRef}
-        onDoubleClick={preview.resetWidth}
+        elementRef={collapsePreview.separatorRef}
+        onDoubleClick={() => {
+          conversationPanel.current?.resize(DEFAULT_CONVERSATION_WIDTH);
+          persistPreviewWidth();
+        }}
       />
       <Panel
         id="analysis-preview-panel"
-        panelRef={preview.previewPanel}
-        elementRef={preview.collapsePreview.elementRef}
-        onResize={preview.collapsePreview.onResize}
-        defaultSize={preview.initialPreviewWidth}
+        panelRef={previewPanel}
+        elementRef={collapsePreview.elementRef}
+        onResize={collapsePreview.onResize}
+        defaultSize={initialPreviewWidth}
         groupResizeBehavior="preserve-pixel-size"
         minSize={datasetCollapsed ? 0 : MIN_ANALYSIS_PANEL_WIDTH}
         maxSize={datasetCollapsed ? 0 : undefined}
@@ -172,14 +192,12 @@ export function AnalysisPage({
           dataset={dataset}
           fullscreen={fullscreen}
           collapsed={datasetCollapsed}
-          cardRef={card}
           tabs={tabs}
           activeTabId={activeTabId}
-          previewShortcut={previewShortcut}
           onTabChange={selectTab}
           onTabClose={closeTab}
-          onToggleFullscreen={() => changeFullscreen(!fullscreen)}
-          onCollapse={preview.toggle}
+          onFullscreenChange={onFullscreenChange}
+          onToggleCollapsed={togglePreview}
         />
       </Panel>
     </Group>

@@ -16,7 +16,7 @@ import type { PropsWithChildren } from 'react';
 import { toast } from 'sonner';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
-import { IconButton, panelControlClassName } from './IconButton';
+import { IconButton } from './IconButton';
 
 export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
 
@@ -339,7 +339,7 @@ export function WorkspaceSidebar({
             label="收起侧边栏"
             aria-expanded
             aria-controls={WORKSPACE_SIDEBAR_ID}
-            className={panelControlClassName}
+            className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
             onClick={onCollapse}
           />
         </div>

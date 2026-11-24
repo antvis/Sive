@@ -6,7 +6,6 @@ import { usePanelToggleFocus } from '../hooks/usePanelToggleFocus';
 import { usePanelCollapsePreview } from '../hooks/usePanelCollapsePreview';
 import { readWidth, saveWidth } from '../utils';
 import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../lib/panel-layout';
-import { ConversationSwitcher } from './ConversationSwitcher';
 import { WORKSPACE_SIDEBAR_ID, WorkspaceSidebar } from './WorkspaceSidebar';
 import type { WorkspaceSidebarProps } from './WorkspaceSidebar';
 import { WorkspaceTitleBar } from './WorkspaceTitleBar';
@@ -73,23 +72,20 @@ export function AppShell({
     if (!sidebarCollapsed) closeSidebar();
   };
 
+  const conversationTitle =
+    hasAnalysis && !previewFullscreen
+      ? (sidebar.conversationsByDataset
+          .get(activeDatasetId ?? '')
+          ?.find((conversation) => conversation.id === sidebar.activeConversationId)?.title ?? '新对话')
+      : undefined;
+
   const titleBar = (
     <WorkspaceTitleBar
       page={page}
       datasets={sidebar.datasets}
       activeDatasetId={activeDatasetId}
       showSidebarActions={showSidebarActions}
-      conversationTitle={
-        hasAnalysis && !previewFullscreen ? (
-          <ConversationSwitcher
-            datasets={sidebar.datasets}
-            conversationsByDataset={sidebar.conversationsByDataset}
-            activeDatasetId={activeDatasetId}
-            activeConversationId={sidebar.activeConversationId}
-            onConversationSelect={sidebar.onConversationSelect}
-          />
-        ) : undefined
-      }
+      conversationTitle={conversationTitle}
       onOpenSidebar={openSidebar}
       onConversationCreate={sidebar.onConversationCreate}
     />
