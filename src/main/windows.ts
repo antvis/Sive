@@ -1,7 +1,6 @@
 import path from 'node:path';
 import { BrowserWindow } from 'electron';
 import type { BrowserWindowConstructorOptions, WebContents } from 'electron';
-import { configureMacCloseOnlyTitleBar } from './util/macosTitleBar';
 
 type AppWindow = 'workspace' | 'settings';
 
@@ -89,11 +88,6 @@ export async function openAppWindow(kind: AppWindow) {
   window.once('closed', () => windows.delete(kind));
 
   try {
-    if (kind === 'settings' && process.platform === 'darwin') {
-      await configureMacCloseOnlyTitleBar(window).catch((cause) => {
-        console.error('Failed to configure the macOS settings title bar.', cause);
-      });
-    }
     await loadRenderer(window, hash);
   } catch (cause) {
     if (!window.isDestroyed()) window.destroy();
