@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { Maximize2Icon, Minimize2Icon, PanelRightIcon } from 'lucide-react';
 import { Tabs } from 'radix-ui';
-import type { ReactNode, RefObject } from 'react';
+import type { RefObject } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { IconButton, panelControlClassName } from '../../components/IconButton';
 import { panelCollapsePreviewClassName } from '../../components/ResizeHandle';
@@ -17,7 +17,6 @@ const tabContentClassName = 'min-h-0 min-w-0 flex-1 bg-surface data-[state=inact
 
 type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
-  titleBar: ReactNode;
   fullscreen: boolean;
   collapsed: boolean;
   collapsePending: boolean;
@@ -33,7 +32,6 @@ type Props = {
 
 export function AnalysisSidePanel({
   dataset,
-  titleBar,
   fullscreen,
   collapsed,
   collapsePending,
@@ -84,7 +82,6 @@ export function AnalysisSidePanel({
             className="flex-1"
             onClose={onTabClose}
           />
-          {fullscreen && titleBar}
           <IconButton
             icon={fullscreen ? Minimize2Icon : Maximize2Icon}
             label={fullscreen ? '退出右侧面板全屏' : '全屏查看右侧面板'}

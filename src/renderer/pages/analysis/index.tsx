@@ -152,7 +152,6 @@ export function AnalysisPage({
       )}
       <AnalysisSidePanel
         dataset={dataset}
-        titleBar={titleBar}
         fullscreen={fullscreen}
         collapsed={datasetCollapsed}
         collapsePending={preview.collapsePending}
