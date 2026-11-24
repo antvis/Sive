@@ -7,9 +7,13 @@ import { Modal } from '../../components/Modal';
 import type { Conversation, DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
 
-type Props = { conversations: Conversation[]; datasets: DatasetSummary[] };
+type Props = {
+  conversations: Conversation[];
+  datasets: DatasetSummary[];
+  runningConversationIds: string[];
+};
 
-export function ArchivedConversations({ conversations, datasets }: Props) {
+export function ArchivedConversations({ conversations, datasets, runningConversationIds }: Props) {
   const [query, setQuery] = useState('');
   const [deleting, setDeleting] = useState<Conversation | null>(null);
   const [busy, setBusy] = useState(false);
@@ -75,8 +79,12 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                   </div>
                   <IconButton
                     icon={Trash}
-                    label={`永久删除 ${conversation.title}`}
-                    disabled={busy}
+                    label={
+                      runningConversationIds.includes(conversation.id)
+                        ? '分析仍在运行，请先恢复会话并停止任务'
+                        : `永久删除 ${conversation.title}`
+                    }
+                    disabled={busy || runningConversationIds.includes(conversation.id)}
                     onClick={() => setDeleting(conversation)}
                   />
                   <IconButton

@@ -53,7 +53,11 @@ export function SettingsPage({ state }: { state: WorkspaceState }) {
         {section === 'analysis' && <AnalysisSettings preferences={state.preferences} />}
         {section === 'models' && <ModelSettings models={state.models} activeModelId={state.activeModelId} />}
         {section === 'archived' && (
-          <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
+          <ArchivedConversations
+            conversations={state.archivedConversations}
+            datasets={state.datasets}
+            runningConversationIds={state.runningConversationIds}
+          />
         )}
         {section === 'privacy' && <PrivacySettings preferences={state.preferences} />}
         {section === 'about' && <AboutSettings />}

@@ -1,7 +1,13 @@
-import { isTextUIPart } from 'ai';
-import type { UIMessageChunk } from 'ai';
+import { generateId, isTextUIPart, readUIMessageStream } from 'ai';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
-import type { AnalysisStartInput, ChatMessage, DuckDBEngineConfig, Preferences } from '@shared/api';
+import type {
+  AnalysisSession,
+  AnalysisStartInput,
+  AnalysisUpdate,
+  ChatMessage,
+  DuckDBEngineConfig,
+  Preferences,
+} from '@shared/api';
 import type { AnalysisOptions } from '@shared/schema';
 import { createAnalysisAgent } from '../../ai';
 import type { AnalysisAgent } from '../../ai';
@@ -12,7 +18,11 @@ import type { ModelConfig } from '../model';
 import type { DatasetRow } from '../../db/schema/datasets';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 
-type Emit = (chunk: UIMessageChunk | null) => void;
+type Task = {
+  datasetId: string;
+  controller: AbortController;
+  message: ChatMessage | null;
+};
 
 export class AnalysisService {
   // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
@@ -27,7 +37,9 @@ export class AnalysisService {
     }
   >();
 
-  private tasks = new Map<string, { datasetId: string; controller: AbortController }>();
+  private tasks = new Map<string, Task>();
+
+  private listener?: (id: string, update: AnalysisUpdate) => void;
 
   private updatingDatasets = new Set<string>();
 
@@ -35,6 +47,36 @@ export class AnalysisService {
     private database: DBConnection,
     private repositories: Repositories,
   ) {}
+
+  onUpdate(listener: (id: string, update: AnalysisUpdate) => void) {
+    this.listener = listener;
+  }
+
+  private snapshot(conversationId: string, message: ChatMessage | null = null): AnalysisUpdate {
+    return {
+      running: this.tasks.has(conversationId),
+      message,
+    };
+  }
+
+  getRunningConversationIds() {
+    return [...this.tasks.keys()];
+  }
+
+  assertNotRunning(ids: string[]) {
+    if (ids.some((id) => this.tasks.has(id))) throw new Error('分析仍在运行，请先恢复会话并停止任务。');
+  }
+
+  private publish(conversationId: string, message: ChatMessage | null) {
+    this.listener?.(conversationId, this.snapshot(conversationId, message));
+  }
+
+  getSession(conversationId: string): AnalysisSession {
+    const message = this.tasks.get(conversationId)?.message ?? null;
+    const messages = this.getMessages(conversationId);
+    if (message) messages.push(message);
+    return { messages, update: this.snapshot(conversationId, message ?? messages.at(-1) ?? null) };
+  }
 
   async beginDatasetUpdate(datasetId: string) {
     if (this.updatingDatasets.has(datasetId)) throw new Error('数据源正在更新，请稍后重试。');
@@ -68,7 +110,7 @@ export class AnalysisService {
       .map(({ id, role, parts, createdAt }) => ({ id, role, parts, metadata: { createdAt } }));
   }
 
-  start(input: AnalysisStartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
+  start(input: AnalysisStartInput, model: ModelConfig, preferences: Preferences) {
     const question = input.message.parts
       .filter(isTextUIPart)
       .map((part) => part.text)
@@ -107,15 +149,19 @@ export class AnalysisService {
       title: conversation.title === '新建分析' ? question : conversation.title,
       updatedAt: now,
     });
-    const controller = new AbortController();
-    this.tasks.set(conversation.id, { datasetId: dataset.id, controller });
+    const task: Task = {
+      datasetId: dataset.id,
+      controller: new AbortController(),
+      message: null,
+    };
+    this.tasks.set(conversation.id, task);
+    this.publish(conversation.id, { ...input.message, metadata: { createdAt: now } });
     void this.run(
       conversation.id,
       agent,
       analysisOptions,
       preferences.agent,
-      controller,
-      emit,
+      task,
       localFilePath(dataset.sourceConfig),
     );
   }
@@ -155,11 +201,12 @@ export class AnalysisService {
     agentPromise: Promise<AnalysisAgent>,
     analysisOptions: Required<AnalysisOptions>,
     agentConfig: Preferences['agent'],
-    controller: AbortController,
-    emit: Emit,
+    task: Task,
     file?: string,
   ) {
-    let terminal: Extract<UIMessageChunk, { type: 'error' | 'abort' }> | undefined;
+    const { controller } = task;
+    let terminal: string | null = null;
+    let response: ChatMessage | null = null;
     try {
       const agent = await agentPromise;
       if (file) await checkLocalFile(file);
@@ -172,6 +219,8 @@ export class AnalysisService {
         agent: agentConfig,
         abortSignal: controller.signal,
         onEnd: ({ responseMessage, outcome, isAborted }) => {
+          response = responseMessage;
+          if (isAborted) controller.abort();
           const cancelled = isAborted || controller.signal.aborted;
           const completed = !cancelled && outcome.status === 'completed';
           const parts = completed
@@ -203,25 +252,37 @@ export class AnalysisService {
           if (!completed) throw new Error('分析流意外结束。');
         },
       });
-      for await (const chunk of stream) {
-        // Keep the renderer subscribed until the final traces have been written to SQLite.
-        if (chunk.type === 'error' || chunk.type === 'abort') {
-          terminal = chunk;
-        } else {
-          emit(chunk);
-        }
+      for await (const chunk of readUIMessageStream<ChatMessage>({
+        stream,
+        onError: (error) => {
+          terminal = errorText(error);
+        },
+      })) {
+        task.message = chunk;
+        this.publish(conversationId, chunk);
       }
       controller.signal.throwIfAborted();
     } catch (error) {
+      terminal = errorText(error);
+    }
+    if (response) task.message = response;
+    const status = controller.signal.aborted ? 'stopped' : terminal ? 'failed' : 'completed';
+    if (status !== 'completed') {
       this.agents.delete(conversationId);
       await agentPromise.then((agent) => agent.dispose()).catch(() => {});
-      terminal = controller.signal.aborted
-        ? { type: 'abort' }
-        : { type: 'error', errorText: errorText(error) };
-    } finally {
-      this.tasks.delete(conversationId);
-      if (terminal) emit(terminal);
-      emit(null);
     }
+    const message = task.message ?? { id: generateId(), role: 'assistant' as const, parts: [] };
+    task.message = {
+      ...message,
+      parts: [
+        ...message.parts,
+        {
+          type: 'data-analysis-result',
+          data: { status, ...(status === 'failed' && terminal ? { error: terminal } : {}) },
+        },
+      ],
+    };
+    this.tasks.delete(conversationId);
+    this.publish(conversationId, task.message);
   }
 }

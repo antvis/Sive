@@ -1,16 +1,14 @@
-import { useChat } from '@ai-sdk/react';
 import { generateId } from 'ai';
 import { ArrowLeftIcon } from 'lucide-react';
 import { analysisStrategy } from '@shared/api';
-import type { ChatMessage } from '@shared/api';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
 import { Button } from '../ui/button';
 import { TooltipProvider } from '../ui/tooltip';
 import type { ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
-import { IpcChatTransport } from './ipc-chat-transport';
+import { useAnalysis } from '../../hooks/useAnalysis';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
@@ -37,54 +35,34 @@ export function Chat({
 }: Props) {
   const [question, setQuestion] = useState('');
   const chatId = useMemo(() => conversationId ?? generateId(), [datasetId, conversationId]);
-  const transport = useMemo(
-    () => new IpcChatTransport(onConversationChange, (cause) => toast.error(errorMessage(cause))),
-    [onConversationChange],
-  );
   const {
-    messages,
-    setMessages,
-    sendMessage,
-    status,
+    session,
+    loading: historyLoading,
     error: chatError,
-  } = useChat<ChatMessage>({ id: chatId, transport });
-  const [historyLoading, setHistoryLoading] = useState(true);
+  } = useAnalysis(chatId, Boolean(conversationId));
+  const { messages, update } = session;
+  const [starting, setStarting] = useState(false);
+  const visibleChat = useRef<string | null>(chatId);
+  const pendingStart = useRef<{ id: string; promise: Promise<void> } | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [error, setError] = useState('');
   const activeProvider = models.find((model) => model.id === activeModelId);
   const activeModel = activeProvider?.model ?? '';
 
-  const busy = status === 'submitted' || status === 'streaming';
-  const displayError = error || chatError?.message;
+  const busy = starting || update.running;
+  const status = starting ? 'submitted' : busy ? 'streaming' : 'ready';
+  const displayError = error || chatError || undefined;
 
   useEffect(() => {
     setQuestion('');
     setError('');
-    setHistoryLoading(Boolean(conversationId));
-  }, [chatId]);
-
-  useEffect(() => {
-    let live = true;
-    if (!conversationId) {
-      setHistoryLoading(false);
-    } else if (!busy) {
-      window.workbench
-        .analysisGetMessages(conversationId)
-        .then((history) => {
-          if (live) setMessages(history);
-        })
-        .catch((cause) => {
-          if (live) setError(errorMessage(cause));
-        })
-        .finally(() => {
-          if (live) setHistoryLoading(false);
-        });
-    }
+    setStarting(false);
+    visibleChat.current = chatId;
     return () => {
-      live = false;
+      visibleChat.current = null;
     };
-  }, [chatId, conversationId, busy, setMessages]);
+  }, [chatId]);
 
   useEffect(() => {
     let live = true;
@@ -114,16 +92,33 @@ export function Chat({
   const start = async ({ text }: PromptInputMessage) => {
     if (!text.trim() || !activeModelId || busy || historyLoading) return;
     setError('');
-    setQuestion('');
-    await sendMessage(
-      { text: text.trim(), metadata: { createdAt: new Date().toISOString() } },
-      {
-        body: {
-          datasetId,
-          strategy: preferences.strategy,
-        },
-      },
-    );
+    setStarting(true);
+    const request = window.workbench.analysisStart({
+      chatId,
+      datasetId,
+      strategy: preferences.strategy,
+      message: { id: generateId(), role: 'user', parts: [{ type: 'text', text: text.trim() }] },
+    });
+    pendingStart.current = { id: chatId, promise: request };
+    try {
+      await request;
+      if (visibleChat.current === chatId) {
+        setQuestion('');
+        onConversationChange(chatId);
+      }
+    } catch (cause) {
+      if (visibleChat.current === chatId) setError(errorMessage(cause));
+    } finally {
+      if (pendingStart.current?.promise === request) pendingStart.current = null;
+      if (visibleChat.current === chatId) setStarting(false);
+    }
+  };
+
+  const stop = () => {
+    const started = pendingStart.current?.id === chatId ? pendingStart.current.promise : Promise.resolve();
+    void started
+      .then(() => window.workbench.analysisCancel(chatId))
+      .catch((cause) => toast.error(errorMessage(cause)));
   };
 
   const changeModel = (value: string) => {
@@ -175,7 +170,7 @@ export function Chat({
             value={question}
             onChange={setQuestion}
             onSubmit={start}
-            onStop={() => transport.stop(chatId)}
+            onStop={stop}
             status={status}
             disabled={!activeModelId || historyLoading}
             models={models}

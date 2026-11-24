@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
+import { z } from 'zod';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
 import type { Services } from '../services';
@@ -23,14 +24,22 @@ export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 export function registerIpc(services: Services) {
   let revision = 0;
 
-  const changed = (event: IpcMainInvokeEvent) => {
+  const changed = (event?: IpcMainInvokeEvent) => {
     revision += 1;
-    if (!event.sender.isDestroyed()) event.sender.send(WORKSPACE_CHANGED_CHANNEL);
+    const sender = event?.sender ?? BrowserWindow.getAllWindows()[0]?.webContents;
+    if (sender && !sender.isDestroyed()) sender.send(WORKSPACE_CHANGED_CHANNEL);
   };
+
+  services.analysis.onUpdate((id, update) => {
+    const window = BrowserWindow.getAllWindows()[0];
+    if (window && !window.webContents.isDestroyed()) window.webContents.send('analysis:chunk', id, update);
+    if (!update.running || update.message?.role === 'user') changed();
+  });
 
   ipcMain.handle('workspaceGetState', () => {
     const preferences = services.settings.getPreferences();
     return {
+      runningConversationIds: services.analysis.getRunningConversationIds(),
       conversations: services.conversation.list(),
       archivedConversations: services.conversation.listArchived(),
       datasets: services.dataset.listSummaries(),
@@ -126,8 +135,13 @@ export function registerIpc(services: Services) {
     changed(event);
   });
 
-  ipcMain.handle('datasetDelete', (event, id: string) => {
-    services.dataset.remove(id);
+  ipcMain.handle('datasetDelete', async (event, id: string) => {
+    await services.analysis.beginDatasetUpdate(id);
+    try {
+      services.dataset.remove(id);
+    } finally {
+      services.analysis.endDatasetUpdate(id);
+    }
     changed(event);
   });
 
@@ -152,31 +166,28 @@ export function registerIpc(services: Services) {
   });
 
   ipcMain.handle('conversationPurge', (event, ids: string[]) => {
+    ids = z.array(z.string().min(1)).parse(ids);
+    services.analysis.assertNotRunning(ids);
     services.conversation.purge(ids);
     changed(event);
   });
 
-  ipcMain.handle('analysisStart', async (event, input: AnalysisStartInput) => {
-    const { sender } = event;
+  ipcMain.handle('analysisStart', async (_event, input: AnalysisStartInput) => {
     input = await analysisStartSchema.parseAsync(input);
     await services.dataset.prepareOAuth(input.datasetId);
     services.analysis.start(
       input,
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
-      (chunk) => {
-        if (!sender.isDestroyed()) sender.send('analysis:chunk', input.message.id, chunk);
-      },
     );
-    changed(event);
   });
 
   ipcMain.handle('analysisCancel', (_event, conversationId: string) =>
-    services.analysis.cancel(conversationId),
+    services.analysis.cancel(z.string().min(1).parse(conversationId)),
   );
 
   ipcMain.handle('analysisGetMessages', (_event, conversationId: string) =>
-    services.analysis.getMessages(conversationId),
+    services.analysis.getSession(z.string().min(1).parse(conversationId)),
   );
 
   ipcMain.handle('snippetSave', (event, input: SnippetSaveInput) => {

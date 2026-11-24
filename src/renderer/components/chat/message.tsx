@@ -10,6 +10,7 @@ import { getTextFromUIMessage } from './util';
 
 export function isVisibleAssistantPart(part: ChatMessage['parts'][number]) {
   if (isTextUIPart(part)) return Boolean(part.text.trim());
+  if (part.type === 'data-analysis-result') return Boolean(part.data.error);
   return isToolUIPart(part);
 }
 
@@ -27,6 +28,12 @@ function StreamContent({
   return (
     <div className="grid min-w-0 grid-cols-1 gap-4">
       {parts.map((part, index) => {
+        if (part.type === 'data-analysis-result' && part.data.error)
+          return (
+            <p key={index} role="alert" className="m-0 text-sm text-danger">
+              {part.data.error}
+            </p>
+          );
         if (isTextUIPart(part)) return <MessageResponse key={index}>{part.text}</MessageResponse>;
         if (isToolUIPart(part))
           return (

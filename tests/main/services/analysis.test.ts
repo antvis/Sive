@@ -1,10 +1,10 @@
-import type { UIMessageChunk } from 'ai';
 import { expect, it, vi } from 'vitest';
 import { createAnalysisAgent } from '../../../src/main/ai';
 import { createRepositories } from '../../../src/main/db/repository';
 import { AnalysisService } from '../../../src/main/services/analysis';
 import type { AnalysisToolOutput } from '../../../src/shared/analysis-trace';
 import { DEFAULT_PREFERENCES } from '../../../src/shared/api';
+import type { AnalysisUpdate } from '../../../src/shared/api';
 import { createTestDb } from '../../helpers/db';
 
 vi.mock('../../../src/main/ai', () => ({ createAnalysisAgent: vi.fn() }));
@@ -52,12 +52,27 @@ it('streams the analysis trace with the tool result before the reply ends', asyn
     } as const;
     const reply = { type: 'text-delta', id: 'reply', delta: '销量为 10。' } as const;
     vi.mocked(createAnalysisAgent).mockResolvedValue({
-      stream: async () => ReadableStream.from([toolResult, reply]),
+      stream: async () =>
+        ReadableStream.from([
+          {
+            type: 'tool-input-available',
+            toolCallId: output.trace.toolCallId,
+            toolName: 'analyze',
+            input: { query },
+          },
+          toolResult,
+          { type: 'text-start', id: 'reply' },
+          reply,
+        ]),
       dispose: async () => {},
     });
     const service = new AnalysisService(testDb.database, repositories);
-    const chunks: (UIMessageChunk | null)[] = [];
+    const chunks: AnalysisUpdate[] = [];
     await new Promise<void>((resolve) => {
+      service.onUpdate((_id, chunk) => {
+        chunks.push(chunk);
+        if (!chunk.running) resolve();
+      });
       service.start(
         {
           chatId: 'chat',
@@ -67,13 +82,16 @@ it('streams the analysis trace with the tool result before the reply ends', asyn
         },
         { baseURL: 'https://example.com', model: 'test' },
         DEFAULT_PREFERENCES,
-        (chunk) => {
-          chunks.push(chunk);
-          if (chunk === null) resolve();
-        },
       );
     });
-    expect(chunks).toEqual([toolResult, reply, null]);
+    expect(
+      chunks.some(
+        ({ running, message }) =>
+          running &&
+          message?.parts.some((part) => part.type === 'tool-analyze' && part.state === 'output-available') &&
+          !message.parts.some((part) => part.type === 'text' && part.text),
+      ),
+    ).toBe(true);
   } finally {
     testDb.close();
   }

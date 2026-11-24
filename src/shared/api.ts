@@ -7,7 +7,7 @@ import type {
   Semantic,
   SuggestResult,
 } from '@antv/ava';
-import type { UIMessage, UIMessageChunk } from 'ai';
+import type { UIMessage } from 'ai';
 import { isTextUIPart, validateUIMessages } from 'ai';
 import { z } from 'zod';
 import type { LocalFileFormat } from './dataSource';
@@ -106,7 +106,19 @@ export type Conversation = {
   deletedAt: string | null;
 };
 
-export type ChatMessage = UIMessage<{ createdAt: string }>;
+export type AnalysisResult = {
+  status: 'completed' | 'failed' | 'stopped';
+  error?: string;
+};
+
+export type ChatMessage = UIMessage<{ createdAt: string }, { 'analysis-result': AnalysisResult }>;
+
+export type AnalysisUpdate = {
+  running: boolean;
+  message: ChatMessage | null;
+};
+
+export type AnalysisSession = { messages: ChatMessage[]; update: AnalysisUpdate };
 
 export type DatasetSummary = {
   id: string;
@@ -147,6 +159,7 @@ export const analysisStartSchema = z.object({
 export type AnalysisStartInput = z.infer<typeof analysisStartSchema>;
 
 export type WorkspaceState = {
+  runningConversationIds: string[];
   conversations: Conversation[];
   archivedConversations: Conversation[];
   datasets: DatasetSummary[];
@@ -197,8 +210,8 @@ export type WorkbenchApi = {
   modelDelete(id: string): Promise<void>;
   analysisStart(input: AnalysisStartInput): Promise<void>;
   analysisCancel(conversationId: string): Promise<void>;
-  analysisGetMessages(conversationId: string): Promise<ChatMessage[]>;
-  analysisOnChunk(callback: (messageId: string, chunk: UIMessageChunk | null) => void): () => void;
+  analysisGetMessages(conversationId: string): Promise<AnalysisSession>;
+  analysisOnChunk(callback: (messageId: string, chunk: AnalysisUpdate) => void): () => void;
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;

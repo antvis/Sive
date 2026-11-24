@@ -1,8 +1,7 @@
 import '@sentry/electron/preload';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
-import type { UIMessageChunk } from 'ai';
-import type { ModelTestProgress, WorkbenchApi } from './api';
+import type { AnalysisUpdate, ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
   workspaceGetState: () => ipcRenderer.invoke('workspaceGetState'),
@@ -44,7 +43,7 @@ const api = {
   analysisCancel: (conversationId) => ipcRenderer.invoke('analysisCancel', conversationId),
   analysisGetMessages: (conversationId) => ipcRenderer.invoke('analysisGetMessages', conversationId),
   analysisOnChunk: (callback) => {
-    const listener = (_event: IpcRendererEvent, messageId: string, chunk: UIMessageChunk | null) =>
+    const listener = (_event: IpcRendererEvent, messageId: string, chunk: AnalysisUpdate) =>
       callback(messageId, chunk);
     ipcRenderer.on('analysis:chunk', listener);
     return () => ipcRenderer.removeListener('analysis:chunk', listener);

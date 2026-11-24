@@ -1,9 +1,9 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA } from '@antv/ava';
 import { ToolLoopAgent, createAgentUIStream, generateId, isStepCount } from 'ai';
-import type { InferUIMessageChunk, UIMessageStreamOnEndCallback } from 'ai';
+import type { InferUIMessageChunk, InferUITools, UIMessage, UIMessageStreamOnEndCallback } from 'ai';
 import { DEFAULT_PREFERENCES } from '@shared/api';
-import type { ChatMessage, DuckDBEngineConfig } from '@shared/api';
+import type { AnalysisResult, ChatMessage, DuckDBEngineConfig } from '@shared/api';
 import type { ModelConfig } from '../services/model';
 import { errorText } from '../util';
 import { sourceEngine } from '../util/engine';
@@ -84,7 +84,12 @@ export async function createAnalysisAgent({
         typeof tools,
         Record<string, unknown>,
         never,
-        NonNullable<ChatMessage['metadata']>
+        NonNullable<ChatMessage['metadata']>,
+        UIMessage<
+          NonNullable<ChatMessage['metadata']>,
+          { 'analysis-result': AnalysisResult },
+          InferUITools<typeof tools>
+        >
       >({
         agent,
         uiMessages: messages,
