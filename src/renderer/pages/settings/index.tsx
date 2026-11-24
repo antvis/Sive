@@ -24,7 +24,11 @@ import { StorageSettings } from './StorageSettings';
 const sections = {
   appearance: { label: '偏好设置', description: '调整界面语言、主题亮暗和对话字号', icon: MonitorIcon },
   models: { label: '模型服务', description: '管理模型服务、可用模型和默认模型', icon: CpuIcon },
-  analysis: { label: '分析', description: '设置默认分析方式、Agent 行为和 DuckDB 引擎', icon: ChartLineIcon },
+  analysis: {
+    label: '分析配置',
+    description: '设置默认分析方式、Agent 行为和 DuckDB 引擎',
+    icon: ChartLineIcon,
+  },
   storage: { label: '存储空间', description: '查看工作台数据库和应用缓存的占用', icon: HardDriveIcon },
   archived: { label: '归档会话', description: '查找和管理已归档的分析会话', icon: ArchiveIcon },
   privacy: { label: '隐私与诊断', description: undefined, icon: ShieldCheckIcon },

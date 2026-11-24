@@ -60,7 +60,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
         placeholder="搜索会话标题或数据源"
       />
       {error && <p className="mt-0 text-sm text-danger">{error}</p>}
-      <div className="grid gap-5">
+      <div className="grid grid-cols-1 gap-5">
         {[...groups].map(([datasetId, items]) => (
           <section key={datasetId}>
             <h2 className="mt-0 mb-2 text-base font-medium">
@@ -73,7 +73,12 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
               {items.map((conversation) => (
                 <div key={conversation.id} className="flex items-center gap-3 py-3">
                   <div className="min-w-0 flex-1">
-                    <strong className="block truncate text-base font-medium">{conversation.title}</strong>
+                    <strong
+                      className="block truncate text-base font-medium [-webkit-app-region:no-drag]"
+                      title={conversation.title}
+                    >
+                      {conversation.title}
+                    </strong>
                     <time className="mt-1 block text-xs text-muted-foreground">
                       归档于 {new Date(conversation.archivedAt!).toLocaleString('zh-CN')}
                     </time>
