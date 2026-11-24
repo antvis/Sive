@@ -56,7 +56,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="搜索分析会话或者数据源"
       />
-      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
       <div className="grid gap-5">
         {[...groups].map(([datasetId, items]) => (
           <section key={datasetId}>
@@ -69,7 +69,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                 <div key={conversation.id} className="flex items-center gap-3 border-t py-4 first:border-t-0">
                   <div className="min-w-0 flex-1">
                     <strong className="block truncate text-base font-medium">{conversation.title}</strong>
-                    <time className="mt-1 block text-sm text-muted-foreground">
+                    <time className="mt-1 block text-xs text-muted-foreground">
                       归档于 {new Date(conversation.archivedAt!).toLocaleString('zh-CN')}
                     </time>
                   </div>
@@ -94,7 +94,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
         ))}
       </div>
       {!groups.size && (
-        <p className="py-12 text-center text-muted-foreground">没有匹配的会话，试试其他关键词或数据源。</p>
+        <p className="py-12 text-center text-sm text-muted-foreground">没有匹配的会话，试试其他关键词或数据源。</p>
       )}
       <Modal
         open={!!deleting}

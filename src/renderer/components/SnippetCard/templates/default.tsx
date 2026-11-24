@@ -132,7 +132,7 @@ export default function DefaultTemplate({
       )}
       {!editing && subtitle && (
         <p
-          className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted-foreground"
+          className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-sm leading-5 text-pretty text-muted-foreground"
           title={subtitle}
         >
           {subtitle}
@@ -147,7 +147,7 @@ export default function DefaultTemplate({
             <div key={index} className="min-w-0">
               <dt className="text-xs leading-5 text-pretty text-muted-foreground">{metric.label}</dt>
               <dd className="m-0 mt-1 flex flex-wrap items-baseline gap-x-1 tabular-nums">
-                <span className="text-xl leading-7 font-semibold wrap-anywhere text-ink">{metric.value}</span>
+                <span className="text-2xl leading-8 font-semibold wrap-anywhere text-ink">{metric.value}</span>
                 <span className="text-xs text-muted-foreground">{metric.unit}</span>
               </dd>
             </div>
@@ -157,7 +157,7 @@ export default function DefaultTemplate({
       {editing ? (
         <div className="mt-4">
           <textarea
-            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-base leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             value={summary}
             disabled={busy}
             aria-label="Snippet 洞察描述"
@@ -190,7 +190,7 @@ export default function DefaultTemplate({
                 '[&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:rounded-xs [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:bg-accent/8 [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:font-semibold [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:text-accent [&_:is(.t8-metric\\_name,.t8-trend\\_desc)]:font-semibold',
               )}
             >
-              <div id={summaryId} className={summaryExpanded ? undefined : 'line-clamp-3 max-h-[84px]'}>
+              <div id={summaryId} className={summaryExpanded ? undefined : 'line-clamp-3 max-h-[3lh]'}>
                 <div ref={summaryRef}>
                   <Summary syntax={data.summary} />
                 </div>

@@ -26,13 +26,13 @@ export function Markdown({ children }: { children: string }) {
   return (
     <div
       className={cn(
-        'min-w-0 text-sm leading-[1.75] wrap-anywhere [&>:first-child]:mt-0 [&>:last-child]:mb-0',
+        'min-w-0 text-base leading-[1.75] wrap-anywhere [&>:first-child]:mt-0 [&>:last-child]:mb-0',
         '[&_:is(p,ul,ol,pre,table,blockquote)]:mt-0 [&_:is(p,ul,ol,pre,table,blockquote)]:mb-3',
         '[&_:is(h1,h2,h3)]:mt-4 [&_:is(h1,h2,h3)]:mb-2 [&_:is(h1,h2,h3)]:font-semibold',
-        '[&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_:is(ul,ol)]:pl-5 [&_ul]:list-disc [&_ol]:list-decimal',
-        '[&_a]:text-accent [&_a]:underline [&_code]:rounded-[4px] [&_code]:bg-page [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-[family-name:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace]',
+        '[&_h1]:text-xl [&_h2]:text-lg [&_:is(h3,h4,h5,h6)]:text-base [&_:is(ul,ol)]:pl-5 [&_ul]:list-disc [&_ol]:list-decimal',
+        '[&_a]:text-accent [&_a]:underline [&_code]:rounded-[4px] [&_code]:bg-page [&_code]:text-sm [&_table_code]:text-xs [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-[family-name:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace]',
         '[&_pre]:max-w-full [&_pre]:overflow-auto [&_pre]:rounded-[8px] [&_pre]:bg-page [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-sm',
-        '[&_table]:block [&_table]:w-full [&_table]:max-w-full [&_table]:border-collapse [&_table]:overflow-x-auto [&_table]:text-sm',
+        '[&_table]:block [&_table]:w-full [&_table]:max-w-full [&_table]:border-collapse [&_table]:overflow-x-auto [&_table]:text-xs',
         '[&_:is(th,td)]:border-b [&_:is(th,td)]:border-line [&_:is(th,td)]:p-2 [&_:is(th,td)]:text-left [&_th]:font-medium [&_th]:text-muted-foreground',
         '[&_blockquote]:border-l-[3px] [&_blockquote]:border-line [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground',
         sqlHighlightClassName,
@@ -47,7 +47,7 @@ export function SqlBlock({ code }: { code: string }) {
   return (
     <pre
       className={cn(
-        'm-0 max-w-full overflow-auto rounded-md bg-page p-3 text-xs leading-5 whitespace-pre-wrap text-ink/80',
+        'm-0 max-w-full overflow-auto rounded-md bg-page p-3 text-sm leading-5 whitespace-pre-wrap text-ink/80',
         sqlHighlightClassName,
       )}
     >

@@ -24,7 +24,10 @@ export function useSnippetCard(
     const content = summaryRef.current;
     if (!content) return;
     // Measure the unclipped content, including asynchronously rendered T8 paragraphs.
-    const observer = new ResizeObserver(() => setSummaryOverflow(content.scrollHeight > 84));
+    const observer = new ResizeObserver(() => {
+      const lineHeight = Number.parseFloat(getComputedStyle(content).lineHeight);
+      setSummaryOverflow(content.scrollHeight > 3 * lineHeight + 1);
+    });
     observer.observe(content);
     return () => observer.disconnect();
   }, [data.summary, editing]);

@@ -194,7 +194,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
           />
         </SettingRow>
       </SettingGroup>
-      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
     </div>
   );
 }

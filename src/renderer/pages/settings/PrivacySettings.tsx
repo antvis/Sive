@@ -73,7 +73,7 @@ export function PrivacySettings({ preferences }: { preferences: Preferences }) {
         </div>
       </SettingGroup>
 
-      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
     </div>
   );
 }

@@ -141,7 +141,7 @@ export default function CircuitTemplate({
         )}
         {!editing && subtitle && (
           <p
-            className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-xs leading-5 text-pretty text-muted-foreground"
+            className="mt-2 mb-0 line-clamp-2 max-w-[65ch] text-sm leading-5 text-pretty text-muted-foreground"
             title={subtitle}
           >
             {subtitle}
@@ -169,7 +169,7 @@ export default function CircuitTemplate({
       {editing ? (
         <div className="mt-4">
           <textarea
-            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="min-h-28 w-full resize-y rounded-lg border bg-surface p-3 text-base leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             value={summary}
             disabled={busy}
             aria-label="Snippet 洞察描述"
@@ -197,7 +197,7 @@ export default function CircuitTemplate({
               className="pointer-events-none absolute top-1 right-2 -z-10 text-accent/7"
             />
             <div className={summaryClassName}>
-              <div id={summaryId} className={summaryExpanded ? undefined : 'line-clamp-3 max-h-[84px]'}>
+              <div id={summaryId} className={summaryExpanded ? undefined : 'line-clamp-3 max-h-[3lh]'}>
                 <div ref={summaryRef}>
                   <Summary syntax={data.summary} />
                 </div>

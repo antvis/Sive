@@ -213,19 +213,19 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
         <Tabs.List aria-label="数据集信息" className="flex rounded-lg bg-page p-1">
           <Tabs.Trigger
             value="data"
-            className="rounded-md px-3 py-1 text-xs text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
+            className="rounded-md px-3 py-1 text-sm text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
           >
             数据
           </Tabs.Trigger>
           <Tabs.Trigger
             value="fields"
-            className="rounded-md px-3 py-1 text-xs text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
+            className="rounded-md px-3 py-1 text-sm text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
           >
             字段
           </Tabs.Trigger>
           <Tabs.Trigger
             value="semantic"
-            className="rounded-md px-3 py-1 text-xs text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
+            className="rounded-md px-3 py-1 text-sm text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink"
           >
             语义层
           </Tabs.Trigger>
@@ -239,7 +239,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             aria-controls={treeId}
             onClick={() => setNavigation((current) => ({ ...current, open: !current.open }))}
             className={clsx(
-              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent',
               showTree ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-page',
             )}
           >
@@ -281,7 +281,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-2 text-xs text-muted-foreground">
             <div className="flex min-w-0 items-center gap-2">
               <Table size={14} className="shrink-0" />
-              <span className="truncate text-ink" title={model?.name}>
+              <span className="truncate text-sm text-ink" title={model?.name}>
                 {model?.name ?? '没有可预览的数据表'}
               </span>
             </div>
@@ -307,9 +307,9 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
               onChange={(event) => setFieldSearch(event.target.value)}
               className="mb-3 w-full rounded-lg border bg-page px-3 py-2 text-sm outline-none focus:border-accent"
             />
-            <table className="w-full table-fixed border-collapse text-sm">
+            <table className="w-full table-fixed border-collapse text-xs">
               <thead>
-                <tr className="border-b text-left text-xs text-muted-foreground">
+                <tr className="border-b text-left text-muted-foreground">
                   <th className="w-2/5 py-2 pr-3 font-medium">字段名</th>
                   <th className="w-2/5 py-2 pr-3 font-medium">数据类型</th>
                   <th className="py-2 font-medium">约束</th>
@@ -320,7 +320,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
                   <tr key={column.name} className="border-b last:border-0">
                     <td className="py-3 pr-3 break-all">{column.name}</td>
                     <td className="py-3 pr-3 break-all text-muted-foreground">{column.type}</td>
-                    <td className="py-3 text-xs text-muted-foreground">
+                    <td className="py-3 text-muted-foreground">
                       {[primaryKey.includes(column.name) && '主键', column.notNull && '非空']
                         .filter(Boolean)
                         .join(' · ') || '—'}
@@ -337,7 +337,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
                   {relationships.map((relation) => (
                     <li key={relation.name}>
                       <span>{relation.name}</span>
-                      <code className="mt-1 block break-all text-xs text-muted-foreground">{relation.condition}</code>
+                      <code className="mt-1 block break-all text-sm text-muted-foreground">{relation.condition}</code>
                     </li>
                   ))}
                 </ul>

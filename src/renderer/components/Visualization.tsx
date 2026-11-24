@@ -15,13 +15,13 @@ export function Visualization({
   preserveSpec?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const themeMode = useContext(ThemeContext);
+  const theme = useContext(ThemeContext);
   const templateTheme = useContext(ChartThemeContext);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container || typeof spec === 'string') return;
-    const theme = createChartTheme(themeMode, templateTheme);
+    const chartTheme = createChartTheme(theme, templateTheme);
     let chart: GPTVis | undefined;
     let width = 0;
 
@@ -30,8 +30,8 @@ export function Visualization({
       if (!nextWidth || nextWidth === width) return;
       width = nextWidth;
       chart?.destroy();
-      chart = new GPTVis({ container, width: nextWidth, height, theme });
-      chart.render(preserveSpec ? spec : { ...spec, theme });
+      chart = new GPTVis({ container, width: nextWidth, height, theme: chartTheme });
+      chart.render(preserveSpec ? spec : { ...spec, theme: chartTheme });
     };
 
     render();
@@ -40,7 +40,7 @@ export function Visualization({
       unbind();
       chart?.destroy();
     };
-  }, [spec, height, preserveSpec, themeMode, templateTheme]);
+  }, [spec, height, preserveSpec, theme, templateTheme]);
 
   if (typeof spec === 'string') {
     const syntax = preserveSpec ? spec : spec.replace(/^theme\s+(light|dark)\s*$/gim, '');
