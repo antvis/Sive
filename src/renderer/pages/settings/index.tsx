@@ -56,7 +56,7 @@ export function SettingsPage({ state }: { state: WorkspaceState }) {
           <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
         )}
         {section === 'privacy' && <PrivacySettings preferences={state.preferences} />}
-        {section === 'about' && <AboutSettings />}
+        {section === 'about' && <AboutSettings preferences={state.preferences} />}
       </div>
     </div>
   );

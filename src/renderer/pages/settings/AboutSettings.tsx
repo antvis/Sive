@@ -1,12 +1,15 @@
 import { ArrowSquareOut, GithubLogo } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import type { Preferences } from '@shared/api';
 import { Button } from '../../components/Button';
+import { showUpdateNotification } from '../../components/UpdateNotification';
 import { errorMessage } from '../../utils';
 
-export function AboutSettings() {
+export function AboutSettings({ preferences }: { preferences: Preferences }) {
   const [version, setVersion] = useState('');
   const [checking, setChecking] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     void window.workbench.aboutGetVersion().then(setVersion);
@@ -16,15 +19,23 @@ export function AboutSettings() {
     setChecking(true);
     try {
       const result = await window.workbench.aboutCheckUpdates();
-      toast.success(
-        result.hasUpdate
-          ? `发现新版本 ${result.latestVersion}，已打开发布页面`
-          : `当前已是最新版本 ${result.currentVersion}`,
-      );
+      if (result.hasUpdate) showUpdateNotification(result);
+      else toast.success(`当前已是最新版本 ${result.currentVersion}`);
     } catch (cause) {
       toast.error(errorMessage(cause));
     } finally {
       setChecking(false);
+    }
+  };
+
+  const updateAutomaticCheck = async (autoCheckUpdates: boolean) => {
+    setSaving(true);
+    try {
+      await window.workbench.settingsSavePreferences({ ...preferences, autoCheckUpdates });
+    } catch (cause) {
+      toast.error(errorMessage(cause));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -56,6 +67,19 @@ export function AboutSettings() {
           关注开源项目
         </Button>
       </div>
+      <label className="mt-7 flex items-center justify-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={preferences.autoCheckUpdates}
+          disabled={saving}
+          className="size-4 accent-[var(--accent)]"
+          onChange={(event) => void updateAutomaticCheck(event.target.checked)}
+        />
+        自动检查更新
+      </label>
+      <p className="mt-2 mb-0 text-xs text-muted-foreground">
+        启动后及每 24 小时检查新版本，发现更新时提醒，点击后前往发布页下载。
+      </p>
     </section>
   );
 }

@@ -50,6 +50,7 @@ async function initialize() {
   initializeAnalytics();
   registerIpc(services);
   createWindow();
+  services.update.setAutomatic(preferences.autoCheckUpdates);
 }
 
 void app

@@ -30,6 +30,7 @@ export type Preferences = {
   strategy: AnalysisStrategyConfig;
   engine: DuckDBEngineConfig;
   diagnostics: { nativeCrashReporting: boolean };
+  autoCheckUpdates: boolean;
 };
 
 export const DEFAULT_PREFERENCES = {
@@ -45,6 +46,7 @@ export const DEFAULT_PREFERENCES = {
     maxTempDirectorySize: '1GB',
   },
   diagnostics: { nativeCrashReporting: false },
+  autoCheckUpdates: true,
 } satisfies Preferences;
 
 export function analysisStrategy(
@@ -194,6 +196,8 @@ export type WorkbenchApi = {
   systemOpen(type: 'directory' | 'url', path: string): Promise<void>;
   aboutGetVersion(): Promise<string>;
   aboutCheckUpdates(): Promise<UpdateResult>;
+  aboutTakeUpdateNotification(): Promise<UpdateResult | null>;
+  aboutOnUpdateAvailable(callback: () => void): () => void;
   modelListAvailable(input: ModelConnectionInput): Promise<string[]>;
   modelSave(input: ModelInput): Promise<void>;
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;

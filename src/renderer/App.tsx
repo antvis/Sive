@@ -3,6 +3,7 @@ import { generateId } from 'ai';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
+import { UpdateNotification } from './components/UpdateNotification';
 import { Button } from './components/Button';
 import type { AppPage } from './components/WorkspaceSidebar';
 import { useWorkspace } from './hooks/useWorkspace';
@@ -192,6 +193,7 @@ export default function App() {
           },
         }}
       />
+      <UpdateNotification />
     </AppShell>
   );
 
