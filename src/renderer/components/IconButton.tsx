@@ -3,6 +3,9 @@ import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
 import type { ButtonHTMLAttributes } from 'react';
 
+export const panelControlClassName =
+  'size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus';
+
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   icon: Icon | LucideIcon;
   label: string;

@@ -1,11 +1,9 @@
 import { useChat } from '@ai-sdk/react';
-import { ArrowLeftIcon } from 'lucide-react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
-import { Button } from '../ui/button';
 import { TooltipProvider } from '../ui/tooltip';
 import type { ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
@@ -19,7 +17,6 @@ type Props = {
   conversationId: string | null;
   savedMessageIds: string[];
   onConversationChange: (id: string) => void;
-  onBack: () => void;
   models: ModelProfile[];
   activeModelId: string;
   preferences: Preferences;
@@ -31,7 +28,6 @@ export function Chat({
   conversationId,
   savedMessageIds,
   onConversationChange,
-  onBack,
   models,
   activeModelId,
   preferences,
@@ -146,18 +142,6 @@ export function Chat({
         className="chat-theme flex h-full min-h-0 flex-col bg-background text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
         aria-label="AI 对话"
       >
-        <header className="flex h-14 shrink-0 items-center gap-2 px-4">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-full"
-            onClick={onBack}
-            aria-label="返回数据源"
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <span className="text-sm font-medium">AI 对话</span>
-        </header>
         <Messages
           key={chatId}
           messages={messages}

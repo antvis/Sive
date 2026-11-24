@@ -102,12 +102,17 @@
 }
 
 @theme inline {
-  --color-sidebar-canvas: light-dark(oklch(96.1% .002 247.84), oklch(23.1% .004 264.487));
+  --color-sidebar-canvas: light-dark(#f6f6f6, #1c1c1c);
   --color-sidebar-ink: light-dark(oklch(24.7% .006 258.361), oklch(96.4% .002 247.839));
   --color-sidebar-text: light-dark(oklch(50.6% .01 264.477), oklch(73.1% .008 260.731));
   --color-sidebar-muted: light-dark(oklch(69.5% .009 264.505), oklch(54.1% .01 264.484));
-  --color-sidebar-highlight: light-dark(oklch(93.3% .003 247.86), oklch(31.8% .007 274.747));
+  --color-sidebar-highlight: light-dark(#eaeaea, #303030);
   --color-sidebar-focus: light-dark(oklch(62.6% .205 254.947), oklch(68% .173 253.301));
+  --color-workspace-canvas: light-dark(#ededed, #151515);
+  --color-workspace-control: light-dark(#f2f2f2, #1b1b1b);
+  --color-workspace-control-active: light-dark(#ffffff, #2c2c2c);
+  --color-preview-surface: light-dark(#fdfdfd, #212121);
+  --color-preview-row: light-dark(#f8f8f8, #242424);
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-ink: var(--ink);
@@ -140,6 +145,20 @@
 
 :root {
   color-scheme: light;
+  --workspace-gutter: 8px;
+  --workspace-titlebar-height: 44px;
+  --window-controls-end: env(titlebar-area-x, 0px);
+  --window-titlebar-padding: max(12px, calc(var(--window-controls-end) + 4px));
+  --workspace-titlebar-padding: max(16px, calc(var(--window-controls-end) - var(--workspace-gutter) + 4px));
+  --workspace-sidebar-titlebar-offset: max(
+    0px,
+    calc(env(titlebar-area-y, 0px) + env(titlebar-area-height, 0px) - var(--workspace-gutter))
+  );
+  --workspace-titlebar-center: calc(
+    env(titlebar-area-y, var(--workspace-gutter)) +
+      env(titlebar-area-height, var(--workspace-titlebar-height)) / 2 - var(--workspace-gutter)
+  );
+  --workspace-titlebar-row-offset: calc(var(--workspace-titlebar-center) - var(--workspace-titlebar-height) / 2);
   --page: #f5f6f8;
   --surface: #ffffff;
   --ink: #243039;
@@ -270,7 +289,7 @@
 }
 
 [data-theme='dark'] .chat-theme {
-  --background: #212121;
+  --background: #242424;
   --foreground: #ececec;
   --card: #212121;
   --card-foreground: #ececec;
@@ -286,23 +305,6 @@
   --border: #3d3d3d;
   --input: #3d3d3d;
   --ring: #929292;
-}
-
-.chat-user-message {
-  --foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.965 0 0);
-  --chat-muted: oklch(0.94 0 0);
-  --border: oklch(0.9 0 0);
-  --shadow-card: 0 1px 3px oklch(0 0 0 / 0.05), 0 1px 1px oklch(0 0 0 / 0.03);
-}
-
-[data-theme='dark'] .chat-user-message {
-  --foreground: oklch(0.94 0 0);
-  --secondary: oklch(0.26 0 0);
-  --chat-muted: oklch(0.165 0 0);
-  --border: oklch(0.27 0 0);
-  --shadow-card:
-    inset 0 1px 0 oklch(1 0 0 / 0.04), 0 1px 2px oklch(0 0 0 / 0.2), 0 0.5px 1px oklch(0 0 0 / 0.15);
 }
 
 @layer base {

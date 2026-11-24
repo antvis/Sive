@@ -32,6 +32,7 @@ export default function App() {
     () => window.matchMedia('(prefers-color-scheme: dark)').matches,
   );
   const [analysis, setAnalysis] = useState<AnalysisSelection | null>(null);
+  const [collapsedPreviews, setCollapsedPreviews] = useState<Record<string, boolean>>({});
   const [openDatasetIds, setOpenDatasetIds] = useState<string[]>([]);
   const { state, error, refresh } = useWorkspace();
   const analysisDatasetId = analysis?.datasetId ?? null;
@@ -144,6 +145,27 @@ export default function App() {
       conversationsByDataset={conversationsByDataset}
       recentConversations={recentConversations}
       activeConversationId={activeConversationId}
+      renderAnalysis={
+        state && page === 'analysis' && analysis
+          ? (frame) => (
+              <AnalysisPage
+                {...frame}
+                datasetId={analysis.datasetId}
+                chatId={analysis.chatId}
+                conversationId={activeConversationId}
+                datasetCollapsed={collapsedPreviews[analysis.chatId] ?? false}
+                onDatasetCollapsedChange={(collapsed) =>
+                  setCollapsedPreviews((current) => ({ ...current, [analysis.chatId]: collapsed }))
+                }
+                onConversationChange={confirmConversation}
+                savedMessageIds={state.snippets.map((snippet) => snippet.messageId)}
+                models={state.models}
+                activeModelId={state.activeModelId}
+                preferences={state.preferences}
+              />
+            )
+          : undefined
+      }
       onDatasetSelect={openDataset}
       onDatasetClose={closeDataset}
       onConversationSelect={(conversation) => openAnalysis(conversation.datasetId, conversation.id)}
@@ -157,7 +179,9 @@ export default function App() {
       }}
       onNavigate={setPage}
     >
-      {!state && !error && <div className="grid h-full place-items-center text-muted-foreground">正在加载工作台…</div>}
+      {!state && !error && (
+        <div className="grid h-full place-items-center text-muted-foreground">正在加载工作台…</div>
+      )}
       {!state && error && (
         <div className="grid h-full place-content-center justify-items-center gap-4">
           <p className="m-0 text-danger">{error}</p>
@@ -171,22 +195,6 @@ export default function App() {
           onAdd={() => setPage('welcome')}
           onOpen={openDataset}
           onDelete={closeDataset}
-        />
-      )}
-      {state && page === 'analysis' && analysis && (
-        <AnalysisPage
-          datasetId={analysis.datasetId}
-          chatId={analysis.chatId}
-          conversationId={activeConversationId}
-          onConversationChange={confirmConversation}
-          onBack={() => {
-            setAnalysis(null);
-            setPage('datasets');
-          }}
-          savedMessageIds={state.snippets.map((snippet) => snippet.messageId)}
-          models={state.models}
-          activeModelId={state.activeModelId}
-          preferences={state.preferences}
         />
       )}
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}

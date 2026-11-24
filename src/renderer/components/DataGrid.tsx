@@ -1,5 +1,6 @@
-import { ArrowsDownUp, CaretDown, CaretUp } from '@phosphor-icons/react';
 import type { Profile, QueryColumn } from '@antv/ava';
+import clsx from 'clsx';
+import { ArrowDownIcon, ArrowDownUpIcon, ArrowUpIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { compareTableColumn, tableValue } from '../utils/table';
 
@@ -54,22 +55,22 @@ export function DataGrid({
             <col key={column.name} style={{ width: widths.get(column.name) ?? DEFAULT_WIDTH }} />
           ))}
         </colgroup>
-        <thead className="sticky top-0 z-10 bg-surface">
+        <thead className="sticky top-0 z-10 bg-preview-surface">
           <tr>
             {columns.map((column) => {
               const sorted = sorting?.name === column.name ? sorting : null;
-              const SortIcon = sorted ? (sorted.descending ? CaretDown : CaretUp) : ArrowsDownUp;
+              const SortIcon = sorted ? (sorted.descending ? ArrowDownIcon : ArrowUpIcon) : ArrowDownUpIcon;
               const width = widths.get(column.name) ?? DEFAULT_WIDTH;
               return (
                 <th
                   key={column.name}
                   scope="col"
-                  className="relative border-b px-4 py-2 text-left font-medium text-muted-foreground"
+                  className="relative border-b border-ink/10 px-4 py-2 text-left font-medium text-muted-foreground"
                   aria-sort={sorted ? (sorted.descending ? 'descending' : 'ascending') : 'none'}
                 >
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 text-left"
+                    className="group/sort flex w-full items-center gap-2 rounded-sm text-left hover:text-ink focus-visible:text-ink"
                     aria-label={`排序：${column.name}`}
                     title={`${column.name}（仅排序当前页）`}
                     onClick={() =>
@@ -83,7 +84,15 @@ export function DataGrid({
                     }
                   >
                     <span className="truncate">{column.name}</span>
-                    <SortIcon size={12} className="shrink-0" />
+                    <SortIcon
+                      aria-hidden
+                      size={12}
+                      className={clsx(
+                        'shrink-0 transition-opacity',
+                        !sorted &&
+                          'opacity-0 group-hover/sort:opacity-70 group-focus-visible/sort:opacity-100',
+                      )}
+                    />
                   </button>
                   <span
                     role="separator"
@@ -94,7 +103,7 @@ export function DataGrid({
                     aria-valuemax={MAX_WIDTH}
                     aria-valuenow={width}
                     title="拖动或使用左右方向键调整列宽，双击恢复"
-                    className="absolute top-0 right-0 h-full w-2 cursor-col-resize touch-none select-none border-r border-line hover:bg-accent/20 focus-visible:bg-accent/20"
+                    className="absolute top-0 right-0 h-full w-2 cursor-col-resize touch-none select-none after:absolute after:inset-y-1 after:end-0 after:w-px after:rounded-full after:bg-accent/65 after:opacity-0 hover:after:opacity-100 focus-visible:after:opacity-100"
                     onClick={(event) => event.stopPropagation()}
                     onDoubleClick={() => resize(column.name, DEFAULT_WIDTH)}
                     onPointerDown={(event) => {
@@ -147,11 +156,11 @@ export function DataGrid({
         </thead>
         <tbody>
           {visible.map((row, index) => (
-            <tr key={index} className="odd:bg-page/50 transition-colors hover:bg-accent-soft">
+            <tr key={index} className="transition-colors even:bg-preview-row hover:bg-accent-soft">
               {columns.map((column) => (
                 <td
                   key={column.name}
-                  className="truncate border-b px-4 py-2"
+                  className="truncate px-4 py-2 tabular-nums"
                   title={tableValue(row[column.name])}
                 >
                   {tableValue(row[column.name])}

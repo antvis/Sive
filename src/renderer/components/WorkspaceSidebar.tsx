@@ -5,8 +5,7 @@ import {
   DatabaseIcon,
   FileTextIcon,
   LightbulbIcon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
+  PanelLeftIcon,
   PencilIcon,
   SettingsIcon,
   SquarePenIcon,
@@ -17,9 +16,12 @@ import type { PropsWithChildren } from 'react';
 import { toast } from 'sonner';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
-import { IconButton } from './IconButton';
+import { IconButton, panelControlClassName } from './IconButton';
+import { panelCollapsePreviewClassName } from './ResizeHandle';
 
 export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
+
+export const WORKSPACE_SIDEBAR_ID = 'workspace-sidebar';
 
 export type WorkspaceSidebarProps = {
   page: AppPage;
@@ -37,7 +39,7 @@ export type WorkspaceSidebarProps = {
 const focusClass =
   'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus';
 const rowClass = clsx(
-  'relative flex h-[32px] min-w-0 items-center gap-[6px] rounded-[8px] px-[8px] text-left text-[14px] font-medium text-sidebar-text transition-[color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45',
+  'relative flex h-[32px] min-w-0 items-center gap-[6px] rounded-[8px] px-[8px] text-left text-sm font-medium text-sidebar-text transition-[color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45',
   focusClass,
 );
 const activeClass = 'bg-sidebar-highlight text-sidebar-ink!';
@@ -46,7 +48,7 @@ const iconClass = clsx(
   focusClass,
 );
 const headingClass =
-  'flex h-[32px] items-center justify-between gap-1 ps-[8px] text-[12.5px] font-medium text-sidebar-muted';
+  'flex h-[32px] items-center justify-between gap-1 ps-[8px] text-xs font-medium text-sidebar-text';
 
 function SidebarList({ children }: PropsWithChildren) {
   const highlight = useRef<HTMLSpanElement>(null);
@@ -84,41 +86,41 @@ function SidebarList({ children }: PropsWithChildren) {
   );
 }
 
-function NewConversationButton({
+export function NewConversationButton({
   datasets,
   datasetId,
   compact = false,
-  collapsed = false,
   onCreate,
 }: {
   datasets: DatasetSummary[];
   datasetId?: string | null;
   compact?: boolean;
-  collapsed?: boolean;
   onCreate: (datasetId: string) => void;
 }) {
   const label = compact ? '新建对话' : '新建分析';
   const disabled = !datasets.length;
   const title = disabled ? '请先添加数据源' : label;
+  const createForActiveDataset = datasetId ? () => onCreate(datasetId) : undefined;
   const button = compact ? (
     <IconButton
       icon={SquarePenIcon}
       label={label}
       title={title}
-      className={clsx(iconClass, 'size-[32px]!')}
+      className={clsx(iconClass, 'size-[32px]! [-webkit-app-region:no-drag]')}
       disabled={disabled}
+      onClick={createForActiveDataset}
     />
   ) : (
     <button
       type="button"
-      className={clsx(rowClass, collapsed && 'justify-center')}
+      className={rowClass}
       data-sidebar-row
       disabled={disabled}
       title={title}
-      onClick={datasetId ? () => onCreate(datasetId) : undefined}
+      onClick={createForActiveDataset}
     >
       <SquarePenIcon size={16} className="shrink-0" aria-hidden />
-      <span className={collapsed ? 'sr-only' : undefined}>{label}</span>
+      <span>{label}</span>
     </button>
   );
 
@@ -130,13 +132,13 @@ function NewConversationButton({
       <Popover.Portal>
         <Popover.Content
           aria-label="选择数据源"
-          side={compact ? 'top' : collapsed ? 'right' : 'bottom'}
+          side={compact ? 'top' : 'bottom'}
           align={compact ? 'end' : 'start'}
           sideOffset={4}
           collisionPadding={8}
           className="z-50 max-h-(--radix-popover-content-available-height) w-[208px] overflow-y-auto rounded-[8px] border border-line bg-surface p-1 shadow-lg"
         >
-          <p className="px-[8px] py-1 text-[12.5px] font-medium text-sidebar-muted">选择数据源</p>
+          <p className="px-[8px] py-1 text-xs font-medium text-sidebar-muted">选择数据源</p>
           {datasets.map((dataset) => {
             const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
             return (
@@ -254,7 +256,7 @@ function ConversationItem({
           >
             <span className="min-w-0 flex-1 truncate">{conversation.title}</span>
             {sourceName && (
-              <span className="max-w-[40%] shrink-0 truncate text-[11px] font-normal text-sidebar-muted group-focus-within/conversation:hidden group-hover/conversation:hidden">
+              <span className="max-w-[40%] shrink-0 truncate text-xs font-normal text-sidebar-muted group-focus-within/conversation:hidden group-hover/conversation:hidden">
                 {sourceName}
               </span>
             )}
@@ -289,8 +291,9 @@ function ConversationItem({
 
 export function WorkspaceSidebar({
   page,
-  collapsed,
-  onToggle,
+  inert,
+  collapsePending,
+  onCollapse,
   datasets,
   conversationsByDataset,
   recentConversations,
@@ -300,7 +303,7 @@ export function WorkspaceSidebar({
   onConversationCreate,
   onConversationArchive,
   onNavigate,
-}: WorkspaceSidebarProps & { collapsed: boolean; onToggle: () => void }) {
+}: WorkspaceSidebarProps & { inert?: boolean; collapsePending: boolean; onCollapse: () => void }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [recentSelection, setRecentSelection] = useState<string | null>(null);
   const groups = datasets.flatMap((dataset) => {
@@ -310,8 +313,6 @@ export function WorkspaceSidebar({
   const activeInRecent =
     recentSelection === activeConversationId &&
     recentConversations.some((conversation) => conversation.id === activeConversationId);
-  const railRowClass = collapsed && 'justify-center';
-  const labelClass = collapsed ? 'sr-only' : undefined;
 
   const createConversation = (datasetId: string) => {
     setExpanded((current) => ({ ...current, [datasetId]: true }));
@@ -321,75 +322,69 @@ export function WorkspaceSidebar({
 
   return (
     <aside
-      className="flex h-full min-h-0 flex-col bg-sidebar-canvas pt-12 pb-[8px]"
+      id={WORKSPACE_SIDEBAR_ID}
+      className={clsx(
+        'flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-[16px] bg-sidebar-canvas pb-[8px]',
+        panelCollapsePreviewClassName,
+      )}
       aria-label="工作台侧边栏"
+      inert={inert}
+      data-collapse-pending={collapsePending || undefined}
     >
-      <div
-        className={clsx(
-          'relative mb-6 shrink-0',
-          collapsed ? 'mx-[8px] grid place-items-center' : 'mx-3 px-2',
-        )}
-      >
-        {!collapsed && (
-          <>
-            <div className="flex items-center gap-2">
-              <img className="size-7 dark:invert" src="./sive.svg" alt="" />
-              <strong className="text-xl leading-6 font-semibold">Sive</strong>
-            </div>
-            <span className="mt-1.5 block text-xs leading-4 text-muted-foreground">
-              See it Live, Share it Real.
-            </span>
-          </>
-        )}
-        <IconButton
-          icon={collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon}
-          label={collapsed ? '展开侧边栏' : '收起侧边栏'}
-          aria-expanded={!collapsed}
-          aria-controls="sidebar-history"
-          className={clsx(iconClass, 'size-[32px]!', !collapsed && 'absolute! -top-1 end-0')}
-          onClick={onToggle}
-        />
-      </div>
+      <header className="relative shrink-0 pt-(--workspace-sidebar-titlebar-offset) [-webkit-app-region:drag]">
+        <div className="@container flex h-(--workspace-titlebar-height) items-center ps-[16px] pe-[44px]">
+          <div className="flex items-center">
+            <img
+              className="h-6 w-0 shrink-0 object-contain opacity-0 motion-safe:transition-[width,margin-inline-end,opacity] motion-safe:duration-150 @min-[64px]:me-1.5 @min-[64px]:w-6 @min-[64px]:opacity-100 dark:invert"
+              src="./sive.svg"
+              alt=""
+            />
+            <strong className="truncate text-xl leading-6 font-semibold">Sive</strong>
+          </div>
+        </div>
+        <div className="absolute end-[8px] top-(--workspace-titlebar-center) flex -translate-y-1/2">
+          <IconButton
+            icon={PanelLeftIcon}
+            iconSize={18}
+            label="收起侧边栏"
+            aria-expanded
+            aria-controls={WORKSPACE_SIDEBAR_ID}
+            className={panelControlClassName}
+            onClick={onCollapse}
+          />
+        </div>
+      </header>
+      <p className="mt-1 mb-5 shrink-0 px-[16px] text-xs leading-4 text-muted-foreground">
+        See it Live, Share it Real.
+      </p>
       <nav className="mx-[8px]" aria-label="工作台">
         <SidebarList>
           <NewConversationButton
             datasets={datasets}
             datasetId={activeDatasetId}
-            collapsed={collapsed}
             onCreate={createConversation}
           />
           <button
             type="button"
             data-sidebar-row
-            className={clsx(
-              rowClass,
-              railRowClass,
-              (page === 'welcome' || page === 'datasets') && activeClass,
-            )}
-            title={collapsed ? '数据源' : undefined}
+            className={clsx(rowClass, (page === 'welcome' || page === 'datasets') && activeClass)}
             onClick={() => onNavigate(datasets.length ? 'datasets' : 'welcome')}
           >
             <DatabaseIcon size={16} aria-hidden />
-            <span className={labelClass}>数据源</span>
+            <span>数据源</span>
           </button>
           <button
             type="button"
             data-sidebar-row
-            className={clsx(rowClass, railRowClass, page === 'snippets' && activeClass)}
-            title={collapsed ? '洞察 Snippet' : undefined}
+            className={clsx(rowClass, page === 'snippets' && activeClass)}
             onClick={() => onNavigate('snippets')}
           >
             <LightbulbIcon size={16} aria-hidden />
-            <span className={labelClass}>洞察 Snippet</span>
+            <span>洞察 Snippet</span>
           </button>
         </SidebarList>
       </nav>
-      <nav
-        id="sidebar-history"
-        hidden={collapsed}
-        className="mx-[8px] mt-[12px] min-h-0 flex-1 overflow-y-auto"
-        aria-label="分析历史"
-      >
+      <nav className="mx-[8px] mt-[12px] min-h-0 flex-1 overflow-y-auto" aria-label="分析历史">
         {groups.length > 0 && (
           <section aria-labelledby="sidebar-datasets-heading">
             <h2 id="sidebar-datasets-heading" className={clsx(headingClass, 'mb-1')}>
@@ -479,7 +474,7 @@ export function WorkspaceSidebar({
               />
             ))}
             {!recentConversations.length && (
-              <p className="px-[8px] py-1 text-[12px] text-sidebar-muted">暂无对话</p>
+              <p className="px-[8px] py-1 text-sm text-sidebar-muted">暂无对话</p>
             )}
           </SidebarList>
         </section>
@@ -488,15 +483,13 @@ export function WorkspaceSidebar({
         type="button"
         className={clsx(
           rowClass,
-          'mx-[8px] shrink-0 hover:bg-sidebar-highlight',
-          collapsed ? 'mt-auto justify-center' : 'mt-[8px]',
+          'mx-[8px] mt-[8px] shrink-0 hover:bg-sidebar-highlight',
           page === 'settings' && activeClass,
         )}
-        title={collapsed ? '设置' : undefined}
         onClick={() => onNavigate('settings')}
       >
         <SettingsIcon size={16} aria-hidden />
-        <span className={labelClass}>设置</span>
+        <span>设置</span>
       </button>
     </aside>
   );

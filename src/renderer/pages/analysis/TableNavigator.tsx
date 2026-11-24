@@ -55,7 +55,7 @@ export function TableNavigator({
             placeholder="搜索数据表…"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="w-full min-w-0 rounded-lg border bg-page py-1.5 pr-2 pl-8 text-sm outline-none focus:border-accent"
+            className="w-full min-w-0 rounded-lg bg-workspace-control py-1.5 pr-2 pl-8 text-sm outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
           />
         </div>
         <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
@@ -75,7 +75,7 @@ export function TableNavigator({
                 <div
                   className={clsx(
                     'flex items-center rounded-lg',
-                    selected === model.name ? 'bg-accent-soft text-accent' : 'hover:bg-page',
+                    selected === model.name ? 'bg-accent-soft text-accent' : 'hover:bg-workspace-control',
                   )}
                 >
                   <button
@@ -106,7 +106,7 @@ export function TableNavigator({
                   </button>
                 </div>
                 {open && (
-                  <ul className="my-1 ml-3 list-none border-l py-1 pr-2 pl-4">
+                  <ul className="my-1 ml-3 list-none border-l border-ink/10 py-1 pr-2 pl-4">
                     {model.columns.map((column) => {
                       const isPrimary = primary.includes(column.name);
                       const Icon = columnIcon(column.type, isPrimary);
