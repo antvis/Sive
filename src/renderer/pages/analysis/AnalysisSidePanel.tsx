@@ -61,10 +61,11 @@ export function AnalysisSidePanel({
         <div
           className={clsx(
             'flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px] [-webkit-app-region:drag]',
-            !fullscreen && 'relative top-(--workspace-titlebar-row-offset) ps-[8px]',
+            fullscreen
+              ? 'ps-(--window-titlebar-padding)'
+              : 'relative top-(--workspace-titlebar-row-offset) ps-[8px]',
           )}
         >
-          {fullscreen && titleBar}
           <PanelTabList
             label="右侧面板标签"
             pinnedTab={{
@@ -75,9 +76,10 @@ export function AnalysisSidePanel({
             tabs={tabs}
             activeTabId={activeTabId}
             visible={!collapsed || fullscreen}
-            className={fullscreen ? 'max-w-[45%]' : 'flex-1'}
+            className="flex-1"
             onClose={onTabClose}
           />
+          {fullscreen && titleBar}
           <IconButton
             icon={fullscreen ? Minimize2Icon : Maximize2Icon}
             label={fullscreen ? '退出右侧面板全屏' : '全屏查看右侧面板'}
