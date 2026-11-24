@@ -12,7 +12,6 @@ import {
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { IconButton, panelControlClassName } from '../../components/IconButton';
-import { WindowTitleBar } from '../../components/WindowTitleBar';
 import type { WorkspaceState } from '../../types';
 import { AboutSettings } from './AboutSettings';
 import { AnalysisSettings } from './AnalysisSettings';
@@ -45,7 +44,7 @@ export function SettingsWindow({ state, fallback }: { state: WorkspaceState | nu
 
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-white dark:bg-preview-surface">
-      <WindowTitleBar aria-hidden className="absolute inset-x-0 top-0 h-5!" />
+      <div aria-hidden className="absolute inset-x-0 top-0 h-5 [-webkit-app-region:drag]" />
       {!isMacOS && (
         <IconButton
           icon={XIcon}

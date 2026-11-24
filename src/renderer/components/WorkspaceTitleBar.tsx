@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import { panelContentTiming } from '../hooks/usePanelMotion';
 import type { DatasetSummary } from '../types';
 import { IconButton, panelControlClassName } from './IconButton';
-import { WindowTitleBar } from './WindowTitleBar';
 import { NewConversationButton, WORKSPACE_SIDEBAR_ID } from './WorkspaceSidebar';
 import type { AppPage } from './WorkspaceSidebar';
 
@@ -37,9 +36,9 @@ export function WorkspaceTitleBar({
   onConversationCreate,
 }: Props) {
   return (
-    <WindowTitleBar
+    <header
       className={clsx(
-        'flex-1 px-3 motion-safe:transition-[padding-inline-start]',
+        'flex h-(--workspace-titlebar-height) min-w-0 flex-1 items-center px-3 [-webkit-app-region:drag] motion-safe:transition-[padding-inline-start]',
         panelContentTiming,
         fullscreen
           ? 'ps-(--window-titlebar-padding)'
@@ -77,6 +76,6 @@ export function WorkspaceTitleBar({
           <span className="truncate text-base text-muted-foreground">{pageTitles[page]}</span>
         )}
       </div>
-    </WindowTitleBar>
+    </header>
   );
 }
