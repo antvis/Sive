@@ -1,10 +1,12 @@
 import { DEFAULT_PREFERENCES } from '@shared/api';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { generateId } from 'ai';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
 import { UpdateNotification } from './components/UpdateNotification';
 import type { AppPage } from './components/AppShell';
 import { Button } from './components/Button';
+import type { AppPage } from './components/WorkspaceSidebar';
 import { useWorkspace } from './hooks/useWorkspace';
 import { I18nProvider } from './i18n';
 import { AnalysisPage } from './pages/analysis';
@@ -13,53 +15,70 @@ import { SettingsPage } from './pages/settings';
 import { SnippetsPage } from './pages/snippets';
 import { WelcomePage } from './pages/WelcomePage';
 import { ThemeContext } from './theme';
+import type { Conversation, DatasetSummary } from './types';
+
+const EMPTY_DATASETS: DatasetSummary[] = [];
+const RECENT_CONVERSATION_LIMIT = 5;
+
+type AnalysisSelection = { datasetId: string; chatId: string; saved: boolean };
+
+const analysisSelection = (datasetId: string, conversationId?: string): AnalysisSelection => ({
+  datasetId,
+  chatId: conversationId ?? generateId(),
+  saved: conversationId !== undefined,
+});
 
 export default function App() {
   const [page, setPage] = useState<AppPage>('welcome');
   const [systemDark, setSystemDark] = useState(
     () => window.matchMedia('(prefers-color-scheme: dark)').matches,
   );
-  const [analysisDatasetId, setAnalysisDatasetId] = useState<string | null>(null);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [openDatasetIds, setOpenDatasetIds] = useState<string[]>([]);
+  const [analysis, setAnalysis] = useState<AnalysisSelection | null>(null);
+  const [collapsedPreviews, setCollapsedPreviews] = useState<Record<string, boolean>>({});
   const { state, error, refresh } = useWorkspace();
-  const datasetCount = state?.datasets.length ?? 0;
+  const analysisDatasetId = analysis?.datasetId ?? null;
+  const activeConversationId = analysis?.saved ? analysis.chatId : null;
+  const datasets = state?.datasets ?? EMPTY_DATASETS;
+  const analysisDataset = datasets.find((dataset) => dataset.id === analysisDatasetId);
+  const conversations = state?.conversations;
+  const datasetCount = datasets.length;
   const previousDatasetCount = useRef<number | undefined>(undefined);
-  const datasetTabs = openDatasetIds.flatMap((id) => {
-    const dataset = state?.datasets.find((item) => item.id === id);
-    return dataset ? [dataset] : [];
-  });
+  const { conversationsByDataset, recentConversations } = useMemo(() => {
+    const conversationsByDataset = new Map<string, Conversation[]>(
+      datasets.map((dataset) => [dataset.id, []]),
+    );
+    const recentConversations: Conversation[] = [];
+    const ordered = conversations?.toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt)) ?? [];
+    for (const conversation of ordered) {
+      const group = conversationsByDataset.get(conversation.datasetId);
+      if (!group) continue;
+      group.push(conversation);
+      if (recentConversations.length < RECENT_CONVERSATION_LIMIT) recentConversations.push(conversation);
+    }
+    return { conversationsByDataset, recentConversations };
+  }, [datasets, conversations]);
 
-  const conversationsFor = (datasetId: string) =>
-    (state?.conversations ?? [])
-      .filter((conversation) => conversation.datasetId === datasetId)
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const latestConversationId = (datasetId: string) => conversationsByDataset.get(datasetId)?.[0]?.id;
 
-  const latestConversationId = (datasetId: string) => conversationsFor(datasetId)[0]?.id ?? null;
-
-  const openDataset = (id: string) => {
-    setOpenDatasetIds((current) => (current.includes(id) ? current : [...current, id]));
-    setAnalysisDatasetId(id);
-    setActiveConversationId(latestConversationId(id));
+  const openAnalysis = (datasetId: string, conversationId?: string) => {
+    setAnalysis(analysisSelection(datasetId, conversationId));
     setPage('analysis');
   };
 
-  const closeDataset = (id: string) => {
-    const remaining = openDatasetIds.filter((item) => item !== id);
-    setOpenDatasetIds(remaining);
-    if (!remaining.length) {
-      setAnalysisDatasetId(null);
-      setActiveConversationId(null);
-      setPage('datasets');
+  const openDataset = (id: string) => {
+    const latest = latestConversationId(id);
+    if (id === analysisDatasetId && !latest && !activeConversationId) {
+      setPage('analysis');
       return;
     }
-    if (analysisDatasetId === id) {
-      const next = remaining[remaining.length - 1] ?? null;
-      setAnalysisDatasetId(next);
-      setActiveConversationId(next ? latestConversationId(next) : null);
-      if (page === 'analysis') setPage(next ? 'analysis' : 'datasets');
-    }
+    openAnalysis(id, latest);
   };
+
+  const confirmConversation = useCallback((chatId: string) => {
+    setAnalysis((current) =>
+      current?.chatId === chatId && !current.saved ? { ...current, saved: true } : current,
+    );
+  }, []);
 
   const preferredMode = state?.preferences.theme.mode ?? DEFAULT_PREFERENCES.theme.mode;
   const fontSize = state?.preferences.theme.fontSize ?? DEFAULT_PREFERENCES.theme.fontSize;
@@ -92,40 +111,54 @@ export default function App() {
   }, [datasetCount]);
 
   useEffect(() => {
-    if (!state || !analysisDatasetId || state.datasets.some((dataset) => dataset.id === analysisDatasetId))
-      return;
-    setOpenDatasetIds((current) => current.filter((id) => id !== analysisDatasetId));
-    setAnalysisDatasetId(null);
-    setActiveConversationId(null);
+    if (!state || !analysisDatasetId || analysisDataset) return;
+    setAnalysis(null);
     if (page === 'analysis') setPage('datasets');
-  }, [state, analysisDatasetId, page]);
+  }, [state, analysisDatasetId, analysisDataset, page]);
 
   const content = (
     <AppShell
       page={page}
-      hasDatasets={datasetCount > 0}
-      datasetTabs={datasetTabs}
+      datasets={datasets}
       activeDatasetId={analysisDatasetId}
-      conversations={analysisDatasetId ? conversationsFor(analysisDatasetId) : []}
+      conversationsByDataset={conversationsByDataset}
+      recentConversations={recentConversations}
       activeConversationId={activeConversationId}
-      onDatasetSelect={openDataset}
-      onDatasetClose={closeDataset}
-      onConversationSelect={(id) => {
-        setActiveConversationId(id);
-        setPage('analysis');
-      }}
-      onConversationCreate={() => {
-        setActiveConversationId(null);
-        setPage('analysis');
-      }}
-      onConversationArchive={(id) => {
-        if (id !== activeConversationId || !analysisDatasetId) return;
-        const next = conversationsFor(analysisDatasetId).find((conversation) => conversation.id !== id);
-        setActiveConversationId(next?.id ?? null);
+      renderAnalysis={
+        state && page === 'analysis' && analysis && analysisDataset
+          ? (frame) => (
+              <AnalysisPage
+                {...frame}
+                dataset={analysisDataset}
+                chatId={analysis.chatId}
+                conversationId={activeConversationId}
+                datasetCollapsed={collapsedPreviews[analysis.chatId] ?? false}
+                onDatasetCollapsedChange={(collapsed) =>
+                  setCollapsedPreviews((current) => ({ ...current, [analysis.chatId]: collapsed }))
+                }
+                onConversationChange={confirmConversation}
+                savedMessageIds={state.snippets.map((snippet) => snippet.messageId)}
+                models={state.models}
+                activeModelId={state.activeModelId}
+                preferences={state.preferences}
+              />
+            )
+          : undefined
+      }
+      onConversationSelect={(conversation) => openAnalysis(conversation.datasetId, conversation.id)}
+      onConversationCreate={openAnalysis}
+      onConversationArchive={(conversation) => {
+        const next = conversationsByDataset
+          .get(conversation.datasetId)
+          ?.find((item) => item.id !== conversation.id);
+        const selection = analysisSelection(conversation.datasetId, next?.id);
+        setAnalysis((current) => (current?.chatId === conversation.id ? selection : current));
       }}
       onNavigate={setPage}
     >
-      {!state && !error && <div className="grid h-full place-items-center text-muted-foreground">正在加载工作台…</div>}
+      {!state && !error && (
+        <div className="grid h-full place-items-center text-muted-foreground">正在加载工作台…</div>
+      )}
       {!state && error && (
         <div className="grid h-full place-content-center justify-items-center gap-4">
           <p className="m-0 text-danger">{error}</p>
@@ -138,23 +171,6 @@ export default function App() {
           datasets={state.datasets}
           onAdd={() => setPage('welcome')}
           onOpen={openDataset}
-          onDelete={closeDataset}
-        />
-      )}
-      {state && page === 'analysis' && analysisDatasetId && (
-        <AnalysisPage
-          datasetId={analysisDatasetId}
-          conversationId={activeConversationId}
-          onConversationChange={setActiveConversationId}
-          onBack={() => {
-            setAnalysisDatasetId(null);
-            setActiveConversationId(null);
-            setPage('datasets');
-          }}
-          savedMessageIds={state.snippets.map((snippet) => snippet.messageId)}
-          models={state.models}
-          activeModelId={state.activeModelId}
-          preferences={state.preferences}
         />
       )}
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}

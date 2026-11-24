@@ -37,7 +37,7 @@ export function SettingsPage({ state }: { state: WorkspaceState }) {
               key={id}
               onClick={() => setSection(id)}
               className={clsx(
-                'flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm',
+                'flex items-center gap-2 rounded-lg px-3 py-2 text-left text-base',
                 section === id ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-page hover:text-ink',
               )}
             >

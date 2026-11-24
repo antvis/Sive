@@ -1,12 +1,9 @@
 import { useChat } from '@ai-sdk/react';
-import { generateId } from 'ai';
-import { ArrowLeftIcon } from 'lucide-react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
-import { Button } from '../ui/button';
 import { TooltipProvider } from '../ui/tooltip';
 import type { ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
@@ -16,10 +13,12 @@ import { MultimodalInput } from './multimodal-input';
 
 type Props = {
   datasetId: string;
+  datasetName: string;
+  onOpenDatasetPreview: () => void;
+  chatId: string;
   conversationId: string | null;
   savedMessageIds: string[];
   onConversationChange: (id: string) => void;
-  onBack: () => void;
   models: ModelProfile[];
   activeModelId: string;
   preferences: Preferences;
@@ -27,16 +26,17 @@ type Props = {
 
 export function Chat({
   datasetId,
+  datasetName,
+  onOpenDatasetPreview,
+  chatId,
   conversationId,
   savedMessageIds,
   onConversationChange,
-  onBack,
   models,
   activeModelId,
   preferences,
 }: Props) {
   const [question, setQuestion] = useState('');
-  const chatId = useMemo(() => conversationId ?? generateId(), [datasetId, conversationId]);
   const transport = useMemo(
     () => new IpcChatTransport(onConversationChange, (cause) => toast.error(errorMessage(cause))),
     [onConversationChange],
@@ -146,20 +146,10 @@ export function Chat({
         className="chat-theme flex h-full min-h-0 flex-col bg-background text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
         aria-label="AI 对话"
       >
-        <header className="flex h-14 shrink-0 items-center gap-2 px-4">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-full"
-            onClick={onBack}
-            aria-label="返回数据源"
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <span className="text-sm font-medium">AI 对话</span>
-        </header>
         <Messages
           key={chatId}
+          datasetName={datasetName}
+          onOpenDatasetPreview={onOpenDatasetPreview}
           messages={messages}
           savedMessageIds={savedMessageIds}
           historyLoading={historyLoading}

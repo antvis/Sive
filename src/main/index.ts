@@ -20,6 +20,7 @@ function createWindow() {
     title: 'Sive',
     icon: iconPath,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    titleBarOverlay: process.platform === 'darwin',
     trafficLightPosition: { x: 16, y: 16 },
     autoHideMenuBar: true,
     backgroundColor: '#f5f6f8',

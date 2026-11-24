@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@shared/api';
-import { ArrowUpRightIcon, LoaderCircleIcon } from 'lucide-react';
+import { ArrowUpRightIcon, ChartColumnIcon, LoaderCircleIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import type { SuggestResult } from '../../types';
 import {
@@ -9,10 +9,13 @@ import {
   ConversationScrollButton,
 } from '../ai-elements/conversation';
 import { Suggestion, Suggestions } from '../ai-elements/suggestion';
+import { Badge } from '../ui/badge';
 import { isVisibleAssistantPart, PreviewMessage } from './message';
 import { getMessagesForDisplay } from './util';
 
 type Props = {
+  datasetName: string;
+  onOpenDatasetPreview: () => void;
   messages: ChatMessage[];
   savedMessageIds: string[];
   historyLoading: boolean;
@@ -25,6 +28,8 @@ type Props = {
 };
 
 export function Messages({
+  datasetName,
+  onOpenDatasetPreview,
   messages,
   savedMessageIds,
   historyLoading,
@@ -59,7 +64,27 @@ export function Messages({
           <>
             <ConversationEmptyState
               className="flex-1 items-start p-0 py-8 text-left"
-              title="向数据提问"
+              title={
+                <span className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1.5">
+                  向
+                  <Badge
+                    asChild
+                    variant="outline"
+                    className="h-auto max-w-full min-w-0 rounded-xl px-3 py-1.5 text-lg shadow-xs hover:bg-muted active:bg-secondary motion-safe:active:scale-[0.97] motion-reduce:transition-none [&>svg]:size-4!"
+                  >
+                    <button
+                      type="button"
+                      title={datasetName}
+                      aria-label={`预览数据源 ${datasetName}`}
+                      onClick={onOpenDatasetPreview}
+                    >
+                      <ChartColumnIcon className="shrink-0" aria-hidden />
+                      <span className="min-w-0 text-left wrap-anywhere whitespace-normal">{datasetName}</span>
+                    </button>
+                  </Badge>
+                  提问
+                </span>
+              }
               description={hasModel ? '选择推荐问题，或输入你关心的问题。' : '请先在设置中配置默认模型服务。'}
             />
             {suggestionsLoading ? (
@@ -73,7 +98,7 @@ export function Messages({
                     key={suggestion.query}
                     suggestion={suggestion.query}
                     onClick={onSuggestion}
-                    className="h-auto min-h-10 justify-between gap-3 border-border bg-background px-4 py-3 text-left text-sm leading-6 whitespace-normal shadow-none hover:bg-secondary"
+                    className="h-auto min-h-10 justify-between gap-3 border-border bg-background px-4 py-3 text-left text-base leading-6 whitespace-normal shadow-none hover:bg-secondary"
                   >
                     <span>{suggestion.query}</span>
                     <ArrowUpRightIcon
