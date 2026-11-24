@@ -8,14 +8,14 @@ import { SettingGroup, SettingRow } from './SettingControls';
 
 const FONT_SIZES = [12, 14, 16, 18, 20];
 const languageOptions = [
-  { value: 'zh-CN', label: '中文' },
+  { value: 'zh-CN', label: '中文（简体）' },
   { value: 'en-US', label: 'English' },
 ] as const;
 const themeOptions = (
   [
-    ['light', '浅色', Sun],
-    ['dark', '深色', Moon],
-    ['system', '跟随系统', Monitor],
+    ['light', '亮色', Sun],
+    ['dark', '暗色', Moon],
+    ['system', '自动', Monitor],
   ] as const
 ).map(([value, label, Icon]) => ({
   value,
@@ -60,19 +60,19 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
             onValueChange={(language) => void update({ ...preferences, language })}
           />
         </SettingRow>
-        <SettingRow title="界面主题" description="选择跟随系统时，界面会随系统外观切换。">
+        <SettingRow title="主题亮暗" description="亮色、暗色或自动">
           <SegmentedControl
-            label="界面主题"
+            label="主题亮暗"
             options={themeOptions}
             value={theme.mode}
             disabled={saving}
             onValueChange={(mode) => void update({ ...preferences, theme: { ...theme, mode } })}
           />
         </SettingRow>
-        <SettingRow title="字体大小" description="调整设置、对话和数据面板的基础字号。">
+        <SettingRow title="对话字号" description="调整对话中的文字大小">
           <div className="w-56 max-w-full">
             <input
-              aria-label="字体大小"
+              aria-label="对话字号"
               aria-valuetext={`${theme.fontSize}px`}
               type="range"
               list="font-size-stops"

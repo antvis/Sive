@@ -22,7 +22,7 @@ import { PrivacySettings } from './PrivacySettings';
 import { StorageSettings } from './StorageSettings';
 
 const sections = {
-  appearance: { label: '外观与语言', icon: MonitorIcon },
+  appearance: { label: '外观', icon: MonitorIcon },
   models: { label: '模型服务', icon: CpuIcon },
   analysis: { label: '分析', icon: ChartLineIcon },
   storage: { label: '存储空间', icon: HardDriveIcon },

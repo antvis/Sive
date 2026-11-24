@@ -1,7 +1,8 @@
 import { useChat } from '@ai-sdk/react';
-import { analysisStrategy } from '@shared/api';
+import { analysisStrategy, DEFAULT_PREFERENCES } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
 import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { toast } from 'sonner';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
 import { TooltipProvider } from '../ui/tooltip';
@@ -143,8 +144,13 @@ export function Chat({
   return (
     <TooltipProvider>
       <section
-        className="chat-theme flex h-full min-h-0 flex-col bg-background text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
+        className="chat-theme chat-typography flex h-full min-h-0 flex-col bg-background text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
         aria-label="AI 对话"
+        style={
+          {
+            '--chat-font-scale': preferences.theme.fontSize / DEFAULT_PREFERENCES.theme.fontSize,
+          } as CSSProperties
+        }
       >
         <Messages
           key={chatId}

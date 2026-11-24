@@ -98,7 +98,7 @@ export function Messages({
                     key={suggestion.query}
                     suggestion={suggestion.query}
                     onClick={onSuggestion}
-                    className="h-auto min-h-10 justify-between gap-3 border-border bg-background px-4 py-3 text-left text-base leading-6 whitespace-normal shadow-none hover:bg-secondary"
+                    className="h-auto min-h-10 justify-between gap-3 border-border bg-background px-4 py-3 text-left text-base leading-normal whitespace-normal shadow-none hover:bg-secondary"
                   >
                     <span>{suggestion.query}</span>
                     <ArrowUpRightIcon

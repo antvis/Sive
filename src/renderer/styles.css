@@ -9,7 +9,7 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 @theme {
-  /* The default root size is 14px. Keep the type scale proportional to the user's setting. */
+  /* The workspace uses a 14px root size. */
   --text-xs: 0.857142857rem;
   --text-xs--line-height: calc(16 / 12);
   --text-sm: 0.928571429rem;
@@ -145,6 +145,13 @@
 
 :root {
   color-scheme: light;
+  --workspace-text-xs: var(--text-xs);
+  --workspace-text-sm: var(--text-sm);
+  --workspace-text-base: var(--text-base);
+  --workspace-text-lg: var(--text-lg);
+  --workspace-text-xl: var(--text-xl);
+  --workspace-text-2xl: var(--text-2xl);
+  --workspace-text-3xl: var(--text-3xl);
   --workspace-gutter: 8px;
   --workspace-titlebar-height: 44px;
   --window-controls-end: env(titlebar-area-x, 0px);
@@ -265,6 +272,16 @@
   --sidebar-accent-foreground: oklch(0.94 0 0);
   --sidebar-border: oklch(0.25 0 0);
   --sidebar-ring: oklch(0.45 0 0);
+}
+
+.chat-typography {
+  --text-xs: calc(var(--workspace-text-xs) * var(--chat-font-scale));
+  --text-sm: calc(var(--workspace-text-sm) * var(--chat-font-scale));
+  --text-base: calc(var(--workspace-text-base) * var(--chat-font-scale));
+  --text-lg: calc(var(--workspace-text-lg) * var(--chat-font-scale));
+  --text-xl: calc(var(--workspace-text-xl) * var(--chat-font-scale));
+  --text-2xl: calc(var(--workspace-text-2xl) * var(--chat-font-scale));
+  --text-3xl: calc(var(--workspace-text-3xl) * var(--chat-font-scale));
 }
 
 /* Match the supplied Codex desktop reference within the conversation area. */

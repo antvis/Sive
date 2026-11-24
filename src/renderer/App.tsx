@@ -34,9 +34,11 @@ export default function App({ settingsWindow }: { settingsWindow: boolean }) {
   );
 
   const preferredMode = state?.preferences.theme.mode ?? DEFAULT_PREFERENCES.theme.mode;
-  const fontSize = state?.preferences.theme.fontSize ?? DEFAULT_PREFERENCES.theme.fontSize;
   const isDark = preferredMode === 'system' ? systemDark : preferredMode === 'dark';
-  const theme = useMemo(() => ({ mode: isDark ? 'dark' : 'light', fontSize }) as const, [isDark, fontSize]);
+  const theme = useMemo(
+    () => ({ mode: isDark ? 'dark' : 'light', fontSize: DEFAULT_PREFERENCES.theme.fontSize }) as const,
+    [isDark],
+  );
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -49,10 +51,6 @@ export default function App({ settingsWindow }: { settingsWindow: boolean }) {
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme.mode;
   }, [theme.mode]);
-
-  useLayoutEffect(() => {
-    document.documentElement.style.fontSize = `${fontSize}px`;
-  }, [fontSize]);
 
   const fallback =
     !state &&
