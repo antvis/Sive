@@ -13,6 +13,8 @@ import { MultimodalInput } from './multimodal-input';
 
 type Props = {
   datasetId: string;
+  datasetName: string;
+  onOpenDatasetPreview: () => void;
   chatId: string;
   conversationId: string | null;
   savedMessageIds: string[];
@@ -24,6 +26,8 @@ type Props = {
 
 export function Chat({
   datasetId,
+  datasetName,
+  onOpenDatasetPreview,
   chatId,
   conversationId,
   savedMessageIds,
@@ -144,6 +148,8 @@ export function Chat({
       >
         <Messages
           key={chatId}
+          datasetName={datasetName}
+          onOpenDatasetPreview={onOpenDatasetPreview}
           messages={messages}
           savedMessageIds={savedMessageIds}
           historyLoading={historyLoading}

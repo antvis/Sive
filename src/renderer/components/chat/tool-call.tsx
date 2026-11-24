@@ -7,13 +7,14 @@ import {
   TagsIcon,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { getToolName, isToolOutputErrorUIPart } from 'ai';
+import { getToolName } from 'ai';
 import type { Profile, Schema, Semantic } from '@antv/ava';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
-import { Tool, ToolContent, ToolHeader, ToolOutput } from '../ai-elements/tool';
+import { getToolErrorText, Tool, ToolContent, ToolHeader, ToolOutput } from '../ai-elements/tool';
 import type { ToolPart } from '../ai-elements/tool';
+import { ToolPreviewContext } from './tool-preview';
 import { SourceTool } from './tools/source';
 import type { SourceResult } from './tools/source';
 import { SchemaTool } from './tools/schema';
@@ -48,15 +49,12 @@ function toolContent(
     messageId,
     savedMessageIds,
     isStreaming,
-  }: { messageId: string; savedMessageIds: string[]; isStreaming: boolean },
+  }: {
+    messageId: string;
+    savedMessageIds: string[];
+    isStreaming: boolean;
+  },
 ): ReactNode {
-  const errorText = isToolOutputErrorUIPart(call)
-    ? call.errorText
-    : call.state === 'output-denied'
-      ? '工具执行已拒绝。'
-      : undefined;
-  if (toolName === 'analyze') return <AnalyzeTool call={call} errorText={errorText} />;
-
   let content: ReactNode;
   if (call.state === 'output-available') {
     const { output } = call;
@@ -75,7 +73,7 @@ function toolContent(
       );
     }
   }
-  return <ToolOutput output={content} errorText={errorText} />;
+  return <ToolOutput output={content} errorText={getToolErrorText(call)} />;
 }
 
 export function ToolCallView({
@@ -101,6 +99,14 @@ export function ToolCallView({
   const completed = state === 'output-available' || state === 'output-error' || state === 'output-denied';
   const defaultExpanded = !completed || isAnalysis || toolName === 'visualize';
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const openToolPreview = useContext(ToolPreviewContext);
+  const openPreview = isAnalysis && completed && openToolPreview
+    ? (title: string) => openToolPreview({
+        id: `tool-${encodeURIComponent(JSON.stringify([messageId, call.toolCallId]))}`,
+        title,
+        call,
+      })
+    : undefined;
 
   useEffect(() => {
     setExpanded(defaultExpanded);
@@ -118,7 +124,13 @@ export function ToolCallView({
         title={toolLabels[toolName] ?? toolName}
         icon={ToolIcon ? <ToolIcon className="size-4 text-muted-foreground" aria-hidden="true" /> : undefined}
       />
-      <ToolContent>{toolContent(toolName, call, { messageId, savedMessageIds, isStreaming })}</ToolContent>
+      <ToolContent>
+        {isAnalysis ? (
+          <AnalyzeTool call={call} onOpenPreview={openPreview} />
+        ) : (
+          toolContent(toolName, call, { messageId, savedMessageIds, isStreaming })
+        )}
+      </ToolContent>
     </Tool>
   );
 }

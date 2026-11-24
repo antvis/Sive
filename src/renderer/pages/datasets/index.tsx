@@ -20,11 +20,9 @@ function formatFileSize(value?: number) {
 function DatasetCard({
   dataset,
   onOpen,
-  onDelete,
 }: {
   dataset: DatasetSummary;
   onOpen: (id: string) => void;
-  onDelete: (id: string) => void;
 }) {
   const [action, setAction] = useState<'rename' | 'delete' | null>(null);
   const [name, setName] = useState(dataset.name);
@@ -69,7 +67,6 @@ function DatasetCard({
     setBusy(true);
     try {
       await window.workbench.datasetDelete(dataset.id);
-      onDelete(dataset.id);
       setAction(null);
       toast.success('数据源已删除');
     } catch (cause) {
@@ -199,12 +196,10 @@ export function DatasetsPage({
   datasets,
   onAdd,
   onOpen,
-  onDelete,
 }: {
   datasets: DatasetSummary[];
   onAdd: () => void;
   onOpen: (id: string) => void;
-  onDelete: (id: string) => void;
 }) {
   const [query, setQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(24);
@@ -263,7 +258,7 @@ export function DatasetsPage({
       </div>
       <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
         {filtered.slice(0, visibleCount).map((dataset) => (
-          <DatasetCard key={dataset.id} dataset={dataset} onOpen={onOpen} onDelete={onDelete} />
+          <DatasetCard key={dataset.id} dataset={dataset} onOpen={onOpen} />
         ))}
       </div>
       {!filtered.length && (

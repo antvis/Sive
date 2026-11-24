@@ -33,11 +33,11 @@ export default function App() {
   );
   const [analysis, setAnalysis] = useState<AnalysisSelection | null>(null);
   const [collapsedPreviews, setCollapsedPreviews] = useState<Record<string, boolean>>({});
-  const [openDatasetIds, setOpenDatasetIds] = useState<string[]>([]);
   const { state, error, refresh } = useWorkspace();
   const analysisDatasetId = analysis?.datasetId ?? null;
   const activeConversationId = analysis?.saved ? analysis.chatId : null;
   const datasets = state?.datasets ?? EMPTY_DATASETS;
+  const analysisDataset = datasets.find((dataset) => dataset.id === analysisDatasetId);
   const conversations = state?.conversations;
   const datasetCount = datasets.length;
   const previousDatasetCount = useRef<number | undefined>(undefined);
@@ -56,15 +56,9 @@ export default function App() {
     return { conversationsByDataset, recentConversations };
   }, [datasets, conversations]);
 
-  const datasetTabs = openDatasetIds.flatMap((id) => {
-    const dataset = datasets.find((item) => item.id === id);
-    return dataset ? [dataset] : [];
-  });
-
   const latestConversationId = (datasetId: string) => conversationsByDataset.get(datasetId)?.[0]?.id;
 
   const openAnalysis = (datasetId: string, conversationId?: string) => {
-    setOpenDatasetIds((current) => (current.includes(datasetId) ? current : [...current, datasetId]));
     setAnalysis(analysisSelection(datasetId, conversationId));
     setPage('analysis');
   };
@@ -83,20 +77,6 @@ export default function App() {
       current?.chatId === chatId && !current.saved ? { ...current, saved: true } : current,
     );
   }, []);
-
-  const closeDataset = (id: string) => {
-    const remaining = datasetTabs.filter((dataset) => dataset.id !== id).map((dataset) => dataset.id);
-    setOpenDatasetIds(remaining);
-    if (!remaining.length) {
-      setAnalysis(null);
-      setPage('datasets');
-      return;
-    }
-    if (analysisDatasetId === id) {
-      const next = remaining[remaining.length - 1];
-      setAnalysis(analysisSelection(next, latestConversationId(next)));
-    }
-  };
 
   const preferredMode = state?.preferences.theme.mode ?? DEFAULT_PREFERENCES.theme.mode;
   const fontSize = state?.preferences.theme.fontSize ?? DEFAULT_PREFERENCES.theme.fontSize;
@@ -129,28 +109,25 @@ export default function App() {
   }, [datasetCount]);
 
   useEffect(() => {
-    if (!state || !analysisDatasetId || state.datasets.some((dataset) => dataset.id === analysisDatasetId))
-      return;
-    setOpenDatasetIds((current) => current.filter((id) => id !== analysisDatasetId));
+    if (!state || !analysisDatasetId || analysisDataset) return;
     setAnalysis(null);
     if (page === 'analysis') setPage('datasets');
-  }, [state, analysisDatasetId, page]);
+  }, [state, analysisDatasetId, analysisDataset, page]);
 
   const content = (
     <AppShell
       page={page}
       datasets={datasets}
-      datasetTabs={datasetTabs}
       activeDatasetId={analysisDatasetId}
       conversationsByDataset={conversationsByDataset}
       recentConversations={recentConversations}
       activeConversationId={activeConversationId}
       renderAnalysis={
-        state && page === 'analysis' && analysis
+        state && page === 'analysis' && analysis && analysisDataset
           ? (frame) => (
               <AnalysisPage
                 {...frame}
-                datasetId={analysis.datasetId}
+                dataset={analysisDataset}
                 chatId={analysis.chatId}
                 conversationId={activeConversationId}
                 datasetCollapsed={collapsedPreviews[analysis.chatId] ?? false}
@@ -166,8 +143,6 @@ export default function App() {
             )
           : undefined
       }
-      onDatasetSelect={openDataset}
-      onDatasetClose={closeDataset}
       onConversationSelect={(conversation) => openAnalysis(conversation.datasetId, conversation.id)}
       onConversationCreate={openAnalysis}
       onConversationArchive={(conversation) => {
@@ -194,7 +169,6 @@ export default function App() {
           datasets={state.datasets}
           onAdd={() => setPage('welcome')}
           onOpen={openDataset}
-          onDelete={closeDataset}
         />
       )}
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}

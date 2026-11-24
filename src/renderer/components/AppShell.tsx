@@ -5,7 +5,6 @@ import { panelMotionClassName, usePanelMotion } from '../hooks/usePanelMotion';
 import { clampPanelWidth, usePanelResize } from '../hooks/usePanelResize';
 import { usePanelToggleFocus } from '../hooks/usePanelToggleFocus';
 import { readWidth, saveWidth } from '../utils';
-import type { DatasetSummary } from '../types';
 import { ConversationSwitcher } from './ConversationSwitcher';
 import { ResizeHandle } from './ResizeHandle';
 import { WORKSPACE_SIDEBAR_ID, WorkspaceSidebar } from './WorkspaceSidebar';
@@ -14,9 +13,6 @@ import { WorkspaceTitleBar } from './WorkspaceTitleBar';
 
 type AppShellProps = PropsWithChildren<
   WorkspaceSidebarProps & {
-    datasetTabs: DatasetSummary[];
-    onDatasetSelect: (id: string) => void;
-    onDatasetClose: (id: string) => void;
     renderAnalysis?: (frame: AnalysisFrameProps) => ReactNode;
   }
 >;
@@ -34,10 +30,7 @@ const SIDEBAR_DEFAULT_WIDTH = 224;
 
 export function AppShell({
   page,
-  datasetTabs,
   activeDatasetId,
-  onDatasetSelect,
-  onDatasetClose,
   renderAnalysis,
   children,
   ...sidebar
@@ -101,7 +94,6 @@ export function AppShell({
     <WorkspaceTitleBar
       page={page}
       datasets={sidebar.datasets}
-      tabs={datasetTabs}
       activeDatasetId={activeDatasetId}
       showSidebarActions={showSidebarActions}
       fullscreen={previewFullscreen}
@@ -118,8 +110,6 @@ export function AppShell({
       }
       onOpenSidebar={openSidebar}
       onConversationCreate={sidebar.onConversationCreate}
-      onDatasetSelect={onDatasetSelect}
-      onDatasetClose={onDatasetClose}
     />
   );
 

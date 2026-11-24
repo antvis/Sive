@@ -1,15 +1,17 @@
 import clsx from 'clsx';
-import { Maximize2Icon, Minimize2Icon, PanelRightIcon } from 'lucide-react';
+import { PanelRightIcon } from 'lucide-react';
 import { useEffect, useEffectEvent } from 'react';
-import type { ReactNode, RefObject } from 'react';
 import type { AnalysisFrameProps } from '../../components/AppShell';
 import { IconButton, panelControlClassName } from '../../components/IconButton';
-import { ResizeHandle, panelCollapsePreviewClassName } from '../../components/ResizeHandle';
+import { ResizeHandle } from '../../components/ResizeHandle';
 import { Chat } from '../../components/chat/chat';
+import { ToolPreviewContext } from '../../components/chat/tool-preview';
+import type { ToolPreviewTab } from '../../components/chat/tool-preview';
 import { panelMotionClassName } from '../../hooks/usePanelMotion';
-import type { ModelProfile, Preferences } from '../../types';
-import { DatasetPanel } from './DatasetPanel';
+import type { DatasetSummary, ModelProfile, Preferences } from '../../types';
+import { AnalysisSidePanel } from './AnalysisSidePanel';
 import { DATASET_PREVIEW_ID, useAnalysisPreview } from './useAnalysisPreview';
+import { DATASET_PREVIEW_TAB, useAnalysisTabs } from './useAnalysisTabs';
 import { useFullscreenPreview } from './useFullscreenPreview';
 
 const cardClassName =
@@ -43,87 +45,8 @@ function useAnalysisShortcuts(fullscreen: boolean, exitFullscreen: () => void, t
   }, []);
 }
 
-type DatasetPreviewPaneProps = {
-  datasetId: string;
-  titleBar: ReactNode;
-  fullscreen: boolean;
-  collapsed: boolean;
-  collapsePending: boolean;
-  cardRef: RefObject<HTMLElement | null>;
-  onToggleFullscreen: () => void;
-  onClose: () => void;
-};
-
-function DatasetPreviewPane({
-  datasetId,
-  titleBar,
-  fullscreen,
-  collapsed,
-  collapsePending,
-  cardRef,
-  onToggleFullscreen,
-  onClose,
-}: DatasetPreviewPaneProps) {
-  return (
-    <section
-      ref={cardRef}
-      id={DATASET_PREVIEW_ID}
-      className={clsx(
-        cardClassName,
-        'w-full justify-self-end bg-preview-surface',
-        panelCollapsePreviewClassName,
-        collapsed && !fullscreen && 'opacity-0',
-        fullscreen ? 'fixed inset-y-0 right-0 z-40 rounded-none!' : 'relative z-10',
-      )}
-      role={fullscreen ? 'dialog' : undefined}
-      aria-modal={fullscreen || undefined}
-      aria-label="数据预览"
-      inert={collapsed && !fullscreen}
-      data-collapse-pending={(!fullscreen && collapsePending) || undefined}
-    >
-      <div
-        className={clsx(
-          'flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]',
-          !fullscreen && 'relative top-(--workspace-titlebar-row-offset) ps-4',
-        )}
-      >
-        {fullscreen ? (
-          titleBar
-        ) : (
-          <span className="flex h-full min-w-0 flex-1 items-center text-base font-medium text-ink [-webkit-app-region:drag]">
-            数据预览
-          </span>
-        )}
-        <IconButton
-          icon={fullscreen ? Minimize2Icon : Maximize2Icon}
-          label={fullscreen ? '退出全屏预览' : '全屏预览'}
-          title={fullscreen ? '退出全屏预览（Esc）' : '全屏预览'}
-          className={panelControlClassName}
-          aria-pressed={fullscreen}
-          onClick={onToggleFullscreen}
-        />
-        {!collapsed && !fullscreen && (
-          <IconButton
-            icon={PanelRightIcon}
-            iconSize={18}
-            label="收起数据预览"
-            className={panelControlClassName}
-            aria-controls={DATASET_PREVIEW_ID}
-            aria-expanded
-            aria-keyshortcuts={previewShortcut}
-            onClick={onClose}
-          />
-        )}
-      </div>
-      <div className={bodyClassName}>
-        <DatasetPanel key={datasetId} datasetId={datasetId} />
-      </div>
-    </section>
-  );
-}
-
 type Props = AnalysisFrameProps & {
-  datasetId: string;
+  dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
   chatId: string;
   conversationId: string | null;
   datasetCollapsed: boolean;
@@ -136,7 +59,7 @@ type Props = AnalysisFrameProps & {
 };
 
 export function AnalysisPage({
-  datasetId,
+  dataset,
   titleBar,
   fullscreen,
   onFullscreenChange,
@@ -157,6 +80,16 @@ export function AnalysisPage({
     onOpen: onPreviewOpen,
   });
   const { card, changeFullscreen } = useFullscreenPreview(fullscreen, onFullscreenChange);
+  const { activeTabId, tabs, selectTab, openTab, closeTab } = useAnalysisTabs(chatId);
+
+  const openSidePanel = () => {
+    if (datasetCollapsed) preview.toggle();
+  };
+
+  const openResult = (tab: ToolPreviewTab) => {
+    openTab(tab);
+    openSidePanel();
+  };
 
   const setPreviewFullscreen = (value: boolean) => {
     preview.cancelResize();
@@ -183,7 +116,7 @@ export function AnalysisPage({
             <IconButton
               icon={PanelRightIcon}
               iconSize={18}
-              label="展开数据预览"
+              label="展开右侧面板"
               className={panelControlClassName}
               aria-controls={DATASET_PREVIEW_ID}
               aria-expanded={false}
@@ -193,32 +126,44 @@ export function AnalysisPage({
           )}
         </div>
         <div className={bodyClassName}>
-          <Chat
-            datasetId={datasetId}
-            chatId={chatId}
-            conversationId={conversationId}
-            savedMessageIds={savedMessageIds}
-            onConversationChange={onConversationChange}
-            models={models}
-            activeModelId={activeModelId}
-            preferences={preferences}
-          />
+          <ToolPreviewContext value={openResult}>
+            <Chat
+              datasetId={dataset.id}
+              datasetName={dataset.name}
+              onOpenDatasetPreview={() => {
+                selectTab(DATASET_PREVIEW_TAB);
+                openSidePanel();
+              }}
+              chatId={chatId}
+              conversationId={conversationId}
+              savedMessageIds={savedMessageIds}
+              onConversationChange={onConversationChange}
+              models={models}
+              activeModelId={activeModelId}
+              preferences={preferences}
+            />
+          </ToolPreviewContext>
         </div>
       </section>
       {!datasetCollapsed && !fullscreen ? (
-        <ResizeHandle label="调整对话与数据预览宽度" controls="conversation" {...preview.resizeHandle} />
+        <ResizeHandle label="调整对话与右侧面板宽度" controls="conversation" {...preview.resizeHandle} />
       ) : (
         <div aria-hidden />
       )}
-      <DatasetPreviewPane
-        datasetId={datasetId}
+      <AnalysisSidePanel
+        dataset={dataset}
         titleBar={titleBar}
         fullscreen={fullscreen}
         collapsed={datasetCollapsed}
         collapsePending={preview.collapsePending}
         cardRef={card}
+        tabs={tabs}
+        activeTabId={activeTabId}
+        previewShortcut={previewShortcut}
+        onTabChange={selectTab}
+        onTabClose={closeTab}
         onToggleFullscreen={() => setPreviewFullscreen(!fullscreen)}
-        onClose={preview.toggle}
+        onCollapse={preview.toggle}
       />
     </div>
   );

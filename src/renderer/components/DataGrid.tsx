@@ -55,7 +55,7 @@ export function DataGrid({
             <col key={column.name} style={{ width: widths.get(column.name) ?? DEFAULT_WIDTH }} />
           ))}
         </colgroup>
-        <thead className="sticky top-0 z-10 bg-preview-surface text-sm">
+        <thead className="sticky top-0 z-10 bg-surface text-sm">
           <tr>
             {columns.map((column) => {
               const sorted = sorting?.name === column.name ? sorting : null;
