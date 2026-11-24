@@ -1,5 +1,4 @@
-import path from 'node:path';
-import { app, BrowserWindow } from 'electron';
+import { app } from 'electron';
 import { captureException, flush } from '@sentry/electron/main';
 import { DBConnection } from './db';
 import { registerIpc } from './ipc';
@@ -7,36 +6,12 @@ import { setLocale } from './util/i18n';
 import { createServices } from './services';
 import { initializeSentry } from './util/sentry';
 import { initializeAnalytics } from './util/analytics';
+import { appIconPath, closeAppWindow, isAppWindowOpen, openAppWindow } from './windows';
 
 let database: DBConnection | undefined;
-const iconPath = path.join(__dirname, '../assets/sive.png');
-
-function createWindow() {
-  const window = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    minWidth: 900,
-    minHeight: 600,
-    title: 'Sive',
-    icon: iconPath,
-    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
-    trafficLightPosition: { x: 16, y: 16 },
-    autoHideMenuBar: true,
-    backgroundColor: '#f5f6f8',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-    },
-  });
-
-  if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(process.env.ELECTRON_RENDERER_URL);
-  else void window.loadFile(path.join(__dirname, '../dist/index.html'));
-}
 
 async function initialize() {
-  if (process.platform === 'darwin') app.dock?.setIcon(iconPath);
+  if (process.platform === 'darwin') app.dock?.setIcon(appIconPath);
   database = await DBConnection.connect(app.getPath('userData'));
 
   const services = createServices(database);
@@ -47,8 +22,12 @@ async function initialize() {
   initializeSentry(preferences.diagnostics.nativeCrashReporting);
   // Initialize PostHog analytics after the locale is set to ensure that any error messages are localized.
   initializeAnalytics();
-  registerIpc(services);
-  createWindow();
+  registerIpc(services, {
+    open: () => openAppWindow('settings'),
+    close: (sender) => closeAppWindow('settings', sender),
+  });
+  await openAppWindow('workspace');
+  services.update.setAutomatic(preferences.autoCheckUpdates);
 }
 
 void app
@@ -61,7 +40,7 @@ void app
   });
 
 app.on('activate', () => {
-  if (database && BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (database && !isAppWindowOpen('workspace')) void openAppWindow('workspace').catch(captureException);
 });
 
 app.on('window-all-closed', () => {

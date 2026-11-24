@@ -1,9 +1,14 @@
 import { analysisStrategy } from '@shared/api';
 import type { Preferences } from '@shared/api';
-import { Tabs } from 'radix-ui';
 import { useState } from 'react';
+import { SegmentedControl } from '../../components/SegmentedControl';
 import { errorMessage } from '../../utils';
-import { SettingGroup, SettingRow } from './SettingControls';
+import { SettingGroup, SettingInput, SettingRow } from './SettingControls';
+
+const strategyOptions = [
+  { value: 'direct', label: '直接分析' },
+  { value: 'loop', label: '多步探索' },
+] as const;
 
 function sizeInMB(value: string | undefined) {
   const size = Number.parseInt(value ?? '1024', 10);
@@ -16,6 +21,7 @@ function NumberInput({
   unit,
   disabled,
   min = 1,
+  max,
   step = 1,
   onChange,
 }: {
@@ -24,22 +30,24 @@ function NumberInput({
   unit: string;
   disabled: boolean;
   min?: number;
+  max?: number;
   step?: number;
   onChange: (value: number) => void;
 }) {
   return (
     <div className="relative w-32">
-      <input
+      <SettingInput
         aria-label={label}
         type="number"
         min={min}
+        max={max}
         step={step}
         value={value}
         disabled={disabled}
-        className="h-9 w-full rounded-lg border bg-surface px-3 pr-11 text-sm text-ink outline-none focus:border-accent disabled:opacity-45"
+        className="pr-11 text-ink"
         onChange={(event) => {
           const next = event.target.valueAsNumber;
-          if (Number.isInteger(next) && next >= min) onChange(next);
+          if (Number.isInteger(next) && next >= min && (max === undefined || next <= max)) onChange(next);
         }}
       />
       <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted-foreground">
@@ -49,14 +57,14 @@ function NumberInput({
   );
 }
 
-function DocumentationLink({ url }: { url: string }) {
+function DocumentationLink({ url, label }: { url: string; label: string }) {
   return (
     <button
       type="button"
-      className="ml-1 text-accent hover:underline"
+      className="text-sm text-accent hover:underline"
       onClick={() => void window.workbench.systemOpen('url', url)}
     >
-      查看文档
+      {label}
     </button>
   );
 }
@@ -81,78 +89,73 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
     update({ ...preferences, engine: { ...preferences.engine, ...value } });
 
   return (
-    <div>
+    <>
       <SettingGroup
         title="分析策略"
-        description={
-          <>
-            选择直接分析或多步探索。
-            <DocumentationLink url="https://ava.antv.vision/documentation/analysis/strategies/" />
-          </>
+        action={
+          <DocumentationLink
+            url="https://ava.antv.vision/documentation/analysis/strategies/"
+            label="查看分析策略文档"
+          />
         }
       >
         <SettingRow
           title="默认分析方式"
-          description="直接分析适合明确问题；多步探索会逐步查询，通常更慢、调用更多。"
+          description="直接分析适合明确的问题。多步探索会分步查询，通常耗时更长，模型调用更多"
         >
-          <Tabs.Root
+          <SegmentedControl
+            label="默认分析方式"
+            options={strategyOptions}
             value={preferences.strategy.type}
+            disabled={saving}
             onValueChange={(type) =>
               void update({
                 ...preferences,
-                strategy: analysisStrategy(type as 'direct' | 'loop', preferences.strategy),
+                strategy: analysisStrategy(type, preferences.strategy),
               })
             }
-          >
-            <Tabs.List aria-label="默认分析方式" className="flex w-56 rounded-lg bg-page p-1">
-              <Tabs.Trigger
-                value="direct"
-                disabled={saving}
-                className="flex-1 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-sm"
-              >
-                直接分析
-              </Tabs.Trigger>
-              <Tabs.Trigger
-                value="loop"
-                disabled={saving}
-                className="flex-1 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted-foreground data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:shadow-sm"
-              >
-                多步探索
-              </Tabs.Trigger>
-            </Tabs.List>
-          </Tabs.Root>
+          />
         </SettingRow>
         {preferences.strategy.type === 'loop' && (
-          <SettingRow title="最大轮次" description="限制 AVA 多步探索的正常推理轮次，默认 12 轮。">
-            <input
-              aria-label="多步探索最大轮次"
-              type="number"
-              min={1}
+          <SettingRow title="多步探索轮次上限" description="限制一次多步探索的推理轮次，默认 12 轮">
+            <NumberInput
+              label="多步探索最大轮次"
               max={50}
-              step={1}
-              value={preferences.strategy.maxSteps}
+              unit="轮"
+              value={preferences.strategy.maxSteps ?? 12}
               disabled={saving}
-              className="h-9 w-24 rounded-lg border bg-surface px-3 text-sm text-ink outline-none focus:border-accent disabled:opacity-45"
-              onChange={(event) => {
-                const maxSteps = event.target.valueAsNumber;
-                if (Number.isInteger(maxSteps) && maxSteps >= 1 && maxSteps <= 50)
-                  void update({ ...preferences, strategy: { type: 'loop', maxSteps } });
-              }}
+              onChange={(maxSteps) => void update({ ...preferences, strategy: { type: 'loop', maxSteps } })}
             />
           </SettingRow>
         )}
       </SettingGroup>
 
+      <SettingGroup title="Agent 行为">
+        <SettingRow
+          title="任务执行轮次上限"
+          description="限制 Agent 处理单次任务时的执行轮次，以控制工具与模型调用"
+        >
+          <NumberInput
+            label="Agent 最大执行轮次"
+            value={preferences.agent.maxSteps}
+            unit="轮"
+            max={50}
+            disabled={saving}
+            onChange={(maxSteps) => void update({ ...preferences, agent: { maxSteps } })}
+          />
+        </SettingRow>
+      </SettingGroup>
+
       <SettingGroup
         title="AVA DuckDB 引擎"
-        description={
-          <>
-            配置查询资源与临时文件限制。
-            <DocumentationLink url="https://ava.antv.vision/documentation/engines/duckdb/" />
-          </>
+        action={
+          <DocumentationLink
+            url="https://ava.antv.vision/documentation/engines/duckdb/"
+            label="查看 DuckDB 文档"
+          />
         }
       >
-        <SettingRow title="内存上限" description="限制单个 DuckDB 引擎可使用的内存。">
+        <SettingRow title="内存上限" description="限制单个 DuckDB 引擎可使用的内存">
           <NumberInput
             label="DuckDB 内存上限"
             value={sizeInMB(preferences.engine.memoryLimit)}
@@ -163,7 +166,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
             onChange={(value) => void updateEngine({ memoryLimit: `${value}MB` })}
           />
         </SettingRow>
-        <SettingRow title="工作线程数" description="设置 DuckDB 查询使用的工作线程数量。">
+        <SettingRow title="工作线程数" description="设置 DuckDB 查询使用的工作线程数量">
           <NumberInput
             label="DuckDB 工作线程数"
             value={preferences.engine.threads ?? 1}
@@ -172,7 +175,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
             onChange={(threads) => void updateEngine({ threads })}
           />
         </SettingRow>
-        <SettingRow title="单次查询超时" description="超过设定时间的查询会被终止。">
+        <SettingRow title="单次查询超时" description="超过设定时间的查询会被终止">
           <NumberInput
             label="DuckDB 查询超时"
             value={(preferences.engine.queryTimeoutMs ?? 30000) / 1000}
@@ -183,7 +186,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
         </SettingRow>
         <SettingRow
           title="临时文件上限"
-          description="限制 DuckDB 查询产生的临时文件占用，修改后将在下次执行时生效。"
+          description="限制 DuckDB 查询产生的临时文件占用，修改后将在下次执行时生效"
         >
           <NumberInput
             label="DuckDB 临时文件上限"
@@ -194,7 +197,11 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
           />
         </SettingRow>
       </SettingGroup>
-      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
-    </div>
+      {error && (
+        <p className="text-sm text-danger" role="alert">
+          {error}
+        </p>
+      )}
+    </>
   );
 }

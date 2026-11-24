@@ -1,25 +1,26 @@
 import { useChat } from '@ai-sdk/react';
-import { generateId } from 'ai';
-import { ArrowLeftIcon } from 'lucide-react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
-import { Button } from '../ui/button';
 import { TooltipProvider } from '../ui/tooltip';
 import type { ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
 import { IpcChatTransport } from './ipc-chat-transport';
+import { useConversationRead } from '../../hooks/useConversationStatus';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
 type Props = {
   datasetId: string;
+  datasetName: string;
+  onOpenDatasetPreview: () => void;
+  chatId: string;
   conversationId: string | null;
+  visible: boolean;
   savedMessageIds: string[];
   onConversationChange: (id: string) => void;
-  onBack: () => void;
   models: ModelProfile[];
   activeModelId: string;
   preferences: Preferences;
@@ -27,16 +28,18 @@ type Props = {
 
 export function Chat({
   datasetId,
+  datasetName,
+  onOpenDatasetPreview,
+  chatId,
   conversationId,
+  visible,
   savedMessageIds,
   onConversationChange,
-  onBack,
   models,
   activeModelId,
   preferences,
 }: Props) {
   const [question, setQuestion] = useState('');
-  const chatId = useMemo(() => conversationId ?? generateId(), [datasetId, conversationId]);
   const transport = useMemo(
     () => new IpcChatTransport(onConversationChange, (cause) => toast.error(errorMessage(cause))),
     [onConversationChange],
@@ -49,6 +52,7 @@ export function Chat({
     error: chatError,
   } = useChat<ChatMessage>({ id: chatId, transport });
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [loadedChatId, setLoadedChatId] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,6 +61,8 @@ export function Chat({
 
   const busy = status === 'submitted' || status === 'streaming';
   const displayError = error || chatError?.message;
+
+  useConversationRead(chatId, visible && loadedChatId === chatId && !historyLoading && !busy);
 
   useEffect(() => {
     setQuestion('');
@@ -67,12 +73,17 @@ export function Chat({
   useEffect(() => {
     let live = true;
     if (!conversationId) {
+      setLoadedChatId(chatId);
       setHistoryLoading(false);
     } else if (!busy) {
+      setLoadedChatId(null);
       window.workbench
         .analysisGetMessages(conversationId)
         .then((history) => {
-          if (live) setMessages(history);
+          if (live) {
+            setMessages(history);
+            setLoadedChatId(chatId);
+          }
         })
         .catch((cause) => {
           if (live) setError(errorMessage(cause));
@@ -143,23 +154,13 @@ export function Chat({
   return (
     <TooltipProvider>
       <section
-        className="chat-theme flex h-full min-h-0 flex-col bg-background text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
+        className="flex h-full min-h-0 flex-col text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
         aria-label="AI 对话"
       >
-        <header className="flex h-14 shrink-0 items-center gap-2 px-4">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-full"
-            onClick={onBack}
-            aria-label="返回数据源"
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <span className="text-sm font-medium">AI 对话</span>
-        </header>
         <Messages
           key={chatId}
+          datasetName={datasetName}
+          onOpenDatasetPreview={onOpenDatasetPreview}
           messages={messages}
           savedMessageIds={savedMessageIds}
           historyLoading={historyLoading}

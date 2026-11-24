@@ -9,6 +9,7 @@ import { Select } from '../../components/Select';
 import type { ModelProfile, ModelTestProgress } from '../../types';
 import { errorMessage } from '../../utils';
 import { ModelPicker } from './ModelPicker';
+import { SettingField } from './SettingControls';
 
 type Catalog = { baseURL: string; apiKey: string; ids: string[] };
 
@@ -101,36 +102,30 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
     >
       <form id="model-form" onSubmit={(event) => void save(event)}>
         <fieldset disabled={saving} className="grid min-w-0 gap-4 border-0 p-0">
-          <label className="grid gap-1.5 text-sm">
-            服务名称
-            <input
-              className="rounded-lg border bg-surface px-3 py-2"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="例如：云端模型服务"
-              required
-            />
-          </label>
-          <label className="grid gap-1.5 text-sm">
-            服务地址
-            <input
-              className="rounded-lg border bg-surface px-3 py-2"
-              value={baseURL}
-              onChange={(e) => setBaseURL(e.target.value)}
-              placeholder="https://example.com/v1"
-              required
-            />
-          </label>
-          <label className="grid gap-1.5 text-sm">
-            密钥
-            <input
-              className="rounded-lg border bg-surface px-3 py-2"
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder={model?.hasKey ? '留空复用已保存的密钥' : '本地无认证服务可留空'}
-            />
-          </label>
+          <SettingField
+            label="服务名称"
+            description="用来区分不同的模型服务"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="例如：云端模型服务"
+            required
+          />
+          <SettingField
+            label="服务地址"
+            description="填写服务商提供的 API 基础地址"
+            value={baseURL}
+            onChange={(e) => setBaseURL(e.target.value)}
+            placeholder="https://example.com/v1"
+            required
+          />
+          <SettingField
+            label="密钥"
+            description="服务要求认证时，填写服务商提供的 API 密钥"
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder={model?.hasKey ? '留空复用已保存的密钥' : '本地无认证服务可留空'}
+          />
           <div className="grid gap-1.5 text-sm">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -149,6 +144,9 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
                 />
               </div>
             </div>
+            <p className="m-0 text-xs text-muted-foreground">
+              从列表中选择要启用的模型，也可以手动添加模型 ID
+            </p>
             <ModelPicker
               options={currentCatalog?.ids ?? []}
               value={modelIds}
@@ -188,25 +186,23 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
     }
   };
 
+  const addService = (
+    <Button variant="primary" onClick={() => setEditing('new')}>
+      <Plus size={16} />
+      添加服务
+    </Button>
+  );
+
   return (
     <section>
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="m-0 text-muted-foreground">连接兼容 OpenAI 的服务，获取并选择可用模型。</p>
-        <Button variant="primary" onClick={() => setEditing('new')}>
-          <Plus size={16} />
-          添加服务
-        </Button>
-      </div>
+      {models.length > 0 && <div className="mb-5 flex justify-end">{addService}</div>}
       {error && <p className="mt-0 text-sm text-danger">{error}</p>}
       <div className="grid gap-3">
         {models.map((model) => (
-          <article
-            key={model.id}
-            className="group rounded-xl border bg-surface p-4 transition-colors hover:border-accent/40"
-          >
+          <article key={model.id} className="group rounded-xl bg-workspace-control/70 p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-2">
-                <h3 className="m-0 truncate text-base font-semibold">{model.name}</h3>
+                <h2 className="m-0 truncate text-base font-semibold">{model.name}</h2>
                 {activeModelId === model.id && (
                   <span className="shrink-0 rounded-md bg-accent-soft px-2 py-0.5 text-xs text-accent">
                     默认服务
@@ -254,13 +250,16 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
               </div>
             </dl>
 
-            <div className="mt-3 flex items-center justify-between gap-4 border-t pt-3 max-sm:flex-col max-sm:items-start">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <span className="text-sm text-muted-foreground">
                 最近更新：{new Date(model.updatedAt).toLocaleString('zh-CN')}
               </span>
               {activeModelId === model.id && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>默认模型</span>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <div className="grid gap-1">
+                    <span>默认模型</span>
+                    <span className="text-xs text-muted-foreground">分析对话会预选此模型</span>
+                  </div>
                   <Select
                     compact
                     aria-label="默认模型"
@@ -278,14 +277,11 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
         ))}
       </div>
       {!models.length && (
-        <div className="grid justify-items-center rounded-xl border border-dashed px-6 py-14 text-center">
+        <div className="grid justify-items-center gap-3 px-6 py-14 text-center">
           <Cpu size={32} className="text-accent" />
-          <h3 className="mt-4 mb-2 text-base font-medium">连接你的第一个模型服务</h3>
-          <p className="m-0 leading-6 text-muted-foreground">支持兼容 OpenAI 接口的云端或本地服务。</p>
-          <Button className="mt-5" onClick={() => setEditing('new')}>
-            <Plus size={16} />
-            添加模型服务
-          </Button>
+          <h2 className="m-0 text-base font-medium">连接你的第一个模型服务</h2>
+          <p className="m-0 leading-6 text-muted-foreground">支持兼容 OpenAI 接口的云端或本地服务</p>
+          <div className="mt-2">{addService}</div>
         </div>
       )}
       {editing && (

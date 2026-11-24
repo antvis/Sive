@@ -18,7 +18,7 @@ export function Modal({ open, onOpenChange, title, footer, className, children }
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-[#15202bcc]" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[#15202bcc] [-webkit-app-region:no-drag]" />
         <Dialog.Content
           aria-describedby={undefined}
           onOpenAutoFocus={() => {

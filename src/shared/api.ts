@@ -30,11 +30,12 @@ export type Preferences = {
   strategy: AnalysisStrategyConfig;
   engine: DuckDBEngineConfig;
   diagnostics: { nativeCrashReporting: boolean };
+  autoCheckUpdates: boolean;
 };
 
 export const DEFAULT_PREFERENCES = {
   language: 'zh-CN',
-  theme: { mode: 'light', fontSize: 14 },
+  theme: { mode: 'system', fontSize: 14 },
   agent: { maxSteps: 10 },
   strategy: { type: 'direct' },
   engine: {
@@ -45,6 +46,7 @@ export const DEFAULT_PREFERENCES = {
     maxTempDirectorySize: '1GB',
   },
   diagnostics: { nativeCrashReporting: false },
+  autoCheckUpdates: true,
 } satisfies Preferences;
 
 export function analysisStrategy(
@@ -167,6 +169,7 @@ export type WorkspaceState = {
 };
 
 export type WorkbenchApi = {
+  isMacOS: boolean;
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
   datasetSelectLocal(
@@ -197,11 +200,15 @@ export type WorkbenchApi = {
   datasetSaveSemantic(id: string, semantic: Semantic): Promise<void>;
   datasetRename(id: string, name: string): Promise<void>;
   datasetDelete(id: string): Promise<void>;
+  settingsOpen(): Promise<void>;
+  settingsClose(): void;
   settingsSavePreferences(preferences: Preferences): Promise<void>;
   systemGetStorageInfo(): Promise<StorageInfo>;
   systemOpen(type: 'directory' | 'url', path: string): Promise<void>;
   aboutGetVersion(): Promise<string>;
   aboutCheckUpdates(): Promise<UpdateResult>;
+  aboutTakeUpdateNotification(): Promise<UpdateResult | null>;
+  aboutOnUpdateAvailable(callback: () => void): () => void;
   modelListAvailable(input: ModelConnectionInput): Promise<string[]>;
   modelSave(input: ModelInput): Promise<void>;
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;

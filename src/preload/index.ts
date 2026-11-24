@@ -5,6 +5,7 @@ import type { UIMessageChunk } from 'ai';
 import type { ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
+  isMacOS: process.platform === 'darwin',
   workspaceGetState: () => ipcRenderer.invoke('workspaceGetState'),
   workspaceOnChange: (callback: () => void) => {
     const listener = () => callback();
@@ -29,11 +30,19 @@ const api = {
   datasetSaveSemantic: (id, semantic) => ipcRenderer.invoke('datasetSaveSemantic', id, semantic),
   datasetRename: (id, name) => ipcRenderer.invoke('datasetRename', id, name),
   datasetDelete: (id) => ipcRenderer.invoke('datasetDelete', id),
+  settingsOpen: () => ipcRenderer.invoke('settingsOpen'),
+  settingsClose: () => ipcRenderer.send('settingsClose'),
   settingsSavePreferences: (preferences) => ipcRenderer.invoke('settingsSavePreferences', preferences),
   systemGetStorageInfo: () => ipcRenderer.invoke('systemGetStorageInfo'),
   systemOpen: (type, path) => ipcRenderer.invoke('systemOpen', type, path),
   aboutGetVersion: () => ipcRenderer.invoke('aboutGetVersion'),
   aboutCheckUpdates: () => ipcRenderer.invoke('aboutCheckUpdates'),
+  aboutTakeUpdateNotification: () => ipcRenderer.invoke('aboutTakeUpdateNotification'),
+  aboutOnUpdateAvailable: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on('about:update-available', listener);
+    return () => ipcRenderer.removeListener('about:update-available', listener);
+  },
   modelListAvailable: (input) => ipcRenderer.invoke('modelListAvailable', input),
   modelSave: (input) => ipcRenderer.invoke('modelSave', input),
   modelOnTestProgress: (callback) => {

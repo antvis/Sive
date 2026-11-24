@@ -27,6 +27,7 @@ describe('SettingsService', () => {
       strategy: { type: 'loop', maxSteps: 6 },
       engine: { ...DEFAULT_PREFERENCES.engine, memoryLimit: '2GB' },
       diagnostics: { nativeCrashReporting: true },
+      autoCheckUpdates: false,
     });
 
     const settings = createRepositories(testDb.database).settings;
@@ -36,5 +37,7 @@ describe('SettingsService', () => {
     expect(settings.get('strategy')?.value).toEqual({ type: 'loop', maxSteps: 6 });
     expect(settings.get('engine')?.value).toEqual({ ...DEFAULT_PREFERENCES.engine, memoryLimit: '2GB' });
     expect(settings.get('diagnostics')?.value).toEqual({ nativeCrashReporting: true });
+    expect(settings.get('autoCheckUpdates')?.value).toBe(false);
+    expect(service.getPreferences().autoCheckUpdates).toBe(false);
   });
 });
