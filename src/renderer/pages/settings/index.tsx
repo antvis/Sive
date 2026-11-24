@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { IconButton, panelControlClassName } from '../../components/IconButton';
+import { IconButton } from '../../components/IconButton';
 import type { WorkspaceState } from '../../types';
 import { AboutSettings } from './AboutSettings';
 import { AnalysisSettings } from './AnalysisSettings';
@@ -57,7 +57,7 @@ export function SettingsWindow({ state, fallback }: { state: WorkspaceState | nu
           iconSize={18}
           label="关闭设置"
           variant="danger"
-          className={clsx(panelControlClassName, 'absolute top-2 right-2 z-10')}
+          className="absolute top-2 right-2 z-10 size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
           onClick={() => window.workbench.settingsClose()}
         />
       )}

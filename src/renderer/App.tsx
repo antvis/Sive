@@ -123,20 +123,9 @@ function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback
     return { conversationsByDataset, recentConversations };
   }, [datasets, conversations]);
 
-  const latestConversationId = (datasetId: string) => conversationsByDataset.get(datasetId)?.[0]?.id;
-
   const openAnalysis = (datasetId: string, conversationId?: string) => {
     setAnalysis(analysisSelection(datasetId, conversationId));
     setPage('analysis');
-  };
-
-  const openDataset = (id: string) => {
-    const latest = latestConversationId(id);
-    if (id === analysisDatasetId && !latest && !activeConversationId) {
-      setPage('analysis');
-      return;
-    }
-    openAnalysis(id, latest);
   };
 
   const confirmConversation = useCallback((chatId: string) => {
@@ -200,7 +189,7 @@ function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback
       {fallback}
       {state && page === 'welcome' && <WelcomePage />}
       {state && page === 'datasets' && (
-        <DatasetsPage datasets={state.datasets} onAdd={() => setPage('welcome')} onOpen={openDataset} />
+        <DatasetsPage datasets={state.datasets} onAdd={() => setPage('welcome')} onOpen={openAnalysis} />
       )}
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
     </AppShell>

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '../../components/Button';
 import { IconButton } from '../../components/IconButton';
 import { Modal } from '../../components/Modal';
+import { clearConversationUnread } from '../../hooks/useConversationStatus';
 import type { Conversation, DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
 import { SettingInput } from './SettingControls';
@@ -121,6 +122,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
               onClick={() =>
                 void perform(async () => {
                   await window.workbench.conversationPurge([deleting!.id]);
+                  clearConversationUnread(deleting!.id);
                   setDeleting(null);
                 }, '已永久删除')
               }

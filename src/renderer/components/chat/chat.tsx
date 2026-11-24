@@ -8,6 +8,7 @@ import { TooltipProvider } from '../ui/tooltip';
 import type { ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
 import { IpcChatTransport } from './ipc-chat-transport';
+import { useConversationRead } from '../../hooks/useConversationStatus';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
@@ -17,6 +18,7 @@ type Props = {
   onOpenDatasetPreview: () => void;
   chatId: string;
   conversationId: string | null;
+  visible: boolean;
   savedMessageIds: string[];
   onConversationChange: (id: string) => void;
   models: ModelProfile[];
@@ -30,6 +32,7 @@ export function Chat({
   onOpenDatasetPreview,
   chatId,
   conversationId,
+  visible,
   savedMessageIds,
   onConversationChange,
   models,
@@ -49,6 +52,7 @@ export function Chat({
     error: chatError,
   } = useChat<ChatMessage>({ id: chatId, transport });
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [loadedChatId, setLoadedChatId] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,6 +61,8 @@ export function Chat({
 
   const busy = status === 'submitted' || status === 'streaming';
   const displayError = error || chatError?.message;
+
+  useConversationRead(chatId, visible && loadedChatId === chatId && !historyLoading && !busy);
 
   useEffect(() => {
     setQuestion('');
@@ -67,12 +73,17 @@ export function Chat({
   useEffect(() => {
     let live = true;
     if (!conversationId) {
+      setLoadedChatId(chatId);
       setHistoryLoading(false);
     } else if (!busy) {
+      setLoadedChatId(null);
       window.workbench
         .analysisGetMessages(conversationId)
         .then((history) => {
-          if (live) setMessages(history);
+          if (live) {
+            setMessages(history);
+            setLoadedChatId(chatId);
+          }
         })
         .catch((cause) => {
           if (live) setError(errorMessage(cause));

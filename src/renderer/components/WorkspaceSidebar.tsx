@@ -16,7 +16,8 @@ import type { PropsWithChildren } from 'react';
 import { toast } from 'sonner';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
-import { IconButton, panelControlClassName } from './IconButton';
+import { IconButton } from './IconButton';
+import { ConversationStatus } from './ConversationStatus';
 
 export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets';
 
@@ -259,6 +260,9 @@ function ConversationItem({
             onClick={onSelect}
           >
             <span className="min-w-0 flex-1 truncate">{conversation.title}</span>
+            <span className="shrink-0 group-focus-within/conversation:hidden group-hover/conversation:hidden">
+              <ConversationStatus ids={[conversation.id]} />
+            </span>
           </button>
           <div className="absolute inset-y-0 end-1 flex items-center opacity-0 transition-opacity group-focus-within/conversation:opacity-100 group-hover/conversation:opacity-100">
             <IconButton
@@ -343,7 +347,7 @@ export function WorkspaceSidebar({
             label="收起侧边栏"
             aria-expanded
             aria-controls={WORKSPACE_SIDEBAR_ID}
-            className={panelControlClassName}
+            className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
             onClick={onCollapse}
           />
         </div>
@@ -410,7 +414,10 @@ export function WorkspaceSidebar({
                           <ChevronRightIcon size={12} aria-hidden />
                         </span>
                         <SourceIcon size={16} className="shrink-0" aria-hidden />
-                        <span className="truncate">{dataset.name}</span>
+                        <span className="min-w-0 flex-1 truncate">{dataset.name}</span>
+                        {!open && (
+                          <ConversationStatus ids={conversations.map((conversation) => conversation.id)} />
+                        )}
                       </button>
                       <IconButton
                         icon={SquarePenIcon}
