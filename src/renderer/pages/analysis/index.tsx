@@ -16,7 +16,7 @@ import { AnalysisSidePanel, DATASET_PREVIEW_ID } from './AnalysisSidePanel';
 import { useAnalysisTabs } from './useAnalysisTabs';
 
 const cardClassName =
-  'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] motion-safe:transition-opacity motion-safe:duration-150';
+  'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] bg-surface motion-safe:transition-opacity motion-safe:duration-150 dark:bg-background';
 const bodyClassName = 'min-h-0 min-w-0 flex-1 overflow-hidden';
 const MIN_ANALYSIS_PANEL_WIDTH = 240;
 const DEFAULT_CONVERSATION_WIDTH = 380;
@@ -129,7 +129,7 @@ export function AnalysisPage({
         minSize={MIN_ANALYSIS_PANEL_WIDTH}
         style={{ overflow: 'hidden' }}
       >
-        <section className={clsx(cardClassName, 'bg-background')} aria-label="对话面板" inert={fullscreen}>
+        <section className={cardClassName} aria-label="对话面板" inert={fullscreen}>
           <div className="relative top-(--workspace-titlebar-row-offset) flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]">
             {!fullscreen && titleBar}
             {datasetCollapsed && !fullscreen && (
