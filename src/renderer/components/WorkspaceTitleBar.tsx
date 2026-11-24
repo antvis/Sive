@@ -1,6 +1,5 @@
 import clsx from 'clsx';
 import { PanelLeftIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
 import { panelContentTiming } from '../lib/panel-layout';
 import type { DatasetSummary } from '../types';
 import { IconButton, panelControlClassName } from './IconButton';
@@ -20,7 +19,7 @@ type Props = {
   datasets: DatasetSummary[];
   activeDatasetId: string | null;
   showSidebarActions: boolean;
-  conversationTitle?: ReactNode;
+  conversationTitle?: string;
   onOpenSidebar: () => void;
   onConversationCreate: (datasetId: string) => void;
 };
@@ -69,7 +68,16 @@ export function WorkspaceTitleBar({
         </div>
       </div>
       <div className="flex h-full min-w-0 flex-1 items-center">
-        {conversationTitle ?? <span className="truncate text-base text-muted-foreground">{pageTitles[page]}</span>}
+        {conversationTitle === undefined ? (
+          <span className="truncate text-base text-muted-foreground">{pageTitles[page]}</span>
+        ) : (
+          <span
+            className="min-w-0 flex-1 truncate px-2 text-base font-semibold text-ink"
+            title={conversationTitle}
+          >
+            {conversationTitle}
+          </span>
+        )}
       </div>
     </header>
   );
