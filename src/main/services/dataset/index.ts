@@ -11,6 +11,10 @@ import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 import { sourceEngine } from '../../util/engine';
+import { loadSource } from '../../util/source';
+import { connectGitHubMcp, cancelGitHubConnect, listGitHubRepositories } from '../../util/github/client';
+import type { GitHubRepositoryListInput } from '@shared/github';
+import { githubSourceSchema } from '@shared/github';
 import type { ModelConfig } from '../model';
 import { supabaseError } from '../../util/supabase/errors';
 import { refreshSupabaseOAuth, startSupabaseOAuth } from '../../util/supabase/oauth';
@@ -115,6 +119,11 @@ export class DatasetService {
         sourceConfig = { type: 'supabase', options: { projectRef, accessToken: '' } };
         break;
       }
+      case 'github': {
+        const { repository, since, maxRecords, timeoutMs } = sourceConfig.options;
+        sourceConfig = { type: 'github', options: { repository, since, maxRecords, timeoutMs } };
+        break;
+      }
       case 'feishu-bitable': {
         const { url, appId } = sourceConfig.options;
         sourceConfig = { type: 'feishu-bitable', options: { url, appId } };
@@ -147,6 +156,18 @@ export class DatasetService {
     } finally {
       this.oauthAuthorizing = false;
     }
+  }
+
+  connectGitHub(connectionId: string) {
+    return connectGitHubMcp(connectionId);
+  }
+
+  cancelGitHubConnect(connectionId: string) {
+    return cancelGitHubConnect(connectionId);
+  }
+
+  githubRepositories(input: GitHubRepositoryListInput) {
+    return listGitHubRepositories(input);
   }
 
   private withOAuthSession(sourceConfig: DataSourceConfig, sessionId?: string) {
@@ -263,7 +284,12 @@ export class DatasetService {
       throw new Error('无效的预览分页参数。');
 
     const identifier = (name: string) => `"${name.replace(/"/g, '""')}"`;
-    const keys = typeof model.primaryKey === 'string' ? [model.primaryKey] : (model.primaryKey ?? []);
+    const keys =
+      dataset.sourceType === 'github'
+        ? ['number']
+        : typeof model.primaryKey === 'string'
+          ? [model.primaryKey]
+          : (model.primaryKey ?? []);
     const order = keys.length ? ` ORDER BY ${keys.map(identifier).join(', ')}` : '';
     const ava = new AVA({
       llm: { model: 'preview-only' },
@@ -272,9 +298,17 @@ export class DatasetService {
     try {
       const file = localFilePath(dataset.sourceConfig);
       if (file) await checkLocalFile(file);
-      await ava.source(dataset.sourceConfig);
+      await loadSource(ava, dataset.sourceConfig);
+      const reference = model.tableReference;
+      const tableName =
+        dataset.sourceType === 'github' && reference
+          ? [reference.schema, reference.table]
+              .filter((part): part is string => Boolean(part))
+              .map(identifier)
+              .join('.')
+          : identifier(model.name);
       const result = await ava.query(
-        `SELECT * FROM ${identifier(model.name)}${order} LIMIT ${limit + 1} OFFSET ${offset}`,
+        `SELECT * FROM ${tableName}${order} LIMIT ${limit + 1} OFFSET ${offset}`,
         { maxRows: limit + 1 },
       );
       return result.data;
@@ -294,7 +328,7 @@ export class DatasetService {
     try {
       const file = localFilePath(dataset.sourceConfig);
       if (file) await checkLocalFile(file);
-      await ava.source(dataset.sourceConfig);
+      await loadSource(ava, dataset.sourceConfig);
       await ava.schema({}, () => dataset.schema);
       await ava.profile({}, () => dataset.profile);
       await ava.semantic({}, () => dataset.semantic);
@@ -312,7 +346,7 @@ export class DatasetService {
       engine: sourceEngine(sourceConfig),
     });
     try {
-      await ava.source(sourceConfig);
+      await loadSource(ava, sourceConfig);
       const schema = await ava.schema();
       const profile = await ava.profile({ metrics: ['row_count'] });
       if (!schema.models.length) throw new Error('未发现可读取的数据表。');
@@ -329,6 +363,7 @@ export class DatasetService {
   }
 
   async save(name: string, sourceConfig: DataSourceConfig, id?: string, authSessionId?: string) {
+    if (sourceConfig.type === 'github') sourceConfig = githubSourceSchema.parse(sourceConfig);
     const connection = this.withOAuthSession(sourceConfig, authSessionId);
     const inspected = await this.readSource(connection.sourceConfig);
     const now = new Date().toISOString();

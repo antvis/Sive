@@ -11,6 +11,7 @@ import type { UIMessage, UIMessageChunk } from 'ai';
 import { isTextUIPart, validateUIMessages } from 'ai';
 import { z } from 'zod';
 import type { LocalFileFormat } from './dataSource';
+import type { GitHubRepositoryPage, GitHubRepositoryListInput } from './github';
 
 import type { Snippet, SnippetSpec, SnippetContent, SnippetSaveInput, SnippetUpdateInput } from './schema';
 
@@ -181,6 +182,9 @@ export type WorkbenchApi = {
     authSessionId?: string,
   ): Promise<void>;
   oAuthStart(type: DataSourceConfig['type']): Promise<SupabaseOAuthResult>;
+  githubConnect(connectionId: string): Promise<{ login: string }>;
+  githubConnectCancel(connectionId: string): Promise<void>;
+  githubRepositories(input: GitHubRepositoryListInput): Promise<GitHubRepositoryPage>;
   datasetGet(id: string): Promise<DatasetDetail | null>;
   // Returns up to limit + 1 rows so the preview can determine whether another page exists.
   datasetPreview(
