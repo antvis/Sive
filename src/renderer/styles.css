@@ -9,11 +9,12 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 @theme {
+  /* The default root size is 14px. Keep the type scale proportional to the user's setting. */
   --text-xs: 0.857142857rem;
   --text-xs--line-height: calc(16 / 12);
   --text-sm: 0.928571429rem;
   --text-sm--line-height: calc(18 / 13);
-  --text-base: 14px;
+  --text-base: 1rem;
   --text-base--line-height: 1.5;
   --text-lg: 1.142857143rem;
   --text-lg--line-height: calc(22 / 16);
@@ -143,7 +144,6 @@
 }
 
 :root {
-  font-size: var(--text-base);
   color-scheme: light;
   --workspace-gutter: 8px;
   --workspace-titlebar-height: 44px;
