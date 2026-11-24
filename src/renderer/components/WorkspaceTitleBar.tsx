@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { PanelLeftIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { panelContentTiming } from '../hooks/usePanelMotion';
+import { panelContentTiming } from '../lib/panel-layout';
 import type { DatasetSummary } from '../types';
 import { IconButton, panelControlClassName } from './IconButton';
 import { NewConversationButton, WORKSPACE_SIDEBAR_ID } from './WorkspaceSidebar';
@@ -19,7 +19,6 @@ type Props = {
   datasets: DatasetSummary[];
   activeDatasetId: string | null;
   showSidebarActions: boolean;
-  fullscreen: boolean;
   conversationTitle?: ReactNode;
   onOpenSidebar: () => void;
   onConversationCreate: (datasetId: string) => void;
@@ -30,7 +29,6 @@ export function WorkspaceTitleBar({
   datasets,
   activeDatasetId,
   showSidebarActions,
-  fullscreen,
   conversationTitle,
   onOpenSidebar,
   onConversationCreate,
@@ -40,9 +38,7 @@ export function WorkspaceTitleBar({
       className={clsx(
         'flex h-(--workspace-titlebar-height) min-w-0 flex-1 items-center px-3 [-webkit-app-region:drag] motion-safe:transition-[padding-inline-start]',
         panelContentTiming,
-        fullscreen
-          ? 'ps-(--window-titlebar-padding)'
-          : showSidebarActions && 'ps-(--workspace-titlebar-padding)',
+        showSidebarActions && 'ps-(--workspace-titlebar-padding)',
       )}
     >
       <div

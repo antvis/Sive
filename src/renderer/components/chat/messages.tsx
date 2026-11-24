@@ -70,7 +70,7 @@ export function Messages({
                   <Badge
                     asChild
                     variant="outline"
-                    className="h-auto max-w-full min-w-0 rounded-lg px-2.5 py-1 text-lg hover:bg-muted active:bg-secondary motion-safe:active:scale-[0.97] motion-reduce:transition-none [&>svg]:size-4!"
+                    className="h-auto max-w-full min-w-0 rounded-xl px-3 py-1.5 text-lg shadow-xs hover:bg-muted active:bg-secondary motion-safe:active:scale-[0.97] motion-reduce:transition-none [&>svg]:size-4!"
                   >
                     <button
                       type="button"
@@ -78,8 +78,8 @@ export function Messages({
                       aria-label={`预览数据源 ${datasetName}`}
                       onClick={onOpenDatasetPreview}
                     >
-                      <ChartColumnIcon aria-hidden />
-                      <span className="min-w-0 truncate">{datasetName}</span>
+                      <ChartColumnIcon className="shrink-0" aria-hidden />
+                      <span className="min-w-0 text-left wrap-anywhere whitespace-normal">{datasetName}</span>
                     </button>
                   </Badge>
                   提问

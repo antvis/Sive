@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { panelAnimationTiming, prefersReducedMotion } from '../../hooks/usePanelMotion';
+import { panelAnimationTiming } from '../../lib/panel-layout';
 
 export function useFullscreenPreview(fullscreen: boolean, onFullscreenChange: (fullscreen: boolean) => void) {
   const card = useRef<HTMLElement>(null);
@@ -29,7 +29,9 @@ export function useFullscreenPreview(fullscreen: boolean, onFullscreenChange: (f
   }, [fullscreen]);
 
   const changeFullscreen = (value: boolean) => {
-    previousBounds.current = prefersReducedMotion() ? null : (card.current?.getBoundingClientRect() ?? null);
+    previousBounds.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? null
+      : (card.current?.getBoundingClientRect() ?? null);
     onFullscreenChange(value);
   };
 
