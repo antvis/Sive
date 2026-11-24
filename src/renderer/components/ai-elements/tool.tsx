@@ -1,6 +1,7 @@
 "use client";
 
 import type { DynamicToolUIPart, ToolUIPart } from "ai";
+import { isToolOutputErrorUIPart } from "ai";
 import type { ComponentProps, ReactNode } from "react";
 
 import { Badge } from "../ui/badge";
@@ -31,6 +32,11 @@ export const Tool = ({ className, ...props }: ToolProps) => (
 );
 
 export type ToolPart = ToolUIPart | DynamicToolUIPart;
+
+export function getToolErrorText(call: ToolPart) {
+  if (isToolOutputErrorUIPart(call)) return call.errorText;
+  if (call.state === "output-denied") return "工具执行已拒绝。";
+}
 
 export type ToolHeaderProps = {
   title?: string;

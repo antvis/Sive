@@ -60,13 +60,13 @@ function DataPreview({
         <DataGrid rows={rows} columns={model.columns} profile={profile} resetKey={offset} />
         {loading ? (
           <div
-            className="absolute inset-0 grid place-items-center bg-preview-surface text-sm text-muted-foreground"
+            className="absolute inset-0 grid place-items-center bg-surface text-sm text-muted-foreground"
             role="status"
           >
             正在读取数据…
           </div>
         ) : error ? (
-          <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 bg-preview-surface p-4 text-center text-sm">
+          <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 bg-surface p-4 text-center text-sm">
             <p className="m-0 text-danger">{error}</p>
             <Button
               onClick={() => {

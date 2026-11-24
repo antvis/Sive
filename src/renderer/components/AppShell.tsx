@@ -6,7 +6,6 @@ import { usePanelToggleFocus } from '../hooks/usePanelToggleFocus';
 import { usePanelCollapsePreview } from '../hooks/usePanelCollapsePreview';
 import { readWidth, saveWidth } from '../utils';
 import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../lib/panel-layout';
-import type { DatasetSummary } from '../types';
 import { ConversationSwitcher } from './ConversationSwitcher';
 import { WORKSPACE_SIDEBAR_ID, WorkspaceSidebar } from './WorkspaceSidebar';
 import type { WorkspaceSidebarProps } from './WorkspaceSidebar';
@@ -14,9 +13,6 @@ import { WorkspaceTitleBar } from './WorkspaceTitleBar';
 
 type AppShellProps = PropsWithChildren<
   WorkspaceSidebarProps & {
-    datasetTabs: DatasetSummary[];
-    onDatasetSelect: (id: string) => void;
-    onDatasetClose: (id: string) => void;
     renderAnalysis?: (frame: AnalysisFrameProps) => ReactNode;
   }
 >;
@@ -35,10 +31,7 @@ const SIDEBAR_WIDTH_KEY = 'sive.sidebar-width';
 
 export function AppShell({
   page,
-  datasetTabs,
   activeDatasetId,
-  onDatasetSelect,
-  onDatasetClose,
   renderAnalysis,
   children,
   ...sidebar
@@ -84,10 +77,8 @@ export function AppShell({
     <WorkspaceTitleBar
       page={page}
       datasets={sidebar.datasets}
-      tabs={datasetTabs}
       activeDatasetId={activeDatasetId}
       showSidebarActions={showSidebarActions}
-      fullscreen={previewFullscreen}
       conversationTitle={
         hasAnalysis && !previewFullscreen ? (
           <ConversationSwitcher
@@ -101,8 +92,6 @@ export function AppShell({
       }
       onOpenSidebar={openSidebar}
       onConversationCreate={sidebar.onConversationCreate}
-      onDatasetSelect={onDatasetSelect}
-      onDatasetClose={onDatasetClose}
     />
   );
 
