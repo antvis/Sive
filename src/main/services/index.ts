@@ -6,6 +6,7 @@ import { DatasetService } from './dataset';
 import { ModelService } from './model';
 import { SettingsService } from './settings';
 import { SnippetService } from './snippet';
+import { StorageService } from './storage';
 
 export function createServices(database: DBConnection) {
   const repositories = createRepositories(database);
@@ -16,8 +17,9 @@ export function createServices(database: DBConnection) {
   const snippet = new SnippetService(database, repositories);
   const settings = new SettingsService(database, repositories);
   const model = new ModelService(database, repositories);
+  const storage = new StorageService(repositories.storage);
 
-  return { dataset, conversation, analysis, snippet, settings, model };
+  return { dataset, conversation, analysis, snippet, settings, model, storage };
 }
 
 export type Services = ReturnType<typeof createServices>;

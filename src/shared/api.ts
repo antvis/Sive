@@ -62,6 +62,10 @@ export type DataStorageInfo = { path: string; directory: string; sizeBytes: numb
 
 export type StorageInfo = { cache: CacheInfo; data: DataStorageInfo };
 
+export const storageClearTargetSchema = z.enum(['data', 'cache', 'all']);
+
+export type StorageClearTarget = z.infer<typeof storageClearTargetSchema>;
+
 export type UpdateResult = { currentVersion: string; latestVersion: string; hasUpdate: boolean };
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
@@ -192,6 +196,7 @@ export type WorkbenchApi = {
   settingsClose(): void;
   settingsSavePreferences(preferences: Preferences): Promise<void>;
   systemGetStorageInfo(): Promise<StorageInfo>;
+  systemClearStorage(target: StorageClearTarget): Promise<StorageInfo | null>;
   systemOpen(type: 'directory' | 'url', path: string): Promise<void>;
   aboutGetVersion(): Promise<string>;
   aboutCheckUpdates(): Promise<UpdateResult>;

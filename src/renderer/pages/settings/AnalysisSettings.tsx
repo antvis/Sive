@@ -61,7 +61,7 @@ function DocumentationLink({ url, label }: { url: string; label: string }) {
   return (
     <button
       type="button"
-      className="text-accent hover:underline"
+      className="text-sm text-accent hover:underline"
       onClick={() => void window.workbench.systemOpen('url', url)}
     >
       {label}
@@ -92,7 +92,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
     <>
       <SettingGroup
         title="分析策略"
-        description={
+        action={
           <DocumentationLink
             url="https://ava.antv.vision/documentation/analysis/strategies/"
             label="查看分析策略文档"
@@ -101,7 +101,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
       >
         <SettingRow
           title="默认分析方式"
-          description="直接分析适合明确的问题。多步探索会分步查询，通常耗时更长，模型调用更多。"
+          description="直接分析适合明确的问题。多步探索会分步查询，通常耗时更长，模型调用更多"
         >
           <SegmentedControl
             label="默认分析方式"
@@ -117,7 +117,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
           />
         </SettingRow>
         {preferences.strategy.type === 'loop' && (
-          <SettingRow title="多步探索轮次上限" description="限制一次多步探索的推理轮次，默认 12 轮。">
+          <SettingRow title="多步探索轮次上限" description="限制一次多步探索的推理轮次，默认 12 轮">
             <NumberInput
               label="多步探索最大轮次"
               max={50}
@@ -133,7 +133,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
       <SettingGroup title="Agent 行为">
         <SettingRow
           title="任务执行轮次上限"
-          description="限制 Agent 处理单次任务时的执行轮次，以控制工具与模型调用。"
+          description="限制 Agent 处理单次任务时的执行轮次，以控制工具与模型调用"
         >
           <NumberInput
             label="Agent 最大执行轮次"
@@ -148,14 +148,14 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
 
       <SettingGroup
         title="AVA DuckDB 引擎"
-        description={
+        action={
           <DocumentationLink
             url="https://ava.antv.vision/documentation/engines/duckdb/"
             label="查看 DuckDB 文档"
           />
         }
       >
-        <SettingRow title="内存上限" description="限制单个 DuckDB 引擎可使用的内存。">
+        <SettingRow title="内存上限" description="限制单个 DuckDB 引擎可使用的内存">
           <NumberInput
             label="DuckDB 内存上限"
             value={sizeInMB(preferences.engine.memoryLimit)}
@@ -166,7 +166,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
             onChange={(value) => void updateEngine({ memoryLimit: `${value}MB` })}
           />
         </SettingRow>
-        <SettingRow title="工作线程数" description="设置 DuckDB 查询使用的工作线程数量。">
+        <SettingRow title="工作线程数" description="设置 DuckDB 查询使用的工作线程数量">
           <NumberInput
             label="DuckDB 工作线程数"
             value={preferences.engine.threads ?? 1}
@@ -175,7 +175,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
             onChange={(threads) => void updateEngine({ threads })}
           />
         </SettingRow>
-        <SettingRow title="单次查询超时" description="超过设定时间的查询会被终止。">
+        <SettingRow title="单次查询超时" description="超过设定时间的查询会被终止">
           <NumberInput
             label="DuckDB 查询超时"
             value={(preferences.engine.queryTimeoutMs ?? 30000) / 1000}
@@ -186,7 +186,7 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
         </SettingRow>
         <SettingRow
           title="临时文件上限"
-          description="限制 DuckDB 查询产生的临时文件占用，修改后将在下次执行时生效。"
+          description="限制 DuckDB 查询产生的临时文件占用，修改后将在下次执行时生效"
         >
           <NumberInput
             label="DuckDB 临时文件上限"

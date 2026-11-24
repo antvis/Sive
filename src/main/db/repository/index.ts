@@ -5,6 +5,7 @@ import { MessageRepo } from './message-repo';
 import { ModelProviderRepo } from './model-provider-repo';
 import { SettingRepo } from './setting-repo';
 import { SnippetRepo } from './snippet-repo';
+import { StorageRepo } from './storage-repo';
 
 export function createRepositories(database: DBConnection) {
   return {
@@ -14,6 +15,7 @@ export function createRepositories(database: DBConnection) {
     modelProviders: new ModelProviderRepo(database),
     settings: new SettingRepo(database),
     snippets: new SnippetRepo(database),
+    storage: new StorageRepo(database),
   };
 }
 

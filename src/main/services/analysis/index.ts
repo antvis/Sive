@@ -42,7 +42,7 @@ export class AnalysisService {
       throw new Error('该数据源正在分析，请等待分析结束后刷新。');
     this.updatingDatasets.add(datasetId);
     try {
-      await this.disposeDatasetAgents(datasetId);
+      await this.disposeAgents(datasetId);
     } catch (error) {
       this.endDatasetUpdate(datasetId);
       throw error;
@@ -53,8 +53,17 @@ export class AnalysisService {
     this.updatingDatasets.delete(datasetId);
   }
 
-  private async disposeDatasetAgents(datasetId: string) {
-    const entries = [...this.agents.entries()].filter(([, entry]) => entry.dataset.id === datasetId);
+  prepareWorkspaceClear() {
+    if (this.tasks.size || this.updatingDatasets.size) {
+      throw new Error('请等分析任务和数据源更新结束后再清除工作台数据');
+    }
+    void this.disposeAgents().catch(() => {});
+  }
+
+  private async disposeAgents(datasetId?: string) {
+    const entries = [...this.agents.entries()].filter(
+      ([, entry]) => datasetId === undefined || entry.dataset.id === datasetId,
+    );
     for (const [id] of entries) this.agents.delete(id);
     const results = await Promise.allSettled(entries.map(async ([, entry]) => (await entry.agent).dispose()));
     const failed = results.find((result) => result.status === 'rejected');

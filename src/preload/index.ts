@@ -31,6 +31,7 @@ const api = {
   settingsClose: () => ipcRenderer.send('settingsClose'),
   settingsSavePreferences: (preferences) => ipcRenderer.invoke('settingsSavePreferences', preferences),
   systemGetStorageInfo: () => ipcRenderer.invoke('systemGetStorageInfo'),
+  systemClearStorage: (target) => ipcRenderer.invoke('systemClearStorage', target),
   systemOpen: (type, path) => ipcRenderer.invoke('systemOpen', type, path),
   aboutGetVersion: () => ipcRenderer.invoke('aboutGetVersion'),
   aboutCheckUpdates: () => ipcRenderer.invoke('aboutCheckUpdates'),

@@ -26,26 +26,32 @@ export function PrivacySettings({ preferences }: { preferences: Preferences }) {
 
   return (
     <>
-      <SettingGroup title="异常报告" description="异常报告用于排查发布版本中的问题。">
+      <SettingGroup
+        title="异常报告"
+        description="用于发现发布版本中的问题，辅助开源软件改进，不包含用户本地数据、文件等敏感内容。"
+      >
         <SettingRow
           title="JavaScript 异常报告"
-          description="报告包含错误类型、脱敏堆栈、应用版本和系统版本。原始错误消息会在上报前移除。"
+          description="默认开启且不可修改。仅保留错误类型、脱敏堆栈、App 版本和系统版本，原始错误消息不上传。"
         >
-          <span className="text-sm whitespace-nowrap text-muted-foreground">始终开启</span>
+          <span className="text-sm whitespace-nowrap text-muted-foreground">默认开启</span>
         </SettingRow>
         <SettingRow
           title="原生崩溃报告"
           description="默认关闭，修改后下次启动生效。开启后会上传 minidump，不会额外上传数据文件，但其中可能包含崩溃时的少量进程内存片段。"
         >
-          <Switch.Root
-            aria-label="启用原生崩溃报告"
-            checked={preferences.diagnostics.nativeCrashReporting}
-            disabled={saving}
-            className="flex h-6 w-11 items-center rounded-full bg-ink/20 p-0.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-focus data-[state=checked]:bg-accent disabled:opacity-45"
-            onCheckedChange={(checked) => void updateNativeCrashReporting(checked)}
-          >
-            <Switch.Thumb className="size-5 rounded-full bg-white shadow-xs motion-safe:transition-transform data-[state=checked]:translate-x-5" />
-          </Switch.Root>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Switch.Root
+              aria-label="启用原生崩溃报告"
+              checked={preferences.diagnostics.nativeCrashReporting}
+              disabled={saving}
+              className="flex h-6 w-11 items-center rounded-full bg-ink/20 p-0.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-focus data-[state=checked]:bg-accent disabled:opacity-45"
+              onCheckedChange={(checked) => void updateNativeCrashReporting(checked)}
+            >
+              <Switch.Thumb className="size-5 rounded-full bg-white shadow-xs motion-safe:transition-transform data-[state=checked]:translate-x-5" />
+            </Switch.Root>
+            启用
+          </label>
         </SettingRow>
       </SettingGroup>
 
@@ -57,12 +63,13 @@ export function PrivacySettings({ preferences }: { preferences: Preferences }) {
             <li>不采集屏幕截图、本地变量、网络请求 breadcrumb 或用户身份信息。</li>
           </ul>
           <p className="mt-4 mb-0">
+            Sive 是 MIT 开源软件，你可以审查异常过滤和上报代码：
             <button
               type="button"
               className="inline-flex items-center gap-1 text-accent hover:underline"
               onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}
             >
-              查看 Sive 源码
+              https://github.com/antvis/Sive
               <ArrowSquareOut size={14} aria-hidden />
             </button>
           </p>

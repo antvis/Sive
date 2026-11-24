@@ -104,7 +104,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
         <fieldset disabled={saving} className="grid min-w-0 gap-4 border-0 p-0">
           <SettingField
             label="服务名称"
-            description="用来区分不同的模型服务。"
+            description="用来区分不同的模型服务"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="例如：云端模型服务"
@@ -112,7 +112,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
           />
           <SettingField
             label="服务地址"
-            description="填写服务商提供的 API 基础地址。"
+            description="填写服务商提供的 API 基础地址"
             value={baseURL}
             onChange={(e) => setBaseURL(e.target.value)}
             placeholder="https://example.com/v1"
@@ -120,7 +120,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
           />
           <SettingField
             label="密钥"
-            description="服务要求认证时，填写服务商提供的 API 密钥。"
+            description="服务要求认证时，填写服务商提供的 API 密钥"
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
@@ -145,7 +145,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
               </div>
             </div>
             <p className="m-0 text-xs text-muted-foreground">
-              从列表中选择要启用的模型，也可以手动添加模型 ID。
+              从列表中选择要启用的模型，也可以手动添加模型 ID
             </p>
             <ModelPicker
               options={currentCatalog?.ids ?? []}
@@ -258,7 +258,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <div className="grid gap-1">
                     <span>默认模型</span>
-                    <span className="text-xs text-muted-foreground">分析对话会预选此模型。</span>
+                    <span className="text-xs text-muted-foreground">分析对话会预选此模型</span>
                   </div>
                   <Select
                     compact
@@ -280,7 +280,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
         <div className="grid justify-items-center gap-3 px-6 py-14 text-center">
           <Cpu size={32} className="text-accent" />
           <h2 className="m-0 text-base font-medium">连接你的第一个模型服务</h2>
-          <p className="m-0 leading-6 text-muted-foreground">支持兼容 OpenAI 接口的云端或本地服务。</p>
+          <p className="m-0 leading-6 text-muted-foreground">支持兼容 OpenAI 接口的云端或本地服务</p>
           <div className="mt-2">{addService}</div>
         </div>
       )}

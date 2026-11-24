@@ -22,13 +22,13 @@ import { PrivacySettings } from './PrivacySettings';
 import { StorageSettings } from './StorageSettings';
 
 const sections = {
-  appearance: { label: '偏好设置', icon: MonitorIcon },
-  models: { label: '模型服务', icon: CpuIcon },
-  analysis: { label: '分析', icon: ChartLineIcon },
-  storage: { label: '存储空间', icon: HardDriveIcon },
-  archived: { label: '归档会话', icon: ArchiveIcon },
-  privacy: { label: '隐私与诊断', icon: ShieldCheckIcon },
-  about: { label: '关于 Sive', icon: InfoIcon },
+  appearance: { label: '偏好设置', description: '调整界面语言、主题亮暗和对话字号', icon: MonitorIcon },
+  models: { label: '模型服务', description: '管理模型服务、可用模型和默认模型', icon: CpuIcon },
+  analysis: { label: '分析', description: '设置默认分析方式、Agent 行为和 DuckDB 引擎', icon: ChartLineIcon },
+  storage: { label: '存储空间', description: '查看工作台数据库和应用缓存的占用', icon: HardDriveIcon },
+  archived: { label: '归档会话', description: '查找和管理已归档的分析会话', icon: ArchiveIcon },
+  privacy: { label: '隐私与诊断', description: undefined, icon: ShieldCheckIcon },
+  about: { label: '关于 Sive', description: '查看版本、更新和开源项目信息', icon: InfoIcon },
 };
 
 type Section = keyof typeof sections;
@@ -64,6 +64,7 @@ export function SettingsWindow({ state, fallback }: { state: WorkspaceState | nu
 
 function SettingsContent({ state }: { state: WorkspaceState }) {
   const [section, setSection] = useState<Section>('appearance');
+  const { label, description } = sections[section];
   const counts: Partial<Record<Section, number>> = {
     models: state.models.length,
     archived: state.archivedConversations.length,
@@ -110,34 +111,32 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
         ))}
       </nav>
 
-      <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
-        <h1
-          id="settings-panel-title"
-          className="m-0 shrink-0 px-[clamp(20px,5vw,40px)] pt-7 pb-4 text-2xl font-semibold tracking-tight"
-        >
-          {sections[section].label}
-        </h1>
-        <section
-          key={section}
-          id="settings-panel"
-          aria-labelledby="settings-panel-title"
-          className="min-h-0 flex-1 overflow-y-auto px-[clamp(20px,5vw,40px)] pt-4 pb-8"
-        >
-          <div className="flex flex-col gap-8">
-            {section === 'appearance' && <AppearanceSettings preferences={state.preferences} />}
-            {section === 'models' && (
-              <ModelSettings models={state.models} activeModelId={state.activeModelId} />
-            )}
-            {section === 'analysis' && <AnalysisSettings preferences={state.preferences} />}
-            {section === 'storage' && <StorageSettings />}
-            {section === 'archived' && (
-              <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
-            )}
-            {section === 'privacy' && <PrivacySettings preferences={state.preferences} />}
-            {section === 'about' && <AboutSettings />}
-          </div>
-        </section>
-      </div>
+      <section
+        key={section}
+        id="settings-panel"
+        aria-labelledby="settings-panel-title"
+        className="min-h-0 min-w-0 overflow-y-auto px-[clamp(20px,5vw,40px)] pt-7 pb-8"
+      >
+        <div className="mb-8">
+          <h1 id="settings-panel-title" className="m-0 text-xl font-medium text-ink/85">
+            {label}
+          </h1>
+          {description && <p className="mt-1 mb-0 text-sm font-light text-muted-foreground">{description}</p>}
+        </div>
+        <div className="flex flex-col gap-8">
+          {section === 'appearance' && <AppearanceSettings preferences={state.preferences} />}
+          {section === 'models' && (
+            <ModelSettings models={state.models} activeModelId={state.activeModelId} />
+          )}
+          {section === 'analysis' && <AnalysisSettings preferences={state.preferences} />}
+          {section === 'storage' && <StorageSettings />}
+          {section === 'archived' && (
+            <ArchivedConversations conversations={state.archivedConversations} datasets={state.datasets} />
+          )}
+          {section === 'privacy' && <PrivacySettings preferences={state.preferences} />}
+          {section === 'about' && <AboutSettings />}
+        </div>
+      </section>
     </main>
   );
 }

@@ -34,7 +34,7 @@ export function AboutSettings() {
       <h2 className="mt-5 mb-2 text-2xl font-semibold">Sive</h2>
       <p className="m-0 text-sm text-muted-foreground">Sive, See it Live, Share it Real.</p>
       <p className="mx-auto mt-4 mb-0 max-w-md text-sm leading-6 text-muted-foreground">
-        基于 AntV AVA 的 AI 桌面数据管理与分析工作台，让数据理解、分析和图表可视化在一个工作台中完成。
+        基于 AntV AVA 的 AI 桌面数据管理与分析工作台，让数据理解、分析和图表可视化在一个工作台中完成
       </p>
       <p className="mt-5 mb-0 text-sm text-muted-foreground">版本 {version || '读取中…'} · MIT License</p>
       <button

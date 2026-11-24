@@ -44,7 +44,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
       <div className="grid justify-items-center px-6 py-14 text-center">
         <Archive size={32} className="text-muted-foreground" />
         <h2 className="mt-4 mb-2 text-base font-medium">暂无归档会话</h2>
-        <p className="m-0 text-muted-foreground">在侧栏归档的分析会话可以在这里恢复或永久删除。</p>
+        <p className="m-0 text-muted-foreground">在侧栏归档的分析会话可以在这里恢复或永久删除</p>
       </div>
     );
   }
@@ -100,7 +100,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
       </div>
       {!groups.size && (
         <p className="py-12 text-center text-sm text-muted-foreground">
-          没有匹配的会话，试试其他关键词或数据源。
+          没有匹配的会话，试试其他关键词或数据源
         </p>
       )}
       <Modal
@@ -126,7 +126,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
         }
       >
         <p className="m-0 leading-6 text-muted-foreground">
-          会话的分析结果和收藏将一并删除，数据源不受影响。此操作无法恢复。
+          会话的分析结果和收藏将一并删除，数据源不受影响。此操作无法恢复
         </p>
       </Modal>
     </section>

@@ -6,17 +6,24 @@ import { cn } from '../../lib/utils';
 export function SettingGroup({
   title,
   description,
+  action,
   children,
 }: {
   title?: string;
   description?: ReactNode;
+  action?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section>
-      {(title || description) && (
+      {(title || description || action) && (
         <header className="mb-3 px-4">
-          {title && <h2 className="m-0 text-lg font-semibold">{title}</h2>}
+          {(title || action) && (
+            <div className="flex items-baseline gap-3">
+              {title && <h2 className="m-0 text-sm font-medium text-muted-foreground">{title}</h2>}
+              {action && <div className="ml-auto shrink-0">{action}</div>}
+            </div>
+          )}
           {description && <div className="mt-1 text-sm text-muted-foreground">{description}</div>}
         </header>
       )}
