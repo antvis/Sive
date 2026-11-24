@@ -86,6 +86,7 @@ export function AppShell({
       activeDatasetId={activeDatasetId}
       showSidebarActions={showSidebarActions}
       conversationTitle={conversationTitle}
+      activeConversationId={sidebar.activeConversationId}
       onOpenSidebar={openSidebar}
       onConversationCreate={sidebar.onConversationCreate}
     />
