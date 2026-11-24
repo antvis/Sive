@@ -20,7 +20,9 @@ export function SettingGroup({
           {description && <div className="mt-1 text-sm text-muted-foreground">{description}</div>}
         </header>
       )}
-      <div className="divide-y divide-ink/10 rounded-[16px] bg-workspace-control px-4">{children}</div>
+      <div className="divide-y divide-ink/7 rounded-[16px] bg-workspace-control/60 px-4 dark:bg-preview-row">
+        {children}
+      </div>
     </section>
   );
 }

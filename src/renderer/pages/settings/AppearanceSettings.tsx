@@ -47,7 +47,7 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
 
   return (
     <>
-      <SettingGroup>
+      <SettingGroup title="外观">
         <SettingRow
           title={i18n('settings.language.title')}
           description={i18n('settings.language.description')}

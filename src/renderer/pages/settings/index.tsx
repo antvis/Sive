@@ -22,7 +22,7 @@ import { PrivacySettings } from './PrivacySettings';
 import { StorageSettings } from './StorageSettings';
 
 const sections = {
-  appearance: { label: '外观', icon: MonitorIcon },
+  appearance: { label: '偏好设置', icon: MonitorIcon },
   models: { label: '模型服务', icon: CpuIcon },
   analysis: { label: '分析', icon: ChartLineIcon },
   storage: { label: '存储空间', icon: HardDriveIcon },
@@ -34,7 +34,7 @@ const sections = {
 type Section = keyof typeof sections;
 
 const groups: { label: string; items: Section[] }[] = [
-  { label: '偏好设置', items: ['appearance', 'models', 'analysis'] },
+  { label: '常规', items: ['appearance', 'models', 'analysis'] },
   { label: '数据管理', items: ['storage', 'archived'] },
   { label: '应用', items: ['privacy', 'about'] },
 ];
@@ -92,8 +92,8 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
                       className={clsx(
                         'flex min-h-10 w-full items-center gap-2.5 rounded-[12px] px-2.5 py-1.5 text-left text-base transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus',
                         section === id
-                          ? 'bg-ink/8 font-medium text-sidebar-ink'
-                          : 'text-sidebar-text hover:bg-ink/5',
+                          ? 'bg-ink/5 font-medium text-sidebar-ink'
+                          : 'text-sidebar-text hover:bg-ink/3',
                       )}
                     >
                       <Icon size={16} aria-hidden className="shrink-0" />
@@ -111,7 +111,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
       <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
         <h1
           id="settings-panel-title"
-          className="m-0 shrink-0 px-[clamp(20px,5vw,40px)] pt-7 pb-4 text-3xl font-semibold tracking-tight"
+          className="m-0 shrink-0 px-[clamp(20px,5vw,40px)] pt-7 pb-4 text-2xl font-semibold tracking-tight"
         >
           {sections[section].label}
         </h1>
