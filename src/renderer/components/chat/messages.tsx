@@ -87,18 +87,14 @@ export function Messages({
               }
               description={hasModel ? '选择推荐问题，或输入你关心的问题。' : '请先在设置中配置默认模型服务。'}
             />
-            {suggestionsLoading ? (
-              <p role="status" className="text-sm text-muted-foreground">
-                正在生成推荐问题…
-              </p>
-            ) : (
+            {!suggestionsLoading && suggestions.length > 0 && (
               <Suggestions className="w-full flex-col items-stretch gap-2">
                 {suggestions.map((suggestion) => (
                   <Suggestion
                     key={suggestion.query}
                     suggestion={suggestion.query}
                     onClick={onSuggestion}
-                    className="h-auto min-h-10 justify-between gap-3 border-border bg-background px-4 py-3 text-left text-base leading-normal font-light whitespace-normal shadow-none hover:bg-secondary"
+                    className="h-auto min-h-10 justify-between gap-3 border-border bg-background px-4 py-3 text-left text-sm leading-normal font-light whitespace-normal shadow-none hover:bg-secondary"
                   >
                     <span>{suggestion.query}</span>
                     <ArrowUpRightIcon

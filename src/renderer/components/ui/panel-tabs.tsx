@@ -36,7 +36,7 @@ export function PanelTabList({ label, tabs, activeTabId, visible, className, onC
   }, [activeTabId, tabs.length, visible]);
 
   const closeTab = (id: string) => {
-    restoreFocus.current = true;
+    restoreFocus.current = tabs.length > 1;
     onClose(id);
   };
 

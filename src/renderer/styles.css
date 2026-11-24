@@ -9,23 +9,25 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 @theme {
-  /* The default root size is 14px. Keep the type scale proportional to the user's setting. */
-  --text-xs: 0.857142857rem;
-  --text-xs--line-height: calc(16 / 12);
-  --text-sm: 0.928571429rem;
-  --text-sm--line-height: calc(18 / 13);
+  /* Keep the type scale proportional to the 13px default root size. */
+  --text-xs: 0.846153846rem;
+  --text-xs--line-height: calc(15 / 11);
+  --text-sm: 0.923076923rem;
+  --text-sm--line-height: calc(17 / 12);
   --text-base: 1rem;
   --text-base--line-height: 1.5;
-  --text-lg: 1.142857143rem;
-  --text-lg--line-height: calc(22 / 16);
-  --text-xl: 1.285714286rem;
-  --text-xl--line-height: calc(24 / 18);
-  --text-2xl: 1.571428571rem;
-  --text-2xl--line-height: calc(28 / 22);
-  --text-3xl: 1.857142857rem;
-  --text-3xl--line-height: calc(32 / 26);
+  --text-lg: 1.153846154rem;
+  --text-lg--line-height: calc(21 / 15);
+  --text-xl: 1.307692308rem;
+  --text-xl--line-height: calc(23 / 17);
+  --text-2xl: 1.538461538rem;
+  --text-2xl--line-height: calc(26 / 20);
+  --text-3xl: 1.846153846rem;
+  --text-3xl--line-height: calc(30 / 24);
+  --text-4xl: 2.307692308rem;
+  --text-4xl--line-height: 1.4;
 
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-sans: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
   --font-chat-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
   --animate-chat-tool-expand: chat-tool-expand 200ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-chat-tool-collapse: chat-tool-collapse 160ms ease-in both;
@@ -103,9 +105,9 @@
 
 @theme inline {
   --color-sidebar-canvas: light-dark(#fcfcfc, #242424);
-  --color-sidebar-ink: light-dark(oklch(24.7% .006 258.361), oklch(96.4% .002 247.839));
-  --color-sidebar-text: light-dark(#222222, #b3b3b3);
-  --color-sidebar-muted: light-dark(#6e6e6e, #a1a1a1);
+  --color-sidebar-ink: light-dark(#000000, #ffffff);
+  --color-sidebar-text: var(--muted-foreground);
+  --color-sidebar-muted: light-dark(#00000080, #ffffff80);
   --color-sidebar-highlight: light-dark(#f2f2f2, #303030);
   --color-sidebar-focus: light-dark(oklch(62.6% .205 254.947), oklch(68% .173 253.301));
   --color-workspace-canvas: light-dark(#f1f1f1, #181818);
@@ -118,6 +120,8 @@
   --color-ink: var(--ink);
   --color-muted: light-dark(oklch(0.94 0 0), oklch(0.165 0 0));
   --color-muted-foreground: var(--muted-foreground);
+  --color-chat-foreground: light-dark(#000000e6, #ffffffeb);
+  --color-chat-link: light-dark(#1470b4, #46a8f0);
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
@@ -161,9 +165,9 @@
   --workspace-titlebar-row-offset: calc(var(--workspace-titlebar-center) - var(--workspace-titlebar-height) / 2);
   --page: #f5f6f8;
   --surface: #ffffff;
-  --ink: #243039;
+  --ink: #3b3b3b;
   --muted: #737373;
-  --muted-foreground: var(--muted);
+  --muted-foreground: #000000b3;
   --line: #dde3e8;
   --accent: #177c72;
   --accent-soft: #e7f2f0;
@@ -183,8 +187,9 @@
   color-scheme: dark;
   --page: #15191e;
   --surface: #20262d;
-  --ink: #edf1f5;
+  --ink: #e4e4e4eb;
   --muted: #a3a3a3;
+  --muted-foreground: #ffffffa6;
   --line: #38434e;
   --accent: #63b7ac;
   --accent-soft: #243b39;
