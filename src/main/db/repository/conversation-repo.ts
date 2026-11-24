@@ -64,6 +64,17 @@ export class ConversationRepo {
       .get();
   }
 
+  updateTitleIfCurrent(id: string, currentTitle: string, title: string) {
+    const result = this.db
+      .update(conversations)
+      .set({ title })
+      .where(
+        and(eq(conversations.id, id), eq(conversations.title, currentTitle), isNull(conversations.deletedAt)),
+      )
+      .run();
+    return result.changes > 0;
+  }
+
   remove(id: string) {
     this.db.delete(conversations).where(eq(conversations.id, id)).run();
   }
