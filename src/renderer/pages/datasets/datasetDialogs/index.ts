@@ -12,6 +12,8 @@ export { ClickHouseDialog } from './ClickHouseDialog';
 
 export { SupabaseDialog } from './SupabaseDialog';
 
+export { GitHubDialog } from './GitHubDialog';
+
 export { FeishuBitableDialog } from './FeishuBitableDialog';
 
 export { TextImportDialog } from './TextImportDialog';

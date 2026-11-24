@@ -13,6 +13,7 @@ import type {
 } from '@shared/api';
 import { FILE_SOURCES } from '@shared/dataSource';
 import { analysisStartSchema } from '@shared/api';
+import { githubRepositoryListSchema, githubConnectionIdSchema } from '@shared/github';
 import type { LocalFileFormat } from '@shared/dataSource';
 import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
@@ -85,6 +86,18 @@ export function registerIpc(services: Services) {
 
   ipcMain.handle('datasetTest', (_event, sourceConfig: DataSourceConfig, authSessionId?: string) =>
     services.dataset.test(sourceConfig, authSessionId),
+  );
+
+  ipcMain.handle('githubConnect', (_event, connectionId: unknown) =>
+    services.dataset.connectGitHub(githubConnectionIdSchema.parse(connectionId)),
+  );
+
+  ipcMain.handle('githubConnectCancel', (_event, connectionId: unknown) =>
+    services.dataset.cancelGitHubConnect(githubConnectionIdSchema.parse(connectionId)),
+  );
+
+  ipcMain.handle('githubRepositories', (_event, input: unknown) =>
+    services.dataset.githubRepositories(githubRepositoryListSchema.parse(input)),
   );
 
   ipcMain.handle('oAuthStart', async (event, type: DataSourceConfig['type']) => {
