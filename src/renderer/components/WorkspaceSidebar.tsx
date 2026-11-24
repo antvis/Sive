@@ -17,7 +17,6 @@ import { toast } from 'sonner';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
 import { IconButton, panelControlClassName } from './IconButton';
-import { panelCollapsePreviewClassName } from './ResizeHandle';
 
 export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets' | 'settings';
 
@@ -288,7 +287,6 @@ function ConversationItem({
 export function WorkspaceSidebar({
   page,
   inert,
-  collapsePending,
   onCollapse,
   datasets,
   conversationsByDataset,
@@ -299,7 +297,7 @@ export function WorkspaceSidebar({
   onConversationCreate,
   onConversationArchive,
   onNavigate,
-}: WorkspaceSidebarProps & { inert?: boolean; collapsePending: boolean; onCollapse: () => void }) {
+}: WorkspaceSidebarProps & { inert?: boolean; onCollapse: () => void }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [recentSelection, setRecentSelection] = useState<string | null>(null);
   const groups = datasets.flatMap((dataset) => {
@@ -319,13 +317,9 @@ export function WorkspaceSidebar({
   return (
     <aside
       id={WORKSPACE_SIDEBAR_ID}
-      className={clsx(
-        'flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-[16px] bg-sidebar-canvas pb-[8px]',
-        panelCollapsePreviewClassName,
-      )}
+      className="flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-[16px] bg-sidebar-canvas pb-[8px]"
       aria-label="工作台侧边栏"
       inert={inert}
-      data-collapse-pending={collapsePending || undefined}
     >
       <header className="relative shrink-0 pt-(--workspace-sidebar-titlebar-offset) [-webkit-app-region:drag]">
         <div className="@container flex h-(--workspace-titlebar-height) items-center ps-[16px] pe-[44px]">

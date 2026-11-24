@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { PanelLeftIcon, XIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { panelContentTiming } from '../hooks/usePanelMotion';
+import { panelContentTiming } from '../lib/panel-layout';
 import type { DatasetSummary } from '../types';
 import { DataSourceLogo } from './DataSourceLogo';
 import { IconButton, panelControlClassName } from './IconButton';

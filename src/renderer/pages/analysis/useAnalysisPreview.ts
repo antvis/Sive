@@ -1,26 +1,17 @@
-import { useLayoutEffect, useState } from 'react';
-import { usePanelMotion } from '../../hooks/usePanelMotion';
-import { clampPanelWidth, usePanelResize } from '../../hooks/usePanelResize';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { usePanelRef } from 'react-resizable-panels';
+import type { Layout, LayoutChangedMeta } from 'react-resizable-panels';
+import { usePanelCollapsePreview } from '../../hooks/usePanelCollapsePreview';
 import { usePanelToggleFocus } from '../../hooks/usePanelToggleFocus';
 import { readWidth, saveWidth } from '../../utils';
 
 export const DATASET_PREVIEW_ID = 'dataset';
 
-const GAP_WIDTH = 8;
-const MIN_PANE_WIDTH = 280;
+export const MIN_ANALYSIS_PANEL_WIDTH = 240;
+
 const DEFAULT_CONVERSATION_WIDTH = 380;
 const CONVERSATION_WIDTH_KEY = 'sive.conversation-width';
-
-function getPreviewGridColumns(collapsed: boolean, preferredChatWidth: number) {
-  if (collapsed) return 'minmax(0,1fr) 0px 0px';
-
-  // Relative tracks follow the sidebar's changing width during simultaneous transitions.
-  const half = `calc(50% - ${GAP_WIDTH / 2}px)`;
-  const minimum = `min(${MIN_PANE_WIDTH}px, ${half})`;
-  const preferred = `calc(100% - ${preferredChatWidth + GAP_WIDTH}px)`;
-  const maximum = `max(${half}, calc(100% - ${MIN_PANE_WIDTH + GAP_WIDTH}px))`;
-  return `minmax(0,1fr) ${GAP_WIDTH}px clamp(${minimum}, ${preferred}, ${maximum})`;
-}
+const PREVIEW_WIDTH_KEY = 'sive.preview-width';
 
 type Options = {
   collapsed: boolean;
@@ -29,66 +20,67 @@ type Options = {
 };
 
 export function useAnalysisPreview({ collapsed, onCollapsedChange, onOpen }: Options) {
-  const [conversationWidth, setConversationWidth] = useState(() =>
-    readWidth(CONVERSATION_WIDTH_KEY, DEFAULT_CONVERSATION_WIDTH),
+  const [initialPreviewWidth] = useState(() => readWidth(PREVIEW_WIDTH_KEY, 0) || undefined);
+  const [initialConversationWidth] = useState(() =>
+    initialPreviewWidth ? undefined : readWidth(CONVERSATION_WIDTH_KEY, DEFAULT_CONVERSATION_WIDTH),
   );
-  const [workspaceWidth, setWorkspaceWidth] = useState(0);
-  const { element: workspace, startMotion, stopMotion } = usePanelMotion();
+  const preferredWidth = useRef(initialPreviewWidth);
+  const workspace = useRef<HTMLDivElement>(null);
+  const conversationPanel = usePanelRef();
+  const previewPanel = usePanelRef();
   const rememberToggleFocus = usePanelToggleFocus(workspace, DATASET_PREVIEW_ID, collapsed);
+  const collapsePreview = usePanelCollapsePreview(previewPanel, MIN_ANALYSIS_PANEL_WIDTH, () => {
+    rememberToggleFocus();
+    onCollapsedChange(true);
+  });
 
   useLayoutEffect(() => {
-    const element = workspace.current;
-    if (!element) return;
+    if (collapsed) return;
 
-    setWorkspaceWidth(element.getBoundingClientRect().width);
-    const observer = new ResizeObserver(([entry]) => setWorkspaceWidth(entry.contentRect.width));
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [workspace]);
+    const frame = requestAnimationFrame(() => {
+      const panel = previewPanel.current;
+      if (!panel) return;
 
-  const available = Math.max(0, workspaceWidth - (collapsed ? 0 : GAP_WIDTH));
-  const minWidth = Math.min(MIN_PANE_WIDTH, available / 2);
-  const maxWidth = available - minWidth;
+      if (preferredWidth.current) panel.resize(preferredWidth.current);
+      else preferredWidth.current = panel.getSize().inPixels;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [collapsed, previewPanel]);
 
-  const saveConversationWidth = (width: number) => {
-    stopMotion();
-    setConversationWidth(width);
-    saveWidth(CONVERSATION_WIDTH_KEY, width);
+  const savePreviewWidth = () => {
+    const width = previewPanel.current?.getSize().inPixels;
+    if (!width) return;
+
+    preferredWidth.current = width;
+    saveWidth(PREVIEW_WIDTH_KEY, width);
   };
 
-  const changeCollapsed = (next: boolean) => {
-    resize.cancelResize();
-    startMotion();
+  const onLayoutChanged = (_: Layout, { isUserInteraction }: LayoutChangedMeta) => {
+    if (isUserInteraction && !collapsed && !collapsePreview.shouldCollapse()) {
+      requestAnimationFrame(savePreviewWidth);
+    }
+  };
+
+  const resetWidth = () => {
+    conversationPanel.current?.resize(DEFAULT_CONVERSATION_WIDTH);
+    requestAnimationFrame(savePreviewWidth);
+  };
+
+  const toggle = () => {
     rememberToggleFocus();
-    if (!next) onOpen();
-    onCollapsedChange(next);
+    if (collapsed) onOpen();
+    onCollapsedChange(!collapsed);
   };
-
-  const resize = usePanelResize({
-    width: clampPanelWidth(conversationWidth, minWidth, maxWidth),
-    minWidth,
-    maxWidth,
-    collapseAt: 'max',
-    onStart: stopMotion,
-    onResize: saveConversationWidth,
-    onCollapse: () => changeCollapsed(true),
-  });
 
   return {
     workspace,
-    gridTemplateColumns: getPreviewGridColumns(collapsed, resize.dragging ? resize.width : conversationWidth),
-    collapsePending: resize.collapsePending,
-    cancelResize: resize.cancelResize,
-    toggle: () => changeCollapsed(!collapsed),
-    resizeHandle: {
-      width: clampPanelWidth(resize.width, minWidth, maxWidth),
-      minWidth,
-      maxWidth,
-      defaultWidth: DEFAULT_CONVERSATION_WIDTH,
-      dragging: resize.dragging,
-      onPointerDown: resize.startResize,
-      onLostPointerCapture: resize.cancelResize,
-      onResize: resize.resizeTo,
-    },
+    conversationPanel,
+    previewPanel,
+    collapsePreview,
+    initialConversationWidth,
+    initialPreviewWidth,
+    onLayoutChanged,
+    resetWidth,
+    toggle,
   };
 }

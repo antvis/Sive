@@ -1,15 +1,15 @@
 import clsx from 'clsx';
 import { Maximize2Icon, Minimize2Icon, PanelRightIcon } from 'lucide-react';
 import { useEffect, useEffectEvent } from 'react';
+import { Group, Panel, Separator } from 'react-resizable-panels';
 import type { ReactNode, RefObject } from 'react';
 import type { AnalysisFrameProps } from '../../components/AppShell';
 import { IconButton, panelControlClassName } from '../../components/IconButton';
-import { ResizeHandle, panelCollapsePreviewClassName } from '../../components/ResizeHandle';
 import { Chat } from '../../components/chat/chat';
-import { panelMotionClassName } from '../../hooks/usePanelMotion';
+import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../../lib/panel-layout';
 import type { ModelProfile, Preferences } from '../../types';
 import { DatasetPanel } from './DatasetPanel';
-import { DATASET_PREVIEW_ID, useAnalysisPreview } from './useAnalysisPreview';
+import { DATASET_PREVIEW_ID, MIN_ANALYSIS_PANEL_WIDTH, useAnalysisPreview } from './useAnalysisPreview';
 import { useFullscreenPreview } from './useFullscreenPreview';
 
 const cardClassName =
@@ -48,7 +48,6 @@ type DatasetPreviewPaneProps = {
   titleBar: ReactNode;
   fullscreen: boolean;
   collapsed: boolean;
-  collapsePending: boolean;
   cardRef: RefObject<HTMLElement | null>;
   onToggleFullscreen: () => void;
   onClose: () => void;
@@ -59,7 +58,6 @@ function DatasetPreviewPane({
   titleBar,
   fullscreen,
   collapsed,
-  collapsePending,
   cardRef,
   onToggleFullscreen,
   onClose,
@@ -71,7 +69,6 @@ function DatasetPreviewPane({
       className={clsx(
         cardClassName,
         'w-full justify-self-end bg-preview-surface',
-        panelCollapsePreviewClassName,
         collapsed && !fullscreen && 'opacity-0',
         fullscreen ? 'fixed inset-y-0 right-0 z-40 rounded-none!' : 'relative z-10',
       )}
@@ -79,7 +76,6 @@ function DatasetPreviewPane({
       aria-modal={fullscreen || undefined}
       aria-label="数据预览"
       inert={collapsed && !fullscreen}
-      data-collapse-pending={(!fullscreen && collapsePending) || undefined}
     >
       <div
         className={clsx(
@@ -158,68 +154,86 @@ export function AnalysisPage({
   });
   const { card, changeFullscreen } = useFullscreenPreview(fullscreen, onFullscreenChange);
 
-  const setPreviewFullscreen = (value: boolean) => {
-    preview.cancelResize();
-    changeFullscreen(value);
-  };
-
-  useAnalysisShortcuts(fullscreen, () => setPreviewFullscreen(false), preview.toggle);
+  useAnalysisShortcuts(fullscreen, () => changeFullscreen(false), preview.toggle);
 
   return (
-    <div
-      ref={preview.workspace}
-      className={clsx('grid h-full min-h-0 min-w-0 grid-rows-1', panelMotionClassName)}
-      style={{ gridTemplateColumns: preview.gridTemplateColumns }}
+    <Group
+      orientation="horizontal"
+      elementRef={preview.workspace}
+      onPointerDownCapture={preview.collapsePreview.onPointerDownCapture}
+      onLayoutChanged={preview.onLayoutChanged}
     >
-      <section
+      <Panel
         id="conversation"
-        className={clsx(cardClassName, 'chat-theme bg-background')}
-        aria-label="对话面板"
-        inert={fullscreen}
+        panelRef={preview.conversationPanel}
+        defaultSize={preview.initialConversationWidth}
+        minSize={MIN_ANALYSIS_PANEL_WIDTH}
+        style={{ overflow: 'hidden' }}
       >
-        <div className="relative top-(--workspace-titlebar-row-offset) flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]">
-          {!fullscreen && titleBar}
-          {datasetCollapsed && !fullscreen && (
-            <IconButton
-              icon={PanelRightIcon}
-              iconSize={18}
-              label="展开数据预览"
-              className={panelControlClassName}
-              aria-controls={DATASET_PREVIEW_ID}
-              aria-expanded={false}
-              aria-keyshortcuts={previewShortcut}
-              onClick={preview.toggle}
+        <section
+          className={clsx(cardClassName, 'chat-theme bg-background')}
+          aria-label="对话面板"
+          inert={fullscreen}
+        >
+          <div className="relative top-(--workspace-titlebar-row-offset) flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]">
+            {!fullscreen && titleBar}
+            {datasetCollapsed && !fullscreen && (
+              <IconButton
+                icon={PanelRightIcon}
+                iconSize={18}
+                label="展开数据预览"
+                className={panelControlClassName}
+                aria-controls={DATASET_PREVIEW_ID}
+                aria-expanded={false}
+                aria-keyshortcuts={previewShortcut}
+                onClick={preview.toggle}
+              />
+            )}
+          </div>
+          <div className={bodyClassName}>
+            <Chat
+              datasetId={datasetId}
+              chatId={chatId}
+              conversationId={conversationId}
+              savedMessageIds={savedMessageIds}
+              onConversationChange={onConversationChange}
+              models={models}
+              activeModelId={activeModelId}
+              preferences={preferences}
             />
-          )}
-        </div>
-        <div className={bodyClassName}>
-          <Chat
-            datasetId={datasetId}
-            chatId={chatId}
-            conversationId={conversationId}
-            savedMessageIds={savedMessageIds}
-            onConversationChange={onConversationChange}
-            models={models}
-            activeModelId={activeModelId}
-            preferences={preferences}
-          />
-        </div>
-      </section>
-      {!datasetCollapsed && !fullscreen ? (
-        <ResizeHandle label="调整对话与数据预览宽度" controls="conversation" {...preview.resizeHandle} />
-      ) : (
-        <div aria-hidden />
-      )}
-      <DatasetPreviewPane
-        datasetId={datasetId}
-        titleBar={titleBar}
-        fullscreen={fullscreen}
-        collapsed={datasetCollapsed}
-        collapsePending={preview.collapsePending}
-        cardRef={card}
-        onToggleFullscreen={() => setPreviewFullscreen(!fullscreen)}
-        onClose={preview.toggle}
+          </div>
+        </section>
+      </Panel>
+      <Separator
+        aria-label="调整对话与数据预览宽度"
+        className={clsx(panelSeparatorClassName, datasetCollapsed ? 'w-0' : 'w-(--workspace-gutter)')}
+        disabled={datasetCollapsed || fullscreen}
+        disableDoubleClick
+        elementRef={preview.collapsePreview.separatorRef}
+        onDoubleClick={preview.resetWidth}
       />
-    </div>
+      <Panel
+        id="analysis-preview-panel"
+        panelRef={preview.previewPanel}
+        elementRef={preview.collapsePreview.elementRef}
+        onResize={preview.collapsePreview.onResize}
+        defaultSize={preview.initialPreviewWidth}
+        groupResizeBehavior="preserve-pixel-size"
+        minSize={datasetCollapsed ? 0 : MIN_ANALYSIS_PANEL_WIDTH}
+        maxSize={datasetCollapsed ? 0 : undefined}
+        className={panelCollapsePreviewClassName}
+        style={{ overflow: 'hidden' }}
+      >
+        <DatasetPreviewPane
+          datasetId={datasetId}
+          titleBar={titleBar}
+          fullscreen={fullscreen}
+          collapsed={datasetCollapsed}
+          cardRef={card}
+          onToggleFullscreen={() => changeFullscreen(!fullscreen)}
+          onClose={preview.toggle}
+        />
+      </Panel>
+    </Group>
   );
 }
