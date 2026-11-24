@@ -10,6 +10,7 @@ import type { SnippetContent } from '@shared/api';
 import { createAnalysisTraceCollector } from '../util/ava';
 import { localFilePath } from '../util/localFile';
 import { getTextFromLastUserMessage } from '../util/message';
+import { loadSource } from '../util/source';
 import { generateSnippet } from './snippet-agent';
 
 export type ToolDataset = {
@@ -43,7 +44,7 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
       description: 'Load the configured dataset before the first analysis.',
       inputSchema: z.object({}),
       async execute() {
-        await ava.source(dataset.sourceConfig);
+        await loadSource(ava, dataset.sourceConfig);
         let fileSize: number | undefined;
         const file = localFilePath(dataset.sourceConfig);
         if (file) {

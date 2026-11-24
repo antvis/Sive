@@ -154,7 +154,7 @@ export function ConnectionDialog({
       )}
       {tested && (
         <p role="status" className="mb-0 text-sm text-accent">
-          连接成功，数据库结构可读取。
+          连接成功，数据表可读取。
         </p>
       )}
     </Modal>

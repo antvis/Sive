@@ -88,7 +88,7 @@ export const ToolHeader = ({
       <div className="flex min-w-0 flex-wrap items-center gap-2 gap-y-1">
         {icon ?? <WrenchIcon className="size-4 text-muted-foreground" />}
         <span className={cn(
-          "text-base font-normal",
+          "text-sm font-normal",
           running && "motion-safe:animate-chat-tool-shimmer motion-safe:bg-[linear-gradient(90deg,var(--muted-foreground)_35%,var(--foreground)_50%,var(--muted-foreground)_65%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:[-webkit-text-fill-color:transparent]"
         )}>{running ? `正在${action}…` : action}</span>
       </div>
@@ -115,7 +115,7 @@ export const ToolContent = ({ className, children, ...props }: ToolContentProps)
     )}
     {...props}
   >
-    <div className="ml-4 min-w-0 border-l border-border py-3 pl-4 [&_[data-slot=code-block]]:text-xs [&_table]:text-xs">
+    <div className="ml-4 min-w-0 border-l border-border py-3 pl-4">
       {children}
     </div>
   </CollapsibleContent>

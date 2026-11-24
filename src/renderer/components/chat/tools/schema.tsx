@@ -173,7 +173,7 @@ export function SchemaTool({ schema }: { schema: Schema }) {
                       {relationship.joinType === 'ONE_TO_ONE' ? '一对一' : '多对一'}
                     </span>
                   </div>
-                  <code className="mt-[3px] block whitespace-pre-wrap break-words text-xs leading-[1.7] text-muted-foreground">
+                  <code className="mt-[3px] block whitespace-pre-wrap break-words text-sm leading-[1.7] text-muted-foreground">
                     {relationship.condition}
                   </code>
                 </li>

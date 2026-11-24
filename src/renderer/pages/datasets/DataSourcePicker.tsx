@@ -93,7 +93,7 @@ export function DataSourcePicker() {
           const GroupIcon = groupIcons[icon];
           return (
             <section key={title} aria-label={title}>
-              <h2 className="mt-0 mr-0 mb-3.5 ml-0 flex items-center gap-2 text-base font-normal tracking-[0.01em]">
+              <h2 className="mt-0 mr-0 mb-3.5 ml-0 flex items-center gap-2 text-lg font-normal tracking-[0.01em]">
                 <GroupIcon size={18} className="text-muted-foreground" aria-hidden />
                 {title}
               </h2>

@@ -54,7 +54,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
           title={i18n('settings.language.title')}
           description={i18n('settings.language.description')}
         >
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {(
               [
                 ['zh-CN', '中文'],
@@ -79,7 +79,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
           </div>
         </SettingRow>
         <SettingRow title="界面主题" description="选择适合当前环境的配色，或跟随系统自动切换。">
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {(
               [
                 ['light', '浅色', Sun],
@@ -104,7 +104,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
           </div>
         </SettingRow>
         <SettingRow title="字体大小" description="调整工作台界面的基础字号。">
-          <div className="w-56">
+          <div className="w-56 max-w-full">
             <input
               aria-label="字体大小"
               aria-valuetext={`${theme.fontSize}px`}
@@ -181,9 +181,9 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
           </div>
         </SettingRow>
         <SettingRow title="系统缓存目录" description={cache?.path ?? '正在读取缓存信息…'}>
-          <div className="flex items-center justify-end gap-4 max-sm:w-full max-sm:flex-col max-sm:items-stretch">
+          <div className="flex flex-wrap items-center justify-end gap-4 @max-sm/settings:justify-start">
             {cache && (
-              <div className="w-72">
+              <div className="w-72 max-w-full">
                 <div
                   className="flex h-2 overflow-hidden rounded-full bg-line/40"
                   role="img"
@@ -191,7 +191,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
                 >
                   <div className="bg-accent" style={{ width: `${usedPercent}%` }} />
                 </div>
-                <p className="mt-2 mb-0 text-xs whitespace-nowrap text-muted-foreground">
+                <p className="mt-2 mb-0 text-xs text-muted-foreground">
                   已用 {formatSize(cache.usedBytes)}，可用 {formatSize(cache.freeBytes)}，使用{' '}
                   {usedPercent.toFixed(4)}%
                 </p>
@@ -207,7 +207,7 @@ export function GeneralSettings({ preferences }: { preferences: Preferences }) {
         </SettingRow>
       </SettingGroup>
 
-      {error && <p className="mt-0 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-0 text-sm text-danger">{error}</p>}
     </div>
   );
 }

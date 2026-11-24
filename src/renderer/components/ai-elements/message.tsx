@@ -333,6 +333,7 @@ const streamdownCode: typeof code = {
 };
 
 const streamdownPlugins = { cjk, code: streamdownCode, math, mermaid };
+const mermaidOptions = { config: { themeVariables: { fontSize: "var(--text-sm)" } } };
 
 const streamdownComponents = {
   table: MarkdownTable,
@@ -355,10 +356,12 @@ export const MessageResponse = memo(
     <Streamdown
       className={cn(
         "size-full space-y-3 font-sans leading-[1.6] font-normal tracking-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+        "[&_h1]:text-xl [&_h2]:text-lg [&_:is(h3,h4,h5,h6)]:text-base [&_.katex]:text-base [&_[data-streamdown=code-block-body]_code>span]:before:text-xs",
         "[&_[data-streamdown=code-block][data-language=sql_i]]:bg-muted/50 [&_[data-streamdown=code-block-body][data-language=sql_i]]:bg-transparent",
         className
       )}
       plugins={streamdownPlugins}
+      mermaid={mermaidOptions}
       components={streamdownComponents}
       {...props}
     />

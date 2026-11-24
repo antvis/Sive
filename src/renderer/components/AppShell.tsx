@@ -29,7 +29,7 @@ type AppShellProps = PropsWithChildren<{
 
 const itemClass = (active: boolean) =>
   clsx(
-    'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm',
+    'flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm [&_svg]:shrink-0',
     active ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-surface hover:text-ink',
   );
 
@@ -90,7 +90,7 @@ function ConversationItem({
   return (
     <div
       className={clsx(
-        'group flex items-center rounded-lg',
+        'group relative flex items-center rounded-lg',
         active ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-surface hover:text-ink',
       )}
     >
@@ -117,17 +117,18 @@ function ConversationItem({
         <button
           type="button"
           title={conversation.title}
-          className="min-w-0 flex-1 px-3 py-2 text-left text-sm"
+          className="min-w-0 flex-1 px-2 py-2 text-left text-sm"
           onClick={onSelect}
         >
-          <span className="block truncate">{conversation.title}</span>
-          <time className="mt-1 block text-xs text-muted-foreground" dateTime={conversation.updatedAt}>
+          <span className="line-clamp-2 wrap-anywhere">{conversation.title}</span>
+          <time className="mt-1 block min-h-8 text-xs wrap-anywhere text-muted-foreground transition-opacity group-focus-within:opacity-0 group-hover:opacity-0"
+            dateTime={conversation.updatedAt}>
             {new Date(conversation.updatedAt).toLocaleString('zh-CN')}
           </time>
         </button>
       )}
       {!editing && (
-        <div className="flex shrink-0 pr-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+        <div className="absolute right-1 bottom-1.5 flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
           <IconButton
             icon={PencilSimple}
             label={`重命名 ${conversation.title}`}
@@ -182,7 +183,7 @@ export function AppShell({
               <img className="size-7 dark:invert" src="./sive.svg" alt="" />
               <strong className="text-xl leading-6 font-semibold">Sive</strong>
             </div>
-            <span className="mt-1.5 block text-xs leading-4 whitespace-nowrap text-muted-foreground">
+            <span className="mt-1.5 block text-xs leading-4 text-muted-foreground">
               See it Live, Share it Real.
             </span>
           </div>
@@ -219,7 +220,7 @@ export function AppShell({
                     onArchive={() => onConversationArchive(conversation.id)}
                   />
                 ))}
-                {!conversations.length && <p className="m-0 px-3 py-2 text-xs text-muted-foreground">暂无分析任务</p>}
+                {!conversations.length && <p className="m-0 px-3 py-2 text-sm text-muted-foreground">暂无分析任务</p>}
               </div>
             </section>
           ) : (
@@ -250,7 +251,7 @@ export function AppShell({
                       <button
                         type="button"
                         className={clsx(
-                          'flex h-full min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 pr-7 text-left text-xs [-webkit-app-region:no-drag]',
+                          'flex h-full min-w-0 flex-1 items-center gap-1.5 rounded-md px-3 pr-7 text-left text-sm [-webkit-app-region:no-drag]',
                           active ? 'bg-surface text-ink' : 'text-muted-foreground hover:bg-surface/60',
                         )}
                         onClick={() => onDatasetSelect(dataset.id)}

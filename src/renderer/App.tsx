@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { DEFAULT_PREFERENCES } from '@shared/api';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
 import type { AppPage } from './components/AppShell';
@@ -59,12 +60,13 @@ export default function App() {
     }
   };
 
-  const theme =
-    state?.preferences.theme.mode === 'system'
-      ? systemDark
-        ? 'dark'
-        : 'light'
-      : (state?.preferences.theme.mode ?? 'light');
+  const preferredMode = state?.preferences.theme.mode ?? DEFAULT_PREFERENCES.theme.mode;
+  const fontSize = state?.preferences.theme.fontSize ?? DEFAULT_PREFERENCES.theme.fontSize;
+  const isDark = preferredMode === 'system' ? systemDark : preferredMode === 'dark';
+  const theme = useMemo(
+    () => ({ mode: isDark ? 'dark' : 'light', fontSize }) as const,
+    [isDark, fontSize],
+  );
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -75,12 +77,12 @@ export default function App() {
   }, []);
 
   useLayoutEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    document.documentElement.dataset.theme = theme.mode;
+  }, [theme.mode]);
 
-  useEffect(() => {
-    document.documentElement.style.fontSize = `${state?.preferences.theme.fontSize ?? 14}px`;
-  }, [state?.preferences.theme.fontSize]);
+  useLayoutEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}px`;
+  }, [fontSize]);
 
   useEffect(() => {
     const previous = previousDatasetCount.current;
@@ -157,11 +159,11 @@ export default function App() {
       {state && page === 'snippets' && <SnippetsPage snippets={state.snippets} />}
       {state && page === 'settings' && <SettingsPage state={state} />}
       <Toaster
-        theme={theme}
+        theme={theme.mode}
         position="bottom-right"
         visibleToasts={1}
         toastOptions={{
-          className: 'text-xs!',
+          className: 'text-sm!',
           style: {
             width: 'max-content',
             maxWidth: 'calc(100vw - 32px)',

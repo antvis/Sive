@@ -31,7 +31,7 @@ function formatDuration(ms?: number) {
 function TraceUsage({ usage, className }: { usage: AnalysisTraceOperation['usage']; className?: string }) {
   if (usage?.inputTokens === undefined && usage?.outputTokens === undefined) return null;
   return (
-    <p className={cn('text-muted-foreground tabular-nums', className)}>
+    <p className={cn('text-xs text-muted-foreground tabular-nums', className)}>
       输入 {usage.inputTokens ?? '—'} tokens · 输出 {usage.outputTokens ?? '—'} tokens
     </p>
   );
@@ -44,7 +44,7 @@ function TraceCode({ label, text }: { label: string; text: string }) {
       <pre
         aria-label={label}
         tabIndex={0}
-        className="rounded-md bg-muted/55 p-2.5 font-chat-mono text-xs whitespace-pre-wrap [overflow-wrap:anywhere] focus-visible:outline-2 focus-visible:outline-ring"
+        className="rounded-md bg-muted/55 p-2.5 font-chat-mono text-sm whitespace-pre-wrap [overflow-wrap:anywhere] focus-visible:outline-2 focus-visible:outline-ring"
       >
         <code>{text}</code>
       </pre>
@@ -148,7 +148,7 @@ function TraceSummary({
             <MessageResponse
               className={cn(
                 'space-y-2 [&_li]:my-0.5',
-                featured ? 'text-sm leading-6 text-foreground' : 'text-xs leading-5.5 text-foreground/85',
+                featured ? 'text-base leading-6 text-foreground' : 'text-sm leading-5.5 text-foreground/85',
               )}
             >
               {text}
@@ -210,12 +210,12 @@ function TraceOperation({
             </span>
           )}
           {result && (
-            <span className="text-muted-foreground tabular-nums">
+            <span className="text-xs text-muted-foreground tabular-nums">
               {result.returnedRows} 行 · {result.columns.length} 列{result.truncated ? ' · 已截断' : ''}
             </span>
           )}
         </span>
-        {duration && <span className="shrink-0 text-muted-foreground tabular-nums">{duration}</span>}
+        {duration && <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{duration}</span>}
       </CollapsibleRowTrigger>
       <CollapsibleContent className="min-w-0 space-y-4 pt-1.5 pb-4 [overflow-wrap:anywhere]">
         {details}
@@ -253,17 +253,17 @@ function TraceStepDetail({ step, trace }: { step: AnalysisTraceStep; trace: Anal
         <div className="space-y-3">
           <div className="space-y-1">
             <h4 className="font-semibold">核对说明</h4>
-            <MessageResponse className="space-y-1 text-xs">{confirmation[1]}</MessageResponse>
+            <MessageResponse className="space-y-1 text-sm">{confirmation[1]}</MessageResponse>
           </div>
           {confirmation[2] && (
             <div className="space-y-1 border-t border-border pt-3">
               <h4 className="font-semibold">结论</h4>
-              <MessageResponse className="space-y-1 text-xs">{confirmation[2]}</MessageResponse>
+              <MessageResponse className="space-y-1 text-sm">{confirmation[2]}</MessageResponse>
             </div>
           )}
         </div>
       ) : (
-        text && <MessageResponse className="space-y-1 text-xs">{text}</MessageResponse>
+        text && <MessageResponse className="space-y-1 text-sm">{text}</MessageResponse>
       )}
       {step.operations.length > 0 && (
         <ol className="min-w-0 divide-y divide-border" aria-label="执行记录">
@@ -466,7 +466,7 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
   return (
     <Dialog>
       <section
-        className="w-full min-w-0 overflow-hidden text-xs leading-relaxed text-foreground"
+        className="w-full min-w-0 overflow-hidden text-sm leading-relaxed text-foreground"
         aria-label="分析过程"
       >
         <header className="flex items-center justify-between gap-2 pb-2">
@@ -509,11 +509,11 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
       {steps.length > 0 && (
         <DialogContent
           showCloseButton={false}
-          className="chat-theme top-0 left-0 h-dvh w-screen max-w-none grid-rows-[auto_minmax(0,1fr)] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none p-0 text-xs leading-relaxed text-foreground sm:max-w-none data-open:animate-none data-closed:animate-none"
+          className="chat-theme top-0 left-0 h-dvh w-screen max-w-none grid-rows-[auto_minmax(0,1fr)] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none p-0 text-sm leading-relaxed text-foreground sm:max-w-none data-open:animate-none data-closed:animate-none"
         >
           <header className="min-w-0 border-b border-border">
             <div className="flex h-[44px] items-center justify-between gap-4 pr-4 pl-[88px] [-webkit-app-region:drag]">
-              <DialogTitle className="text-sm font-semibold">分析流程图</DialogTitle>
+              <DialogTitle className="font-semibold">分析流程图</DialogTitle>
               <DialogClose asChild>
                 <Button
                   variant="ghost"
@@ -526,7 +526,7 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
                 </Button>
               </DialogClose>
             </div>
-            <DialogDescription className="truncate px-4 pb-3 text-xs" title={trace.query}>
+            <DialogDescription className="truncate px-4 pb-3 text-sm" title={trace.query}>
               {trace.query}
             </DialogDescription>
           </header>

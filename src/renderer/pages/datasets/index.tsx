@@ -170,7 +170,7 @@ function DatasetCard({
         </div>
       </footer>
       {dataset.fileUnavailable && (
-        <p className="mt-2 mb-0 text-xs text-danger">文件不可用，请检查原文件或重新导入。</p>
+        <p className="mt-2 mb-0 text-sm text-danger">文件不可用，请检查原文件或重新导入。</p>
       )}
       <Modal
         open={action === 'delete'}

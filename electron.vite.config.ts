@@ -2,12 +2,27 @@ import { defineConfig } from 'electron-vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'node:path';
+import { accessSync, constants } from 'node:fs';
 
 // Electron must launch as a desktop app even when the parent runs in Node mode.
 delete process.env.ELECTRON_RUN_AS_NODE;
 
 export default defineConfig(({ command }) => ({
   main: {
+    plugins: [
+      {
+        name: 'github-mcp-resources',
+        apply: 'build',
+        buildStart() {
+          const root = resolve('resources/github-mcp');
+          accessSync(
+            resolve(root, process.platform === 'win32' ? 'github-mcp-server.exe' : 'github-mcp-server'),
+            process.platform === 'win32' ? constants.R_OK : constants.R_OK | constants.X_OK,
+          );
+          accessSync(resolve(root, 'LICENSE'));
+        },
+      },
+    ],
     resolve: { alias: { '@main': resolve('src/main'), '@shared': resolve('src/shared') } },
     build: {
       outDir: 'dist-electron',
