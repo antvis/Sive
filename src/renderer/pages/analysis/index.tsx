@@ -113,11 +113,7 @@ export function AnalysisPage({
         minSize={MIN_ANALYSIS_PANEL_WIDTH}
         style={{ overflow: 'hidden' }}
       >
-        <section
-          className={clsx(cardClassName, 'chat-theme bg-background')}
-          aria-label="对话面板"
-          inert={fullscreen}
-        >
+        <section className={clsx(cardClassName, 'bg-background')} aria-label="对话面板" inert={fullscreen}>
           <div className="relative top-(--workspace-titlebar-row-offset) flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]">
             {!fullscreen && titleBar}
             {datasetCollapsed && !fullscreen && (

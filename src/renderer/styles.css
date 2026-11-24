@@ -116,7 +116,7 @@
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-ink: var(--ink);
-  --color-muted: var(--chat-muted);
+  --color-muted: light-dark(oklch(0.94 0 0), oklch(0.165 0 0));
   --color-muted-foreground: var(--muted-foreground);
   --color-line: var(--line);
   --color-accent: var(--accent);
@@ -212,8 +212,6 @@
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.965 0 0);
   --secondary-foreground: oklch(0.38 0 0);
-  --chat-muted: oklch(0.94 0 0);
-  --chat-accent: oklch(0.965 0 0);
   --accent-foreground: oklch(0.12 0 0);
   --destructive: oklch(0.55 0.15 25);
   --border: oklch(0.9 0 0);
@@ -245,8 +243,6 @@
   --primary-foreground: oklch(0.195 0 0);
   --secondary: oklch(0.26 0 0);
   --secondary-foreground: oklch(0.75 0 0);
-  --chat-muted: oklch(0.165 0 0);
-  --chat-accent: oklch(0.26 0 0);
   --accent-foreground: oklch(0.94 0 0);
   --destructive: oklch(0.7 0.15 25);
   --border: oklch(0.27 0 0);
@@ -267,64 +263,9 @@
   --sidebar-ring: oklch(0.45 0 0);
 }
 
-/* Match the supplied Codex desktop reference within the conversation area. */
-.chat-theme {
-  --text-base: var(--chat-font-size, 1rem);
-  --chat-font-scale: calc(var(--text-base) / 1rem);
-  --text-xs: calc(--theme(--text-xs inline) * var(--chat-font-scale));
-  --text-sm: calc(--theme(--text-sm inline) * var(--chat-font-scale));
-  --text-lg: calc(--theme(--text-lg inline) * var(--chat-font-scale));
-  --text-xl: calc(--theme(--text-xl inline) * var(--chat-font-scale));
-  --text-2xl: calc(--theme(--text-2xl inline) * var(--chat-font-scale));
-  --text-3xl: calc(--theme(--text-3xl inline) * var(--chat-font-scale));
-
-  --background: #ffffff;
-  --foreground: #191c1f;
-  --card: #ffffff;
-  --card-foreground: #191c1f;
-  --popover: #ffffff;
-  --popover-foreground: #191c1f;
-  --primary: #2c67c5;
-  --primary-foreground: #ffffff;
-  --secondary: #f3f3f3;
-  --secondary-foreground: #242424;
-  --chat-muted: #f3f3f3;
-  --chat-accent: #f3f3f3;
-  --accent-foreground: #242424;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
-  --ring: #737373;
-  --accent: var(--chat-accent);
-}
-
-[data-theme='dark'] .chat-theme {
-  --background: #242424;
-  --foreground: #ececec;
-  --card: #212121;
-  --card-foreground: #ececec;
-  --popover: #292929;
-  --popover-foreground: #ececec;
-  --primary: #77a8f7;
-  --primary-foreground: #152844;
-  --secondary: #303030;
-  --secondary-foreground: #ececec;
-  --chat-muted: #303030;
-  --chat-accent: #303030;
-  --accent-foreground: #ececec;
-  --border: #3d3d3d;
-  --input: #3d3d3d;
-  --ring: #929292;
-}
-
 @layer base {
   * {
     @apply border-line;
-  }
-
-  .chat-theme *,
-  .chat-theme::before,
-  .chat-theme::after {
-    @apply border-border;
   }
 
   button {

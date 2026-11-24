@@ -340,7 +340,7 @@ export function AnalyzeTool({
               >
                 <SquareArrowOutUpRightIcon className="size-[15px]" aria-hidden />
               </TooltipTrigger>
-              <TooltipContent className="chat-theme" sideOffset={6}>
+              <TooltipContent sideOffset={6}>
                 在右侧标签页打开
               </TooltipContent>
             </Tooltip>

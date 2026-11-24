@@ -509,7 +509,7 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
       {steps.length > 0 && (
         <DialogContent
           showCloseButton={false}
-          className="chat-theme top-0 left-0 h-dvh w-screen max-w-none grid-rows-[auto_minmax(0,1fr)] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none p-0 text-sm leading-relaxed text-foreground sm:max-w-none data-open:animate-none data-closed:animate-none"
+          className="top-0 left-0 h-dvh w-screen max-w-none grid-rows-[auto_minmax(0,1fr)] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none p-0 text-sm leading-relaxed text-foreground sm:max-w-none data-open:animate-none data-closed:animate-none"
         >
           <header className="min-w-0 border-b border-border">
             <div className="flex h-[44px] items-center justify-between gap-4 pr-4 pl-[88px] [-webkit-app-region:drag]">

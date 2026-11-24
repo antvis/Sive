@@ -35,12 +35,9 @@ export default function App() {
     () => window.matchMedia('(prefers-color-scheme: dark)').matches,
   );
 
-  const preferredMode = state?.preferences.theme.mode ?? DEFAULT_PREFERENCES.theme.mode;
+  const { mode: preferredMode, fontSize } = state?.preferences.theme ?? DEFAULT_PREFERENCES.theme;
   const isDark = preferredMode === 'system' ? systemDark : preferredMode === 'dark';
-  const theme = useMemo(
-    () => ({ mode: isDark ? 'dark' : 'light', fontSize: DEFAULT_PREFERENCES.theme.fontSize }) as const,
-    [isDark],
-  );
+  const theme = useMemo(() => ({ mode: isDark ? 'dark' : 'light', fontSize }) as const, [isDark, fontSize]);
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');

@@ -22,7 +22,7 @@ import { PrivacySettings } from './PrivacySettings';
 import { StorageSettings } from './StorageSettings';
 
 const sections = {
-  appearance: { label: '偏好设置', description: '调整界面语言、主题亮暗和对话字号', icon: MonitorIcon },
+  appearance: { label: '偏好设置', description: '调整界面语言、主题亮暗和界面字号', icon: MonitorIcon },
   models: { label: '模型服务', description: '管理模型服务、可用模型和默认模型', icon: CpuIcon },
   analysis: {
     label: '分析配置',

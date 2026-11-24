@@ -120,7 +120,7 @@ export function AnalysisSidePanel({
               tabContentClassName,
               tab.kind === 'dataset'
                 ? 'overflow-hidden'
-                : 'chat-theme overflow-auto p-4 text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',
+                : 'overflow-auto p-4 text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',
             )}
           >
             {tab.kind === 'dataset' ? (

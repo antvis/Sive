@@ -95,12 +95,12 @@ export function MultimodalInput({
                   <PromptInputSelectValue />
                 </PromptInputSelectTrigger>
               </TooltipTrigger>
-              <TooltipContent className="chat-theme rounded-lg" side="top" sideOffset={6}>
+              <TooltipContent className="rounded-lg" side="top" sideOffset={6}>
                 选择分析策略
               </TooltipContent>
             </Tooltip>
             <PromptInputSelectContent
-              className="chat-theme text-sm"
+              className="text-sm"
               side="top"
               onCloseAutoFocus={focusInput}
             >
@@ -129,7 +129,7 @@ export function MultimodalInput({
               </PromptInputSelectValue>
             </PromptInputSelectTrigger>
             <PromptInputSelectContent
-              className="chat-theme text-sm"
+              className="text-sm"
               side="top"
               onCloseAutoFocus={focusInput}
             >

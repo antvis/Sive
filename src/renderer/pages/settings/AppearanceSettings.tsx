@@ -69,10 +69,10 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
             onValueChange={(mode) => void update({ ...preferences, theme: { ...theme, mode } })}
           />
         </SettingRow>
-        <SettingRow title="对话字号" description="调整对话中的文字大小">
+        <SettingRow title="界面字号" description="调整应用中的文字大小">
           <div className="w-56 max-w-full">
             <input
-              aria-label="对话字号"
+              aria-label="界面字号"
               aria-valuetext={`${theme.fontSize}px`}
               type="range"
               list="font-size-stops"
