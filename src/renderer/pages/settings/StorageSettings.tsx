@@ -44,8 +44,7 @@ export function StorageSettings() {
             }
           >
             <Button
-              variant="ghost"
-              className="bg-workspace-control text-ink hover:bg-ink/10"
+              className="border-ink/10 bg-workspace-control-active hover:bg-sidebar-highlight"
               aria-label="打开数据存储目录"
               onClick={() => void openDirectory(storage.data.directory)}
             >
@@ -66,8 +65,7 @@ export function StorageSettings() {
             }
           >
             <Button
-              variant="ghost"
-              className="bg-workspace-control text-ink hover:bg-ink/10"
+              className="border-ink/10 bg-workspace-control-active hover:bg-sidebar-highlight"
               aria-label="打开缓存目录"
               onClick={() => void openDirectory(storage.cache.path)}
             >

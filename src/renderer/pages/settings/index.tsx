@@ -90,10 +90,10 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
                       aria-controls="settings-panel"
                       onClick={() => setSection(id)}
                       className={clsx(
-                        'flex min-h-10 w-full items-center gap-2 rounded-[8px] px-2 py-1.5 text-left text-base focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus',
+                        'flex min-h-10 w-full items-center gap-2.5 rounded-[12px] px-2.5 py-1.5 text-left text-base transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus',
                         section === id
-                          ? 'bg-sidebar-highlight font-medium text-sidebar-ink'
-                          : 'text-sidebar-text hover:bg-sidebar-highlight',
+                          ? 'bg-ink/8 font-medium text-sidebar-ink'
+                          : 'text-sidebar-text hover:bg-ink/5',
                       )}
                     >
                       <Icon size={16} aria-hidden className="shrink-0" />
@@ -111,7 +111,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
       <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
         <h1
           id="settings-panel-title"
-          className="m-0 shrink-0 px-[clamp(20px,4vw,32px)] pt-6 pb-4 text-2xl font-semibold"
+          className="m-0 shrink-0 px-[clamp(20px,5vw,40px)] pt-7 pb-4 text-3xl font-semibold tracking-tight"
         >
           {sections[section].label}
         </h1>
@@ -119,7 +119,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
           key={section}
           id="settings-panel"
           aria-labelledby="settings-panel-title"
-          className="min-h-0 flex-1 overflow-y-auto px-[clamp(20px,4vw,32px)] pt-4 pb-8"
+          className="min-h-0 flex-1 overflow-y-auto px-[clamp(20px,5vw,40px)] pt-4 pb-8"
         >
           <div className="flex flex-col gap-8">
             {section === 'appearance' && <AppearanceSettings preferences={state.preferences} />}

@@ -1,5 +1,6 @@
 import { ArrowSquareOut } from '@phosphor-icons/react';
 import type { Preferences } from '@shared/api';
+import { Switch } from 'radix-ui';
 import { useState } from 'react';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
@@ -36,22 +37,20 @@ export function PrivacySettings({ preferences }: { preferences: Preferences }) {
           title="原生崩溃报告"
           description="默认关闭，修改后下次启动生效。开启后会上传 minidump，不会额外上传数据文件，但其中可能包含崩溃时的少量进程内存片段。"
         >
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <input
-              type="checkbox"
-              aria-label="启用原生崩溃报告"
-              checked={preferences.diagnostics.nativeCrashReporting}
-              disabled={saving}
-              className="size-4 accent-[var(--accent)]"
-              onChange={(event) => void updateNativeCrashReporting(event.target.checked)}
-            />
-            启用
-          </label>
+          <Switch.Root
+            aria-label="启用原生崩溃报告"
+            checked={preferences.diagnostics.nativeCrashReporting}
+            disabled={saving}
+            className="flex h-6 w-11 items-center rounded-full bg-ink/20 p-0.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-focus data-[state=checked]:bg-accent disabled:opacity-45"
+            onCheckedChange={(checked) => void updateNativeCrashReporting(checked)}
+          >
+            <Switch.Thumb className="size-5 rounded-full bg-white shadow-xs motion-safe:transition-transform data-[state=checked]:translate-x-5" />
+          </Switch.Root>
         </SettingRow>
       </SettingGroup>
 
       <SettingGroup title="隐私边界" description="所有常规异常事件都会经过统一白名单过滤。">
-        <div className="text-sm leading-6 text-muted-foreground">
+        <div className="py-4 text-sm leading-6 text-muted-foreground">
           <ul className="m-0 list-disc space-y-1 pl-5">
             <li>不上传数据文件、数据库内容、查询结果或 SQL。</li>
             <li>不上传 AI 对话、模型回答、账号密码、Token 或 Cookie。</li>
