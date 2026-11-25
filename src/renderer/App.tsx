@@ -25,13 +25,12 @@ type AnalysisSelection = {
   chatId: string;
   draftId: string;
   saved: boolean;
-  defaultPreviewCollapsed: boolean;
 };
 
 const analysisSelection = (datasetId: string, conversationId?: string): AnalysisSelection => {
   const chatId = conversationId ?? generateId();
   const saved = conversationId !== undefined;
-  return { datasetId, chatId, draftId: chatId, saved, defaultPreviewCollapsed: !saved };
+  return { datasetId, chatId, draftId: chatId, saved };
 };
 
 export default function App() {
@@ -179,7 +178,7 @@ function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback
                 chatId={analysis.chatId}
                 draftId={analysis.draftId}
                 conversationId={activeConversationId}
-                datasetCollapsed={collapsedPreviews[analysis.draftId] ?? analysis.defaultPreviewCollapsed}
+                datasetCollapsed={collapsedPreviews[analysis.draftId] ?? false}
                 onDatasetCollapsedChange={(collapsed) =>
                   setCollapsedPreviews((current) => ({ ...current, [analysis.draftId]: collapsed }))
                 }
