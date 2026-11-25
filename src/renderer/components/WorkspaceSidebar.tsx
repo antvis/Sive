@@ -93,7 +93,7 @@ function ConversationItem({
   return (
     <div
       data-sidebar-row
-      className="group/conversation relative flex min-w-0 rounded-lg [--sidebar-row-height:28px]"
+      className="group/conversation relative flex min-w-0 rounded-lg"
     >
       {editing ? (
         <SidebarInput
@@ -269,13 +269,13 @@ export function WorkspaceSidebar({
             >
               数据源
             </h2>
-            <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:6px] scrollbar-none">
+            <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-height:28px] scrollbar-none">
               {groups.map(({ dataset, conversations }) => {
                 const open = expanded[dataset.id] !== false;
                 const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
                 const groupId = `sidebar-conversations-${dataset.id}`;
                 return (
-                  <div key={dataset.id} className="grid min-w-0 gap-1">
+                  <div key={dataset.id} className="grid min-w-0 gap-[2px]">
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-px">
                       <SidebarButton
                         aria-expanded={open}
@@ -310,7 +310,7 @@ export function WorkspaceSidebar({
                     </div>
                     <div id={groupId} hidden={!open}>
                       {open && (
-                        <SidebarList className="max-h-56 min-w-0 overflow-y-auto ps-[24px] [--sidebar-row-gap:2px] scrollbar-none">
+                        <SidebarList className="max-h-56 min-w-0 overflow-y-auto ps-[24px] [--sidebar-row-gap:1px] [--sidebar-row-height:26px] scrollbar-none">
                           {conversations.map((conversation) => (
                             <ConversationItem
                               key={conversation.id}
@@ -351,7 +351,7 @@ export function WorkspaceSidebar({
               <SquarePenIcon className="size-[14px]" aria-hidden />
             </Button>
           </div>
-          <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:2px] scrollbar-none">
+          <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:2px] [--sidebar-row-height:28px] scrollbar-none">
             {recentConversations.map((conversation) => (
               <ConversationItem
                 key={conversation.id}
