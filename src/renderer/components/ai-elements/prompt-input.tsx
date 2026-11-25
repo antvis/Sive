@@ -805,9 +805,8 @@ export const PromptInput = ({
       >
         <InputGroup
           className={cn(
-            "gap-1.5 overflow-hidden rounded-[14px]! border-border bg-background p-1.5",
-            "shadow-[0_1px_3px_rgb(0_0_0/5%),0_1px_1px_rgb(0_0_0/3%)] dark:shadow-[inset_0_1px_0_rgb(255_255_255/3%),0_1px_3px_rgb(0_0_0/20%)]",
-            "transition-[border-color,border-radius] duration-150 ease-[ease] focus-within:border-border! focus-within:ring-0!"
+            "gap-1.5 overflow-hidden rounded-[14px]! border-transparent bg-secondary p-1.5",
+            "transition-shadow duration-150 focus-within:border-transparent! focus-within:ring-2! focus-within:ring-ring/25!"
           )}
         >
           {children}
@@ -1172,7 +1171,7 @@ export const PromptInputSelectTrigger = ({
   <SelectTrigger
     className={cn(
       "gap-1 border-none bg-transparent text-xs leading-4 font-medium text-foreground/70 shadow-none transition-colors duration-150 [&>svg]:size-3",
-      "hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground",
+      "hover:bg-secondary hover:text-foreground aria-expanded:bg-secondary aria-expanded:text-foreground dark:hover:bg-secondary",
       className
     )}
     {...props}

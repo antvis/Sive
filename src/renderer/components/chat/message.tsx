@@ -110,9 +110,10 @@ export function PreviewMessage({
       <div className={isUser ? 'flex flex-col items-end gap-2' : 'flex min-w-0'}>
         <MessageContent
           className={cn(
+            'leading-[1.6] text-chat-foreground',
             isUser
-              ? 'chat-user-message w-fit max-w-[min(80%,56ch)] overflow-hidden break-words rounded-2xl rounded-br-lg border border-border/30 bg-gradient-to-br from-secondary to-muted px-3.5 py-2 text-base leading-[1.6] shadow-[var(--shadow-card)]'
-              : 'min-w-0 flex-1 text-base leading-[1.6]',
+              ? 'w-fit max-w-[min(80%,56ch)] overflow-hidden break-words rounded-2xl rounded-br-lg bg-secondary px-3.5 py-2'
+              : 'min-w-0 flex-1',
           )}
         >
           {isUser ? (

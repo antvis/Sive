@@ -23,6 +23,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Install Electron binary
+        run: pnpm electron:install
+
       - name: Test
         run: pnpm test
 

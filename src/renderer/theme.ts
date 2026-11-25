@@ -20,7 +20,7 @@ export function createChartTheme(
   const styles = getComputedStyle(document.documentElement);
 
   // Chart renderers need pixels; derive them from the text-* rem scale.
-  const fontSize = (name: 'xs' | 'sm' | 'base' | 'lg' | '3xl') =>
+  const fontSize = (name: 'xs' | 'sm' | 'lg' | '3xl') =>
     Number.parseFloat(styles.getPropertyValue(`--text-${name}`)) * rootFontSize;
 
   const lineHeight = rootFontSize * 1.5;
@@ -39,7 +39,7 @@ export function createChartTheme(
       node: { labelFontSize: fontSize('xs') },
       edge: { labelFontSize: fontSize('xs') },
       table: { header: { fontSize: fontSize('xs') }, cell: { fontSize: fontSize('xs') } },
-      summary: { fontSize: fontSize('base') },
+      summary: { fontSize: rootFontSize },
     },
   };
 

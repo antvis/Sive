@@ -1,12 +1,13 @@
-import { useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
+import type { ThemeSpec } from '@antv/gpt-vis';
 import type { SnippetContent, SnippetUpdateInput } from '@shared/schema';
-import { ChartThemeContext } from '../../theme';
 import { errorMessage } from '../../utils';
 
 export function useSnippetCard(
   data: SnippetContent,
   onUpdate?: (input: SnippetUpdateInput) => Promise<void>,
+  theme?: ThemeSpec,
 ) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(data.title);
@@ -30,8 +31,7 @@ export function useSnippetCard(
     });
     observer.observe(content);
     return () => observer.disconnect();
-  }, [data.summary, editing]);
-  const theme = useContext(ChartThemeContext);
+  }, [data.summary, editing, theme]);
   const tokens = theme?.tokens;
   const style = tokens
     ? ({
@@ -39,6 +39,7 @@ export function useSnippetCard(
         '--page': tokens.colorSurface,
         '--ink': tokens.colorText,
         '--muted': tokens.colorTextSecondary,
+        '--muted-foreground': tokens.colorTextSecondary,
         '--line': tokens.colorStroke,
         '--accent': tokens.colorDefault,
         '--accent-secondary': tokens.category10?.[1],

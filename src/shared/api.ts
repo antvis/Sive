@@ -30,11 +30,12 @@ export type Preferences = {
   strategy: AnalysisStrategyConfig;
   engine: DuckDBEngineConfig;
   diagnostics: { nativeCrashReporting: boolean };
+  autoCheckUpdates: boolean;
 };
 
 export const DEFAULT_PREFERENCES = {
   language: 'zh-CN',
-  theme: { mode: 'light', fontSize: 14 },
+  theme: { mode: 'system', fontSize: 13 },
   agent: { maxSteps: 10 },
   strategy: { type: 'direct' },
   engine: {
@@ -45,6 +46,7 @@ export const DEFAULT_PREFERENCES = {
     maxTempDirectorySize: '1GB',
   },
   diagnostics: { nativeCrashReporting: false },
+  autoCheckUpdates: true,
 } satisfies Preferences;
 
 export function analysisStrategy(
@@ -62,6 +64,14 @@ export type DataStorageInfo = { path: string; directory: string; sizeBytes: numb
 export type StorageInfo = { cache: CacheInfo; data: DataStorageInfo };
 
 export type UpdateResult = { currentVersion: string; latestVersion: string; hasUpdate: boolean };
+
+export const snippetExportSchema = z.object({
+  image: z.instanceof(Uint8Array),
+  title: z.string(),
+  target: z.enum(['clipboard', 'file']),
+});
+
+export type SnippetExportInput = z.infer<typeof snippetExportSchema>;
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
 
@@ -159,6 +169,7 @@ export type WorkspaceState = {
 };
 
 export type WorkbenchApi = {
+  isMacOS: boolean;
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
   datasetSelectLocal(
@@ -189,11 +200,15 @@ export type WorkbenchApi = {
   datasetSaveSemantic(id: string, semantic: Semantic): Promise<void>;
   datasetRename(id: string, name: string): Promise<void>;
   datasetDelete(id: string): Promise<void>;
+  settingsOpen(): Promise<void>;
+  settingsClose(): void;
   settingsSavePreferences(preferences: Preferences): Promise<void>;
   systemGetStorageInfo(): Promise<StorageInfo>;
   systemOpen(type: 'directory' | 'url', path: string): Promise<void>;
   aboutGetVersion(): Promise<string>;
   aboutCheckUpdates(): Promise<UpdateResult>;
+  aboutTakeUpdateNotification(): Promise<UpdateResult | null>;
+  aboutOnUpdateAvailable(callback: () => void): () => void;
   modelListAvailable(input: ModelConnectionInput): Promise<string[]>;
   modelSave(input: ModelInput): Promise<void>;
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;
@@ -206,6 +221,7 @@ export type WorkbenchApi = {
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;
+  snippetExport(input: SnippetExportInput): Promise<boolean>;
   conversationRename(id: string, title: string): Promise<void>;
   conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;

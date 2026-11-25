@@ -1,42 +1,56 @@
 import { useChat } from '@ai-sdk/react';
-import { generateId } from 'ai';
-import { ArrowLeftIcon } from 'lucide-react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { DataSourceLogo } from '../DataSourceLogo';
+import {
+  PromptInputSelect,
+  PromptInputSelectContent,
+  PromptInputSelectItem,
+  PromptInputSelectTrigger,
+  PromptInputSelectValue,
+} from '../ai-elements/prompt-input';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
-import { Button } from '../ui/button';
 import { TooltipProvider } from '../ui/tooltip';
-import type { ModelProfile, Preferences, SuggestResult } from '../../types';
+import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
 import { IpcChatTransport } from './ipc-chat-transport';
+import { useConversationRead } from '../../hooks/useConversationStatus';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
 type Props = {
-  datasetId: string;
+  dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
+  datasets: DatasetSummary[];
+  onDatasetChange: (datasetId: string) => void;
+  onOpenDatasetPreview: () => void;
+  chatId: string;
   conversationId: string | null;
+  visible: boolean;
   savedMessageIds: string[];
   onConversationChange: (id: string) => void;
-  onBack: () => void;
   models: ModelProfile[];
   activeModelId: string;
   preferences: Preferences;
 };
 
 export function Chat({
-  datasetId,
+  dataset,
+  datasets,
+  onDatasetChange,
+  onOpenDatasetPreview,
+  chatId,
   conversationId,
+  visible,
   savedMessageIds,
   onConversationChange,
-  onBack,
   models,
   activeModelId,
   preferences,
 }: Props) {
+  const { id: datasetId, name: datasetName } = dataset;
   const [question, setQuestion] = useState('');
-  const chatId = useMemo(() => conversationId ?? generateId(), [datasetId, conversationId]);
   const transport = useMemo(
     () => new IpcChatTransport(onConversationChange, (cause) => toast.error(errorMessage(cause))),
     [onConversationChange],
@@ -48,7 +62,8 @@ export function Chat({
     status,
     error: chatError,
   } = useChat<ChatMessage>({ id: chatId, transport });
-  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(Boolean(conversationId));
+  const [loadedChatId, setLoadedChatId] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,21 +73,22 @@ export function Chat({
   const busy = status === 'submitted' || status === 'streaming';
   const displayError = error || chatError?.message;
 
-  useEffect(() => {
-    setQuestion('');
-    setError('');
-    setHistoryLoading(Boolean(conversationId));
-  }, [chatId]);
+  useConversationRead(chatId, visible && loadedChatId === chatId && !historyLoading && !busy);
 
   useEffect(() => {
     let live = true;
     if (!conversationId) {
+      setLoadedChatId(chatId);
       setHistoryLoading(false);
     } else if (!busy) {
+      setLoadedChatId(null);
       window.workbench
         .analysisGetMessages(conversationId)
         .then((history) => {
-          if (live) setMessages(history);
+          if (live) {
+            setMessages(history);
+            setLoadedChatId(chatId);
+          }
         })
         .catch((cause) => {
           if (live) setError(errorMessage(cause));
@@ -111,6 +127,13 @@ export function Chat({
     };
   }, [datasetId, activeModelId, activeModel]);
 
+  const changeDataset = (id: string) => {
+    setSuggestions([]);
+    setSuggestionsLoading(Boolean(activeModelId));
+    setError('');
+    onDatasetChange(id);
+  };
+
   const start = async ({ text }: PromptInputMessage) => {
     if (!text.trim() || !activeModelId || busy || historyLoading) return;
     setError('');
@@ -143,23 +166,13 @@ export function Chat({
   return (
     <TooltipProvider>
       <section
-        className="chat-theme flex h-full min-h-0 flex-col bg-background text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
+        className="flex h-full min-h-0 flex-col text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
         aria-label="AI 对话"
       >
-        <header className="flex h-14 shrink-0 items-center gap-2 px-4">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-full"
-            onClick={onBack}
-            aria-label="返回数据源"
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <span className="text-sm font-medium">AI 对话</span>
-        </header>
         <Messages
           key={chatId}
+          datasetName={datasetName}
+          onOpenDatasetPreview={onOpenDatasetPreview}
           messages={messages}
           savedMessageIds={savedMessageIds}
           historyLoading={historyLoading}
@@ -171,6 +184,32 @@ export function Chat({
           onSuggestion={setQuestion}
         />
         <div className="mx-auto w-full max-w-3xl shrink-0 px-5 pt-3 pb-4">
+          {!conversationId && (
+            <PromptInputSelect value={datasetId} onValueChange={changeDataset} disabled={busy}>
+              <PromptInputSelectTrigger
+                aria-label="切换数据源"
+                title={datasetName}
+                size="sm"
+                className="mb-1.5 min-w-0 max-w-full px-2 text-sm *:data-[slot=select-value]:min-w-0"
+              >
+                <PromptInputSelectValue>
+                  <DataSourceLogo type={dataset.sourceType} size={14} />
+                  <span className="truncate">{datasetName}</span>
+                </PromptInputSelectValue>
+              </PromptInputSelectTrigger>
+              <PromptInputSelectContent
+                className="max-w-[min(320px,var(--radix-select-content-available-width))] [&_[data-position=popper]]:min-w-0!"
+                side="top"
+              >
+                {datasets.map(({ id, name, sourceType }) => (
+                  <PromptInputSelectItem key={id} value={id}>
+                    <DataSourceLogo type={sourceType} size={14} />
+                    <span className="min-w-0 wrap-anywhere whitespace-normal">{name}</span>
+                  </PromptInputSelectItem>
+                ))}
+              </PromptInputSelectContent>
+            </PromptInputSelect>
+          )}
           <MultimodalInput
             value={question}
             onChange={setQuestion}

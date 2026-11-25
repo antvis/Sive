@@ -26,7 +26,7 @@ export function Select({
       <select
         aria-label={ariaLabel}
         className={clsx(
-          'w-full appearance-none rounded-lg border bg-surface px-3 pr-8 text-ink outline-none focus:border-accent disabled:opacity-45',
+          'w-full appearance-none rounded-lg border bg-surface px-3 pr-8 text-ink outline-none focus:border-ring disabled:opacity-45',
           compact ? 'h-8 text-xs' : 'h-9 text-sm',
         )}
         value={value}

@@ -1,6 +1,7 @@
 "use client";
 
 import type { DynamicToolUIPart, ToolUIPart } from "ai";
+import { isToolOutputErrorUIPart } from "ai";
 import type { ComponentProps, ReactNode } from "react";
 
 import { Badge } from "../ui/badge";
@@ -31,6 +32,11 @@ export const Tool = ({ className, ...props }: ToolProps) => (
 );
 
 export type ToolPart = ToolUIPart | DynamicToolUIPart;
+
+export function getToolErrorText(call: ToolPart) {
+  if (isToolOutputErrorUIPart(call)) return call.errorText;
+  if (call.state === "output-denied") return "工具执行已拒绝。";
+}
 
 export type ToolHeaderProps = {
   title?: string;
@@ -110,7 +116,7 @@ export type ToolContentProps = ComponentProps<typeof CollapsibleContent>;
 export const ToolContent = ({ className, children, ...props }: ToolContentProps) => (
   <CollapsibleContent
     className={cn(
-      "overflow-hidden text-popover-foreground outline-none motion-safe:data-[state=open]:animate-chat-tool-expand motion-safe:data-[state=closed]:animate-chat-tool-collapse",
+      "overflow-hidden text-sm text-popover-foreground outline-none motion-safe:data-[state=open]:animate-chat-tool-expand motion-safe:data-[state=closed]:animate-chat-tool-collapse",
       className
     )}
     {...props}

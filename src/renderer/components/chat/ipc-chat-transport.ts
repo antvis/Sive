@@ -1,6 +1,7 @@
 import type { ChatTransport, UIMessageChunk } from 'ai';
 import { analysisStartSchema } from '../../../shared/api';
 import type { ChatMessage } from '../../../shared/api';
+import { startConversation, finishConversation } from '../../hooks/useConversationStatus';
 
 export class IpcChatTransport implements ChatTransport<ChatMessage> {
   private readonly stopByChat = new Map<string, () => void>();
@@ -29,6 +30,7 @@ export class IpcChatTransport implements ChatTransport<ChatMessage> {
 
     return new ReadableStream<UIMessageChunk>({
       start: (controller) => {
+        startConversation(chatId);
         let finished = false;
         let stopping = false;
 
@@ -43,7 +45,8 @@ export class IpcChatTransport implements ChatTransport<ChatMessage> {
             });
         };
 
-        const cleanup = () => {
+        const cleanup = (resultId?: string) => {
+          finishConversation(chatId, resultId);
           finished = true;
           if (this.stopByChat.get(chatId) === requestStop) this.stopByChat.delete(chatId);
           unsubscribe();
@@ -63,12 +66,12 @@ export class IpcChatTransport implements ChatTransport<ChatMessage> {
         const unsubscribe = window.workbench.analysisOnChunk((messageId, chunk) => {
           if (finished || messageId !== input.message.id) return;
           if (chunk === null) {
-            cleanup();
+            cleanup(stopping ? undefined : input.message.id);
             controller.close();
           } else {
             controller.enqueue(chunk);
             if (chunk.type === 'error' || chunk.type === 'abort') {
-              cleanup();
+              cleanup(chunk.type === 'error' && !stopping ? input.message.id : undefined);
               controller.close();
             }
           }
@@ -82,7 +85,7 @@ export class IpcChatTransport implements ChatTransport<ChatMessage> {
           },
           (error: unknown) => {
             if (finished) return;
-            cleanup();
+            cleanup(input.message.id);
             controller.error(error);
           },
         );
