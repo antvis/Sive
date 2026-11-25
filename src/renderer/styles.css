@@ -105,7 +105,7 @@
 
 @theme inline {
   --color-sidebar-canvas: light-dark(#fcfcfc, #242424);
-  --color-sidebar-ink: light-dark(#000000, #ffffff);
+  --color-sidebar-ink: var(--foreground);
   --color-sidebar-text: var(--muted-foreground);
   --color-sidebar-highlight: light-dark(#f2f2f2, #303030);
   --color-workspace-canvas: light-dark(#f1f1f1, #181818);
@@ -208,19 +208,19 @@
   --sql-comment: #a0a8b2;
 }
 
-/* Theme tokens from vercel/chatbot a8989b5. */
+/* Base theme tokens adapted from vercel/chatbot a8989b5, with WorkBuddy text colors. */
 :root {
   --radius: 0.625rem;
   --background: oklch(0.985 0 0);
-  --foreground: oklch(0.12 0 0);
+  --foreground: #000000;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.12 0 0);
+  --card-foreground: var(--foreground);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.12 0 0);
+  --popover-foreground: var(--foreground);
   --primary: oklch(0.12 0 0);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.965 0 0);
-  --secondary-foreground: oklch(0.38 0 0);
+  --secondary-foreground: var(--muted-foreground);
   --accent-foreground: #ffffff;
   --destructive: oklch(0.55 0.15 25);
   --border: oklch(0.9 0 0);
@@ -243,15 +243,12 @@
 
 :root[data-theme='dark'] {
   --background: oklch(0.195 0 0);
-  --foreground: oklch(0.94 0 0);
+  --foreground: #ffffff;
   --card: oklch(0.225 0 0);
-  --card-foreground: oklch(0.94 0 0);
   --popover: oklch(0.225 0 0);
-  --popover-foreground: oklch(0.94 0 0);
   --primary: oklch(0.94 0 0);
   --primary-foreground: oklch(0.195 0 0);
   --secondary: oklch(0.26 0 0);
-  --secondary-foreground: oklch(0.75 0 0);
   --accent-foreground: #15191e;
   --destructive: oklch(0.7 0.15 25);
   --border: oklch(0.27 0 0);
