@@ -73,6 +73,21 @@ export const snippetExportSchema = z.object({
 
 export type SnippetExportInput = z.infer<typeof snippetExportSchema>;
 
+export const snippetShareSchema = snippetExportSchema.pick({ image: true }).extend({
+  title: z.string().trim().min(1, '请填写标题。'),
+  content: z.string().trim().min(1, '请填写正文。'),
+});
+
+export type SnippetShareInput = z.infer<typeof snippetShareSchema>;
+
+export type SnippetShareLogin = {
+  loggedIn: boolean;
+  username?: string;
+  avatarUrl?: string;
+  qrcode?: string;
+  expiresAt?: number;
+};
+
 export type DatasetPreviewOptions = { offset: number; limit: number };
 
 export type SupabaseOAuthResult = {
@@ -222,6 +237,11 @@ export type WorkbenchApi = {
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;
   snippetExport(input: SnippetExportInput): Promise<boolean>;
+  snippetShareLogin(): Promise<SnippetShareLogin>;
+  snippetShareStatus(): Promise<SnippetShareLogin>;
+  snippetShareProfile(): Promise<Pick<SnippetShareLogin, 'username' | 'avatarUrl'>>;
+  snippetShareLogout(): Promise<void>;
+  snippetShare(input: SnippetShareInput): Promise<void>;
   conversationRename(id: string, title: string): Promise<void>;
   conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;
