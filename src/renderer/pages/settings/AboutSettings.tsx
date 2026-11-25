@@ -61,7 +61,7 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
         </Button>
         <div className="mt-7 flex justify-center gap-3">
           <Button
-            variant="secondary"
+            variant="primary"
             disabled={checking}
             onClick={() => void checkUpdates()}
           >
