@@ -3,7 +3,6 @@ import {
   ArchiveIcon,
   ChevronRightIcon,
   DatabaseIcon,
-  FileTextIcon,
   LightbulbIcon,
   PanelLeftIcon,
   PencilIcon,
@@ -15,6 +14,7 @@ import { toast } from 'sonner';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
 import { ConversationStatus } from './ConversationStatus';
+import { DataSourceLogo } from './DataSourceLogo';
 import { Button } from './ui/button';
 import { SidebarButton, SidebarInput, SidebarList } from './ui/sidebar';
 
@@ -272,7 +272,6 @@ export function WorkspaceSidebar({
             <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-height:28px] scrollbar-none">
               {groups.map(({ dataset, conversations }) => {
                 const open = expanded[dataset.id] !== false;
-                const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
                 const groupId = `sidebar-conversations-${dataset.id}`;
                 return (
                   <div key={dataset.id} className="grid min-w-0 gap-[2px]">
@@ -291,7 +290,7 @@ export function WorkspaceSidebar({
                         >
                           <ChevronRightIcon size={12} aria-hidden />
                         </span>
-                        <SourceIcon size={16} className="shrink-0" aria-hidden />
+                        <DataSourceLogo type={dataset.sourceType} size={16} />
                         <span className="min-w-0 flex-1 truncate">{dataset.name}</span>
                         {!open && (
                           <ConversationStatus ids={conversations.map((conversation) => conversation.id)} />
@@ -308,7 +307,7 @@ export function WorkspaceSidebar({
                         <SquarePenIcon className="size-[14px]" aria-hidden />
                       </Button>
                     </div>
-                    <div id={groupId} hidden={!open}>
+                    <div id={groupId} className="mb-[4px]" hidden={!open}>
                       {open && (
                         <SidebarList className="max-h-56 min-w-0 overflow-y-auto ps-[24px] [--sidebar-row-gap:1px] [--sidebar-row-height:26px] scrollbar-none">
                           {conversations.map((conversation) => (
