@@ -6,7 +6,7 @@ import { useI18n } from '../../i18n';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
 
-const FONT_SIZES = [12, 14, 16, 18, 20];
+const FONT_SIZES = [12, 13, 14, 16, 18, 20];
 const languageOptions = [
   { value: 'zh-CN', label: '中文（简体）' },
   { value: 'en-US', label: 'English' },
@@ -94,12 +94,10 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
                 <option key={size} value={index} label={`${size}px`} />
               ))}
             </datalist>
-            <div className="grid grid-cols-5 text-xs text-muted-foreground">
+            <div className="grid grid-cols-6 text-xs text-muted-foreground">
               <span>小</span>
               <span className="text-center">默认</span>
-              <span />
-              <span />
-              <span className="text-right">大</span>
+              <span className="col-start-6 text-right">大</span>
             </div>
           </div>
         </SettingRow>

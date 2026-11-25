@@ -57,7 +57,7 @@ export const MessageContent = ({
 }: MessageContentProps) => (
   <div
     className={cn(
-      "flex min-w-0 max-w-full flex-col gap-2 overflow-hidden text-sm text-foreground",
+      "flex min-w-0 max-w-full flex-col gap-2 overflow-hidden text-base text-foreground",
       className
     )}
     {...props}
@@ -337,8 +337,11 @@ const mermaidOptions = { config: { themeVariables: { fontSize: "var(--text-sm)" 
 
 const streamdownComponents = {
   table: MarkdownTable,
+  a: ({ className, ...props }: ComponentProps<typeof defaultComponents.a>) => (
+    <defaultComponents.a className={cn("font-normal text-chat-link", className)} {...props} />
+  ),
   strong: ({ className, ...props }: ComponentProps<typeof defaultComponents.strong>) => (
-    <defaultComponents.strong className={cn("text-foreground", className)} {...props} />
+    <defaultComponents.strong className={cn("font-semibold", className)} {...props} />
   ),
   ul: ({ className, ...props }: ComponentProps<typeof defaultComponents.ul>) => (
     <defaultComponents.ul className={cn("list-outside space-y-0 pl-7", className)} {...props} />
@@ -356,7 +359,7 @@ export const MessageResponse = memo(
     <Streamdown
       className={cn(
         "size-full space-y-3 font-sans leading-[1.6] font-normal tracking-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-        "[&_h1]:text-xl [&_h2]:text-lg [&_:is(h3,h4,h5,h6)]:text-base [&_.katex]:text-base [&_[data-streamdown=code-block-body]_code>span]:before:text-xs",
+        "[&_h1]:text-2xl [&_h2]:text-xl [&_:is(h3,h4,h5,h6)]:text-lg [&_.katex]:text-[1em] [&_[data-streamdown=code-block-body]_code>span]:before:text-xs",
         "[&_[data-streamdown=code-block][data-language=sql_i]]:bg-muted/50 [&_[data-streamdown=code-block-body][data-language=sql_i]]:bg-transparent",
         className
       )}

@@ -1,3 +1,4 @@
+import type { ThemeSpec } from '@antv/gpt-vis';
 import { ChartColumnIncreasingIcon, CheckIcon, Grid2X2Icon } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useContext, useState } from 'react';
@@ -5,7 +6,6 @@ import type { RefObject } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { createChartTheme, ThemeContext } from '../../theme';
 import { IconButton } from '../IconButton';
-import type { SnippetTemplateProps } from './index';
 
 export function TemplatePicker({
   value,
@@ -15,9 +15,9 @@ export function TemplatePicker({
   onChange,
 }: {
   value: string;
-  templates: SnippetTemplateProps['templates'];
+  templates: { value: string; label: string; theme?: ThemeSpec }[];
   disabled: boolean;
-  buttonRef: RefObject<HTMLButtonElement | null>;
+  buttonRef?: RefObject<HTMLButtonElement | null>;
   onChange: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);

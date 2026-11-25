@@ -1,6 +1,7 @@
 import type { UIMessageChunk } from 'ai';
 import { expect, it, vi } from 'vitest';
 import { createAnalysisAgent } from '../../../src/main/ai';
+import { generateConversationTitle } from '../../../src/main/ai/completions';
 import { createRepositories } from '../../../src/main/db/repository';
 import { AnalysisService } from '../../../src/main/services/analysis';
 import type { AnalysisToolOutput } from '../../../src/shared/analysis-trace';
@@ -8,6 +9,7 @@ import { DEFAULT_PREFERENCES } from '../../../src/shared/api';
 import { createTestDb } from '../../helpers/db';
 
 vi.mock('../../../src/main/ai', () => ({ createAnalysisAgent: vi.fn() }));
+vi.mock('../../../src/main/ai/completions', () => ({ generateConversationTitle: vi.fn() }));
 vi.mock('electron', () => ({
   safeStorage: {
     isEncryptionAvailable: () => true,
@@ -16,7 +18,7 @@ vi.mock('electron', () => ({
   },
 }));
 
-it('streams the analysis trace with the tool result before the reply ends', async () => {
+it('streams the analysis trace while the conversation title is generated in the background', async () => {
   const testDb = await createTestDb();
   try {
     const repositories = createRepositories(testDb.database);
@@ -57,23 +59,31 @@ it('streams the analysis trace with the tool result before the reply ends', asyn
     });
     const service = new AnalysisService(testDb.database, repositories);
     const chunks: (UIMessageChunk | null)[] = [];
-    await new Promise<void>((resolve) => {
-      service.start(
-        {
-          chatId: 'chat',
-          datasetId: dataset.id,
-          strategy,
-          message: { id: 'user', role: 'user', parts: [{ type: 'text', text: query }] },
-        },
-        { baseURL: 'https://example.com', model: 'test' },
-        DEFAULT_PREFERENCES,
-        (chunk) => {
-          chunks.push(chunk);
-          if (chunk === null) resolve();
-        },
-      );
-    });
+    const generatedTitle = Promise.withResolvers<string>();
+    const analysisFinished = Promise.withResolvers<void>();
+    vi.mocked(generateConversationTitle).mockReturnValue(generatedTitle.promise);
+
+    const titleUpdate = service.start(
+      {
+        chatId: 'chat',
+        datasetId: dataset.id,
+        strategy,
+        message: { id: 'user', role: 'user', parts: [{ type: 'text', text: query }] },
+      },
+      { baseURL: 'https://example.com', model: 'test' },
+      DEFAULT_PREFERENCES,
+      (chunk) => {
+        chunks.push(chunk);
+        if (chunk === null) analysisFinished.resolve();
+      },
+    );
+    await analysisFinished.promise;
     expect(chunks).toEqual([toolResult, reply, null]);
+    expect(repositories.conversations.get('chat')?.title).toBe(query);
+
+    generatedTitle.resolve('🔍 销量查询');
+    await expect(titleUpdate).resolves.toBe(true);
+    expect(repositories.conversations.get('chat')?.title).toBe('🔍 销量查询');
   } finally {
     testDb.close();
   }

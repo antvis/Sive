@@ -26,7 +26,7 @@ function SchemaFields({ model }: { model: Schema['models'][number] }) {
           {model.columns.length} 个字段
         </span>
       </div>
-      <Table className="table-fixed" aria-label={`${model.name} 的字段`}>
+      <Table className="table-fixed text-sm" aria-label={`${model.name} 的字段`}>
         <thead>
           <tr>
             <th scope="col" className="w-[53%]">
@@ -100,7 +100,7 @@ export function SchemaTool({ schema }: { schema: Schema }) {
   if (!models.length) return <p className="m-0 text-sm leading-6 text-muted-foreground">未识别到数据表。</p>;
 
   return (
-    <div className="grid min-w-0 gap-4 text-base leading-[1.6] text-foreground">
+    <div className="grid min-w-0 gap-4 text-sm leading-[1.6] text-foreground">
       <div className="flex flex-wrap gap-1.5">
         <Badge variant="secondary">{models.length} 张表</Badge>
         <Badge variant="secondary">{columnCount} 个字段</Badge>

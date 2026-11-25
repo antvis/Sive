@@ -49,7 +49,7 @@ function AnalysisTable({
           {column.type && <span className="sr-only"> · {column.type}</span>}
         </span>
         <span
-          className="text-2xl leading-tight font-semibold tabular-nums [overflow-wrap:anywhere]"
+          className="text-sm leading-tight font-semibold tabular-nums [overflow-wrap:anywhere]"
           title={cellText(value)}
         >
           {typeof value === 'number' && !originalPrecision
@@ -65,7 +65,7 @@ function AnalysisTable({
   }
 
   return (
-    <Table>
+    <Table className="text-sm">
       <thead>
         <tr>
           {columns.map((column) => (
@@ -134,19 +134,19 @@ function AnalysisConclusion({
       tabIndex={0}
     >
       {content && (
-        <MessageResponse className="space-y-2 text-base leading-6 text-foreground">{content}</MessageResponse>
+        <MessageResponse className="space-y-2 text-sm leading-6 text-foreground">{content}</MessageResponse>
       )}
       {limitations && (
         <div className="space-y-1">
           <p className="text-xs font-medium text-foreground">分析局限</p>
-          <MessageResponse className="space-y-1 text-sm leading-5 text-muted-foreground">
+          <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground">
             {limitations}
           </MessageResponse>
         </div>
       )}
       {analysis.markdown && analysis.text && analysis.markdown !== analysis.text && (
         <CollapsibleSection title="原始文本">
-          <p className="whitespace-pre-wrap text-sm leading-5 text-muted-foreground">{analysis.text}</p>
+          <p className="whitespace-pre-wrap text-xs leading-5 text-muted-foreground">{analysis.text}</p>
         </CollapsibleSection>
       )}
     </div>
@@ -294,12 +294,7 @@ export function AnalyzeTool({
   if (!views.length && !error) return null;
 
   const queryContent = query && (
-    <p
-      className={cn(
-        'leading-6 whitespace-pre-wrap text-foreground [overflow-wrap:anywhere]',
-        sidePanel ? 'text-base' : 'text-sm',
-      )}
-    >
+    <p className="text-sm leading-6 whitespace-pre-wrap text-foreground [overflow-wrap:anywhere]">
       {query}
     </p>
   );
@@ -312,8 +307,8 @@ export function AnalyzeTool({
   return (
     <div
       className={cn(
-        '@container grid w-full min-w-0 grid-cols-1',
-        sidePanel ? 'gap-3 [--analysis-view-max-height:none]' : 'gap-3.5 rounded-lg bg-muted/50 p-3',
+        '@container grid w-full min-w-0 grid-cols-1 [&_[data-streamdown^=heading-]]:text-sm [&_[data-streamdown=table]_:is(th,td,code)]:text-sm',
+        sidePanel ? 'gap-3 [--analysis-view-max-height:none]' : 'gap-3.5 rounded-lg bg-muted/25 p-3',
       )}
     >
       {sidePanel && queryContent && (
@@ -361,13 +356,13 @@ export function AnalyzeTool({
         >
           <Tabs.List
             aria-label="分析结果视图"
-            className="grid grid-cols-[repeat(auto-fit,minmax(min(3rem,100%),1fr))] gap-1"
+            className="grid grid-cols-[repeat(auto-fit,minmax(min(3rem,100%),1fr))] gap-1 rounded-lg bg-workspace-control p-1"
           >
             {views.map(({ value, label, icon: Icon }) => (
               <Tabs.Trigger
                 key={value}
                 value={value}
-                className="flex min-h-8 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-sm leading-5 font-medium whitespace-nowrap text-muted-foreground hover:bg-card/60 hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-[state=active]:bg-card data-[state=active]:font-semibold data-[state=active]:text-foreground @xs:flex-row @xs:gap-1.5"
+                className="flex min-h-8 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-sm leading-5 font-medium whitespace-nowrap text-muted-foreground hover:bg-workspace-control-active/60 hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-[state=active]:bg-workspace-control-active data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:ring-1 data-[state=active]:ring-foreground/10 @xs:flex-row @xs:gap-1.5"
               >
                 <Icon className="size-3.5 shrink-0" aria-hidden="true" />
                 {label}

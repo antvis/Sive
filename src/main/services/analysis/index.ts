@@ -5,6 +5,7 @@ import type { AnalysisStartInput, ChatMessage, DuckDBEngineConfig, Preferences }
 import type { AnalysisOptions } from '@shared/schema';
 import { createAnalysisAgent } from '../../ai';
 import type { AnalysisAgent } from '../../ai';
+import { generateConversationTitle } from '../../ai/completions';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import { errorText, required } from '../../util';
@@ -79,34 +80,41 @@ export class AnalysisService {
     const dataset = required(this.repositories.datasets.get(input.datasetId), '数据源不存在或已删除。');
     if (this.tasks.has(input.chatId)) throw new Error('请等待当前分析完成。');
     const now = new Date().toISOString();
-    const conversation =
-      this.repositories.conversations.get(input.chatId) ??
-      this.database.write(() =>
+    const analysisOptions = { strategy: input.strategy, model: model.model };
+    const { conversation, shouldName } = this.database.write(() => {
+      const existing = this.repositories.conversations.get(input.chatId);
+      const conversation =
+        existing ??
         this.repositories.conversations.insert({
           id: input.chatId,
           datasetId: dataset.id,
           title: question,
           createdAt: now,
           updatedAt: now,
-        }),
-      );
-    if (conversation.datasetId !== dataset.id) throw new Error('会话与数据集不匹配。');
+        });
+      if (conversation.datasetId !== dataset.id) throw new Error('会话与数据集不匹配。');
+
+      const sequence = this.repositories.messages.nextSequence(conversation.id);
+      const needsInitialTitle = sequence === 0 && existing?.title === '新建分析';
+      this.repositories.messages.insert({
+        id: input.message.id,
+        conversationId: conversation.id,
+        sequence,
+        role: 'user',
+        parts: input.message.parts,
+        analysisOptions,
+        createdAt: now,
+        updatedAt: now,
+      });
+      if (existing) {
+        this.repositories.conversations.update(conversation.id, {
+          ...(needsInitialTitle ? { title: question } : {}),
+          updatedAt: now,
+        });
+      }
+      return { conversation, shouldName: !existing || needsInitialTitle };
+    });
     const agent = this.getAgent(conversation.id, model, dataset, preferences.engine);
-    const analysisOptions = { strategy: input.strategy, model: model.model };
-    this.repositories.messages.insert({
-      id: input.message.id,
-      conversationId: conversation.id,
-      sequence: this.repositories.messages.nextSequence(conversation.id),
-      role: 'user',
-      parts: input.message.parts,
-      analysisOptions,
-      createdAt: now,
-      updatedAt: now,
-    });
-    this.repositories.conversations.update(conversation.id, {
-      title: conversation.title === '新建分析' ? question : conversation.title,
-      updatedAt: now,
-    });
     const controller = new AbortController();
     this.tasks.set(conversation.id, { datasetId: dataset.id, controller });
     void this.run(
@@ -118,6 +126,22 @@ export class AnalysisService {
       emit,
       localFilePath(dataset.sourceConfig),
     );
+
+    if (shouldName) return this.nameConversation(conversation.id, question, model);
+  }
+
+  private async nameConversation(conversationId: string, question: string, model: ModelConfig) {
+    try {
+      const title = await generateConversationTitle(question, model);
+      if (!title || title === question) return false;
+      return this.repositories.conversations.updateTitleIfCurrent(conversationId, question, title);
+    } catch (error) {
+      console.warn(
+        '[conversation-title] Automatic naming failed:',
+        error instanceof Error ? error.name : 'UnknownError',
+      );
+      return false;
+    }
   }
 
   cancel(conversationId: string) {

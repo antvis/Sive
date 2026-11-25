@@ -101,7 +101,7 @@ function SelectContent({
           <span
             aria-hidden="true"
             data-slot="select-highlight"
-            className="pointer-events-none absolute inset-x-0 top-0 rounded-[6px] bg-foreground/5 motion-safe:transition-[transform,height,opacity] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+            className="pointer-events-none absolute inset-x-0 top-0 rounded-[6px] bg-secondary motion-safe:transition-[transform,height,opacity] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
             style={{
               height: highlight.height,
               transform: `translateY(${highlight.top}px)`,

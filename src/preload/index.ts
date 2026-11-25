@@ -66,6 +66,7 @@ const api = {
   snippetSave: (input) => ipcRenderer.invoke('snippetSave', input),
   snippetUpdate: (messageId, input) => ipcRenderer.invoke('snippetUpdate', messageId, input),
   snippetRemove: (messageId) => ipcRenderer.invoke('snippetRemove', messageId),
+  snippetExport: (input) => ipcRenderer.invoke('snippetExport', input),
   conversationRestore: (id) => ipcRenderer.invoke('conversationRestore', id),
   conversationPurge: (ids) => ipcRenderer.invoke('conversationPurge', ids),
 } satisfies WorkbenchApi;
