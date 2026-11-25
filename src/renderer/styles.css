@@ -270,12 +270,10 @@
 }
 
 [data-draft-background] {
-  background: radial-gradient(
-    ellipse closest-side,
-    light-dark(#b7e7ff, #264b62),
-    light-dark(#e7f7ff, #22394b) 56%,
-    transparent
-  );
+  background:
+    radial-gradient(ellipse 46% 31% at 66% 106%, light-dark(#009cf0bd, #1761b694), transparent),
+    radial-gradient(ellipse 49% 28% at 31% 108%, light-dark(#25caffb8, #167b9fa0), transparent),
+    radial-gradient(ellipse 89% 35% at 52% 113%, light-dark(#91ccffa1, #234169b4), transparent);
 }
 
 @layer base {

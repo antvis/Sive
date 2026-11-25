@@ -172,6 +172,7 @@ export function Chat({
         className="relative isolate flex h-full min-h-0 flex-col text-base text-foreground data-conversation-draft:bg-[light-dark(#fafcfe,#1b232e)] [&_code]:font-chat-mono [&_pre]:font-chat-mono"
         aria-label="AI 对话"
       >
+        {starting && <DraftBackground />}
         {toolbar && (
           <div
             className={cn(
@@ -203,8 +204,7 @@ export function Chat({
           >
             {starting && (
               <header className="isolate self-end pb-[clamp(18px,4vh,2.5rem)] text-center motion-safe:animate-fade-up">
-                <div className="relative mx-auto mb-2 flex w-fit max-w-full flex-col items-center">
-                  <DraftBackground />
+                <div className="relative mx-auto mb-[clamp(14px,2.5vh,24px)] flex w-fit max-w-full flex-col items-center">
                   <p className="relative z-10 me-[clamp(12px,8cqw,52px)] mb-0.5 rounded-xl bg-[light-dark(#f7faffd9,#b4d1f229)] px-3 py-2 text-sm font-medium text-[light-dark(#16436c,#e8f5ff)] shadow-[0_3px_12px_#213d6212] backdrop-blur-md after:absolute after:top-full after:left-6 after:h-1.5 after:w-2.5 after:bg-inherit after:[clip-path:polygon(0_0,100%_0,50%_100%)]">
                     想从数据里发现什么？
                   </p>
