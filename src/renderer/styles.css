@@ -34,6 +34,8 @@
   --animate-chat-tool-shimmer: chat-tool-shimmer 1.4s linear infinite;
   --animate-fade-up: fade-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   --animate-draft-companion-enter: draft-companion-enter 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-draft-companion-idle: draft-companion-idle 6s ease-in-out 720ms infinite;
+  --animate-draft-companion-bubble: draft-companion-bubble 12s ease-in-out infinite;
   --animate-dialog-enter: dialog-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-dropdown-open: dropdown-open 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-dropdown-close: dropdown-close 120ms ease-in both;
@@ -115,6 +117,41 @@
 
     100% {
       transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes draft-companion-idle {
+    0%,
+    70%,
+    100% {
+      transform: none;
+    }
+
+    20% {
+      transform: translateY(-4px) rotate(-2.5deg);
+    }
+
+    42% {
+      transform: translateY(-1px) rotate(2deg);
+    }
+  }
+
+  @keyframes draft-companion-bubble {
+    0% {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+
+    4%,
+    39% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    45%,
+    100% {
+      opacity: 0;
+      transform: translateY(-4px);
     }
   }
 

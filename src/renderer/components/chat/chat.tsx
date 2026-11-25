@@ -18,6 +18,7 @@ import { useConversationRead } from '../../hooks/useConversationStatus';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 import { DraftBackground } from './DraftBackground';
+import { DraftCompanion } from './DraftCompanion';
 
 type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
@@ -204,20 +205,8 @@ export function Chat({
           >
             {starting && (
               <header className="isolate self-end pb-[clamp(18px,4vh,2.5rem)] text-center motion-safe:animate-fade-up">
-                <div className="relative mx-auto mb-[clamp(14px,2.5vh,24px)] flex w-fit max-w-full flex-col items-center">
-                  <p className="relative z-10 me-[clamp(12px,8cqw,52px)] mb-0.5 rounded-xl bg-[light-dark(#f7faffd9,#b4d1f229)] px-3 py-2 text-sm font-medium text-[light-dark(#16436c,#e8f5ff)] shadow-[0_3px_12px_#213d6212] backdrop-blur-md after:absolute after:top-full after:left-6 after:h-1.5 after:w-2.5 after:bg-inherit after:[clip-path:polygon(0_0,100%_0,50%_100%)]">
-                    想从数据里发现什么？
-                  </p>
-                  <div className="motion-safe:animate-draft-companion-enter">
-                    <img
-                      src="./illustrations/draft-companion.png"
-                      alt=""
-                      width={288}
-                      height={259}
-                      decoding="async"
-                      className="h-[clamp(64px,11vh,96px)] w-auto object-contain drop-shadow-[0_9px_12px_#07589532]"
-                    />
-                  </div>
+                <div className="mx-auto mb-[clamp(14px,2.5vh,24px)] w-fit max-w-full">
+                  <DraftCompanion />
                 </div>
                 <h1 className="text-3xl leading-tight font-semibold tracking-tight">开始数据分析</h1>
                 <p className="mt-2 leading-[1.7] text-[light-dark(#435c78,#b8c8dc)]">
