@@ -99,7 +99,7 @@ export function SnippetCard({
                 size="icon-sm"
                 aria-label="编辑 Snippet"
                 title="编辑 Snippet"
-                className="text-sidebar-muted"
+                className="text-black/50 dark:text-white/50"
                 disabled={busy}
                 onClick={startEditing}
               >
@@ -113,7 +113,7 @@ export function SnippetCard({
               size="icon-sm"
               aria-label="分享与导出"
               title="分享与导出"
-              className="text-sidebar-muted"
+              className="text-black/50 dark:text-white/50"
               disabled={busy}
               onClick={onShare}
             >
@@ -127,7 +127,7 @@ export function SnippetCard({
               aria-label="删除 Snippet"
               title="删除 Snippet"
               disabled={busy}
-              className="text-sidebar-muted hover:text-danger"
+              className="text-black/50 dark:text-white/50 hover:text-danger"
               onClick={onDelete}
             >
               <Trash2Icon className="size-[14px]" aria-hidden />
@@ -140,7 +140,7 @@ export function SnippetCard({
               aria-label={saveLabel}
               title={saveLabel}
               disabled={saved || busy}
-              className={saved ? 'text-ink disabled:opacity-100' : 'text-sidebar-muted'}
+              className={saved ? 'text-ink disabled:opacity-100' : 'text-black/50 dark:text-white/50'}
               onClick={() => void run(onSave)}
             >
               <PinIcon className={cn('size-[14px]', saved && 'fill-current')} aria-hidden />

@@ -112,7 +112,7 @@ function ButtonExample() {
           size="icon-sm"
           aria-label="行尾编辑"
           title="行尾编辑"
-          className="text-sidebar-muted"
+          className="text-black/50 dark:text-white/50"
           onClick={() => setPressed('编辑')}
         >
           <PencilIcon className="size-[14px]" aria-hidden />

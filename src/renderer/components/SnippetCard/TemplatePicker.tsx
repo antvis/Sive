@@ -30,7 +30,7 @@ export function TemplatePicker({
           size="icon-sm"
           aria-label={`切换模板，当前：${value}`}
           title={`切换模板，当前：${value}`}
-          className="text-sidebar-muted"
+          className="text-black/50 dark:text-white/50"
           disabled={disabled}
         >
           <Grid2X2Icon className="size-[14px]" aria-hidden />

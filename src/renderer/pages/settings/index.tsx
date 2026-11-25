@@ -84,7 +84,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
       >
         {groups.map(({ label, items }) => (
           <div key={label}>
-            <p id={`settings-group-${items[0]}`} className="m-0 mb-2 px-2 text-sm text-sidebar-muted">
+            <p id={`settings-group-${items[0]}`} className="m-0 mb-2 px-2 text-sm text-black/50 dark:text-white/50">
               {label}
             </p>
             <ul aria-labelledby={`settings-group-${items[0]}`} className="m-0 grid list-none gap-1 p-0">
@@ -101,7 +101,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
                     >
                       <Icon size={16} aria-hidden className="shrink-0" />
                       <span className="min-w-0 flex-1">{label}</span>
-                      {count > 0 && <span className="text-xs tabular-nums text-sidebar-muted">{count}</span>}
+                      {count > 0 && <span className="text-xs tabular-nums text-black/50 dark:text-white/50">{count}</span>}
                     </SidebarButton>
                   </li>
                 );

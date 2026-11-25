@@ -140,7 +140,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
                   size="icon-sm"
                   aria-label={discoverLabel}
                   title={discoverLabel}
-                  className="text-sidebar-muted"
+                  className="text-black/50 dark:text-white/50"
                   disabled={discovering}
                   onClick={() => void discover()}
                 >

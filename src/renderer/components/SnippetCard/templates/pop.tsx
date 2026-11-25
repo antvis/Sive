@@ -74,7 +74,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
           </label>
           <textarea
             id={summaryId}
-            className="mt-2 block field-sizing-content max-h-72 min-h-24 w-full resize-none border-0 bg-transparent p-0 text-base leading-relaxed text-pretty text-ink outline-none placeholder:text-muted-foreground disabled:opacity-50"
+            className="mt-2 block field-sizing-content max-h-72 min-h-24 w-full resize-none border-0 bg-transparent p-0 text-base leading-relaxed text-pretty text-ink outline-none disabled:opacity-50"
             value={summary}
             disabled={busy}
             aria-label="Snippet 洞察描述"
@@ -168,7 +168,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
             </label>
             <textarea
               id={titleId}
-              className="mt-1 block field-sizing-content max-h-40 min-h-14 w-full resize-none border-0 border-b border-ink/25! bg-transparent px-0 py-2 text-xl leading-7 font-semibold text-balance text-ink outline-none placeholder:text-muted-foreground focus:border-focus! disabled:opacity-50"
+              className="mt-1 block field-sizing-content max-h-40 min-h-14 w-full resize-none border-0 border-b border-ink/25! bg-transparent px-0 py-2 text-xl leading-7 font-semibold text-balance text-ink outline-none focus:border-focus! disabled:opacity-50"
               value={title}
               disabled={busy}
               autoFocus

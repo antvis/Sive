@@ -493,7 +493,7 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
                 size="icon-sm"
                 aria-label="全屏查看分析流程图"
                 title="全屏查看分析流程图"
-                className="text-sidebar-muted"
+                className="text-black/50 dark:text-white/50"
               >
                 <Maximize2Icon className="size-[14px]" aria-hidden />
               </Button>
@@ -520,7 +520,7 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
                   size="icon-sm"
                   aria-label="退出全屏"
                   title="退出全屏"
-                  className="text-sidebar-muted"
+                  className="text-black/50 dark:text-white/50"
                 >
                   <Minimize2Icon className="size-[14px]" aria-hidden />
                 </Button>

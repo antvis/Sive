@@ -33,7 +33,7 @@ export function SourceActions({ datasetId, sourceType }: { datasetId: string; so
         size="icon-sm"
         aria-label="刷新数据源"
         title="刷新数据源"
-        className="text-sidebar-muted"
+        className="text-black/50 dark:text-white/50"
         disabled={busy}
         onClick={() => void refresh()}
       >
@@ -45,7 +45,7 @@ export function SourceActions({ datasetId, sourceType }: { datasetId: string; so
           size="icon-sm"
           aria-label={`编辑 ${source.label} 连接`}
           title={`编辑 ${source.label} 连接`}
-          className="text-sidebar-muted"
+          className="text-black/50 dark:text-white/50"
           disabled={busy}
           onClick={() => setEditing(true)}
         >

@@ -3,18 +3,9 @@ import { PanelLeftIcon, SquarePenIcon } from 'lucide-react';
 import type { DatasetSummary } from '../types';
 import { ConversationStatus } from './ConversationStatus';
 import { WORKSPACE_SIDEBAR_ID } from './WorkspaceSidebar';
-import type { AppPage } from './WorkspaceSidebar';
 import { Button } from './ui/button';
 
-const pageTitles: Record<AppPage, string> = {
-  welcome: '数据源',
-  datasets: '数据源',
-  analysis: '数据分析',
-  snippets: '洞察 Snippet',
-};
-
 type Props = {
-  page: AppPage;
   datasets: DatasetSummary[];
   activeDatasetId: string | null;
   showSidebarActions: boolean;
@@ -25,7 +16,6 @@ type Props = {
 };
 
 export function WorkspaceTitleBar({
-  page,
   datasets,
   activeDatasetId,
   showSidebarActions,
@@ -78,18 +68,16 @@ export function WorkspaceTitleBar({
           </Button>
         </div>
       </div>
-      <div className="flex h-full min-w-0 flex-1 items-center">
-        {conversationTitle === undefined ? (
-          <span className="truncate text-base text-muted-foreground">{pageTitles[page]}</span>
-        ) : (
-          <div className="flex min-w-0 items-center gap-1 px-2">
+      {(conversationTitle || activeConversationId) && (
+        <div className="flex h-full min-w-0 flex-1 items-center gap-1 px-2">
+          {conversationTitle && (
             <span className="min-w-0 truncate text-base font-semibold text-ink" title={conversationTitle}>
               {conversationTitle}
             </span>
-            <ConversationStatus ids={activeConversationId ? [activeConversationId] : []} />
-          </div>
-        )}
-      </div>
+          )}
+          {activeConversationId && <ConversationStatus ids={[activeConversationId]} />}
+        </div>
+      )}
     </header>
   );
 }

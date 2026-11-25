@@ -336,7 +336,7 @@ export function AnalyzeTool({
                   variant="ghost"
                   size="icon-sm"
                   aria-label="在右侧打开分析结果"
-                  className="ms-auto text-sidebar-muted"
+                  className="ms-auto text-black/50 dark:text-white/50"
                   onClick={() => onOpenPreview(query?.trim() || '分析结果')}
                 >
                   <SquareArrowOutUpRightIcon className="size-[14px]" aria-hidden />

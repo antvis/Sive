@@ -269,7 +269,7 @@ export function WorkspaceSidebar({
             >
               数据源
             </h2>
-            <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:12px] scrollbar-none">
+            <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:6px] scrollbar-none">
               {groups.map(({ dataset, conversations }) => {
                 const open = expanded[dataset.id] !== false;
                 const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
@@ -285,7 +285,7 @@ export function WorkspaceSidebar({
                       >
                         <span
                           className={clsx(
-                            'shrink-0 text-sidebar-muted motion-safe:transition-transform',
+                            'shrink-0 text-black/50 dark:text-white/50 motion-safe:transition-transform',
                             open && 'rotate-90',
                           )}
                         >
@@ -302,7 +302,7 @@ export function WorkspaceSidebar({
                         size="icon-sm"
                         aria-label={`在 ${dataset.name} 新建对话`}
                         title={`在 ${dataset.name} 新建对话`}
-                        className="text-sidebar-muted"
+                        className="text-black/50 dark:text-white/50"
                         onClick={() => createConversation(dataset.id)}
                       >
                         <SquarePenIcon className="size-[14px]" aria-hidden />
@@ -344,10 +344,11 @@ export function WorkspaceSidebar({
               size="icon-sm"
               aria-label="新建对话"
               title={initialDatasetId ? '新建对话' : '请先添加数据源'}
+              className="text-black/50 dark:text-white/50"
               disabled={!initialDatasetId}
               onClick={() => createConversation()}
             >
-              <SquarePenIcon className="size-[16px]" aria-hidden />
+              <SquarePenIcon className="size-[14px]" aria-hidden />
             </Button>
           </div>
           <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:2px] scrollbar-none">

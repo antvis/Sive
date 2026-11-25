@@ -66,21 +66,20 @@ export function AppShell({ page, activeDatasetId, renderAnalysis, children, ...s
     if (!sidebarCollapsed) closeSidebar();
   };
 
-  const conversationTitle =
-    hasAnalysis && !previewFullscreen
-      ? (sidebar.conversationsByDataset
-          .get(activeDatasetId ?? '')
-          ?.find((conversation) => conversation.id === sidebar.activeConversationId)?.title ?? '新对话')
-      : undefined;
+  const activeConversationId = hasAnalysis && !previewFullscreen ? sidebar.activeConversationId : null;
+  const conversationTitle = activeConversationId
+    ? sidebar.conversationsByDataset
+        .get(activeDatasetId ?? '')
+        ?.find((conversation) => conversation.id === activeConversationId)?.title
+    : undefined;
 
   const titleBar = (
     <WorkspaceTitleBar
-      page={page}
       datasets={sidebar.datasets}
       activeDatasetId={activeDatasetId}
       showSidebarActions={showSidebarActions}
       conversationTitle={conversationTitle}
-      activeConversationId={sidebar.activeConversationId}
+      activeConversationId={activeConversationId}
       onOpenSidebar={openSidebar}
       onConversationCreate={sidebar.onConversationCreate}
     />

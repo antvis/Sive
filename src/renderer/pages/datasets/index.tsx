@@ -134,7 +134,7 @@ function DatasetCard({
               size="icon-sm"
               aria-label={`重命名 ${dataset.name}`}
               title={`重命名 ${dataset.name}`}
-              className="text-sidebar-muted"
+              className="text-black/50 dark:text-white/50"
               onClick={(event) => {
                 event.stopPropagation();
                 renameCancelled.current = false;
@@ -149,7 +149,7 @@ function DatasetCard({
               size="icon-sm"
               aria-label={`删除 ${dataset.name}`}
               title={`删除 ${dataset.name}`}
-              className="text-sidebar-muted"
+              className="text-black/50 dark:text-white/50"
               onClick={(event) => {
                 event.stopPropagation();
                 setAction('delete');

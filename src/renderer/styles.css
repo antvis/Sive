@@ -107,7 +107,6 @@
   --color-sidebar-canvas: light-dark(#fcfcfc, #242424);
   --color-sidebar-ink: light-dark(#000000, #ffffff);
   --color-sidebar-text: var(--muted-foreground);
-  --color-sidebar-muted: light-dark(#00000080, #ffffff80);
   --color-sidebar-highlight: light-dark(#f2f2f2, #303030);
   --color-workspace-canvas: light-dark(#f1f1f1, #181818);
   --color-workspace-control: light-dark(#f2f2f2, #1b1b1b);
@@ -119,6 +118,7 @@
   --color-ink: var(--ink);
   --color-muted: light-dark(oklch(0.94 0 0), oklch(0.165 0 0));
   --color-muted-foreground: var(--muted-foreground);
+  --color-placeholder: color-mix(in oklab, var(--muted-foreground) 80%, transparent);
   --color-chat-foreground: light-dark(#000000e6, #ffffffeb);
   --color-chat-link: light-dark(#1470b4, #46a8f0);
   --color-line: var(--line);
@@ -277,6 +277,10 @@
 
   button {
     @apply [-webkit-app-region:no-drag] enabled:cursor-pointer disabled:cursor-not-allowed;
+  }
+
+  ::placeholder {
+    @apply text-placeholder;
   }
 
   :is(button, input, textarea, select, a[href], summary, [tabindex]):focus-visible {

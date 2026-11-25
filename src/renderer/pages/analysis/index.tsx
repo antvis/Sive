@@ -156,7 +156,7 @@ export function AnalysisPage({
                 size="icon-sm"
                 aria-label="展开右侧面板"
                 title="展开右侧面板"
-                className="text-sidebar-muted"
+                className="text-black/50 dark:text-white/50"
                 aria-controls={DATASET_PREVIEW_ID}
                 aria-expanded={false}
                 aria-keyshortcuts="Meta+Shift+B Control+Shift+B"

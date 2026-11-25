@@ -75,7 +75,10 @@ export function MultimodalInput({
           <Select value={mode} onValueChange={onModeChange} disabled={busy}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <SelectTrigger aria-label="分析方式" className="shrink-0">
+                <SelectTrigger
+                  aria-label="分析方式"
+                  className="shrink-0 border-0 font-normal text-muted-foreground/85 aria-expanded:text-muted-foreground/85"
+                >
                   <SelectValue />
                 </SelectTrigger>
               </TooltipTrigger>
@@ -102,7 +105,7 @@ export function MultimodalInput({
             <SelectTrigger
               aria-label="选择模型"
               title={provider?.model}
-              className="ml-auto"
+              className="ml-auto border-0 font-normal text-muted-foreground/85 aria-expanded:text-muted-foreground/85"
             >
               <SelectValue placeholder="选择模型">
                 {provider?.model}

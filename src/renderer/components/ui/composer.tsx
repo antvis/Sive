@@ -6,7 +6,7 @@ export function Composer({ className, ...props }: ComponentProps<typeof InputGro
   return (
     <InputGroup
       className={cn(
-        'gap-1.5 overflow-hidden rounded-[14px]! border-transparent bg-secondary p-1.5 transition-shadow duration-150 focus-within:border-transparent! focus-within:ring-1! focus-within:ring-focus/50! motion-reduce:transition-none! motion-reduce:**:transition-none!',
+        'gap-1.5 overflow-hidden rounded-[14px]! border-ink/10 bg-workspace-control-active p-1.5 shadow-xs transition-[border-color,box-shadow] duration-150 focus-within:ring-0! motion-reduce:transition-none! motion-reduce:**:transition-none!',
         className,
       )}
       {...props}

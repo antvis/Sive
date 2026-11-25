@@ -139,7 +139,7 @@ export function AnalysisSidePanel({
               size="icon-sm"
               aria-label="打开数据预览"
               title="打开数据预览"
-              className="text-sidebar-muted"
+              className="text-black/50 dark:text-white/50"
               onClick={onOpenDataset}
             >
               <Table2Icon className="size-[14px]" aria-hidden />
@@ -150,7 +150,7 @@ export function AnalysisSidePanel({
             size="icon-sm"
             aria-label={fullscreenLabel}
             title={fullscreen ? `${fullscreenLabel}（Esc）` : fullscreenLabel}
-            className="text-sidebar-muted"
+            className="text-black/50 dark:text-white/50"
             aria-pressed={fullscreen}
             onClick={toggleFullscreen}
           >
@@ -162,7 +162,7 @@ export function AnalysisSidePanel({
               size="icon-sm"
               aria-label="收起右侧面板"
               title="收起右侧面板"
-              className="text-sidebar-muted"
+              className="text-black/50 dark:text-white/50"
               aria-controls={DATASET_PREVIEW_ID}
               aria-expanded
               aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
