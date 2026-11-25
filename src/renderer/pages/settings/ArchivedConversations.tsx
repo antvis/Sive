@@ -8,9 +8,13 @@ import type { Conversation, DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
 import { Input } from '../../components/ui/input';
 
-type Props = { conversations: Conversation[]; datasets: DatasetSummary[] };
+type Props = {
+  conversations: Conversation[];
+  datasets: DatasetSummary[];
+  runningConversationIds: string[];
+};
 
-export function ArchivedConversations({ conversations, datasets }: Props) {
+export function ArchivedConversations({ conversations, datasets, runningConversationIds }: Props) {
   const [query, setQuery] = useState('');
   const [deleting, setDeleting] = useState<Conversation | null>(null);
   const [busy, setBusy] = useState(false);
@@ -86,9 +90,17 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`永久删除 ${conversation.title}`}
-                    title={`永久删除 ${conversation.title}`}
-                    disabled={busy}
+                    aria-label={
+                      runningConversationIds.includes(conversation.id)
+                        ? '分析仍在运行，请先恢复会话并停止任务'
+                        : `永久删除 ${conversation.title}`
+                    }
+                    title={
+                      runningConversationIds.includes(conversation.id)
+                        ? '分析仍在运行，请先恢复会话并停止任务'
+                        : `永久删除 ${conversation.title}`
+                    }
+                    disabled={busy || runningConversationIds.includes(conversation.id)}
                     onClick={() => setDeleting(conversation)}
                   >
                     <Trash2Icon className="size-[16px]" aria-hidden />

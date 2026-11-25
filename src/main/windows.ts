@@ -54,6 +54,10 @@ const windowDefinitions: Record<AppWindow, { options: BrowserWindowConstructorOp
 
 const windows = new Map<AppWindow, BrowserWindow>();
 
+export function getAppWindow(kind: AppWindow) {
+  return windows.get(kind);
+}
+
 export function isAppWindowOpen(kind: AppWindow) {
   return windows.has(kind);
 }

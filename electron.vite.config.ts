@@ -12,6 +12,7 @@ export default defineConfig(({ command }) => ({
     plugins: [
       {
         name: 'github-mcp-resources',
+        // Dev mode also builds main; only require bundled resources for production.
         apply: () => command === 'build',
         buildStart() {
           const root = resolve('resources/github-mcp');

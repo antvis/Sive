@@ -63,6 +63,10 @@ it('streams the analysis trace while the conversation title is generated in the 
     const analysisFinished = Promise.withResolvers<void>();
     vi.mocked(generateConversationTitle).mockReturnValue(generatedTitle.promise);
 
+    service.onChunk((_id, { chunk }) => {
+      chunks.push(chunk);
+      if (chunk === null) analysisFinished.resolve();
+    });
     const titleUpdate = service.start(
       {
         chatId: 'chat',
@@ -72,10 +76,6 @@ it('streams the analysis trace while the conversation title is generated in the 
       },
       { baseURL: 'https://example.com', model: 'test' },
       DEFAULT_PREFERENCES,
-      (chunk) => {
-        chunks.push(chunk);
-        if (chunk === null) analysisFinished.resolve();
-      },
     );
     await analysisFinished.promise;
     expect(chunks).toEqual([toolResult, reply, null]);

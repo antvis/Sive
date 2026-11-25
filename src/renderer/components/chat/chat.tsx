@@ -1,7 +1,7 @@
-import { useChat } from '@ai-sdk/react';
+import { Chat as AnalysisChat, useChat } from '@ai-sdk/react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { DataSourceLogo } from '../DataSourceLogo';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { TooltipProvider } from '../ui/tooltip';
 import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
-import { IpcChatTransport } from './ipc-chat-transport';
 import { useConversationRead } from '../../hooks/useConversationStatus';
+import { IpcChatTransport } from './ipc-chat-transport';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
@@ -27,6 +27,7 @@ type Props = {
   models: ModelProfile[];
   activeModelId: string;
   preferences: Preferences;
+  suggestions: { items: SuggestResult[]; loading: boolean; error: string };
 };
 
 export function Chat({
@@ -42,104 +43,80 @@ export function Chat({
   models,
   activeModelId,
   preferences,
+  suggestions,
 }: Props) {
   const { id: datasetId, name: datasetName } = dataset;
   const [question, setQuestion] = useState('');
-  const transport = useMemo(
-    () => new IpcChatTransport(onConversationChange, (cause) => toast.error(errorMessage(cause))),
-    [onConversationChange],
-  );
-  const {
-    messages,
-    setMessages,
-    sendMessage,
-    status,
-    error: chatError,
-  } = useChat<ChatMessage>({ id: chatId, transport });
-  const [historyLoading, setHistoryLoading] = useState(Boolean(conversationId));
-  const [loadedChatId, setLoadedChatId] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const activeProvider = models.find((model) => model.id === activeModelId);
-  const activeModel = activeProvider?.model ?? '';
+  const [existing] = useState(Boolean(conversationId));
+  const [history, setHistory] = useState<'loading' | 'ready' | 'error'>(existing ? 'loading' : 'ready');
+  const { chat, transport } = useMemo(() => {
+    const transport = new IpcChatTransport(onConversationChange, (messages) => {
+      chat.messages = messages;
+      setHistory('ready');
+    });
+    const chat = new AnalysisChat<ChatMessage>({
+      id: chatId,
+      transport,
+      onError: () => setHistory((current) => (current === 'loading' ? 'error' : current)),
+    });
+    return { chat, transport };
+  }, [chatId, onConversationChange]);
+  const { messages, sendMessage, status, error } = useChat({ chat });
+  const needsHistorySync = useRef(false);
 
+  const historyLoading = history === 'loading';
   const busy = status === 'submitted' || status === 'streaming';
-  const displayError = error || chatError?.message;
+  const displayError = error?.message || (!messages.length && suggestions.error) || undefined;
 
-  useConversationRead(chatId, visible && loadedChatId === chatId && !historyLoading && !busy);
+  useConversationRead(chatId, visible && history === 'ready' && !busy);
 
   useEffect(() => {
-    let live = true;
-    if (!conversationId) {
-      setLoadedChatId(chatId);
-      setHistoryLoading(false);
-    } else if (!busy) {
-      setLoadedChatId(null);
-      window.workbench
-        .analysisGetMessages(conversationId)
-        .then((history) => {
-          if (live) {
-            setMessages(history);
-            setLoadedChatId(chatId);
-          }
-        })
-        .catch((cause) => {
-          if (live) setError(errorMessage(cause));
-        })
-        .finally(() => {
-          if (live) setHistoryLoading(false);
-        });
-    }
+    const unsubscribe = window.workbench.analysisOnStatus((id, update) => {
+      // A request started in a detached view may still be preparing OAuth.
+      if (
+        id === chat.id &&
+        update.status === 'running' &&
+        (chat.status === 'ready' || chat.status === 'error')
+      )
+        chat.resumeStream();
+    });
+    if (existing) chat.resumeStream();
     return () => {
-      live = false;
+      unsubscribe();
+      // SDK cancellation only detaches this view; stopping the task is explicit.
+      chat.stop();
+      transport.close();
     };
-  }, [chatId, conversationId, busy, setMessages]);
+  }, [chat, transport, existing]);
 
   useEffect(() => {
-    let live = true;
-    if (!activeModelId) {
-      setSuggestionsLoading(false);
-      setSuggestions([]);
+    if (busy) {
+      needsHistorySync.current = true;
       return;
     }
-    setSuggestionsLoading(true);
-    setError('');
-    window.workbench
-      .datasetSuggest(datasetId)
-      .then((result) => {
-        if (live) setSuggestions(result);
-      })
-      .catch((cause) => {
-        if (live) setError(errorMessage(cause));
-      })
-      .finally(() => {
-        if (live) setSuggestionsLoading(false);
-      });
+    if (!needsHistorySync.current || !conversationId) return;
+    needsHistorySync.current = false;
+    let live = true;
+    window.workbench.analysisGetSession(conversationId).then(
+      (session) => {
+        // The SDK has drained the stream; replace partial output with persisted messages.
+        if (live && !session.stream) chat.messages = session.messages;
+      },
+      (cause) => {
+        if (live) toast.error(errorMessage(cause));
+      },
+    );
     return () => {
       live = false;
     };
-  }, [datasetId, activeModelId, activeModel]);
-
-  const changeDataset = (id: string) => {
-    setSuggestions([]);
-    setSuggestionsLoading(Boolean(activeModelId));
-    setError('');
-    onDatasetChange(id);
-  };
+  }, [busy, chat, conversationId]);
 
   const start = async ({ text }: PromptInputMessage) => {
     if (!text.trim() || !activeModelId || busy || historyLoading) return;
-    setError('');
     setQuestion('');
     await sendMessage(
       { text: text.trim(), metadata: { createdAt: new Date().toISOString() } },
-      {
-        body: {
-          datasetId,
-          strategy: preferences.strategy,
-        },
-      },
+      { body: { datasetId, strategy: preferences.strategy } },
     );
   };
 
@@ -164,22 +141,21 @@ export function Chat({
         aria-label="AI 对话"
       >
         <Messages
-          key={chatId}
           datasetName={datasetName}
           onOpenDatasetPreview={onOpenDatasetPreview}
           messages={messages}
           savedMessageIds={savedMessageIds}
           historyLoading={historyLoading}
           isStreaming={busy}
-          suggestions={suggestions}
-          suggestionsLoading={suggestionsLoading}
+          suggestions={suggestions.items}
+          suggestionsLoading={suggestions.loading}
           hasModel={Boolean(activeModelId)}
           error={displayError}
           onSuggestion={setQuestion}
         />
         <div className="mx-auto w-full max-w-3xl shrink-0 px-5 pt-3 pb-4">
           {!conversationId && (
-            <Select value={datasetId} onValueChange={changeDataset} disabled={busy}>
+            <Select value={datasetId} onValueChange={onDatasetChange} disabled={busy}>
               <SelectTrigger
                 aria-label="切换数据源"
                 title={datasetName}

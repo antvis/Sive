@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react';
+import type { AnalysisStatus } from '@shared/api';
 
 const CHANGED = 'sive:conversation-status';
 const running = new Set<string>();
@@ -11,18 +12,35 @@ function notify() {
 
 function subscribe(listener: () => void) {
   window.addEventListener(CHANGED, listener);
-  return () => window.removeEventListener(CHANGED, listener);
+  window.addEventListener('storage', listener);
+  return () => {
+    window.removeEventListener(CHANGED, listener);
+    window.removeEventListener('storage', listener);
+  };
 }
 
-export function startConversation(id: string) {
-  running.add(id);
-  clearConversationUnread(id);
-}
-
-export function finishConversation(id: string, resultId?: string) {
-  running.delete(id);
-  if (resultId) localStorage.setItem(unreadKey(id), resultId);
+export function syncRunningConversations(ids: string[]) {
+  if (ids.length === running.size && ids.every((id) => running.has(id))) return;
+  running.clear();
+  for (const id of ids) {
+    running.add(id);
+    localStorage.removeItem(unreadKey(id));
+  }
   notify();
+}
+
+export function updateConversationStatus(id: string, update: AnalysisStatus) {
+  if (update.status === 'running') {
+    if (running.has(id)) return;
+    running.add(id);
+    clearConversationUnread(id);
+  } else {
+    running.delete(id);
+    if (update.status !== 'stopped') {
+      localStorage.setItem(unreadKey(id), update.runId);
+    }
+    notify();
+  }
 }
 
 export function clearConversationUnread(id: string) {

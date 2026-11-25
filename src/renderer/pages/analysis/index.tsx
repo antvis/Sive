@@ -1,5 +1,5 @@
 import { PanelRightIcon } from 'lucide-react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Group, Panel, usePanelRef } from 'react-resizable-panels';
 import type { AnalysisFrameProps } from '../../components/AppShell';
 import { Chat } from '../../components/chat/chat';
@@ -9,8 +9,8 @@ import { Button } from '../../components/ui/button';
 import { usePanelCollapsePreview } from '../../hooks/usePanelCollapsePreview';
 import { usePanelToggleFocus } from '../../hooks/usePanelToggleFocus';
 import { ResizeHandle } from '../../components/ui/resize-handle';
-import type { DatasetSummary, ModelProfile, Preferences } from '../../types';
-import { readWidth, saveWidth } from '../../utils';
+import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
+import { errorMessage, readWidth, saveWidth } from '../../utils';
 import { AnalysisSidePanel, DATASET_PREVIEW_ID } from './AnalysisSidePanel';
 import { useAnalysisTabs } from './useAnalysisTabs';
 
@@ -64,6 +64,31 @@ export function AnalysisPage({
   const previewPanel = usePanelRef();
   const rememberToggleFocus = usePanelToggleFocus(workspace, DATASET_PREVIEW_ID, datasetCollapsed);
   const { activeTabId, tabs, selectTab, openDataset, openResult, closeTab } = useAnalysisTabs(chatId);
+  const [suggestions, setSuggestions] = useState({
+    items: [] as SuggestResult[],
+    loading: true,
+    error: '',
+  });
+  const activeModel = models.find((model) => model.id === activeModelId)?.model ?? '';
+
+  // Suggestions belong to the dataset and model, not to an individual conversation.
+  useEffect(() => {
+    let live = true;
+    setSuggestions({ items: [], loading: Boolean(activeModelId), error: '' });
+    if (!activeModelId) return;
+
+    window.workbench.datasetSuggest(dataset.id).then(
+      (items) => {
+        if (live) setSuggestions({ items, loading: false, error: '' });
+      },
+      (cause) => {
+        if (live) setSuggestions({ items: [], loading: false, error: errorMessage(cause) });
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [dataset.id, activeModelId, activeModel]);
 
   const changePreviewCollapsed = (collapsed: boolean, restoreFocus = false) => {
     rememberToggleFocus(restoreFocus);
@@ -185,6 +210,7 @@ export function AnalysisPage({
                 models={models}
                 activeModelId={activeModelId}
                 preferences={preferences}
+                suggestions={suggestions}
               />
             </ToolPreviewContext>
           </div>

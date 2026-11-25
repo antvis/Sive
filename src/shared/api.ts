@@ -119,6 +119,21 @@ export type Conversation = {
 
 export type ChatMessage = UIMessage<{ createdAt: string }>;
 
+export type AnalysisStatus = {
+  runId: string;
+  status: 'running' | 'completed' | 'failed' | 'stopped';
+};
+
+export type AnalysisChunk = {
+  runId: string;
+  sequence: number;
+  chunk: UIMessageChunk | null;
+};
+
+export type AnalysisReplay = { runId: string; chunks: UIMessageChunk[] };
+
+export type AnalysisSession = { messages: ChatMessage[]; stream: AnalysisReplay | null };
+
 export type DatasetSummary = {
   id: string;
   name: string;
@@ -158,6 +173,7 @@ export const analysisStartSchema = z.object({
 export type AnalysisStartInput = z.infer<typeof analysisStartSchema>;
 
 export type WorkspaceState = {
+  runningConversationIds: string[];
   conversations: Conversation[];
   archivedConversations: Conversation[];
   datasets: DatasetSummary[];
@@ -165,7 +181,6 @@ export type WorkspaceState = {
   models: ModelProfile[];
   activeModelId: string;
   preferences: Preferences;
-  revision: number;
 };
 
 export type WorkbenchApi = {
@@ -216,8 +231,9 @@ export type WorkbenchApi = {
   modelDelete(id: string): Promise<void>;
   analysisStart(input: AnalysisStartInput): Promise<void>;
   analysisCancel(conversationId: string): Promise<void>;
-  analysisGetMessages(conversationId: string): Promise<ChatMessage[]>;
-  analysisOnChunk(callback: (messageId: string, chunk: UIMessageChunk | null) => void): () => void;
+  analysisGetSession(conversationId: string): Promise<AnalysisSession>;
+  analysisOnChunk(callback: (conversationId: string, update: AnalysisChunk) => void): () => void;
+  analysisOnStatus(callback: (conversationId: string, update: AnalysisStatus) => void): () => void;
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;

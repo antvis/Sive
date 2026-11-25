@@ -1,8 +1,7 @@
 import '@sentry/electron/preload';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
-import type { UIMessageChunk } from 'ai';
-import type { ModelTestProgress, WorkbenchApi } from './api';
+import type { AnalysisChunk, AnalysisStatus, ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
   isMacOS: process.platform === 'darwin',
@@ -54,12 +53,18 @@ const api = {
   modelDelete: (id) => ipcRenderer.invoke('modelDelete', id),
   analysisStart: (input) => ipcRenderer.invoke('analysisStart', input),
   analysisCancel: (conversationId) => ipcRenderer.invoke('analysisCancel', conversationId),
-  analysisGetMessages: (conversationId) => ipcRenderer.invoke('analysisGetMessages', conversationId),
+  analysisGetSession: (conversationId) => ipcRenderer.invoke('analysisGetSession', conversationId),
   analysisOnChunk: (callback) => {
-    const listener = (_event: IpcRendererEvent, messageId: string, chunk: UIMessageChunk | null) =>
-      callback(messageId, chunk);
+    const listener = (_event: IpcRendererEvent, conversationId: string, update: AnalysisChunk) =>
+      callback(conversationId, update);
     ipcRenderer.on('analysis:chunk', listener);
     return () => ipcRenderer.removeListener('analysis:chunk', listener);
+  },
+  analysisOnStatus: (callback) => {
+    const listener = (_event: IpcRendererEvent, conversationId: string, update: AnalysisStatus) =>
+      callback(conversationId, update);
+    ipcRenderer.on('analysis:status', listener);
+    return () => ipcRenderer.removeListener('analysis:status', listener);
   },
   conversationRename: (id, title) => ipcRenderer.invoke('conversationRename', id, title),
   conversationArchive: (id) => ipcRenderer.invoke('conversationArchive', id),

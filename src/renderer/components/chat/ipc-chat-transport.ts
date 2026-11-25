@@ -1,18 +1,25 @@
 import type { ChatTransport, UIMessageChunk } from 'ai';
-import { analysisStartSchema } from '../../../shared/api';
-import type { ChatMessage } from '../../../shared/api';
-import { startConversation, finishConversation } from '../../hooks/useConversationStatus';
+import type { AnalysisChunk, AnalysisReplay, AnalysisStartInput, ChatMessage } from '../../../shared/api';
 
 export class IpcChatTransport implements ChatTransport<ChatMessage> {
-  private readonly stopByChat = new Map<string, () => void>();
+  readonly resumeStreamIsReplay = true;
+
+  private connections = new Set<() => void>();
+
+  private started?: Promise<unknown>;
 
   constructor(
     private onConversationChange: (id: string) => void,
-    private onError: (error: unknown) => void,
+    private onHistory: (messages: ChatMessage[]) => void,
   ) {}
 
-  stop(chatId: string) {
-    this.stopByChat.get(chatId)?.();
+  async stop(chatId: string) {
+    await this.started;
+    await window.workbench.analysisCancel(chatId);
+  }
+
+  close() {
+    for (const detach of this.connections) detach();
   }
 
   async sendMessages({
@@ -23,78 +30,89 @@ export class IpcChatTransport implements ChatTransport<ChatMessage> {
     trigger,
   }: Parameters<ChatTransport<ChatMessage>['sendMessages']>[0]) {
     if (trigger !== 'submit-message') throw new Error('暂不支持重新生成消息。');
-    const input = await analysisStartSchema.parseAsync({ ...body, chatId, message: messages.at(-1) });
-    abortSignal?.throwIfAborted();
-
-    let cancelStream = () => {};
-
-    return new ReadableStream<UIMessageChunk>({
-      start: (controller) => {
-        startConversation(chatId);
-        let finished = false;
-        let stopping = false;
-
-        const requestStop = () => {
-          if (stopping) return;
-          stopping = true;
-          started
-            .then(() => window.workbench.analysisCancel(chatId))
-            .catch((error) => {
-              stopping = false;
-              this.onError(error);
-            });
-        };
-
-        const cleanup = (resultId?: string) => {
-          finishConversation(chatId, resultId);
-          finished = true;
-          if (this.stopByChat.get(chatId) === requestStop) this.stopByChat.delete(chatId);
-          unsubscribe();
-          abortSignal?.removeEventListener('abort', abort);
-        };
-        cancelStream = () => {
-          if (finished) return;
-          cleanup();
-          requestStop();
-        };
-
-        const abort = () => {
-          if (finished) return;
-          cancelStream();
-          controller.close();
-        };
-        const unsubscribe = window.workbench.analysisOnChunk((messageId, chunk) => {
-          if (finished || messageId !== input.message.id) return;
-          if (chunk === null) {
-            cleanup(stopping ? undefined : input.message.id);
-            controller.close();
-          } else {
-            controller.enqueue(chunk);
-            if (chunk.type === 'error' || chunk.type === 'abort') {
-              cleanup(chunk.type === 'error' && !stopping ? input.message.id : undefined);
-              controller.close();
-            }
-          }
-        });
-        abortSignal?.addEventListener('abort', abort, { once: true });
-        const started = window.workbench.analysisStart(input);
-        this.stopByChat.set(chatId, requestStop);
-        started.then(
-          () => {
-            if (!abortSignal?.aborted) this.onConversationChange(chatId);
-          },
-          (error: unknown) => {
-            if (finished) return;
-            cleanup(input.message.id);
-            controller.error(error);
-          },
-        );
-      },
-      cancel: () => cancelStream(),
+    const connection = this.connect(chatId, abortSignal, async () => {
+      const input = { ...body, chatId, message: messages.at(-1) } as AnalysisStartInput;
+      await window.workbench.analysisStart(input);
+      // Register a successfully created conversation even if its view has detached.
+      this.onConversationChange(chatId);
+      return { stream: { runId: input.message.id, chunks: [] } };
     });
+    this.started = connection;
+    const stream = await connection;
+    return stream ?? new ReadableStream<UIMessageChunk>({ start: (controller) => controller.close() });
   }
 
-  async reconnectToStream() {
-    return null;
+  reconnectToStream({ chatId, abortSignal }: Parameters<ChatTransport<ChatMessage>['reconnectToStream']>[0]) {
+    return this.connect(chatId, abortSignal, () => window.workbench.analysisGetSession(chatId));
+  }
+
+  private async connect(
+    chatId: string,
+    signal: AbortSignal | undefined,
+    load: () => Promise<{ messages?: ChatMessage[]; stream: AnalysisReplay | null }>,
+  ): Promise<ReadableStream<UIMessageChunk> | null> {
+    signal?.throwIfAborted();
+    let active = true;
+    let ready = false;
+    let runId: string;
+    let sequence = 0;
+    const pending: AnalysisChunk[] = [];
+    let controller: ReadableStreamDefaultController<UIMessageChunk>;
+    const stream = new ReadableStream<UIMessageChunk>({
+      start: (value) => {
+        controller = value;
+      },
+      cancel: () => cleanup(),
+    });
+
+    const cleanup = () => {
+      if (!active) return;
+      active = false;
+      unsubscribe();
+      signal?.removeEventListener('abort', detach);
+      this.connections.delete(detach);
+    };
+
+    const detach = () => {
+      if (!active) return;
+      cleanup();
+      controller.close();
+    };
+
+    const accept = (update: AnalysisChunk) => {
+      if (!active || update.runId !== runId || update.sequence <= sequence) return;
+      sequence = update.sequence;
+      if (update.chunk === null) detach();
+      else controller.enqueue(update.chunk);
+    };
+    // Subscribe before requesting the replay. Sequence numbers remove overlap
+    // between the snapshot and events received while the IPC request is pending.
+    const unsubscribe = window.workbench.analysisOnChunk((id, update) => {
+      if (id !== chatId || !active) return;
+      if (ready) accept(update);
+      else pending.push(update);
+    });
+    this.connections.add(detach);
+    signal?.addEventListener('abort', detach, { once: true });
+
+    try {
+      const session = await load();
+      if (!active) return null;
+      if (session.messages) this.onHistory(session.messages);
+      if (!session.stream) {
+        detach();
+        return null;
+      }
+      runId = session.stream.runId;
+      for (const chunk of session.stream.chunks) controller!.enqueue(chunk);
+      sequence = session.stream.chunks.length;
+      ready = true;
+      for (const update of pending) accept(update);
+      pending.length = 0;
+      return stream;
+    } catch (error) {
+      detach();
+      throw error;
+    }
   }
 }

@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import type { WebContents } from 'electron';
+import { z } from 'zod';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
 import type { Services } from '../services';
@@ -20,6 +21,7 @@ import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
 import { getStorageInfo, systemOpen } from '../util/system';
 import { exportSnippet } from '../util/snippetExport';
+import { getAppWindow } from '../windows';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -27,15 +29,12 @@ export function registerIpc(
   services: Services,
   settingsWindow: { open: () => Promise<void>; close: (sender: WebContents) => void },
 ) {
-  let revision = 0;
-
   services.update.onUpdateAvailable(() => {
     const window = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
     if (window && !window.isDestroyed()) window.webContents.send('about:update-available');
   });
 
   const changed = () => {
-    revision += 1;
     for (const { webContents } of BrowserWindow.getAllWindows()) {
       if (!webContents.isDestroyed()) webContents.send(WORKSPACE_CHANGED_CHANNEL);
     }
@@ -44,9 +43,22 @@ export function registerIpc(
   ipcMain.handle('settingsOpen', () => settingsWindow.open());
   ipcMain.on('settingsClose', ({ sender }) => settingsWindow.close(sender));
 
+  services.analysis.onChunk((id, update) => {
+    const webContents = getAppWindow('workspace')?.webContents;
+    if (webContents && !webContents.isDestroyed()) webContents.send('analysis:chunk', id, update);
+  });
+
+  services.analysis.onStatus((id, update) => {
+    for (const { webContents } of BrowserWindow.getAllWindows()) {
+      if (!webContents.isDestroyed()) webContents.send('analysis:status', id, update);
+    }
+    changed();
+  });
+
   ipcMain.handle('workspaceGetState', () => {
     const preferences = services.settings.getPreferences();
     return {
+      runningConversationIds: services.analysis.getRunningConversationIds(),
       conversations: services.conversation.list(),
       archivedConversations: services.conversation.listArchived(),
       datasets: services.dataset.listSummaries(),
@@ -54,7 +66,6 @@ export function registerIpc(
       models: services.model.list(),
       activeModelId: services.settings.getActiveModel().providerId,
       preferences,
-      revision,
     };
   });
 
@@ -154,8 +165,13 @@ export function registerIpc(
     changed();
   });
 
-  ipcMain.handle('datasetDelete', (_event, id: string) => {
-    services.dataset.remove(id);
+  ipcMain.handle('datasetDelete', async (_event, id: string) => {
+    await services.analysis.beginDatasetUpdate(id);
+    try {
+      services.dataset.remove(id);
+    } finally {
+      services.analysis.endDatasetUpdate(id);
+    }
     changed();
   });
 
@@ -180,34 +196,31 @@ export function registerIpc(
   });
 
   ipcMain.handle('conversationPurge', (_event, ids: string[]) => {
+    ids = z.array(z.string().min(1)).parse(ids);
+    services.analysis.assertNotRunning(ids);
     services.conversation.purge(ids);
     changed();
   });
 
-  ipcMain.handle('analysisStart', async (event, input: AnalysisStartInput) => {
-    const { sender } = event;
+  ipcMain.handle('analysisStart', async (_event, input: AnalysisStartInput) => {
     input = await analysisStartSchema.parseAsync(input);
     await services.dataset.prepareOAuth(input.datasetId);
     const titleUpdate = services.analysis.start(
       input,
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
-      (chunk) => {
-        if (!sender.isDestroyed()) sender.send('analysis:chunk', input.message.id, chunk);
-      },
     );
-    changed();
     void titleUpdate?.then((renamed) => {
       if (renamed) changed();
     });
   });
 
   ipcMain.handle('analysisCancel', (_event, conversationId: string) =>
-    services.analysis.cancel(conversationId),
+    services.analysis.cancel(z.string().min(1).parse(conversationId)),
   );
 
-  ipcMain.handle('analysisGetMessages', (_event, conversationId: string) =>
-    services.analysis.getMessages(conversationId),
+  ipcMain.handle('analysisGetSession', (_event, conversationId: string) =>
+    services.analysis.getSession(z.string().min(1).parse(conversationId)),
   );
 
   ipcMain.handle('snippetSave', (_event, input: SnippetSaveInput) => {
