@@ -10,6 +10,9 @@ resources/github-mcp/
 coverage/
 *.tsbuildinfo
 
+# Local component preview
+/src/renderer/.debug/
+
 # Local configuration and secrets
 .env*
 !.env.example
