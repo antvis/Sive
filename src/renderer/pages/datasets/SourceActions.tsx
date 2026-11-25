@@ -27,7 +27,7 @@ export function SourceActions({ datasetId, sourceType }: { datasetId: string; so
   };
 
   return (
-    <div className="flex shrink-0" onClick={(event) => event.stopPropagation()} aria-busy={busy}>
+    <div className="flex shrink-0" aria-busy={busy}>
       <Button
         variant="ghost"
         size="icon-sm"

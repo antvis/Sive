@@ -211,7 +211,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="m-0 truncate text-base font-semibold">{model.name}</h2>
                 {activeModelId === model.id && (
-                  <Badge variant="secondary">默认服务</Badge>
+                  <Badge className="bg-accent text-accent-foreground">默认服务</Badge>
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 max-sm:opacity-100">

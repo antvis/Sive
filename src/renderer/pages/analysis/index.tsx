@@ -172,7 +172,10 @@ export function AnalysisPage({
                 key={draftId}
                 dataset={dataset}
                 datasets={datasets}
-                onDatasetChange={onDatasetChange}
+                onDatasetChange={(id) => {
+                  onDatasetChange(id);
+                  showDataset();
+                }}
                 onOpenDatasetPreview={showDataset}
                 chatId={chatId}
                 conversationId={conversationId}
