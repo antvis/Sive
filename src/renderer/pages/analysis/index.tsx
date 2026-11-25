@@ -124,6 +124,27 @@ export function AnalysisPage({
     openSidePanel();
   };
 
+  const toolbar = !fullscreen && (
+    <>
+      {titleBar}
+      {datasetCollapsed && (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="展开右侧面板"
+          title="展开右侧面板"
+          className="rounded-full text-muted-foreground"
+          aria-controls={DATASET_PREVIEW_ID}
+          aria-expanded={false}
+          aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
+          onClick={togglePreview}
+        >
+          <PanelRightIcon className="size-[16px]" aria-hidden />
+        </Button>
+      )}
+    </>
+  );
+
   return (
     <Group
       orientation="horizontal"
@@ -142,31 +163,11 @@ export function AnalysisPage({
         style={{ overflow: 'hidden' }}
       >
         <section
-          className={
-            'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] bg-surface motion-safe:transition-opacity motion-safe:duration-150 dark:bg-background'
-          }
+          className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl bg-background motion-safe:transition-opacity motion-safe:duration-150"
           aria-label="对话面板"
           inert={fullscreen}
         >
-          <div className="relative top-(--workspace-titlebar-row-offset) flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]">
-            {!fullscreen && titleBar}
-            {datasetCollapsed && !fullscreen && (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="展开右侧面板"
-                title="展开右侧面板"
-                className="text-black/50 dark:text-white/50"
-                aria-controls={DATASET_PREVIEW_ID}
-                aria-expanded={false}
-                aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
-                onClick={togglePreview}
-              >
-                <PanelRightIcon className="size-[16px]" aria-hidden />
-              </Button>
-            )}
-          </div>
-          <div className={'min-h-0 min-w-0 flex-1 overflow-hidden'}>
+          <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
             <ToolPreviewContext value={showResult}>
               <Chat
                 key={draftId}
@@ -176,7 +177,7 @@ export function AnalysisPage({
                   onDatasetChange(id);
                   showDataset();
                 }}
-                onOpenDatasetPreview={showDataset}
+                toolbar={toolbar}
                 chatId={chatId}
                 conversationId={conversationId}
                 visible={!fullscreen}

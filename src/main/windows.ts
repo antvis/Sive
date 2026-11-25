@@ -87,6 +87,15 @@ export async function openAppWindow(kind: AppWindow) {
   window.once('ready-to-show', () => window.show());
   window.once('closed', () => windows.delete(kind));
 
+  const { webContents } = window;
+
+  const sendFullscreen = (fullscreen: boolean) => {
+    if (!webContents.isDestroyed()) webContents.send('window:fullscreen-changed', fullscreen);
+  };
+
+  window.on('enter-full-screen', () => sendFullscreen(true));
+  window.on('leave-full-screen', () => sendFullscreen(false));
+
   try {
     await loadRenderer(window, hash);
   } catch (cause) {

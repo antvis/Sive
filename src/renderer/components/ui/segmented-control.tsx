@@ -27,13 +27,13 @@ export function SegmentedControl<Value extends string>({
         const option = options.find(({ value }) => value === next);
         if (option) onValueChange(option.value);
       }}
-      className="flex flex-wrap gap-0.5 rounded-xl border border-ink/10 bg-workspace-control-active p-0.5"
+      className="flex flex-wrap gap-0.5 rounded-xl bg-workspace-control p-0.5"
     >
       {options.map(({ value, label }) => (
         <RadioGroup.Item
           key={value}
           value={value}
-          className="flex min-h-8 items-center justify-center gap-1.5 rounded-[9px] px-2.5 py-1 text-sm text-muted-foreground -outline-offset-1 transition-colors hover:text-ink data-[state=checked]:bg-selected data-[state=checked]:text-selected-foreground disabled:opacity-45"
+          className="flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-sm text-muted-foreground -outline-offset-1 transition-colors hover:text-ink data-[state=checked]:bg-selected data-[state=checked]:text-selected-foreground disabled:opacity-45"
         >
           {label}
         </RadioGroup.Item>

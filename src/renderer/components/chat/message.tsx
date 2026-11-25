@@ -112,7 +112,7 @@ export function PreviewMessage({
           className={cn(
             'leading-[1.6] text-chat-foreground',
             isUser
-              ? 'w-fit max-w-[min(80%,56ch)] overflow-hidden break-words rounded-2xl rounded-br-lg bg-secondary px-3.5 py-2'
+              ? 'w-fit max-w-[min(88%,56ch)] overflow-hidden wrap-anywhere rounded-2xl rounded-br-sm bg-workspace-control px-4 py-2.5'
               : 'min-w-0 flex-1',
           )}
         >

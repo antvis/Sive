@@ -1,57 +1,41 @@
 import type { ChatMessage } from '@shared/api';
-import { ArrowUpRightIcon, ChartColumnIcon, LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import { useMemo } from 'react';
-import type { SuggestResult } from '../../types';
 import {
   Conversation,
   ConversationContent,
-  ConversationEmptyState,
   ConversationScrollButton,
 } from '../ai-elements/conversation';
-import { Suggestion, Suggestions } from '../ai-elements/suggestion';
-import { Badge } from '../ui/badge';
 import { isVisibleAssistantPart, PreviewMessage } from './message';
 import { getMessagesForDisplay } from './util';
 
 type Props = {
-  datasetName: string;
-  onOpenDatasetPreview: () => void;
   messages: ChatMessage[];
   savedMessageIds: string[];
   historyLoading: boolean;
   isStreaming: boolean;
-  suggestions: SuggestResult[];
-  suggestionsLoading: boolean;
-  hasModel: boolean;
   error?: string;
-  onSuggestion: (value: string) => void;
 };
 
 export function Messages({
-  datasetName,
-  onOpenDatasetPreview,
   messages,
   savedMessageIds,
   historyLoading,
   isStreaming,
-  suggestions,
-  suggestionsLoading,
-  hasModel,
   error,
-  onSuggestion,
 }: Props) {
   const latestMessage = messages.at(-1);
   const displayMessages = useMemo(() => getMessagesForDisplay(messages), [messages]);
 
   return (
     <Conversation className="min-h-0 touch-pan-y">
-      <ConversationContent className="mx-auto min-h-full w-full min-w-0 max-w-3xl gap-6 px-5 pt-6 pb-8">
+      <ConversationContent className="mx-auto min-h-full w-full min-w-0 max-w-3xl gap-6 px-4 pt-6 pb-8">
         {historyLoading ? (
           <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
             <LoaderCircleIcon className="size-4 animate-spin" aria-hidden="true" />
             正在加载会话…
           </p>
-        ) : messages.length ? (
+        ) : (
           displayMessages.map((message) => (
             <PreviewMessage
               key={message.id}
@@ -60,52 +44,6 @@ export function Messages({
               isStreaming={isStreaming && message.id === latestMessage?.id}
             />
           ))
-        ) : (
-          <>
-            <ConversationEmptyState
-              className="flex-1 items-start p-0 py-8 text-left"
-              title={
-                <span className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1.5">
-                  向
-                  <Badge
-                    asChild
-                    variant="outline"
-                    className="h-auto max-w-full min-w-0 rounded-xl px-3 py-1.5 text-lg shadow-xs hover:bg-muted active:bg-secondary motion-safe:active:scale-[0.97] motion-reduce:transition-none [&>svg]:size-4!"
-                  >
-                    <button
-                      type="button"
-                      title={datasetName}
-                      aria-label={`预览数据源 ${datasetName}`}
-                      onClick={onOpenDatasetPreview}
-                    >
-                      <ChartColumnIcon className="shrink-0" aria-hidden />
-                      <span className="min-w-0 text-left wrap-anywhere whitespace-normal">{datasetName}</span>
-                    </button>
-                  </Badge>
-                  提问
-                </span>
-              }
-              description={hasModel ? '选择推荐问题，或输入你关心的问题。' : '请先在设置中配置默认模型服务。'}
-            />
-            {!suggestionsLoading && suggestions.length > 0 && (
-              <Suggestions className="w-full flex-col items-stretch gap-2">
-                {suggestions.map((suggestion) => (
-                  <Suggestion
-                    key={suggestion.query}
-                    suggestion={suggestion.query}
-                    onClick={onSuggestion}
-                    className="h-auto min-h-10 justify-between gap-3 px-4 py-3 text-left text-sm leading-normal font-light whitespace-normal text-foreground shadow-none"
-                  >
-                    <span>{suggestion.query}</span>
-                    <ArrowUpRightIcon
-                      className="size-3.5 shrink-0 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                  </Suggestion>
-                ))}
-              </Suggestions>
-            )}
-          </>
         )}
         {isStreaming &&
           (latestMessage?.role !== 'assistant' || !latestMessage.parts.some(isVisibleAssistantPart)) && (

@@ -102,7 +102,7 @@ export function AnalysisSidePanel({
         ref={card}
         id={DATASET_PREVIEW_ID}
         className={clsx(
-          'flex h-full min-h-0 w-full min-w-0 flex-col justify-self-end overflow-clip rounded-[16px] bg-preview-surface motion-safe:transition-opacity motion-safe:duration-150',
+          'flex h-full min-h-0 w-full min-w-0 flex-col justify-self-end overflow-clip rounded-2xl bg-preview-surface motion-safe:transition-opacity motion-safe:duration-150',
           collapsed && !fullscreen && 'opacity-0',
           fullscreen ? 'fixed inset-y-0 right-0 z-40 rounded-none!' : 'relative z-10',
         )}
@@ -113,7 +113,7 @@ export function AnalysisSidePanel({
       >
         <div
           className={clsx(
-            'flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px] [-webkit-app-region:drag]',
+            'mx-px flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-2 [-webkit-app-region:drag]',
             fullscreen ? 'ps-(--window-titlebar-padding)' : 'ps-[8px]',
           )}
         >
@@ -139,7 +139,7 @@ export function AnalysisSidePanel({
               size="icon-sm"
               aria-label="打开数据预览"
               title="打开数据预览"
-              className="text-black/50 dark:text-white/50"
+              className="text-muted-foreground"
               onClick={onOpenDataset}
             >
               <Table2Icon className="size-[14px]" aria-hidden />
@@ -150,7 +150,7 @@ export function AnalysisSidePanel({
             size="icon-sm"
             aria-label={fullscreenLabel}
             title={fullscreen ? `${fullscreenLabel}（Esc）` : fullscreenLabel}
-            className="text-black/50 dark:text-white/50"
+            className="text-muted-foreground"
             aria-pressed={fullscreen}
             onClick={toggleFullscreen}
           >
@@ -162,7 +162,7 @@ export function AnalysisSidePanel({
               size="icon-sm"
               aria-label="收起右侧面板"
               title="收起右侧面板"
-              className="text-black/50 dark:text-white/50"
+              className="text-muted-foreground"
               aria-controls={DATASET_PREVIEW_ID}
               aria-expanded
               aria-keyshortcuts="Meta+Shift+B Control+Shift+B"

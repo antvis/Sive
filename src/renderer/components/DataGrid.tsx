@@ -65,12 +65,12 @@ export function DataGrid({
                 <th
                   key={column.name}
                   scope="col"
-                  className="relative border-b border-ink/10 px-4 py-2 text-left font-medium text-muted-foreground"
+                  className="relative border-b border-line px-4 py-2 text-left font-medium text-muted-foreground"
                   aria-sort={sorted ? (sorted.descending ? 'descending' : 'ascending') : 'none'}
                 >
                   <button
                     type="button"
-                    className="group/sort flex w-full items-center gap-2 rounded-sm text-left hover:text-ink focus-visible:text-ink"
+                    className="group/sort flex w-full items-center gap-2 rounded-sm text-left hover:text-accent focus-visible:text-accent"
                     aria-label={`排序：${column.name}`}
                     title={`${column.name}（仅排序当前页）`}
                     onClick={() =>

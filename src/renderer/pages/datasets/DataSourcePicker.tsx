@@ -1,57 +1,49 @@
-import { DatabaseIcon, FilesIcon, LayersIcon } from 'lucide-react';
+import { ChevronRightIcon } from 'lucide-react';
 import { useState } from 'react';
-import type { CSSProperties } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { useImportLocal } from '../../hooks/useImportLocal';
 import { DATA_SOURCE_GROUPS } from '@shared/dataSource';
 import type { DatasetSource, DatasetSourceAction } from '@shared/dataSource';
 import * as dialogs from './datasetDialogs';
 
-const groupIcons = { Database: DatabaseIcon, Files: FilesIcon, Stack: LayersIcon };
+const groupIllustrations = {
+  Database: './illustrations/source-databases-ceramic.png',
+  Files: './illustrations/source-files-ceramic.png',
+  Stack: './illustrations/source-saas-ceramic.png',
+};
 
-function SourceCard({
+function SourceOption({
   source,
   actionLabel,
+  status,
   disabled,
   onSelect,
 }: {
-  source: Pick<DatasetSource, 'type' | 'label' | 'description' | 'color'>;
+  source: Pick<DatasetSource, 'type' | 'label' | 'description'>;
   actionLabel: string;
+  status?: string;
   disabled: boolean;
   onSelect: () => void;
 }) {
-  const { label: name, description, color } = source;
+  const { label, description } = source;
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onSelect}
-      aria-label={`${name}：${description}。${actionLabel}`}
-      className="group relative grid h-28 w-full min-w-0 rounded-[14px] border bg-surface px-4 py-3 text-left text-ink shadow-[0_2px_4px] shadow-ink/3 transition-[border-color,box-shadow] hover:border-[var(--source-color)] hover:shadow-[0_4px_12px] disabled:opacity-60"
-      style={{ '--source-color': color } as CSSProperties}
+      aria-label={`${label}：${description}。${status ?? actionLabel}`}
+      className="group flex min-h-16 w-full min-w-0 items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-foreground transition-colors enabled:hover:bg-selected disabled:opacity-55"
     >
-      <span
-        aria-hidden
-        className="[grid-area:1/1] flex flex-col items-center justify-center gap-1 group-hover:invisible group-focus-visible:invisible"
-      >
-        <span
-          className="grid size-9 shrink-0 place-items-center rounded-[10px]"
-          style={{ backgroundColor: `${color}14` }}
-        >
-          <DataSourceLogo type={source.type} size={24} />
-        </span>
-        <strong className="text-base leading-6 font-normal wrap-anywhere">{name}</strong>
+      <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface">
+        <DataSourceLogo type={source.type} size={22} />
       </span>
-      <span
-        aria-hidden
-        className="invisible [grid-area:1/1] flex flex-col items-center justify-center gap-1 text-center group-hover:visible group-focus-visible:visible"
-      >
-        <strong className="text-base leading-6 font-normal wrap-anywhere">{name}</strong>
-        <small className="text-xs text-muted-foreground">{description}</small>
-        <span className="mt-0.5 text-xs" style={{ color }}>
-          {actionLabel}
-        </span>
+      <span aria-hidden className="grid min-w-0 flex-1 gap-1">
+        <strong className="text-base leading-tight font-semibold wrap-anywhere">{label}</strong>
+        <small className="text-sm leading-snug text-muted-foreground wrap-anywhere">
+          {status ?? description}
+        </small>
       </span>
+      <ChevronRightIcon size={15} className="shrink-0 text-muted-foreground group-hover:text-ink" aria-hidden />
     </button>
   );
 }
@@ -88,35 +80,43 @@ export function DataSourcePicker() {
 
   return (
     <>
-      <div className="my-8 grid gap-8" aria-busy={importing}>
-        {DATA_SOURCE_GROUPS.map(({ title, icon, sources }) => {
-          const GroupIcon = groupIcons[icon];
-          return (
-            <section key={title} aria-label={title}>
-              <h2 className="mt-0 mr-0 mb-3.5 ml-0 flex items-center gap-2 text-lg font-normal tracking-[0.01em]">
-                <GroupIcon size={18} className="text-muted-foreground" aria-hidden />
+      <div
+        data-source-picker
+        className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] items-start gap-6"
+        aria-busy={importing}
+      >
+        {DATA_SOURCE_GROUPS.map(({ title, icon, sources }) => (
+          <section
+            key={icon}
+            aria-label={title}
+            className="min-w-0 rounded-3xl bg-page px-4 pt-3 pb-4 shadow-card transition-[box-shadow,translate] hover:shadow-card-raised motion-safe:hover:-translate-y-0.5"
+          >
+            <div className="relative isolate flex h-32 items-end overflow-hidden rounded-2xl bg-surface px-3.5 pb-3.5">
+              <img
+                src={groupIllustrations[icon]}
+                alt=""
+                decoding="async"
+                className="pointer-events-none absolute end-2 top-1/2 -z-10 h-32 w-[48%] -translate-y-1/2 object-contain object-right"
+              />
+              <h2 className="relative max-w-[48%] text-xl leading-tight font-semibold tracking-tight text-foreground wrap-anywhere">
                 {title}
               </h2>
-              <div className="grid grid-cols-[repeat(auto-fill,min(200px,100%))] gap-4">
-                {sources.map((source) => (
-                  <SourceCard
-                    key={source.type}
+            </div>
+            <ul className="mt-3 grid gap-1.5">
+              {sources.map((source) => (
+                <li key={source.type} className="min-w-0">
+                  <SourceOption
                     source={source}
+                    actionLabel={source.actionLabel}
+                    status={!source.enable ? '待接入' : importingType === source.type ? '正在导入…' : undefined}
                     disabled={!source.enable || importing}
-                    actionLabel={
-                      !source.enable
-                        ? '待接入'
-                        : importingType === source.type
-                          ? '正在导入…'
-                          : source.actionLabel
-                    }
                     onSelect={() => void selectSource(source)}
                   />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
       {Dialog && <Dialog onClose={() => setConnection(null)} />}
     </>

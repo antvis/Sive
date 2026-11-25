@@ -1,6 +1,6 @@
 import type { ChatStatus } from 'ai';
-import { ArrowUpIcon, RouteIcon, ZapIcon } from 'lucide-react';
-import { useRef } from 'react';
+import { ArrowUpIcon, CpuIcon, RouteIcon, ZapIcon } from 'lucide-react';
+import type { RefObject } from 'react';
 import { toast } from 'sonner';
 import type { ModelProfile } from '../../types';
 import { ComposerFooter } from '../ui/composer';
@@ -14,6 +14,7 @@ import {
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
 
 type Props = {
+  inputRef: RefObject<HTMLTextAreaElement | null>;
   value: string;
   onChange: (value: string) => void;
   onSubmit: (message: PromptInputMessage) => Promise<void>;
@@ -30,6 +31,7 @@ type Props = {
 const modelValue = (providerId: string, model: string) => JSON.stringify([providerId, model]);
 
 export function MultimodalInput({
+  inputRef,
   value,
   onChange,
   onSubmit,
@@ -44,7 +46,6 @@ export function MultimodalInput({
 }: Props) {
   const provider = models.find((model) => model.id === activeModelId);
   const busy = status === 'submitted' || status === 'streaming';
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const selectedModel = provider ? modelValue(provider.id, provider.model) : '';
 
   const focusInput = (event: Event) => {
@@ -64,6 +65,7 @@ export function MultimodalInput({
       onError={() => toast.error('当前对话仅支持文字提问。')}
     >
       <PromptInputTextarea
+        className="min-h-14 px-2 py-2 leading-normal in-data-conversation-draft:min-h-16"
         ref={inputRef}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -77,7 +79,7 @@ export function MultimodalInput({
               <TooltipTrigger asChild>
                 <SelectTrigger
                   aria-label="分析方式"
-                  className="shrink-0 border-0 font-normal text-muted-foreground/85 aria-expanded:text-muted-foreground/85"
+                  className="h-7 shrink-0 rounded-full border-0 bg-workspace-control px-2.5 font-normal text-muted-foreground hover:text-foreground"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -105,13 +107,14 @@ export function MultimodalInput({
             <SelectTrigger
               aria-label="选择模型"
               title={provider?.model}
-              className="ml-auto border-0 font-normal text-muted-foreground/85 aria-expanded:text-muted-foreground/85"
+              className="ml-auto h-7 min-w-0 justify-start rounded-full border-0 bg-transparent px-2 font-normal text-muted-foreground hover:text-foreground"
             >
+              <CpuIcon aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
               <SelectValue placeholder="选择模型">
                 {provider?.model}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent side="top" onCloseAutoFocus={focusInput}>
+            <SelectContent side="top" align="end" onCloseAutoFocus={focusInput}>
               {models.flatMap((model) =>
                 model.modelIds.map((id) => (
                   <SelectItem key={modelValue(model.id, id)} value={modelValue(model.id, id)}>
@@ -123,6 +126,7 @@ export function MultimodalInput({
           </Select>
         </div>
         <PromptInputSubmit
+          className="size-8 rounded-full in-data-conversation-draft:enabled:bg-[light-dark(#1768d4,#8bbcff)] in-data-conversation-draft:enabled:text-[light-dark(#fff,#12233a)] in-data-conversation-draft:enabled:hover:bg-[light-dark(#0d55b8,#a7ceff)]"
           status={status}
           onStop={onStop}
           aria-label={busy ? '停止分析' : '发送问题'}

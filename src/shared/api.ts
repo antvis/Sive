@@ -170,6 +170,8 @@ export type WorkspaceState = {
 
 export type WorkbenchApi = {
   isMacOS: boolean;
+  windowIsFullscreen(): Promise<boolean>;
+  windowOnFullscreenChange(callback: (fullscreen: boolean) => void): () => void;
   workspaceGetState(): Promise<WorkspaceState>;
   workspaceOnChange(callback: () => void): () => void;
   datasetSelectLocal(

@@ -9,7 +9,7 @@ import {
   SettingsIcon,
   SquarePenIcon,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
@@ -176,6 +176,8 @@ export function WorkspaceSidebar({
   const initialDatasetId = activeDatasetId ?? datasets[0]?.id;
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [recentSelection, setRecentSelection] = useState<string | null>(null);
+  const [windowFullscreen, setWindowFullscreen] = useState(false);
+  const isMacOS = window.workbench.isMacOS;
   const groups = datasets.flatMap((dataset) => {
     const conversations = conversationsByDataset.get(dataset.id);
     return conversations?.length ? [{ dataset, conversations }] : [];
@@ -183,6 +185,25 @@ export function WorkspaceSidebar({
   const activeInRecent =
     recentSelection === activeConversationId &&
     recentConversations.some((conversation) => conversation.id === activeConversationId);
+
+  useEffect(() => {
+    let awaitingInitialState = true;
+    const unsubscribe = window.workbench.windowOnFullscreenChange((fullscreen) => {
+      awaitingInitialState = false;
+      setWindowFullscreen(fullscreen);
+    });
+    void window.workbench
+      .windowIsFullscreen()
+      .then((fullscreen) => {
+        if (awaitingInitialState) setWindowFullscreen(fullscreen);
+      })
+      .catch((cause) => console.error('读取窗口全屏状态失败', cause));
+
+    return () => {
+      awaitingInitialState = false;
+      unsubscribe();
+    };
+  }, []);
 
   const createConversation = (datasetId = initialDatasetId) => {
     if (!datasetId) return;
@@ -195,30 +216,35 @@ export function WorkspaceSidebar({
   return (
     <aside
       id={WORKSPACE_SIDEBAR_ID}
-      className="flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-[16px] bg-sidebar-canvas pb-[8px] text-base text-sidebar-ink"
+      className="flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-2xl bg-sidebar-canvas pb-3 text-base text-sidebar-ink"
       aria-label="工作台侧边栏"
       inert={inert}
     >
       <header
         className={clsx(
           'relative shrink-0 [-webkit-app-region:drag]',
-          window.workbench.isMacOS
-            ? 'pt-[max(var(--workspace-sidebar-titlebar-offset),calc(var(--workspace-titlebar-height)-var(--workspace-gutter)))]'
+          isMacOS
+            ? 'pt-[calc(var(--workspace-titlebar-height)-var(--workspace-gutter))]'
             : 'pt-(--workspace-sidebar-titlebar-offset)',
         )}
       >
-        <div className="@container flex h-(--workspace-titlebar-height) items-center ps-[16px] pe-[44px]">
-          <div className="flex items-center">
-            <img
-              className="h-6 w-0 shrink-0 object-contain opacity-0 motion-safe:transition-[width,margin-inline-end,opacity] motion-safe:duration-150 @min-[64px]:me-1.5 @min-[64px]:w-6 @min-[64px]:opacity-100 dark:invert"
-              src="./sive.svg"
-              alt=""
-            />
-            <span className="truncate text-xl text-sidebar-ink">Sive</span>
-          </div>
-        </div>
-        <div className="absolute end-[8px] top-(--workspace-titlebar-center) flex -translate-y-1/2">
+        <div className="flex h-(--workspace-titlebar-height) items-center gap-2 ps-4 pe-[8px]">
+          <img
+            className="h-[26px] w-auto shrink-0 dark:invert"
+            src="./sive-wordmark.png?v=medium-spaced"
+            alt="Sive"
+            width={327}
+            height={104}
+          />
           <Button
+            className={clsx(
+              isMacOS
+                ? [
+                    'absolute top-[calc(var(--workspace-titlebar-height)/2-var(--workspace-gutter))] -translate-y-1/2',
+                    windowFullscreen ? 'start-[8px]' : 'end-[8px]',
+                  ]
+                : windowFullscreen ? 'order-first' : 'ms-auto',
+            )}
             variant="ghost"
             size="icon-sm"
             aria-label="收起侧边栏"
@@ -231,12 +257,11 @@ export function WorkspaceSidebar({
           </Button>
         </div>
       </header>
-      <p className="mt-1 mb-5 shrink-0 px-[16px] text-base text-muted-foreground">
-        See it Live, Share it Real.
-      </p>
-      <nav className="mx-[8px] [--sidebar-row-height:32px]" aria-label="工作台">
-        <SidebarList>
+      <nav className="mx-2.5 mt-3" aria-label="工作台">
+        <SidebarList className="[--sidebar-row-gap:0.15em] [--sidebar-row-height:auto] [&_[data-slot=sidebar-button]]:py-[0.45em]">
           <SidebarButton
+            aria-current={(page === 'analysis' && !activeConversationId) || undefined}
+            className="[&[aria-current=true]]:bg-transparent [&[aria-current=true]]:text-sidebar-text aria-[current=true]:font-normal"
             disabled={!initialDatasetId}
             title={initialDatasetId ? '新建分析' : '请先添加数据源'}
             onClick={() => createConversation()}
@@ -260,7 +285,7 @@ export function WorkspaceSidebar({
           </SidebarButton>
         </SidebarList>
       </nav>
-      <nav className="mx-[8px] mt-[20px] flex min-h-0 flex-1 flex-col gap-[20px]" aria-label="分析历史">
+      <nav className="mx-2.5 mt-6 flex min-h-0 flex-1 flex-col gap-4" aria-label="分析历史">
         {groups.length > 0 && (
           <section className="flex max-h-1/2 min-h-0 flex-col" aria-labelledby="sidebar-datasets-heading">
             <h2
@@ -284,7 +309,7 @@ export function WorkspaceSidebar({
                       >
                         <span
                           className={clsx(
-                            'shrink-0 text-black/50 dark:text-white/50 motion-safe:transition-transform',
+                            'shrink-0 text-muted-foreground motion-safe:transition-transform',
                             open && 'rotate-90',
                           )}
                         >
@@ -299,9 +324,9 @@ export function WorkspaceSidebar({
                       <Button
                         variant="ghost"
                         size="icon-sm"
+                        className="text-muted-foreground/75 focus-visible:text-ink"
                         aria-label={`在 ${dataset.name} 新建对话`}
                         title={`在 ${dataset.name} 新建对话`}
-                        className="text-black/50 dark:text-white/50"
                         onClick={() => createConversation(dataset.id)}
                       >
                         <SquarePenIcon className="size-[14px]" aria-hidden />
@@ -341,9 +366,9 @@ export function WorkspaceSidebar({
             <Button
               variant="ghost"
               size="icon-sm"
+              className="text-muted-foreground/75 focus-visible:text-ink"
               aria-label="新建对话"
               title={initialDatasetId ? '新建对话' : '请先添加数据源'}
-              className="text-black/50 dark:text-white/50"
               disabled={!initialDatasetId}
               onClick={() => createConversation()}
             >
@@ -370,7 +395,7 @@ export function WorkspaceSidebar({
         </section>
       </nav>
       <SidebarButton
-        className="mx-2 mt-2 shrink-0"
+        className="mx-2.5 mt-2 shrink-0"
         onClick={() =>
           void window.workbench.settingsOpen().catch((cause) => toast.error(errorMessage(cause)))
         }

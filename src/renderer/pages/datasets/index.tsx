@@ -4,6 +4,7 @@ import {
   FileTextIcon,
   PencilIcon,
   PlusIcon,
+  SearchIcon,
   Table2Icon,
   Trash2Icon,
 } from 'lucide-react';
@@ -85,10 +86,10 @@ function DatasetCard({
   };
 
   return (
-    <article className="group relative isolate rounded-2xl bg-surface p-5 shadow-[0_3px_12px] shadow-ink/8 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px] hover:shadow-ink/10">
+    <article className="group relative isolate rounded-2xl bg-page p-5 shadow-card transition-[box-shadow,translate] hover:shadow-card-raised motion-safe:hover:-translate-y-0.5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-page">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface">
             <DataSourceLogo type={dataset.sourceType} size={26} />
           </span>
           {action === 'rename' ? (
@@ -113,7 +114,7 @@ function DatasetCard({
           ) : (
             <button
               type="button"
-              className="m-0 min-w-0 truncate text-left text-base font-semibold before:absolute before:inset-0 before:rounded-2xl"
+              className="m-0 min-w-0 truncate text-left text-lg font-semibold before:absolute before:inset-0 before:rounded-2xl"
               onClick={() => onOpen(dataset.id)}
             >
               {dataset.name}
@@ -127,7 +128,6 @@ function DatasetCard({
               size="icon-sm"
               aria-label={`重命名 ${dataset.name}`}
               title={`重命名 ${dataset.name}`}
-              className="text-black/50 dark:text-white/50"
               onClick={() => {
                 renameCancelled.current = false;
                 setName(dataset.name);
@@ -141,7 +141,6 @@ function DatasetCard({
               size="icon-sm"
               aria-label={`删除 ${dataset.name}`}
               title={`删除 ${dataset.name}`}
-              className="text-black/50 dark:text-white/50"
               onClick={() => setAction('delete')}
             >
               <Trash2Icon className="size-[14px]" aria-hidden />
@@ -149,16 +148,16 @@ function DatasetCard({
           </div>
         )}
       </div>
-      <div className="mt-5 grid grid-cols-3 rounded-xl bg-page py-3">
+      <div className="mt-5 grid grid-cols-3 gap-2 rounded-xl bg-surface py-3">
         {stats.map(({ label, value, icon: StatIcon }) => (
           <div
             key={label}
-            className="flex items-center justify-center gap-2 border-r border-line/60 px-2 last:border-0"
+            className="flex min-w-0 items-center justify-center gap-2 px-2"
           >
             <StatIcon size={17} className="shrink-0 text-muted-foreground" />
             <div className="min-w-0">
-              <strong className="block truncate text-sm font-medium text-muted-foreground">{value}</strong>
-              <span className="mt-0.5 block text-xs text-muted-foreground/80">{label}</span>
+              <strong className="block truncate text-sm font-semibold text-ink tabular-nums">{value}</strong>
+              <span className="mt-0.5 block text-xs text-muted-foreground">{label}</span>
             </div>
           </div>
         ))}
@@ -236,34 +235,39 @@ export function DatasetsPage({
   }, [visibleCount, hasMore, query]);
 
   return (
-    <div className="w-full px-6 pt-8 pb-12">
+    <div className="mx-auto w-full max-w-[1200px] px-7 pt-4 pb-12 lg:px-10 motion-safe:animate-fade-up">
       <header className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="m-0 text-3xl leading-[1.35] font-semibold tracking-[-0.03em]">数据源</h1>
-          <p className="mt-2 mb-0 text-muted-foreground">{datasets.length} 个已添加的数据源</p>
+          <h1 className="m-0 text-3xl leading-tight font-semibold tracking-tight">数据源</h1>
+          <p className="mt-2 mb-0 leading-[1.7] text-muted-foreground">{datasets.length} 个已添加的数据源</p>
         </div>
-        <Button variant="primary" onClick={onAdd}>
+        <Button variant="primary" size="lg" onClick={onAdd}>
           <PlusIcon size={16} />
           添加数据源
         </Button>
       </header>
-      <div className="mt-6 flex items-center justify-between gap-4">
-        <Input
-          type="search"
-          aria-label="搜索数据源"
-          placeholder="按名称搜索数据源…"
-          className="w-72 max-w-full"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setVisibleCount(24);
-          }}
-        />
-        <span className="text-xs text-muted-foreground">
-          已显示 {Math.min(visibleCount, filtered.length)} / {filtered.length} 个
-        </span>
+      <div className="mt-10 flex items-center justify-between gap-4">
+        <div className="relative w-72 min-w-0 max-w-full">
+          <SearchIcon size={15} aria-hidden className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            aria-label="搜索数据源"
+            placeholder="按名称搜索数据源…"
+            className="ps-9"
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setVisibleCount(24);
+            }}
+          />
+        </div>
+        {(query.trim() || hasMore) && (
+          <span className="text-xs text-muted-foreground">
+            已显示 {Math.min(visibleCount, filtered.length)} / {filtered.length} 个
+          </span>
+        )}
       </div>
-      <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+      <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-4">
         {filtered.slice(0, visibleCount).map((dataset) => (
           <DatasetCard key={dataset.id} dataset={dataset} onOpen={onOpen} />
         ))}

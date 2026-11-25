@@ -20,11 +20,18 @@ import type { Conversation, DatasetSummary, WorkspaceState } from './types';
 const EMPTY_DATASETS: DatasetSummary[] = [];
 const RECENT_CONVERSATION_LIMIT = 5;
 
-type AnalysisSelection = { datasetId: string; chatId: string; draftId: string; saved: boolean };
+type AnalysisSelection = {
+  datasetId: string;
+  chatId: string;
+  draftId: string;
+  saved: boolean;
+  defaultPreviewCollapsed: boolean;
+};
 
 const analysisSelection = (datasetId: string, conversationId?: string): AnalysisSelection => {
   const chatId = conversationId ?? generateId();
-  return { datasetId, chatId, draftId: chatId, saved: conversationId !== undefined };
+  const saved = conversationId !== undefined;
+  return { datasetId, chatId, draftId: chatId, saved, defaultPreviewCollapsed: !saved };
 };
 
 export default function App() {
@@ -76,17 +83,15 @@ export default function App() {
           position="bottom-right"
           visibleToasts={1}
           toastOptions={{
-            className: 'text-sm!',
+            className: 'rounded-xl! text-sm! shadow-overlay!',
             style: {
               width: 'max-content',
               maxWidth: 'calc(100vw - 32px)',
               minHeight: 'unset',
               padding: '8px 12px',
               border: '1px solid var(--line)',
-              borderRadius: '8px',
               background: 'var(--surface)',
               color: 'var(--ink)',
-              boxShadow: '0 4px 16px #00000012',
             },
           }}
         />
@@ -174,7 +179,7 @@ function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback
                 chatId={analysis.chatId}
                 draftId={analysis.draftId}
                 conversationId={activeConversationId}
-                datasetCollapsed={collapsedPreviews[analysis.draftId] ?? false}
+                datasetCollapsed={collapsedPreviews[analysis.draftId] ?? analysis.defaultPreviewCollapsed}
                 onDatasetCollapsedChange={(collapsed) =>
                   setCollapsedPreviews((current) => ({ ...current, [analysis.draftId]: collapsed }))
                 }
