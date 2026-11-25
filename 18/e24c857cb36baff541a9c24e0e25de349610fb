@@ -1,0 +1,53 @@
+tests/renderer/components/chat/ipc-chat-transport.test.ts
+  s_22885cce4d9062::t_e45fba8bd29d5a 1-82
+src/main/services/analysis/index.ts
+  s_22885cce4d9062::t_2acc8677429f66 18-25
+  s_22885cce4d9062::t_35afa6f52ec746 142
+  s_22885cce4d9062::t_4abb7712d1dd1d 169-175
+  s_22885cce4d9062::t_d91474ede5e349 134,141,143-144
+  s_22885cce4d9062::t_bbf9c68cbd62d2 39
+  s_22885cce4d9062::t_10a5ce1faf250f 127-133
+src/preload/index.ts
+  s_22885cce4d9062::t_5e427588c94f1b 56
+src/main/ipc/index.ts
+  s_22885cce4d9062::t_859312a6aa33b6 205-211
+src/renderer/components/chat/chat.tsx
+  s_22885cce4d9062::t_5254f3d4b0cded 85-87,92,94,96-103,108
+  s_22885cce4d9062::t_bbe983855c79c6 56
+  s_22885cce4d9062::t_0e7cf3a08bcd59 84
+  s_22885cce4d9062::t_b077be8d8b5257 95
+  s_22885cce4d9062::t_005fc151e67cb5 61
+  s_22885cce4d9062::t_2daf7dd5314a54 4
+  s_22885cce4d9062::t_235cfb4edefb4b 82-83
+  s_22885cce4d9062::t_d600c7e968f6cf 77
+src/renderer/components/chat/ipc-chat-transport.ts
+  s_22885cce4d9062::t_3f2c9631ad59ba 7-8
+  s_22885cce4d9062::t_fec4697185f8ce 109,111
+  s_22885cce4d9062::t_06744731808fcb 106,108,110,112
+  s_22885cce4d9062::t_59ded5268adb09 129,136,139,144,151
+  s_22885cce4d9062::t_d2d503ea986b94 174,180-181,184-187
+  s_22885cce4d9062::t_ea8a290f69f50c 153
+  s_22885cce4d9062::t_1a03bf3a48355c 120
+  s_22885cce4d9062::t_252416baf933db 98-105,107,113-119,121-128,130-135,137-138,140-143,145-150,152,154-173,175-179,182-183,188-189
+tests/main/services/analysis.test.ts
+  s_22885cce4d9062::t_fe6402de226b17 91-156
+src/shared/api.ts
+  s_22885cce4d9062::t_b6b1920844b6e6 160-164
+  s_22885cce4d9062::t_e3931763f9ad56 223
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "18e24c857cb36baff541a9c24e0e25de349610fb",
+  "prompts": {},
+  "sessions": {
+    "s_22885cce4d9062": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "1ecb3830-8247-487a-85cb-10c1ccb6d921",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
