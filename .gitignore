@@ -11,7 +11,7 @@ coverage/
 *.tsbuildinfo
 
 # Local component preview
-/src/renderer/.debug/
+/.debug/
 
 # Local configuration and secrets
 .env*
