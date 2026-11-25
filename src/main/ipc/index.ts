@@ -188,7 +188,7 @@ export function registerIpc(
     const { sender } = event;
     input = await analysisStartSchema.parseAsync(input);
     await services.dataset.prepareOAuth(input.datasetId);
-    services.analysis.start(
+    const titleUpdate = services.analysis.start(
       input,
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
@@ -197,6 +197,9 @@ export function registerIpc(
       },
     );
     changed();
+    void titleUpdate?.then((renamed) => {
+      if (renamed) changed();
+    });
   });
 
   ipcMain.handle('analysisCancel', (_event, conversationId: string) =>

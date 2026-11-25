@@ -154,6 +154,7 @@ function ConversationItem({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(conversation.title);
   const [busy, setBusy] = useState(false);
+  const originalTitle = useRef(conversation.title);
   const renameCancelled = useRef(false);
 
   const saveName = async () => {
@@ -163,7 +164,7 @@ function ConversationItem({
     }
     if (!editing || busy) return;
     const title = name.trim();
-    if (!title || title === conversation.title) {
+    if (!title || title === originalTitle.current || title === conversation.title) {
       setName(conversation.title);
       setEditing(false);
       return;
@@ -248,6 +249,7 @@ function ConversationItem({
               disabled={busy}
               onClick={() => {
                 renameCancelled.current = false;
+                originalTitle.current = conversation.title;
                 setName(conversation.title);
                 setEditing(true);
               }}
