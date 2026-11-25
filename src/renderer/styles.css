@@ -271,9 +271,8 @@
 
 [data-draft-background] {
   background:
-    radial-gradient(ellipse 46% 31% at 66% 106%, light-dark(#009cf0bd, #1761b694), transparent),
-    radial-gradient(ellipse 49% 28% at 31% 108%, light-dark(#25caffb8, #167b9fa0), transparent),
-    radial-gradient(ellipse 89% 35% at 52% 113%, light-dark(#91ccffa1, #234169b4), transparent);
+    radial-gradient(ellipse 52% 24% at 57% 108%, light-dark(#48bfff70, #2489ce55), transparent),
+    radial-gradient(ellipse 80% 28% at 44% 113%, light-dark(#afe4ff82, #28619763), transparent);
 }
 
 @layer base {

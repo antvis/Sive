@@ -2,9 +2,12 @@ import { useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../theme';
 
 const GLOW_RADIUS = 182;
-const RIPPLE_DURATION = 680;
+const GLOW_IDLE_DELAY = 120;
+const GLOW_FADE_DURATION = 320;
+const RIPPLE_DURATION = 560;
 
 type Point = { x: number; y: number };
+type Glow = Point & { fadeAt: number };
 type Ripple = Point & { startedAt: number };
 
 export function DraftBackground() {
@@ -22,21 +25,27 @@ export function DraftBackground() {
     let frame = 0;
     let width = 0;
     let height = 0;
-    let pointer: Point | undefined;
+    let glow: Glow | undefined;
     let ripples: Ripple[] = [];
 
     const draw = (now: number) => {
       frame = 0;
       context.clearRect(0, 0, width, height);
 
-      if (pointer) {
-        const { x, y } = pointer;
-        const glow = context.createRadialGradient(x, y, 0, x, y, GLOW_RADIUS);
-        glow.addColorStop(0, dark ? '#7ac8ff32' : '#1ca9f52b');
-        glow.addColorStop(0.42, dark ? '#55adff15' : '#52c4ff15');
-        glow.addColorStop(1, '#52c4ff00');
-        context.fillStyle = glow;
-        context.fillRect(x - GLOW_RADIUS, y - GLOW_RADIUS, GLOW_RADIUS * 2, GLOW_RADIUS * 2);
+      if (glow) {
+        const { x, y, fadeAt } = glow;
+        const opacity = 1 - Math.max(0, now - fadeAt) / GLOW_FADE_DURATION;
+        if (opacity > 0) {
+          const gradient = context.createRadialGradient(x, y, 0, x, y, GLOW_RADIUS);
+          gradient.addColorStop(0, dark ? '#7ac8ff32' : '#1ca9f52b');
+          gradient.addColorStop(0.42, dark ? '#55adff15' : '#52c4ff15');
+          gradient.addColorStop(1, '#52c4ff00');
+          context.globalAlpha = opacity ** 2;
+          context.fillStyle = gradient;
+          context.fillRect(x - GLOW_RADIUS, y - GLOW_RADIUS, GLOW_RADIUS * 2, GLOW_RADIUS * 2);
+        } else {
+          glow = undefined;
+        }
       }
 
       ripples = ripples.filter(({ startedAt }) => now - startedAt < RIPPLE_DURATION);
@@ -53,7 +62,7 @@ export function DraftBackground() {
       }
 
       context.globalAlpha = 1;
-      if (ripples.length) requestDraw();
+      if (glow || ripples.length) requestDraw();
     };
 
     function requestDraw() {
@@ -70,39 +79,39 @@ export function DraftBackground() {
       requestDraw();
     };
 
-    const locate = (event: PointerEvent): Point => {
+    const locate = (event: MouseEvent): Point => {
       const rect = canvas.getBoundingClientRect();
       return { x: event.clientX - rect.left, y: event.clientY - rect.top };
     };
 
     function move(event: PointerEvent) {
       if (reduceMotion.matches || event.pointerType === 'touch') return;
-      pointer = locate(event);
+      glow = { ...locate(event), fadeAt: performance.now() + GLOW_IDLE_DELAY };
       requestDraw();
     }
 
-    function press(event: PointerEvent) {
-      if (reduceMotion.matches || event.button !== 0) return;
+    function click(event: MouseEvent) {
+      if (reduceMotion.matches || event.detail === 0) return;
       if (ripples.length === 4) ripples.shift();
       ripples.push({ ...locate(event), startedAt: performance.now() });
       requestDraw();
     }
 
     function leave() {
-      pointer = undefined;
-      requestDraw();
+      if (glow) glow.fadeAt = Math.min(glow.fadeAt, performance.now());
     }
 
     function reset() {
+      glow = undefined;
       ripples = [];
-      leave();
+      requestDraw();
     }
 
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
     resize();
     draft.addEventListener('pointermove', move, { passive: true });
-    draft.addEventListener('pointerdown', press, { passive: true });
+    draft.addEventListener('click', click, { capture: true, passive: true });
     draft.addEventListener('pointerleave', leave, { passive: true });
     reduceMotion.addEventListener('change', reset);
     window.addEventListener('blur', reset);
@@ -111,7 +120,7 @@ export function DraftBackground() {
       cancelAnimationFrame(frame);
       observer.disconnect();
       draft.removeEventListener('pointermove', move);
-      draft.removeEventListener('pointerdown', press);
+      draft.removeEventListener('click', click, true);
       draft.removeEventListener('pointerleave', leave);
       reduceMotion.removeEventListener('change', reset);
       window.removeEventListener('blur', reset);
