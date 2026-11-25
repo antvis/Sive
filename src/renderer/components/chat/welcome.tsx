@@ -1,20 +1,20 @@
 import { useContext, useEffect, useRef } from 'react';
-import { cn } from '../../../lib/utils';
-import { ThemeContext } from '../../../theme';
+import { cn } from '../../lib/utils';
+import { ThemeContext } from '../../theme';
 
-type ChatOpeningHeaderProps = {
+type ChatWelcomeHeaderProps = {
   datasetName: string;
   onOpenDatasetPreview: () => void;
   showModelNotice: boolean;
   error: string | undefined;
 };
 
-export function ChatOpeningHeader({
+export function ChatWelcomeHeader({
   datasetName,
   onOpenDatasetPreview,
   showModelNotice,
   error,
-}: ChatOpeningHeaderProps) {
+}: ChatWelcomeHeaderProps) {
   return (
     <header className="isolate flex min-w-0 flex-col-reverse gap-3 self-end pb-[clamp(18px,4vh,2.5rem)] @min-[380px]:grid @min-[380px]:grid-cols-[minmax(0,1fr)_auto] @min-[380px]:items-center @min-[380px]:gap-6 motion-safe:animate-fade-up">
       <div className="min-w-0">
@@ -43,7 +43,7 @@ export function ChatOpeningHeader({
         )}
       </div>
       <div className="min-w-0 self-end @min-[380px]:self-center">
-        <OpeningCompanion />
+        <WelcomeCompanion />
       </div>
     </header>
   );
@@ -58,7 +58,7 @@ type Point = { x: number; y: number };
 type Glow = Point & { fadeAt: number };
 type Ripple = Point & { startedAt: number };
 
-export function ChatOpeningBackground() {
+export function ChatWelcomeBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { mode } = useContext(ThemeContext);
 
@@ -207,7 +207,7 @@ const prompts = [
   },
 ];
 
-function OpeningCompanion() {
+function WelcomeCompanion() {
   return (
     <div
       aria-hidden="true"

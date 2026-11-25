@@ -15,7 +15,7 @@ import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '.
 import { errorMessage } from '../../utils';
 import { IpcChatTransport } from './ipc-chat-transport';
 import { useConversationRead } from '../../hooks/useConversationStatus';
-import { ChatOpeningBackground, ChatOpeningHeader } from './components/chat-opening';
+import { ChatWelcomeBackground, ChatWelcomeHeader } from './welcome';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
@@ -174,7 +174,7 @@ export function Chat({
         className="relative isolate flex h-full min-h-0 flex-col text-base text-foreground data-conversation-draft:bg-[light-dark(#fafcfe,#1b232e)] [&_code]:font-chat-mono [&_pre]:font-chat-mono"
         aria-label="AI 对话"
       >
-        {starting && <ChatOpeningBackground />}
+        {starting && <ChatWelcomeBackground />}
         {toolbar && (
           <div
             className={cn(
@@ -205,7 +205,7 @@ export function Chat({
             )}
           >
             {starting && (
-              <ChatOpeningHeader
+              <ChatWelcomeHeader
                 datasetName={datasetName}
                 onOpenDatasetPreview={onOpenDatasetPreview}
                 showModelNotice={!activeModelId}
