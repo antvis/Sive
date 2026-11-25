@@ -280,35 +280,34 @@ export function Chat({
               />
             </div>
             {starting && (
-              <div className="min-w-0 pt-5">
+              <div className="min-w-0 pt-3">
                 {hasSuggestions && (
-                  <section
-                    aria-labelledby="draft-suggestions-heading"
-                    className="motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
+                  <ul
+                    aria-label="示例问题"
+                    className="m-0 grid list-none gap-0.5 p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
                   >
-                    <h2
-                      id="draft-suggestions-heading"
-                      className="mb-2 px-1 text-sm font-medium text-muted-foreground"
-                    >
-                      可以这样问
-                    </h2>
-                    <div className="grid grid-cols-1 gap-2 @min-[540px]:grid-cols-3">
-                      {suggestions.map(({ query }) => (
+                    {suggestions.map(({ query }) => (
+                      <li key={query} className="min-w-0">
                         <Suggestion
-                          key={query}
                           suggestion={query}
                           onClick={(value) => {
                             setQuestion(value);
                             inputRef.current?.focus();
                           }}
-                          className="h-auto min-h-11 w-full items-start justify-between gap-2 rounded-xl bg-surface px-3 py-2.5 text-left text-sm leading-relaxed whitespace-normal text-foreground shadow-card hover:bg-surface hover:shadow-card-raised motion-safe:transition-[box-shadow,scale,translate] motion-safe:duration-150 motion-safe:hover:-translate-y-0.5 motion-reduce:transition-none"
+                          className="group/example h-auto min-h-9 w-full items-center justify-between gap-3 rounded-lg bg-transparent px-3 py-1.5 text-left text-sm leading-relaxed whitespace-normal text-muted-foreground hover:bg-workspace-control hover:text-ink focus-visible:bg-workspace-control focus-visible:text-ink motion-reduce:transition-none"
                         >
-                          <span className="min-w-0 wrap-anywhere">{query}</span>
-                          <ArrowUpRightIcon className="mt-0.5 size-3.5 shrink-0 text-accent" aria-hidden />
+                          <span className="flex min-w-0 items-start gap-2">
+                            <span className="shrink-0" aria-hidden>💡</span>
+                            <span className="min-w-0 wrap-anywhere">{query}</span>
+                          </span>
+                          <ArrowUpRightIcon
+                            className="size-3.5 shrink-0 text-accent/70 group-hover/example:text-accent group-focus-visible/example:text-accent"
+                            aria-hidden
+                          />
                         </Suggestion>
-                      ))}
-                    </div>
-                  </section>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
             )}
