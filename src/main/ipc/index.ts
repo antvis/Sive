@@ -202,6 +202,13 @@ export function registerIpc(
     });
   });
 
+  ipcMain.handle('analysisReconnect', (event, conversationId: string) => {
+    const { sender } = event;
+    return services.analysis.reconnect(conversationId, (messageId, chunk) => {
+      if (!sender.isDestroyed()) sender.send('analysis:chunk', messageId, chunk);
+    });
+  });
+
   ipcMain.handle('analysisCancel', (_event, conversationId: string) =>
     services.analysis.cancel(conversationId),
   );

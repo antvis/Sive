@@ -53,6 +53,7 @@ const api = {
   modelActivate: (id, model) => ipcRenderer.invoke('modelActivate', id, model),
   modelDelete: (id) => ipcRenderer.invoke('modelDelete', id),
   analysisStart: (input) => ipcRenderer.invoke('analysisStart', input),
+  analysisReconnect: (conversationId) => ipcRenderer.invoke('analysisReconnect', conversationId),
   analysisCancel: (conversationId) => ipcRenderer.invoke('analysisCancel', conversationId),
   analysisGetMessages: (conversationId) => ipcRenderer.invoke('analysisGetMessages', conversationId),
   analysisOnChunk: (callback) => {

@@ -15,6 +15,14 @@ import { checkLocalFile, localFilePath } from '../../util/localFile';
 
 type Emit = (chunk: UIMessageChunk | null) => void;
 
+type AnalysisTask = {
+  datasetId: string;
+  controller: AbortController;
+  messageId: string;
+  chunks: UIMessageChunk[];
+  emit: Emit;
+};
+
 export class AnalysisService {
   // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
   // This allows for efficient retrieval and management of agents during analysis tasks.
@@ -28,7 +36,7 @@ export class AnalysisService {
     }
   >();
 
-  private tasks = new Map<string, { datasetId: string; controller: AbortController }>();
+  private tasks = new Map<string, AnalysisTask>();
 
   private updatingDatasets = new Set<string>();
 
@@ -116,14 +124,24 @@ export class AnalysisService {
     });
     const agent = this.getAgent(conversation.id, model, dataset, preferences.engine);
     const controller = new AbortController();
-    this.tasks.set(conversation.id, { datasetId: dataset.id, controller });
+    const task: AnalysisTask = {
+      datasetId: dataset.id,
+      controller,
+      messageId: input.message.id,
+      chunks: [],
+      emit,
+    };
+    this.tasks.set(conversation.id, task);
     void this.run(
       conversation.id,
       agent,
       analysisOptions,
       preferences.agent,
       controller,
-      emit,
+      (chunk) => {
+        if (chunk) task.chunks.push(chunk);
+        task.emit(chunk);
+      },
       localFilePath(dataset.sourceConfig),
     );
 
@@ -146,6 +164,13 @@ export class AnalysisService {
 
   cancel(conversationId: string) {
     this.tasks.get(conversationId)?.controller.abort();
+  }
+
+  reconnect(conversationId: string, emit: (messageId: string, chunk: UIMessageChunk | null) => void) {
+    const task = this.tasks.get(conversationId);
+    if (!task) return null;
+    task.emit = (chunk) => emit(task.messageId, chunk);
+    return { messageId: task.messageId, chunks: [...task.chunks] };
   }
 
   private getAgent(
