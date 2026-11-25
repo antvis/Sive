@@ -82,7 +82,7 @@ export function SnippetCard({
         <div
           role="group"
           aria-label="Snippet 操作"
-          className="pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1 opacity-0 group-focus-within/snippet:pointer-events-auto group-focus-within/snippet:opacity-100 group-hover/snippet:pointer-events-auto group-hover/snippet:opacity-100 has-[[data-state=open]]:pointer-events-auto has-[[data-state=open]]:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 [&_button]:focus-visible:outline-2 [&_button]:focus-visible:outline-offset-2 [&_button]:focus-visible:outline-accent"
+          className="pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1 opacity-0 group-focus-within/snippet:pointer-events-auto group-focus-within/snippet:opacity-100 group-hover/snippet:pointer-events-auto group-hover/snippet:opacity-100 has-[[data-state=open]]:pointer-events-auto has-[[data-state=open]]:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 [&_button]:bg-surface [&_button]:shadow-sm [&_button]:ring-1 [&_button]:ring-ink/10 [&_button]:focus-visible:outline-2 [&_button]:focus-visible:outline-offset-2 [&_button]:focus-visible:outline-accent"
         >
           {onUpdate && (
             <>

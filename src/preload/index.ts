@@ -67,6 +67,11 @@ const api = {
   snippetUpdate: (messageId, input) => ipcRenderer.invoke('snippetUpdate', messageId, input),
   snippetRemove: (messageId) => ipcRenderer.invoke('snippetRemove', messageId),
   snippetExport: (input) => ipcRenderer.invoke('snippetExport', input),
+  snippetShareLogin: () => ipcRenderer.invoke('snippetShareLogin'),
+  snippetShareStatus: () => ipcRenderer.invoke('snippetShareStatus'),
+  snippetShareProfile: () => ipcRenderer.invoke('snippetShareProfile'),
+  snippetShareLogout: () => ipcRenderer.invoke('snippetShareLogout'),
+  snippetShare: (input) => ipcRenderer.invoke('snippetShare', input),
   conversationRestore: (id) => ipcRenderer.invoke('conversationRestore', id),
   conversationPurge: (ids) => ipcRenderer.invoke('conversationPurge', ids),
 } satisfies WorkbenchApi;

@@ -1,13 +1,14 @@
-import { CopyIcon, DownloadIcon, ImageIcon } from 'lucide-react';
+import { CopyIcon, DownloadIcon } from 'lucide-react';
 import { snapdom } from '@zumer/snapdom';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import type { Snippet, SnippetExportInput } from '@shared/api';
+import type { Snippet, SnippetExportInput, SnippetShareInput } from '@shared/api';
 import { errorMessage } from '../../utils';
 import { Button } from '../Button';
 import { Modal } from '../Modal';
-import { SnippetCard, templateOptions } from './index';
-import { TemplatePicker } from './TemplatePicker';
+import { SegmentedControl } from '../SegmentedControl';
+import { SnippetCard } from './index';
+import { XiaohongshuPreview } from './XiaohongshuPreview';
 
 async function captureSnippet(container: HTMLDivElement) {
   await document.fonts.ready;
@@ -32,29 +33,57 @@ async function captureSnippet(container: HTMLDivElement) {
     dpr: 1,
     embedFonts: true,
     exclude: ['.g2-tooltip'],
-    excludeMode: 'remove',
   });
 }
 
 export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: () => void }) {
-  const [templateId, setTemplateId] = useState(snippet.templateId);
-  const [busy, setBusy] = useState<SnippetExportInput['target'] | null>(null);
+  const [destination, setDestination] = useState<'image' | 'xiaohongshu'>('image');
+  const [busy, setBusy] = useState<SnippetExportInput['target'] | 'xiaohongshu' | 'publish' | null>(null);
+  const [post, setPost] = useState<SnippetShareInput | null>(null);
   const [error, setError] = useState('');
+  const [previewScale, setPreviewScale] = useState(1);
   const previewRef = useRef<HTMLDivElement>(null);
+  const [viewport, setViewport] = useState<HTMLDivElement | null>(null);
 
-  const share = async (target: SnippetExportInput['target']) => {
+  useLayoutEffect(() => {
+    const preview = previewRef.current;
+    if (!preview || !viewport) return;
+
+    const resize = () => {
+      setPreviewScale(
+        Math.min(1, viewport.clientWidth / preview.offsetWidth, viewport.clientHeight / preview.offsetHeight),
+      );
+    };
+    const observer = new ResizeObserver(resize);
+    observer.observe(viewport);
+    observer.observe(preview);
+    resize();
+    return () => observer.disconnect();
+  }, [viewport]);
+
+  const share = async (target: SnippetExportInput['target'] | 'xiaohongshu') => {
     const container = previewRef.current;
     if (!container || busy) return;
     setBusy(target);
     setError('');
     try {
       const blob = await captureSnippet(container);
-      const exported = await window.workbench.snippetExport({
+      const image = {
         image: new Uint8Array(await blob.arrayBuffer()),
         title: container.querySelector('[role="heading"]')?.textContent ?? 'Snippet',
-        target,
-      });
-      if (exported) toast.success(target === 'clipboard' ? '图片已复制' : '图片已保存');
+      };
+      if (target === 'xiaohongshu') {
+        const content =
+          container.querySelector<HTMLElement>('section[aria-label="关键洞察"]')?.innerText.trim() ?? '';
+        setPost((previous) => ({
+          ...image,
+          title: previous?.title ?? image.title,
+          content: previous?.content ?? content,
+        }));
+        setDestination('xiaohongshu');
+      } else if (await window.workbench.snippetExport({ ...image, target })) {
+        toast.success(target === 'clipboard' ? '图片已复制' : '图片已保存');
+      }
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -67,18 +96,10 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
       open
       onOpenChange={(open) => !busy && !open && onClose()}
       title="分享与导出"
-      className="flex w-[920px] flex-col overflow-hidden"
+      className="flex h-[min(800px,85vh)] w-[920px] flex-col overflow-hidden"
       footer={
-        <div className="flex w-full flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5 text-muted-foreground">
-            <span aria-hidden className="flex size-9 items-center justify-center rounded-lg border bg-page">
-              <ImageIcon size={18} />
-            </span>
-            <p className="m-0 text-xs font-medium text-ink">
-              高清 PNG <span className="ml-1 text-muted-foreground tabular-nums">2×</span>
-            </p>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
+        destination === 'image' && (
+          <div className="flex items-center gap-2">
             <Button
               className="h-10 gap-2 px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               disabled={!!busy}
@@ -97,40 +118,60 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
               {busy === 'file' ? '正在保存…' : '保存图片'}
             </Button>
           </div>
-        </div>
+        )
       }
     >
-      <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-line!">
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line! bg-surface px-4 py-2.5">
-          <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <ImageIcon size={15} aria-hidden />
-            图片预览
+      <div className="mb-4 flex shrink-0 items-center justify-between gap-3">
+        <SegmentedControl
+          label="导出方式"
+          options={[
+            { value: 'image', label: '图片' },
+            { value: 'xiaohongshu', label: '小红书' },
+          ]}
+          value={destination}
+          disabled={!!busy}
+          onValueChange={(value) => {
+            setError('');
+            if (value === 'xiaohongshu') void share(value);
+            else setDestination(value);
+          }}
+        />
+        {busy === 'xiaohongshu' && (
+          <span role="status" className="text-xs text-muted-foreground">
+            正在生成预览…
           </span>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">模板</span>
-            <span className="font-medium">
-              {templateOptions.find(({ value }) => value === templateId)?.label}
-            </span>
-            <TemplatePicker
-              value={templateId}
-              templates={templateOptions}
-              disabled={!!busy}
-              onChange={setTemplateId}
-            />
-          </div>
-        </div>
+        )}
+      </div>
+      {destination === 'xiaohongshu' && post ? (
+        <XiaohongshuPreview
+          post={post}
+          onChange={setPost}
+          onPublishingChange={(publishing) => setBusy(publishing ? 'publish' : null)}
+          onClose={onClose}
+        />
+      ) : (
         <div
+          ref={setViewport}
           role="region"
           aria-label="Snippet 图片预览"
           aria-busy={!!busy}
-          tabIndex={0}
-          className="min-h-0 overflow-auto bg-page focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+          className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-line! bg-page"
         >
-          <div ref={previewRef} className="mx-auto w-[800px] bg-page p-6">
-            <SnippetCard data={snippet} templateId={templateId} createdAt={snippet.createdAt} mode="export" />
+          <div
+            className="absolute top-1/2 left-1/2 origin-center"
+            style={{ transform: `translate(-50%, -50%) scale(${previewScale})` }}
+          >
+            <div ref={previewRef} className="w-[800px] bg-page p-6">
+              <SnippetCard
+                data={snippet}
+                templateId={snippet.templateId}
+                createdAt={snippet.createdAt}
+                mode="export"
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
       {error && (
         <p role="alert" className="mt-3 mb-0 text-sm text-danger">
           {error}

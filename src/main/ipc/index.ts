@@ -1,6 +1,7 @@
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import type { WebContents } from 'electron';
+import type { IpcMainInvokeEvent, WebContents } from 'electron';
 import type { DataSourceConfig, Semantic } from '@antv/ava';
 import type { SnippetSaveInput, SnippetUpdateInput } from '@shared/schema';
 import type { Services } from '../services';
@@ -11,6 +12,7 @@ import type {
   ModelInput,
   Preferences,
   SnippetExportInput,
+  SnippetShareInput,
 } from '@shared/api';
 import { FILE_SOURCES } from '@shared/dataSource';
 import { analysisStartSchema } from '@shared/api';
@@ -20,8 +22,27 @@ import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
 import { getStorageInfo, systemOpen } from '../util/system';
 import { exportSnippet } from '../util/snippetExport';
+import {
+  getSnippetShareLogin,
+  getSnippetShareProfile,
+  getSnippetShareStatus,
+  logoutSnippetShare,
+  shareSnippet,
+} from '../util/snippetShare';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
+
+function assertShareSender(event: IpcMainInvokeEvent) {
+  const rendererUrl = new URL(
+    process.env.ELECTRON_RENDERER_URL || pathToFileURL(path.join(__dirname, '../dist/index.html')).href,
+  );
+  if (
+    event.senderFrame !== event.sender.mainFrame ||
+    event.senderFrame?.url.split('#')[0] !== rendererUrl.href
+  ) {
+    throw new Error('不支持的分享来源。');
+  }
+}
 
 export function registerIpc(
   services: Services,
@@ -229,6 +250,31 @@ export function registerIpc(
   ipcMain.handle('snippetExport', (event, input: SnippetExportInput) =>
     exportSnippet(input, BrowserWindow.fromWebContents(event.sender)!),
   );
+
+  ipcMain.handle('snippetShareLogin', (event) => {
+    assertShareSender(event);
+    return getSnippetShareLogin();
+  });
+
+  ipcMain.handle('snippetShareStatus', (event) => {
+    assertShareSender(event);
+    return getSnippetShareStatus();
+  });
+
+  ipcMain.handle('snippetShareProfile', (event) => {
+    assertShareSender(event);
+    return getSnippetShareProfile();
+  });
+
+  ipcMain.handle('snippetShareLogout', (event) => {
+    assertShareSender(event);
+    return logoutSnippetShare();
+  });
+
+  ipcMain.handle('snippetShare', (event, input: SnippetShareInput) => {
+    assertShareSender(event);
+    return shareSnippet(input);
+  });
 
   ipcMain.handle('settingsSavePreferences', (_event, preferences: Preferences) => {
     services.settings.savePreferences(preferences);
