@@ -177,6 +177,7 @@ export function AnalysisPage({
                   onDatasetChange(id);
                   showDataset();
                 }}
+                onOpenDatasetPreview={showDataset}
                 toolbar={toolbar}
                 chatId={chatId}
                 conversationId={conversationId}
