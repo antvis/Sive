@@ -1,6 +1,13 @@
 import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '../../components/Button';
+import { Button } from '../../components/ui/button';
+import { Checkbox } from '../../components/ui/checkbox';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '../../components/ui/input-group';
 
 type Props = {
   options: string[];
@@ -32,8 +39,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
       <div className="max-h-36 overflow-auto">
         {all.map((id) => (
           <label key={id} className="flex items-center gap-2 rounded px-1 py-1.5 text-sm hover:bg-page">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={value.includes(id)}
               disabled={disabled}
               onChange={() =>
@@ -43,14 +49,15 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
             <span className="break-all">{id}</span>
           </label>
         ))}
-        {!all.length && <p className="m-0 px-1 py-3 text-center text-sm text-muted-foreground">请获取或手动添加模型</p>}
+        {!all.length && (
+          <p className="m-0 px-1 py-3 text-center text-sm text-muted-foreground">请获取或手动添加模型</p>
+        )}
       </div>
 
       {adding ? (
         <div className="mt-2">
-          <div className="flex items-center gap-1.5 rounded-md bg-surface px-2 py-0.5">
-            <input
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+          <InputGroup>
+            <InputGroupInput
               value={manual}
               disabled={disabled}
               autoFocus
@@ -78,17 +85,18 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
               placeholder="输入模型 ID，Enter 添加"
               aria-label="自定义模型 ID"
             />
-            <Button
-              variant="ghost"
-              className="size-5 min-h-0 p-0 text-accent"
-              disabled={disabled || !manual.trim()}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={add}
-              aria-label="确认添加模型"
-            >
-              <CheckIcon size={16} />
-            </Button>
-          </div>
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                size="icon-xs"
+                disabled={disabled || !manual.trim()}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={add}
+                aria-label="确认添加模型"
+              >
+                <CheckIcon aria-hidden />
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
           {error && <p className="mt-1 mb-0 px-1 text-sm text-danger">{error}</p>}
         </div>
       ) : (

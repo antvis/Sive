@@ -3,7 +3,7 @@ import { XIcon } from 'lucide-react';
 import { Tabs } from 'radix-ui';
 import { useLayoutEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { IconButton } from '../IconButton';
+import { Button } from './button';
 
 const tabScrollOptions = { block: 'nearest', inline: 'nearest', container: 'nearest' } as const;
 
@@ -48,14 +48,14 @@ export function PanelTabList({ label, tabs, activeTabId, visible, className, onC
             key={id}
             className={clsx(
               'flex max-w-[min(100%,176px)] shrink-0 items-center rounded-md',
-              activeTabId === id && 'bg-workspace-control',
+              activeTabId === id && 'bg-selected',
             )}
           >
             <Tabs.Trigger
               ref={activeTabId === id ? activeTab : undefined}
               value={id}
               title={title}
-              className="flex h-[32px] min-w-0 items-center gap-1.5 rounded-md ps-2 pe-1 text-base text-muted-foreground -outline-offset-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-sidebar-focus data-[state=active]:text-ink"
+              className="flex h-[28px] min-w-0 items-center gap-1.5 rounded-md ps-2 pe-1 text-sm text-muted-foreground -outline-offset-1 hover:text-ink data-[state=active]:font-medium data-[state=active]:text-selected-foreground"
               aria-keyshortcuts="Delete"
               onKeyDown={(event) => {
                 if (event.key !== 'Delete') return;
@@ -66,14 +66,17 @@ export function PanelTabList({ label, tabs, activeTabId, visible, className, onC
               {icon}
               <span className="truncate">{title}</span>
             </Tabs.Trigger>
-            <IconButton
-              icon={XIcon}
-              iconSize={12}
-              label={`关闭${title}标签`}
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`关闭${title}标签`}
+              title={`关闭${title}标签`}
               tabIndex={-1}
-              className="me-1 size-6! hover:bg-workspace-control-active!"
+              className="me-1 hover:bg-ink/5"
               onClick={() => closeTab(id)}
-            />
+            >
+              <XIcon className="size-[12px]" aria-hidden />
+            </Button>
           </div>
         ))}
       </div>

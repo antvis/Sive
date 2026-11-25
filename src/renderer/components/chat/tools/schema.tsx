@@ -1,10 +1,10 @@
 import type { Schema } from '@antv/ava';
-import { ChevronRightIcon, Columns3Icon, GitMergeIcon, KeyRoundIcon } from 'lucide-react';
+import { Columns3Icon, GitMergeIcon, KeyRoundIcon } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
 import { Table } from '../../ui/table';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleRowTrigger } from '../../ui/collapsible';
 
 function SchemaFields({ model }: { model: Schema['models'][number] }) {
   const [expanded, setExpanded] = useState(false);
@@ -26,7 +26,7 @@ function SchemaFields({ model }: { model: Schema['models'][number] }) {
           {model.columns.length} 个字段
         </span>
       </div>
-      <Table className="table-fixed text-sm" aria-label={`${model.name} 的字段`}>
+      <Table className="table-fixed" aria-label={`${model.name} 的字段`}>
         <thead>
           <tr>
             <th scope="col" className="w-[53%]">
@@ -69,9 +69,9 @@ function SchemaFields({ model }: { model: Schema['models'][number] }) {
       {model.columns.length > 5 && (
         <Button
           type="button"
-          variant="link"
+          variant="ghost"
           size="xs"
-          className="mt-[9px] mb-3 h-auto rounded-sm border-0 px-2 py-1 text-xs font-normal text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:no-underline focus-visible:ring-2 focus-visible:ring-ring"
+          className="mt-[9px] mb-3"
           aria-expanded={expanded}
           aria-controls={fieldsId}
           onClick={() => {
@@ -125,13 +125,9 @@ export function SchemaTool({ schema }: { schema: Schema }) {
                 data-schema-table={model.name}
                 open={expandedModel === model.name}
                 onOpenChange={(open) => setExpandedModel(open ? model.name : undefined)}
-                className="min-w-0 scroll-mt-4"
+                className="scroll-mt-4"
               >
-                <CollapsibleTrigger className="group/schema flex w-full flex-wrap items-center gap-2 rounded-sm bg-transparent py-2 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-                  <ChevronRightIcon
-                    className="size-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/schema:rotate-90 motion-reduce:transition-none"
-                    aria-hidden="true"
-                  />
+                <CollapsibleRowTrigger>
                   <code className="min-w-0 break-words text-sm font-semibold">{model.name}</code>
                   <span className="ml-auto shrink-0 text-xs text-muted-foreground">
                     {model.columns.length} 个字段
@@ -143,8 +139,8 @@ export function SchemaTool({ schema }: { schema: Schema }) {
                       <span className="break-words">{primaryKey.join(' + ')}</span>
                     </span>
                   )}
-                </CollapsibleTrigger>
-                <CollapsibleContent className="min-w-0">
+                </CollapsibleRowTrigger>
+                <CollapsibleContent>
                   <SchemaFields model={model} />
                 </CollapsibleContent>
               </Collapsible>

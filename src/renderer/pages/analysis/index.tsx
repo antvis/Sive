@@ -1,23 +1,19 @@
-import clsx from 'clsx';
 import { PanelRightIcon } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
+import { Group, Panel, usePanelRef } from 'react-resizable-panels';
 import type { AnalysisFrameProps } from '../../components/AppShell';
-import { IconButton } from '../../components/IconButton';
 import { Chat } from '../../components/chat/chat';
 import { ToolPreviewContext } from '../../components/chat/tool-preview';
 import type { ToolPreviewTab } from '../../components/chat/tool-preview';
+import { Button } from '../../components/ui/button';
 import { usePanelCollapsePreview } from '../../hooks/usePanelCollapsePreview';
 import { usePanelToggleFocus } from '../../hooks/usePanelToggleFocus';
-import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../../lib/panel-layout';
+import { ResizeHandle } from '../../components/ui/resize-handle';
 import type { DatasetSummary, ModelProfile, Preferences } from '../../types';
 import { readWidth, saveWidth } from '../../utils';
 import { AnalysisSidePanel, DATASET_PREVIEW_ID } from './AnalysisSidePanel';
 import { useAnalysisTabs } from './useAnalysisTabs';
 
-const cardClassName =
-  'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] bg-surface motion-safe:transition-opacity motion-safe:duration-150 dark:bg-background';
-const bodyClassName = 'min-h-0 min-w-0 flex-1 overflow-hidden';
 const MIN_ANALYSIS_PANEL_WIDTH = 240;
 const DEFAULT_CONVERSATION_WIDTH = 380;
 const CONVERSATION_WIDTH_KEY = 'sive.conversation-width';
@@ -145,29 +141,41 @@ export function AnalysisPage({
         minSize={MIN_ANALYSIS_PANEL_WIDTH}
         style={{ overflow: 'hidden' }}
       >
-        <section className={cardClassName} aria-label="对话面板" inert={fullscreen}>
+        <section
+          className={
+            'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] bg-surface motion-safe:transition-opacity motion-safe:duration-150 dark:bg-background'
+          }
+          aria-label="对话面板"
+          inert={fullscreen}
+        >
           <div className="relative top-(--workspace-titlebar-row-offset) flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]">
             {!fullscreen && titleBar}
             {datasetCollapsed && !fullscreen && (
-              <IconButton
-                icon={PanelRightIcon}
-                iconSize={18}
-                label="展开右侧面板"
-                className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="展开右侧面板"
+                title="展开右侧面板"
+                className="text-black/50 dark:text-white/50"
                 aria-controls={DATASET_PREVIEW_ID}
                 aria-expanded={false}
                 aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
                 onClick={togglePreview}
-              />
+              >
+                <PanelRightIcon className="size-[16px]" aria-hidden />
+              </Button>
             )}
           </div>
-          <div className={bodyClassName}>
+          <div className={'min-h-0 min-w-0 flex-1 overflow-hidden'}>
             <ToolPreviewContext value={showResult}>
               <Chat
                 key={draftId}
                 dataset={dataset}
                 datasets={datasets}
-                onDatasetChange={onDatasetChange}
+                onDatasetChange={(id) => {
+                  onDatasetChange(id);
+                  showDataset();
+                }}
                 onOpenDatasetPreview={showDataset}
                 chatId={chatId}
                 conversationId={conversationId}
@@ -182,9 +190,9 @@ export function AnalysisPage({
           </div>
         </section>
       </Panel>
-      <Separator
+      <ResizeHandle
         aria-label="调整对话与右侧面板宽度"
-        className={clsx(panelSeparatorClassName, datasetCollapsed ? 'w-0' : 'w-(--workspace-gutter)')}
+        className={datasetCollapsed ? 'w-0' : undefined}
         disabled={datasetCollapsed || fullscreen}
         disableDoubleClick
         elementRef={collapsePreview.separatorRef}
@@ -202,7 +210,9 @@ export function AnalysisPage({
         groupResizeBehavior="preserve-pixel-size"
         minSize={datasetCollapsed ? 0 : MIN_ANALYSIS_PANEL_WIDTH}
         maxSize={datasetCollapsed ? 0 : undefined}
-        className={panelCollapsePreviewClassName}
+        className={
+          '[[data-collapse-preview]>&]:blur-[3px] motion-safe:transition-[filter] motion-safe:duration-150'
+        }
         style={{ overflow: 'hidden' }}
       >
         <AnalysisSidePanel

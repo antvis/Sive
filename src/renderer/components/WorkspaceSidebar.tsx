@@ -3,7 +3,6 @@ import {
   ArchiveIcon,
   ChevronRightIcon,
   DatabaseIcon,
-  FileTextIcon,
   LightbulbIcon,
   PanelLeftIcon,
   PencilIcon,
@@ -11,12 +10,13 @@ import {
   SquarePenIcon,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
-import type { PropsWithChildren } from 'react';
 import { toast } from 'sonner';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
-import { IconButton } from './IconButton';
 import { ConversationStatus } from './ConversationStatus';
+import { DataSourceLogo } from './DataSourceLogo';
+import { Button } from './ui/button';
+import { SidebarButton, SidebarInput, SidebarList } from './ui/sidebar';
 
 export type AppPage = 'welcome' | 'datasets' | 'analysis' | 'snippets';
 
@@ -34,111 +34,6 @@ export type WorkspaceSidebarProps = {
   onConversationArchive: (conversation: Conversation) => void;
   onNavigate: (page: AppPage) => void;
 };
-
-const focusClass =
-  'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus';
-const rowClass = clsx(
-  'relative flex min-h-[var(--sidebar-row-height,34px)] min-w-0 items-center gap-[6px] rounded-[8px] px-[8px] text-left transition-[color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45',
-  focusClass,
-);
-const activeClass = 'bg-sidebar-highlight font-semibold text-sidebar-ink!';
-const iconClass = clsx(
-  'relative rounded-[8px]! text-sidebar-muted! hover:bg-sidebar-highlight! hover:text-sidebar-ink!',
-  focusClass,
-);
-const headingClass =
-  'flex min-h-[32px] items-center justify-between gap-1 ps-[8px] text-xs font-normal text-sidebar-text/80';
-
-function SidebarList({ children, className }: PropsWithChildren<{ className?: string }>) {
-  const highlight = useRef<HTMLSpanElement>(null);
-
-  return (
-    <div className={className}>
-      <div
-        className="relative grid gap-[var(--sidebar-row-gap,3px)] overflow-clip"
-        data-sidebar-list
-        onPointerOver={(event) => {
-          if (event.pointerType === 'touch' || !highlight.current || !(event.target instanceof Element))
-            return;
-          const row = event.target.closest('[data-sidebar-row]');
-          if (
-            !row ||
-            row.closest('[data-sidebar-list]') !== event.currentTarget ||
-            row.matches(':disabled')
-          ) {
-            highlight.current.style.opacity = '0';
-            return;
-          }
-          const list = event.currentTarget.getBoundingClientRect();
-          const bounds = row.getBoundingClientRect();
-          Object.assign(highlight.current.style, {
-            transform: `translate(${bounds.left - list.left}px, ${bounds.top - list.top}px)`,
-            width: `${bounds.width}px`,
-            height: `${bounds.height}px`,
-            opacity: '1',
-          });
-        }}
-        onPointerLeave={() => {
-          if (highlight.current) highlight.current.style.opacity = '0';
-        }}
-      >
-        <span
-          ref={highlight}
-          aria-hidden
-          className="pointer-events-none absolute start-0 top-0 rounded-[7px] bg-sidebar-highlight opacity-0 transition-[transform,width,height,opacity] duration-[220ms] ease-[cubic-bezier(.23,1,.32,1)] motion-reduce:transition-none"
-        />
-        {children}
-      </div>
-    </div>
-  );
-}
-
-export function NewConversationButton({
-  datasets,
-  datasetId,
-  compact = false,
-  iconSize = 16,
-  onCreate,
-}: {
-  datasets: DatasetSummary[];
-  datasetId: string | null;
-  compact?: boolean;
-  iconSize?: number;
-  onCreate: (datasetId: string) => void;
-}) {
-  const label = compact ? '新建对话' : '新建分析';
-  const initialDatasetId = datasetId ?? datasets[0]?.id;
-  const disabled = !initialDatasetId;
-  const title = disabled ? '请先添加数据源' : label;
-
-  const create = () => {
-    if (initialDatasetId) onCreate(initialDatasetId);
-  };
-
-  return compact ? (
-    <IconButton
-      icon={SquarePenIcon}
-      iconSize={iconSize}
-      label={label}
-      title={title}
-      className={clsx(iconClass, 'size-[32px]! [-webkit-app-region:no-drag]')}
-      disabled={disabled}
-      onClick={create}
-    />
-  ) : (
-    <button
-      type="button"
-      className={rowClass}
-      data-sidebar-row
-      disabled={disabled}
-      title={title}
-      onClick={create}
-    >
-      <SquarePenIcon size={iconSize} className="shrink-0" aria-hidden />
-      <span>{label}</span>
-    </button>
-  );
-}
 
 function ConversationItem({
   conversation,
@@ -198,14 +93,10 @@ function ConversationItem({
   return (
     <div
       data-sidebar-row
-      className={clsx(
-        'group/conversation relative flex min-w-0 rounded-[8px] [--sidebar-row-height:28px]',
-        active && activeClass,
-      )}
+      className="group/conversation relative flex min-w-0 rounded-lg"
     >
       {editing ? (
-        <input
-          className={clsx(rowClass, 'w-full bg-surface')}
+        <SidebarInput
           value={name}
           disabled={busy}
           autoFocus
@@ -224,28 +115,23 @@ function ConversationItem({
         />
       ) : (
         <>
-          <button
-            type="button"
+          <SidebarButton
             aria-current={active || undefined}
             title={`${conversation.title}\n${new Date(conversation.updatedAt).toLocaleString('zh-CN')}`}
-            className={clsx(
-              rowClass,
-              'w-full text-sidebar-text group-focus-within/conversation:pe-[52px] group-hover/conversation:pe-[52px]',
-              active && 'font-semibold text-sidebar-ink!',
-            )}
+            className="w-full group-focus-within/conversation:pe-[52px] group-hover/conversation:pe-[52px]"
             onClick={onSelect}
           >
             <span className="min-w-0 flex-1 truncate">{conversation.title}</span>
             <span className="shrink-0 group-focus-within/conversation:hidden group-hover/conversation:hidden">
               <ConversationStatus ids={[conversation.id]} />
             </span>
-          </button>
+          </SidebarButton>
           <div className="absolute inset-y-0 end-1 flex items-center opacity-0 transition-opacity group-focus-within/conversation:opacity-100 group-hover/conversation:opacity-100">
-            <IconButton
-              icon={PencilIcon}
-              iconSize={14}
-              className={clsx(iconClass, 'size-[24px]!')}
-              label={`重命名 ${conversation.title}`}
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`重命名 ${conversation.title}`}
+              title={`重命名 ${conversation.title}`}
               disabled={busy}
               onClick={() => {
                 renameCancelled.current = false;
@@ -253,15 +139,19 @@ function ConversationItem({
                 setName(conversation.title);
                 setEditing(true);
               }}
-            />
-            <IconButton
-              icon={ArchiveIcon}
-              iconSize={14}
-              className={clsx(iconClass, 'size-[24px]!')}
-              label={`归档 ${conversation.title}`}
+            >
+              <PencilIcon className="size-[14px]" aria-hidden />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`归档 ${conversation.title}`}
+              title={`归档 ${conversation.title}`}
               disabled={busy}
               onClick={() => void archive()}
-            />
+            >
+              <ArchiveIcon className="size-[14px]" aria-hidden />
+            </Button>
           </div>
         </>
       )}
@@ -283,6 +173,7 @@ export function WorkspaceSidebar({
   onConversationArchive,
   onNavigate,
 }: WorkspaceSidebarProps & { inert?: boolean; onCollapse: () => void }) {
+  const initialDatasetId = activeDatasetId ?? datasets[0]?.id;
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [recentSelection, setRecentSelection] = useState<string | null>(null);
   const groups = datasets.flatMap((dataset) => {
@@ -293,7 +184,9 @@ export function WorkspaceSidebar({
     recentSelection === activeConversationId &&
     recentConversations.some((conversation) => conversation.id === activeConversationId);
 
-  const createConversation = (datasetId: string) => {
+  const createConversation = (datasetId = initialDatasetId) => {
+    if (!datasetId) return;
+
     setExpanded((current) => ({ ...current, [datasetId]: true }));
     setRecentSelection(null);
     onConversationCreate(datasetId);
@@ -325,15 +218,17 @@ export function WorkspaceSidebar({
           </div>
         </div>
         <div className="absolute end-[8px] top-(--workspace-titlebar-center) flex -translate-y-1/2">
-          <IconButton
-            icon={PanelLeftIcon}
-            iconSize={18}
-            label="收起侧边栏"
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="收起侧边栏"
+            title="收起侧边栏"
             aria-expanded
             aria-controls={WORKSPACE_SIDEBAR_ID}
-            className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
             onClick={onCollapse}
-          />
+          >
+            <PanelLeftIcon className="size-[16px]" aria-hidden />
+          </Button>
         </div>
       </header>
       <p className="mt-1 mb-5 shrink-0 px-[16px] text-base text-muted-foreground">
@@ -341,79 +236,80 @@ export function WorkspaceSidebar({
       </p>
       <nav className="mx-[8px] [--sidebar-row-height:32px]" aria-label="工作台">
         <SidebarList>
-          <NewConversationButton
-            datasets={datasets}
-            datasetId={activeDatasetId}
-            onCreate={createConversation}
-          />
-          <button
-            type="button"
-            data-sidebar-row
-            className={clsx(rowClass, (page === 'welcome' || page === 'datasets') && activeClass)}
+          <SidebarButton
+            disabled={!initialDatasetId}
+            title={initialDatasetId ? '新建分析' : '请先添加数据源'}
+            onClick={() => createConversation()}
+          >
+            <SquarePenIcon size={16} className="shrink-0" aria-hidden />
+            <span>新建分析</span>
+          </SidebarButton>
+          <SidebarButton
+            aria-current={page === 'welcome' || page === 'datasets' || undefined}
             onClick={() => onNavigate(datasets.length ? 'datasets' : 'welcome')}
           >
             <DatabaseIcon size={16} aria-hidden />
             <span>数据源</span>
-          </button>
-          <button
-            type="button"
-            data-sidebar-row
-            className={clsx(rowClass, page === 'snippets' && activeClass)}
+          </SidebarButton>
+          <SidebarButton
+            aria-current={page === 'snippets' || undefined}
             onClick={() => onNavigate('snippets')}
           >
             <LightbulbIcon size={16} aria-hidden />
             <span>洞察 Snippet</span>
-          </button>
+          </SidebarButton>
         </SidebarList>
       </nav>
       <nav className="mx-[8px] mt-[20px] flex min-h-0 flex-1 flex-col gap-[20px]" aria-label="分析历史">
         {groups.length > 0 && (
           <section className="flex max-h-1/2 min-h-0 flex-col" aria-labelledby="sidebar-datasets-heading">
-            <h2 id="sidebar-datasets-heading" className={clsx(headingClass, 'mb-1 shrink-0')}>
+            <h2
+              id="sidebar-datasets-heading"
+              className="mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80"
+            >
               数据源
             </h2>
-            <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:12px] scrollbar-none">
+            <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-height:28px] scrollbar-none">
               {groups.map(({ dataset, conversations }) => {
                 const open = expanded[dataset.id] !== false;
-                const SourceIcon = dataset.localFile ? FileTextIcon : DatabaseIcon;
                 const groupId = `sidebar-conversations-${dataset.id}`;
                 return (
-                  <div key={dataset.id} className="grid min-w-0 gap-1">
+                  <div key={dataset.id} className="grid min-w-0 gap-[2px]">
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-px">
-                      <button
-                        type="button"
-                        data-sidebar-row
+                      <SidebarButton
                         aria-expanded={open}
                         aria-controls={groupId}
                         title={dataset.name}
-                        className={rowClass}
                         onClick={() => setExpanded((current) => ({ ...current, [dataset.id]: !open }))}
                       >
                         <span
                           className={clsx(
-                            'shrink-0 text-sidebar-muted motion-safe:transition-transform',
+                            'shrink-0 text-black/50 dark:text-white/50 motion-safe:transition-transform',
                             open && 'rotate-90',
                           )}
                         >
                           <ChevronRightIcon size={12} aria-hidden />
                         </span>
-                        <SourceIcon size={16} className="shrink-0" aria-hidden />
+                        <DataSourceLogo type={dataset.sourceType} size={16} />
                         <span className="min-w-0 flex-1 truncate">{dataset.name}</span>
                         {!open && (
                           <ConversationStatus ids={conversations.map((conversation) => conversation.id)} />
                         )}
-                      </button>
-                      <IconButton
-                        icon={SquarePenIcon}
-                        iconSize={14}
-                        label={`在 ${dataset.name} 新建对话`}
-                        className={clsx(iconClass, 'size-[32px]!')}
+                      </SidebarButton>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`在 ${dataset.name} 新建对话`}
+                        title={`在 ${dataset.name} 新建对话`}
+                        className="text-black/50 dark:text-white/50"
                         onClick={() => createConversation(dataset.id)}
-                      />
+                      >
+                        <SquarePenIcon className="size-[14px]" aria-hidden />
+                      </Button>
                     </div>
-                    <div id={groupId} hidden={!open}>
+                    <div id={groupId} className="mb-[4px]" hidden={!open}>
                       {open && (
-                        <SidebarList className="max-h-56 min-w-0 overflow-y-auto ps-[24px] [--sidebar-row-gap:2px] scrollbar-none">
+                        <SidebarList className="max-h-56 min-w-0 overflow-y-auto ps-[24px] [--sidebar-row-gap:1px] [--sidebar-row-height:26px] scrollbar-none">
                           {conversations.map((conversation) => (
                             <ConversationItem
                               key={conversation.id}
@@ -440,17 +336,21 @@ export function WorkspaceSidebar({
           </section>
         )}
         <section className="flex min-h-0 flex-col" aria-labelledby="sidebar-recent-heading">
-          <div className={clsx(headingClass, 'mb-1 shrink-0')}>
+          <div className="mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80">
             <h2 id="sidebar-recent-heading">最近</h2>
-            <NewConversationButton
-              compact
-              iconSize={14}
-              datasets={datasets}
-              datasetId={activeDatasetId}
-              onCreate={createConversation}
-            />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="新建对话"
+              title={initialDatasetId ? '新建对话' : '请先添加数据源'}
+              className="text-black/50 dark:text-white/50"
+              disabled={!initialDatasetId}
+              onClick={() => createConversation()}
+            >
+              <SquarePenIcon className="size-[14px]" aria-hidden />
+            </Button>
           </div>
-          <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:2px] scrollbar-none">
+          <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:2px] [--sidebar-row-height:28px] scrollbar-none">
             {recentConversations.map((conversation) => (
               <ConversationItem
                 key={conversation.id}
@@ -469,16 +369,15 @@ export function WorkspaceSidebar({
           </SidebarList>
         </section>
       </nav>
-      <button
-        type="button"
-        className={clsx(rowClass, 'mx-[8px] mt-[8px] shrink-0 hover:bg-sidebar-highlight')}
+      <SidebarButton
+        className="mx-2 mt-2 shrink-0"
         onClick={() =>
           void window.workbench.settingsOpen().catch((cause) => toast.error(errorMessage(cause)))
         }
       >
         <SettingsIcon size={16} aria-hidden />
         <span>设置</span>
-      </button>
+      </SidebarButton>
     </aside>
   );
 }

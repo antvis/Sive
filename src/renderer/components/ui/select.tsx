@@ -5,6 +5,7 @@ import { Select as SelectPrimitive } from "radix-ui"
 
 import { cn } from "../../lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
+import { DropdownList } from "./dropdown-list"
 
 function Select({
   ...props
@@ -25,35 +26,73 @@ function SelectGroup({
   )
 }
 
-function SelectValue({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Value>) {
+function SelectValue(props: React.ComponentProps<typeof SelectPrimitive.Value>) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
 function SelectTrigger({
   className,
-  size = "default",
   children,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
-  size?: "sm" | "default"
-}) {
+}: React.ComponentProps<typeof SelectPrimitive.Trigger>) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
-      data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-1.5 rounded-lg border border-input bg-input/30 px-3 py-2 text-sm whitespace-nowrap transition-colors duration-150 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        'w-full min-w-0 rounded-[10px] border border-ink/10 bg-workspace-control-active px-3 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-focus/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
+        "flex h-8 w-fit max-w-full items-center justify-between gap-1.5 text-left text-ink hover:bg-workspace-control aria-expanded:bg-selected aria-expanded:text-selected-foreground data-placeholder:text-placeholder *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:truncate [&_[data-slot=select-value]_:is(img,svg)]:me-1.5 [&_[data-slot=select-value]_:is(img,svg)]:inline-block [&_[data-slot=select-value]_:is(img,svg)]:align-middle",
         className
       )}
       {...props}
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="pointer-events-none size-3.5 text-muted-foreground" />
+        <ChevronDownIcon className="pointer-events-none size-3.5 shrink-0 text-muted-foreground" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
+  )
+}
+
+type SelectFieldProps = {
+  value: string
+  onChange: (value: string) => void
+  options: { value: string; label: string }[]
+  disabled?: boolean
+  className?: string
+  "aria-label": string
+}
+
+function SelectField({
+  value,
+  onChange,
+  options,
+  disabled,
+  className,
+  "aria-label": ariaLabel,
+}: SelectFieldProps) {
+  const selected = options.find((option) => option.value === value) ?? options[0]
+
+  // Radix reserves the empty string for clearing the selection.
+  return (
+    <Select
+      value={selected ? `:${selected.value}` : ""}
+      onValueChange={(next) => onChange(next.slice(1))}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        className={cn("w-42 max-sm:w-full", className)}
+        aria-label={ariaLabel}
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="min-w-(--radix-select-trigger-width)">
+        {options.map((option) => (
+          <SelectItem key={option.value} value={`:${option.value}`}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 
@@ -65,17 +104,13 @@ function SelectContent({
   sideOffset = 6,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
-  const [highlight, setHighlight] = React.useState({ top: 0, height: 0, visible: false })
-
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          "relative z-50 max-h-(--radix-select-content-available-height) max-w-(--radix-select-content-available-width) min-w-44 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-[10px] border border-border/60 bg-popover p-1 text-popover-foreground shadow-lg",
-          "[--select-enter-transform:translateY(-6px)] data-[side=top]:[--select-enter-transform:translateY(6px)]",
-          "data-[side=left]:[--select-enter-transform:translateX(6px)] data-[side=right]:[--select-enter-transform:translateX(-6px)]",
-          "motion-safe:data-[state=open]:animate-select-open motion-safe:data-[state=closed]:animate-select-close",
+          'relative z-50 min-w-44 overflow-x-hidden overflow-y-auto rounded-[10px] border border-border/60 bg-popover p-1 text-popover-foreground shadow-lg [--dropdown-enter-transform:translateY(-6px)] data-[side=top]:[--dropdown-enter-transform:translateY(6px)] data-[side=left]:[--dropdown-enter-transform:translateX(6px)] data-[side=right]:[--dropdown-enter-transform:translateX(-6px)] motion-safe:data-[state=open]:animate-dropdown-open motion-safe:data-[state=closed]:animate-dropdown-close',
+          "max-h-(--radix-select-content-available-height) max-w-[min(34rem,var(--radix-select-content-available-width))] origin-(--radix-select-content-transform-origin)",
           className
         )}
         position={position}
@@ -86,29 +121,9 @@ function SelectContent({
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
           data-position={position}
-          className={cn(
-            "relative data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)"
-          )}
-          onFocusCapture={(event) => {
-            const item = event.target.closest<HTMLElement>('[role="option"]')
-            if (item) {
-              setHighlight({ top: item.offsetTop, height: item.offsetHeight, visible: true })
-            } else {
-              setHighlight((current) => ({ ...current, visible: false }))
-            }
-          }}
+          className="relative data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)"
         >
-          <span
-            aria-hidden="true"
-            data-slot="select-highlight"
-            className="pointer-events-none absolute inset-x-0 top-0 rounded-[6px] bg-secondary motion-safe:transition-[transform,height,opacity] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
-            style={{
-              height: highlight.height,
-              transform: `translateY(${highlight.top}px)`,
-              opacity: highlight.visible ? 1 : 0,
-            }}
-          />
-          {children}
+          <DropdownList>{children}</DropdownList>
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
       </SelectPrimitive.Content>
@@ -138,14 +153,15 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative z-10 flex min-h-8 w-full cursor-default items-center gap-2 rounded-[6px] py-1.5 pr-8 pl-2 text-sm font-medium outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-[6px] py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+        "pr-8 data-[state=checked]:text-selected-foreground *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}
     >
       <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="pointer-events-none size-3.5" />
+          <CheckIcon className="pointer-events-none size-3.5 text-selected-foreground" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText className="min-w-0 [overflow-wrap:anywhere]">{children}</SelectPrimitive.ItemText>
@@ -210,6 +226,7 @@ function SelectScrollDownButton({
 export {
   Select,
   SelectContent,
+  SelectField,
   SelectGroup,
   SelectItem,
   SelectLabel,

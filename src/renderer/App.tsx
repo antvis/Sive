@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
-import { Button } from './components/Button';
+import { Button } from './components/ui/button';
 import { UpdateNotification } from './components/UpdateNotification';
 import type { AppPage } from './components/WorkspaceSidebar';
 import { useWorkspace } from './hooks/useWorkspace';

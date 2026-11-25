@@ -1,7 +1,8 @@
 import { SquareArrowOutUpRightIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
-import { Switch } from 'radix-ui';
 import { useState } from 'react';
+import { Button } from '../../components/ui/button';
+import { Switch } from '../../components/ui/switch';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
 
@@ -41,15 +42,12 @@ export function PrivacySettings({ preferences }: { preferences: Preferences }) {
           description="默认关闭，修改后下次启动生效。开启后会上传 minidump，不会额外上传数据文件，但其中可能包含崩溃时的少量进程内存片段。"
         >
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Switch.Root
+            <Switch
               aria-label="启用原生崩溃报告"
               checked={preferences.diagnostics.nativeCrashReporting}
               disabled={saving}
-              className="flex h-6 w-11 items-center rounded-full bg-ink/20 p-0.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-focus data-[state=checked]:bg-accent disabled:opacity-45"
               onCheckedChange={(checked) => void updateNativeCrashReporting(checked)}
-            >
-              <Switch.Thumb className="size-5 rounded-full bg-white shadow-xs motion-safe:transition-transform data-[state=checked]:translate-x-5" />
-            </Switch.Root>
+            />
             启用
           </label>
         </SettingRow>
@@ -64,14 +62,13 @@ export function PrivacySettings({ preferences }: { preferences: Preferences }) {
           </ul>
           <p className="mt-4 mb-0">
             Sive 是 MIT 开源软件，你可以审查异常过滤和上报代码：
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 text-accent hover:underline"
+            <Button
+              variant="link"
               onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}
             >
               https://github.com/antvis/Sive
               <SquareArrowOutUpRightIcon size={14} aria-hidden />
-            </button>
+            </Button>
           </p>
         </div>
       </SettingGroup>

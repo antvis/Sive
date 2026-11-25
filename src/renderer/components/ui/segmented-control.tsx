@@ -18,6 +18,7 @@ export function SegmentedControl<Value extends string>({
 }: SegmentedControlProps<Value>) {
   return (
     <RadioGroup.Root
+      data-slot="segmented-control"
       aria-label={label}
       orientation="horizontal"
       value={value}
@@ -32,7 +33,7 @@ export function SegmentedControl<Value extends string>({
         <RadioGroup.Item
           key={value}
           value={value}
-          className="flex min-h-8 items-center justify-center gap-1.5 rounded-[9px] px-2.5 py-1 text-sm text-muted-foreground outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-sidebar-focus data-[state=checked]:bg-ink/5 data-[state=checked]:text-ink disabled:opacity-45"
+          className="flex min-h-8 items-center justify-center gap-1.5 rounded-[9px] px-2.5 py-1 text-sm text-muted-foreground -outline-offset-1 transition-colors hover:text-ink data-[state=checked]:bg-selected data-[state=checked]:text-selected-foreground disabled:opacity-45"
         >
           {label}
         </RadioGroup.Item>

@@ -1,19 +1,17 @@
+import { Tabs, TabsContent } from '../../components/ui/tabs';
 import clsx from 'clsx';
 import { Maximize2Icon, Minimize2Icon, PanelRightIcon, Table2Icon } from 'lucide-react';
-import { Tabs } from 'radix-ui';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
-import { IconButton } from '../../components/IconButton';
 import { AnalyzeTool } from '../../components/chat/tools/analyze';
+import { Button } from '../../components/ui/button';
 import { PanelTabList } from '../../components/ui/panel-tabs';
-import { panelAnimationTiming } from '../../lib/panel-layout';
 import type { DatasetSummary } from '../../types';
 import { DatasetPanel } from './DatasetPanel';
 import type { AnalysisTab } from './useAnalysisTabs';
 
 export const DATASET_PREVIEW_ID = 'dataset';
 
-const tabContentClassName = 'min-h-0 min-w-0 flex-1 bg-surface data-[state=inactive]:hidden';
 
 type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
@@ -41,6 +39,8 @@ export function AnalysisSidePanel({
   onToggleCollapsed,
 }: Props) {
   const hasDataset = tabs.some((tab) => tab.kind === 'dataset');
+  const FullscreenIcon = fullscreen ? Minimize2Icon : Maximize2Icon;
+  const fullscreenLabel = fullscreen ? '退出右侧面板全屏' : '全屏查看右侧面板';
   const card = useRef<HTMLElement>(null);
   const previousBounds = useRef<DOMRect | null>(null);
 
@@ -60,7 +60,7 @@ export function AnalysisSidePanel({
         },
         { width: '100%', height: '100%', transform: 'translate(0px, 0px)' },
       ],
-      panelAnimationTiming,
+      { duration: 320, easing: 'cubic-bezier(.22,1,.36,1)' },
     );
     return () => animation.cancel();
   }, [fullscreen]);
@@ -97,7 +97,7 @@ export function AnalysisSidePanel({
   }, []);
 
   return (
-    <Tabs.Root asChild value={activeTabId} onValueChange={onTabChange}>
+    <Tabs asChild value={activeTabId} onValueChange={onTabChange}>
       <section
         ref={card}
         id={DATASET_PREVIEW_ID}
@@ -134,41 +134,51 @@ export function AnalysisSidePanel({
             onClose={onTabClose}
           />
           {!hasDataset && !!tabs.length && (
-            <IconButton
-              icon={Table2Icon}
-              label="打开数据预览"
-              className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="打开数据预览"
+              title="打开数据预览"
+              className="text-black/50 dark:text-white/50"
               onClick={onOpenDataset}
-            />
+            >
+              <Table2Icon className="size-[14px]" aria-hidden />
+            </Button>
           )}
-          <IconButton
-            icon={fullscreen ? Minimize2Icon : Maximize2Icon}
-            label={fullscreen ? '退出右侧面板全屏' : '全屏查看右侧面板'}
-            title={fullscreen ? '退出右侧面板全屏（Esc）' : '全屏查看右侧面板'}
-            className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={fullscreenLabel}
+            title={fullscreen ? `${fullscreenLabel}（Esc）` : fullscreenLabel}
+            className="text-black/50 dark:text-white/50"
             aria-pressed={fullscreen}
             onClick={toggleFullscreen}
-          />
+          >
+            <FullscreenIcon className="size-[14px]" aria-hidden />
+          </Button>
           {!collapsed && !fullscreen && (
-            <IconButton
-              icon={PanelRightIcon}
-              iconSize={18}
-              label="收起右侧面板"
-              className="size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="收起右侧面板"
+              title="收起右侧面板"
+              className="text-black/50 dark:text-white/50"
               aria-controls={DATASET_PREVIEW_ID}
               aria-expanded
               aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
               onClick={onToggleCollapsed}
-            />
+            >
+              <PanelRightIcon className="size-[16px]" aria-hidden />
+            </Button>
           )}
         </div>
         {tabs.map((tab) => (
-          <Tabs.Content
+          <TabsContent
             key={tab.id}
             value={tab.id}
             forceMount
             className={clsx(
-              tabContentClassName,
+              'min-h-0 flex-1 bg-surface data-[state=inactive]:hidden',
               tab.kind === 'dataset'
                 ? 'overflow-hidden'
                 : 'overflow-auto p-4 text-sm text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',
@@ -179,9 +189,9 @@ export function AnalysisSidePanel({
             ) : (
               <AnalyzeTool call={tab.call} sidePanel />
             )}
-          </Tabs.Content>
+          </TabsContent>
         ))}
       </section>
-    </Tabs.Root>
+    </Tabs>
   );
 }

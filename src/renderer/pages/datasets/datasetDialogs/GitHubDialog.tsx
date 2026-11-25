@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import type { GitHubRepositoryPage } from '@shared/github';
-import { Button } from '../../../components/Button';
-import { Select } from '../../../components/Select';
+import { Button } from '../../../components/ui/button';
+import { SelectField } from '../../../components/ui/select';
 import { errorMessage } from '../../../utils';
 import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
@@ -123,7 +123,7 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
           <p className="m-0 text-xs text-muted-foreground">
             已连接 {login}，显示账号名下的仓库（含 Fork）。组织或其他仓库可手动填写地址。
           </p>
-          <Select
+          <SelectField
             aria-label="选择 GitHub 仓库"
             className="w-full"
             value={selectedRepository?.fullName ?? ''}

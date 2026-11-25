@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
+import { Button } from '../../components/ui/button';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../../components/ui/input-group';
+import { SidebarButton } from '../../components/ui/sidebar';
 import type { DatasetDetail } from '../../types';
 
 function columnIcon(type: string, primary: boolean) {
@@ -43,21 +46,17 @@ export function TableNavigator({
   return (
     <>
       <div className="shrink-0 p-3">
-        <div className="relative">
-          <SearchIcon
-            size={14}
-            className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-muted-foreground"
-          />
-          <input
+        <InputGroup>
+          <InputGroupAddon><SearchIcon aria-hidden /></InputGroupAddon>
+          <InputGroupInput
             ref={searchInput}
             type="search"
             aria-label="搜索数据表"
             placeholder="搜索数据表…"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="w-full min-w-0 rounded-lg bg-workspace-control py-1.5 pr-2 pl-8 text-base outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
           />
-        </div>
+        </InputGroup>
         <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
           <span className="text-sm">数据表</span>
           <span>{query ? `${tables.length} / ${models.length}` : models.length} 张</span>
@@ -75,20 +74,19 @@ export function TableNavigator({
                 <div
                   className={clsx(
                     'flex items-center rounded-lg',
-                    selected === model.name ? 'bg-accent-soft text-accent' : 'hover:bg-workspace-control',
+                    selected === model.name ? 'bg-selected text-selected-foreground' : 'hover:bg-workspace-control',
                   )}
                 >
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
                     aria-label={`${open ? '收起' : '展开'} ${model.name} 的字段`}
                     aria-expanded={open}
                     onClick={() => setExpanded(open ? null : model.name)}
-                    className="grid h-9 w-6 shrink-0 place-items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   >
                     <Caret size={12} />
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <SidebarButton
                     aria-label={`选择数据表 ${model.name}`}
                     aria-current={selected === model.name ? 'true' : undefined}
                     title={model.name}
@@ -96,14 +94,14 @@ export function TableNavigator({
                       setExpanded(model.name);
                       onSelect(model.name);
                     }}
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-2 pr-2 text-left text-base outline-none focus-visible:ring-2 focus-visible:ring-accent aria-[current=true]:font-medium"
+                    className="flex-1"
                   >
                     <Table2Icon size={15} className="shrink-0" />
                     <span className="min-w-0 flex-1 truncate">{model.name}</span>
                     <span className="shrink-0 text-xs text-muted-foreground" title={`${model.columns.length} 个字段`}>
                       {model.columns.length}
                     </span>
-                  </button>
+                  </SidebarButton>
                 </div>
                 {open && (
                   <ul className="my-1 ml-3 list-none border-l border-ink/10 py-1 pr-2 pl-4">

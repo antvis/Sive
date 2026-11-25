@@ -9,10 +9,10 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '../../components/Button';
-import { IconButton } from '../../components/IconButton';
+import { Button } from '../../components/ui/button';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
-import { Modal } from '../../components/Modal';
+import { Modal } from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
 import { SourceActions } from './SourceActions';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
@@ -85,10 +85,7 @@ function DatasetCard({
   };
 
   return (
-    <article
-      className="group cursor-pointer rounded-2xl bg-surface p-5 shadow-[0_3px_12px] shadow-ink/8 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px] hover:shadow-ink/10"
-      onClick={() => onOpen(dataset.id)}
-    >
+    <article className="group relative isolate rounded-2xl bg-surface p-5 shadow-[0_3px_12px] shadow-ink/8 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px] hover:shadow-ink/10">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-page">
@@ -96,11 +93,10 @@ function DatasetCard({
           </span>
           {action === 'rename' ? (
             <input
-              className="min-w-0 flex-1 rounded-md bg-page px-2 py-1 text-base font-semibold outline-none focus:bg-accent-soft"
+              className="min-w-0 flex-1 rounded-md bg-page px-2 py-1 text-base font-semibold focus:bg-selected"
               value={name}
               disabled={busy}
               autoFocus
-              onClick={(event) => event.stopPropagation()}
               onFocus={(e) => e.currentTarget.select()}
               onChange={(e) => setName(e.target.value)}
               onBlur={() => void saveName()}
@@ -117,36 +113,39 @@ function DatasetCard({
           ) : (
             <button
               type="button"
-              className="m-0 min-w-0 truncate text-left text-base font-semibold"
-              onClick={(event) => {
-                event.stopPropagation();
-                onOpen(dataset.id);
-              }}
+              className="m-0 min-w-0 truncate text-left text-base font-semibold before:absolute before:inset-0 before:rounded-2xl"
+              onClick={() => onOpen(dataset.id)}
             >
               {dataset.name}
             </button>
           )}
         </div>
         {action !== 'rename' && (
-          <div className="flex shrink-0 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-            <IconButton
-              icon={PencilIcon}
-              label={`重命名 ${dataset.name}`}
-              onClick={(event) => {
-                event.stopPropagation();
+          <div className="relative z-10 flex shrink-0 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`重命名 ${dataset.name}`}
+              title={`重命名 ${dataset.name}`}
+              className="text-black/50 dark:text-white/50"
+              onClick={() => {
                 renameCancelled.current = false;
                 setName(dataset.name);
                 setAction('rename');
               }}
-            />
-            <IconButton
-              icon={Trash2Icon}
-              label={`删除 ${dataset.name}`}
-              onClick={(event) => {
-                event.stopPropagation();
-                setAction('delete');
-              }}
-            />
+            >
+              <PencilIcon className="size-[14px]" aria-hidden />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`删除 ${dataset.name}`}
+              title={`删除 ${dataset.name}`}
+              className="text-black/50 dark:text-white/50"
+              onClick={() => setAction('delete')}
+            >
+              <Trash2Icon className="size-[14px]" aria-hidden />
+            </Button>
           </div>
         )}
       </div>
@@ -170,7 +169,7 @@ function DatasetCard({
           {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}
         </span>
         <span>更新于 {dataset.updatedAt.slice(0, 10)}</span>
-        <div className="ml-auto">
+        <div className="relative z-10 ml-auto">
           <SourceActions datasetId={dataset.id} sourceType={dataset.sourceType} />
         </div>
       </footer>
@@ -249,11 +248,11 @@ export function DatasetsPage({
         </Button>
       </header>
       <div className="mt-6 flex items-center justify-between gap-4">
-        <input
+        <Input
           type="search"
           aria-label="搜索数据源"
           placeholder="按名称搜索数据源…"
-          className="w-72 max-w-full rounded-lg border bg-surface px-3 py-2 text-base"
+          className="w-72 max-w-full"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);

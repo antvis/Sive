@@ -1,9 +1,11 @@
 import { analysisStrategy } from '@shared/api';
 import type { Preferences } from '@shared/api';
 import { useState } from 'react';
-import { SegmentedControl } from '../../components/SegmentedControl';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { SegmentedControl } from '../../components/ui/segmented-control';
 import { errorMessage } from '../../utils';
-import { SettingGroup, SettingInput, SettingRow } from './SettingControls';
+import { SettingGroup, SettingRow } from './SettingControls';
 
 const strategyOptions = [
   { value: 'direct', label: '直接分析' },
@@ -36,7 +38,7 @@ function NumberInput({
 }) {
   return (
     <div className="relative w-32">
-      <SettingInput
+      <Input
         aria-label={label}
         type="number"
         min={min}
@@ -59,13 +61,9 @@ function NumberInput({
 
 function DocumentationLink({ url, label }: { url: string; label: string }) {
   return (
-    <button
-      type="button"
-      className="text-sm text-accent hover:underline"
-      onClick={() => void window.workbench.systemOpen('url', url)}
-    >
+    <Button variant="link" onClick={() => void window.workbench.systemOpen('url', url)}>
       {label}
-    </button>
+    </Button>
   );
 }
 

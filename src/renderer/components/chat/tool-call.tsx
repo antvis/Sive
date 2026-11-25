@@ -12,8 +12,9 @@ import type { ReactNode } from 'react';
 import { getToolName } from 'ai';
 import type { Profile, Schema, Semantic } from '@antv/ava';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
-import { getToolErrorText, Tool, ToolContent, ToolHeader, ToolOutput } from '../ai-elements/tool';
+import { getToolErrorText, Tool, ToolHeader, ToolOutput } from '../ai-elements/tool';
 import type { ToolPart } from '../ai-elements/tool';
+import { CollapsibleInlineContent } from '../ui/collapsible';
 import { ToolPreviewContext } from './tool-preview';
 import { SourceTool } from './tools/source';
 import type { SourceResult } from './tools/source';
@@ -124,13 +125,13 @@ export function ToolCallView({
         title={toolLabels[toolName] ?? toolName}
         icon={ToolIcon ? <ToolIcon className="size-4 text-muted-foreground" aria-hidden="true" /> : undefined}
       />
-      <ToolContent>
+      <CollapsibleInlineContent>
         {isAnalysis ? (
           <AnalyzeTool call={call} onOpenPreview={openPreview} />
         ) : (
           toolContent(toolName, call, { messageId, savedMessageIds, isStreaming })
         )}
-      </ToolContent>
+      </CollapsibleInlineContent>
     </Tool>
   );
 }

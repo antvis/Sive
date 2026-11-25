@@ -44,7 +44,7 @@ function TraceCode({ label, text }: { label: string; text: string }) {
       <pre
         aria-label={label}
         tabIndex={0}
-        className="rounded-md bg-muted/55 p-2.5 font-chat-mono text-sm whitespace-pre-wrap [overflow-wrap:anywhere] focus-visible:outline-2 focus-visible:outline-ring"
+        className="rounded-md bg-muted/55 p-2.5 font-chat-mono text-sm whitespace-pre-wrap [overflow-wrap:anywhere] focus-visible:outline-1 focus-visible:outline-focus"
       >
         <code>{text}</code>
       </pre>
@@ -76,12 +76,12 @@ function QueryPreview({ columns, preview }: NonNullable<AnalysisTraceOperation['
     <div className="min-w-0 space-y-1">
       <p className="font-medium text-muted-foreground">返回数据预览</p>
       <div
-        className="min-w-0 overflow-x-auto rounded-md border border-border focus-visible:outline-2 focus-visible:outline-ring"
+        className="min-w-0 overflow-x-auto rounded-md border border-border focus-visible:outline-1 focus-visible:outline-focus"
         tabIndex={0}
         role="region"
         aria-label="返回数据预览"
       >
-        <Table className="text-sm [&_td]:min-w-16 [&_td]:max-w-40 [&_th]:whitespace-nowrap">
+        <Table className="[&_td]:min-w-16 [&_td]:max-w-40 [&_th]:whitespace-nowrap">
           <thead>
             <tr>
               {columns.map(({ name, type }) => (
@@ -198,7 +198,7 @@ function TraceOperation({
   }
 
   return (
-    <Collapsible defaultOpen={defaultOpen} className="min-w-0">
+    <Collapsible defaultOpen={defaultOpen}>
       <CollapsibleRowTrigger className="py-2.5">
         <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-sm font-semibold text-foreground">
@@ -217,7 +217,7 @@ function TraceOperation({
         </span>
         {duration && <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{duration}</span>}
       </CollapsibleRowTrigger>
-      <CollapsibleContent className="min-w-0 space-y-4 pt-1.5 pb-4 [overflow-wrap:anywhere]">
+      <CollapsibleContent className="space-y-4 pt-1.5 pb-4 [overflow-wrap:anywhere]">
         {details}
       </CollapsibleContent>
     </Collapsible>
@@ -442,7 +442,7 @@ function TraceWorkspace({
           <div
             key={selected.id}
             className={cn(
-              'min-h-0 min-w-0 overflow-auto overscroll-contain px-3.5 py-4 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+              'min-h-0 min-w-0 overflow-auto overscroll-contain px-3.5 py-4 [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring',
               !fullscreen && 'max-h-(--analysis-view-max-height)',
             )}
             tabIndex={0}
@@ -493,9 +493,9 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
                 size="icon-sm"
                 aria-label="全屏查看分析流程图"
                 title="全屏查看分析流程图"
-                className="text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                className="text-black/50 dark:text-white/50"
               >
-                <Maximize2Icon aria-hidden="true" />
+                <Maximize2Icon className="size-[14px]" aria-hidden />
               </Button>
             </DialogTrigger>
           )}
@@ -509,7 +509,7 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
       {steps.length > 0 && (
         <DialogContent
           showCloseButton={false}
-          className="top-0 left-0 h-dvh w-screen max-w-none grid-rows-[auto_minmax(0,1fr)] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none p-0 text-sm leading-relaxed text-foreground sm:max-w-none data-open:animate-none data-closed:animate-none [&_[data-streamdown^=heading-]]:text-sm [&_[data-streamdown=table]_:is(th,td,code)]:text-sm"
+          className="top-0 left-0 grid h-dvh max-h-none w-screen max-w-none grid-rows-[auto_minmax(0,1fr)] translate-x-0 translate-y-0 overflow-hidden rounded-none border-0 bg-background p-0 text-sm leading-relaxed text-foreground shadow-none [&_[data-streamdown^=heading-]]:text-sm [&_[data-streamdown=table]_:is(th,td,code)]:text-sm"
         >
           <header className="min-w-0 border-b border-border">
             <div className="flex h-[44px] items-center justify-between gap-4 pr-4 pl-[88px] [-webkit-app-region:drag]">
@@ -520,9 +520,9 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
                   size="icon-sm"
                   aria-label="退出全屏"
                   title="退出全屏"
-                  className="text-muted-foreground [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-ring"
+                  className="text-black/50 dark:text-white/50"
                 >
-                  <Minimize2Icon aria-hidden="true" />
+                  <Minimize2Icon className="size-[14px]" aria-hidden />
                 </Button>
               </DialogClose>
             </div>

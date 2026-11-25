@@ -4,14 +4,8 @@ import type { ChatMessage } from '@shared/api';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { DataSourceLogo } from '../DataSourceLogo';
-import {
-  PromptInputSelect,
-  PromptInputSelectContent,
-  PromptInputSelectItem,
-  PromptInputSelectTrigger,
-  PromptInputSelectValue,
-} from '../ai-elements/prompt-input';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { TooltipProvider } from '../ui/tooltip';
 import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
@@ -185,30 +179,26 @@ export function Chat({
         />
         <div className="mx-auto w-full max-w-3xl shrink-0 px-5 pt-3 pb-4">
           {!conversationId && (
-            <PromptInputSelect value={datasetId} onValueChange={changeDataset} disabled={busy}>
-              <PromptInputSelectTrigger
+            <Select value={datasetId} onValueChange={changeDataset} disabled={busy}>
+              <SelectTrigger
                 aria-label="切换数据源"
                 title={datasetName}
-                size="sm"
-                className="mb-1.5 min-w-0 max-w-full px-2 text-sm *:data-[slot=select-value]:min-w-0"
+                className="mb-1.5"
               >
-                <PromptInputSelectValue>
+                <SelectValue>
                   <DataSourceLogo type={dataset.sourceType} size={14} />
-                  <span className="truncate">{datasetName}</span>
-                </PromptInputSelectValue>
-              </PromptInputSelectTrigger>
-              <PromptInputSelectContent
-                className="max-w-[min(320px,var(--radix-select-content-available-width))] [&_[data-position=popper]]:min-w-0!"
-                side="top"
-              >
+                  {datasetName}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent side="top">
                 {datasets.map(({ id, name, sourceType }) => (
-                  <PromptInputSelectItem key={id} value={id}>
+                  <SelectItem key={id} value={id}>
                     <DataSourceLogo type={sourceType} size={14} />
-                    <span className="min-w-0 wrap-anywhere whitespace-normal">{name}</span>
-                  </PromptInputSelectItem>
+                    {name}
+                  </SelectItem>
                 ))}
-              </PromptInputSelectContent>
-            </PromptInputSelect>
+              </SelectContent>
+            </Select>
           )}
           <MultimodalInput
             value={question}

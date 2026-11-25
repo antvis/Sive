@@ -103,7 +103,7 @@ export function DataGrid({
                     aria-valuemax={MAX_WIDTH}
                     aria-valuenow={width}
                     title="拖动或使用左右方向键调整列宽，双击恢复"
-                    className="absolute top-0 right-0 h-full w-2 cursor-col-resize touch-none select-none after:absolute after:inset-y-1 after:end-0 after:w-px after:rounded-full after:bg-accent/65 after:opacity-0 hover:after:opacity-100 focus-visible:after:opacity-100"
+                    className="absolute top-0 right-0 h-full w-2 cursor-col-resize touch-none select-none after:absolute after:inset-y-1 after:end-0 after:w-px after:rounded-full after:bg-focus/65 after:opacity-0 hover:after:opacity-100 focus-visible:after:opacity-100"
                     onClick={(event) => event.stopPropagation()}
                     onDoubleClick={() => resize(column.name, DEFAULT_WIDTH)}
                     onPointerDown={(event) => {
@@ -156,7 +156,7 @@ export function DataGrid({
         </thead>
         <tbody>
           {visible.map((row, index) => (
-            <tr key={index} className="transition-colors even:bg-preview-row hover:bg-accent-soft">
+            <tr key={index} className="transition-colors even:bg-preview-row hover:bg-selected/60">
               {columns.map((column) => (
                 <td
                   key={column.name}

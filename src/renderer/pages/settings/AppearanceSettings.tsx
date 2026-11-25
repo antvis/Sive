@@ -1,7 +1,8 @@
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
 import { useState } from 'react';
-import { SegmentedControl } from '../../components/SegmentedControl';
+import { SegmentedControl } from '../../components/ui/segmented-control';
+import { Slider } from '../../components/ui/slider';
 import { useI18n } from '../../i18n';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
@@ -71,17 +72,15 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
         </SettingRow>
         <SettingRow title="界面字号" description="调整应用中的文字大小">
           <div className="w-56 max-w-full">
-            <input
+            <Slider
               aria-label="界面字号"
               aria-valuetext={`${theme.fontSize}px`}
-              type="range"
               list="font-size-stops"
               min={0}
               max={FONT_SIZES.length - 1}
               step={1}
               value={Math.max(0, FONT_SIZES.indexOf(theme.fontSize))}
               disabled={saving}
-              className="w-full accent-(--ink)"
               onChange={(event) =>
                 void update({
                   ...preferences,

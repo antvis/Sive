@@ -1,11 +1,11 @@
 import clsx from 'clsx';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PropsWithChildren, ReactNode } from 'react';
-import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
+import { Group, Panel, usePanelRef } from 'react-resizable-panels';
 import { usePanelToggleFocus } from '../hooks/usePanelToggleFocus';
 import { usePanelCollapsePreview } from '../hooks/usePanelCollapsePreview';
 import { readWidth, saveWidth } from '../utils';
-import { panelCollapsePreviewClassName, panelSeparatorClassName } from '../lib/panel-layout';
+import { ResizeHandle } from './ui/resize-handle';
 import { WORKSPACE_SIDEBAR_ID, WorkspaceSidebar } from './WorkspaceSidebar';
 import type { WorkspaceSidebarProps } from './WorkspaceSidebar';
 import { WorkspaceTitleBar } from './WorkspaceTitleBar';
@@ -28,13 +28,7 @@ const SIDEBAR_MAX_WIDTH = 320;
 const SIDEBAR_DEFAULT_WIDTH = 224;
 const SIDEBAR_WIDTH_KEY = 'sive.sidebar-width';
 
-export function AppShell({
-  page,
-  activeDatasetId,
-  renderAnalysis,
-  children,
-  ...sidebar
-}: AppShellProps) {
+export function AppShell({ page, activeDatasetId, renderAnalysis, children, ...sidebar }: AppShellProps) {
   const [initialSidebarWidth] = useState(() => readWidth(SIDEBAR_WIDTH_KEY, SIDEBAR_DEFAULT_WIDTH));
   const preferredSidebarWidth = useRef(initialSidebarWidth);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -72,21 +66,20 @@ export function AppShell({
     if (!sidebarCollapsed) closeSidebar();
   };
 
-  const conversationTitle =
-    hasAnalysis && !previewFullscreen
-      ? (sidebar.conversationsByDataset
-          .get(activeDatasetId ?? '')
-          ?.find((conversation) => conversation.id === sidebar.activeConversationId)?.title ?? '新对话')
-      : undefined;
+  const activeConversationId = hasAnalysis && !previewFullscreen ? sidebar.activeConversationId : null;
+  const conversationTitle = activeConversationId
+    ? sidebar.conversationsByDataset
+        .get(activeDatasetId ?? '')
+        ?.find((conversation) => conversation.id === activeConversationId)?.title
+    : undefined;
 
   const titleBar = (
     <WorkspaceTitleBar
-      page={page}
       datasets={sidebar.datasets}
       activeDatasetId={activeDatasetId}
       showSidebarActions={showSidebarActions}
       conversationTitle={conversationTitle}
-      activeConversationId={sidebar.activeConversationId}
+      activeConversationId={activeConversationId}
       onOpenSidebar={openSidebar}
       onConversationCreate={sidebar.onConversationCreate}
     />
@@ -118,7 +111,10 @@ export function AppShell({
           minSize={sidebarCollapsed ? 0 : SIDEBAR_MIN_WIDTH}
           maxSize={sidebarCollapsed ? 0 : SIDEBAR_MAX_WIDTH}
           groupResizeBehavior="preserve-pixel-size"
-          className={clsx('flex min-w-0 flex-col', panelCollapsePreviewClassName)}
+          className={clsx(
+            'flex min-w-0 flex-col',
+            '[[data-collapse-preview]>&]:blur-[3px] motion-safe:transition-[filter] motion-safe:duration-150',
+          )}
           style={{ overflow: 'hidden' }}
         >
           <WorkspaceSidebar
@@ -129,9 +125,9 @@ export function AppShell({
             onCollapse={closeSidebar}
           />
         </Panel>
-        <Separator
+        <ResizeHandle
           aria-label="调整侧边栏宽度"
-          className={clsx(panelSeparatorClassName, sidebarCollapsed ? 'w-0' : 'w-(--workspace-gutter)')}
+          className={sidebarCollapsed ? 'w-0' : undefined}
           disabled={previewFullscreen || sidebarCollapsed}
           disableDoubleClick
           elementRef={sidebarCollapse.separatorRef}

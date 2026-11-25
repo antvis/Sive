@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { THEME_PRESETS } from '@antv/gpt-vis/dist/esm/theme/presets';
 import { ChartThemeContext } from '../../theme';
 import { cn } from '../../lib/utils';
-import { IconButton } from '../IconButton';
+import { Button } from '../ui/button';
 import { TemplatePicker } from './TemplatePicker';
 import { useSnippetCard } from './useSnippetCard';
 import DefaultTemplate from './templates/default';
@@ -57,6 +57,7 @@ export function SnippetCard({
   const card = useSnippetCard(data, onUpdate, template.theme);
   const { editing, busy, run, startEditing } = card;
   const showActions = mode !== 'export' && !editing && (onSave || onUpdate || onDelete || onShare);
+  const saveLabel = saved ? '已保存 Snippet' : busy ? '保存中…' : '保存 Snippet';
   const templateButtonRef = useRef<HTMLButtonElement>(null);
   const previousTemplate = useRef(template.id);
 
@@ -82,7 +83,7 @@ export function SnippetCard({
         <div
           role="group"
           aria-label="Snippet 操作"
-          className="pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1 opacity-0 group-focus-within/snippet:pointer-events-auto group-focus-within/snippet:opacity-100 group-hover/snippet:pointer-events-auto group-hover/snippet:opacity-100 has-[[data-state=open]]:pointer-events-auto has-[[data-state=open]]:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 [&_button]:focus-visible:outline-2 [&_button]:focus-visible:outline-offset-2 [&_button]:focus-visible:outline-accent"
+          className="pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1 opacity-0 group-focus-within/snippet:pointer-events-auto group-focus-within/snippet:opacity-100 group-hover/snippet:pointer-events-auto group-hover/snippet:opacity-100 has-[[data-state=open]]:pointer-events-auto has-[[data-state=open]]:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100"
         >
           {onUpdate && (
             <>
@@ -93,28 +94,57 @@ export function SnippetCard({
                 disabled={busy}
                 onChange={(value) => void run(() => onUpdate({ templateId: value }))}
               />
-              <IconButton icon={PencilIcon} label="编辑 Snippet" disabled={busy} onClick={startEditing} />
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="编辑 Snippet"
+                title="编辑 Snippet"
+                className="text-black/50 dark:text-white/50"
+                disabled={busy}
+                onClick={startEditing}
+              >
+                <PencilIcon className="size-[14px]" aria-hidden />
+              </Button>
             </>
           )}
-          {onShare && <IconButton icon={ShareIcon} label="分享与导出" disabled={busy} onClick={onShare} />}
-          {onDelete && (
-            <IconButton
-              icon={Trash2Icon}
-              label="删除 Snippet"
+          {onShare && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="分享与导出"
+              title="分享与导出"
+              className="text-black/50 dark:text-white/50"
               disabled={busy}
-              className="hover:text-danger"
+              onClick={onShare}
+            >
+              <ShareIcon className="size-[14px]" aria-hidden />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="删除 Snippet"
+              title="删除 Snippet"
+              disabled={busy}
+              className="text-black/50 dark:text-white/50 hover:text-danger"
               onClick={onDelete}
-            />
+            >
+              <Trash2Icon className="size-[14px]" aria-hidden />
+            </Button>
           )}
           {onSave && (
-            <IconButton
-              icon={PinIcon}
-              iconClassName={saved ? 'fill-current' : undefined}
-              label={saved ? '已保存 Snippet' : busy ? '保存中…' : '保存 Snippet'}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={saveLabel}
+              title={saveLabel}
               disabled={saved || busy}
-              className={saved ? 'text-accent disabled:opacity-100' : undefined}
+              className={saved ? 'text-ink disabled:opacity-100' : 'text-black/50 dark:text-white/50'}
               onClick={() => void run(onSave)}
-            />
+            >
+              <PinIcon className={cn('size-[14px]', saved && 'fill-current')} aria-hidden />
+            </Button>
           )}
         </div>
       )}

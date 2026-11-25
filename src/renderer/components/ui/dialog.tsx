@@ -1,11 +1,11 @@
 "use client"
 
+import { XIcon } from "lucide-react"
+import { AlertDialog as AlertDialogPrimitive, Dialog as DialogPrimitive } from "radix-ui"
 import * as React from "react"
-import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { cn } from "../../lib/utils"
 import { Button } from "./button"
-import { XIcon } from "lucide-react"
 
 function Dialog({
   ...props
@@ -31,6 +31,21 @@ function DialogClose({
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
+function DialogCloseButton() {
+  return (
+    <DialogClose asChild>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="absolute top-6 right-6 rounded-md"
+        aria-label="关闭"
+      >
+        <XIcon className="size-[18px]" aria-hidden />
+      </Button>
+    </DialogClose>
+  )
+}
+
 function DialogOverlay({
   className,
   ...props
@@ -38,10 +53,7 @@ function DialogOverlay({
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
-      className={cn(
-        "fixed inset-0 isolate z-50 bg-black/80 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
-        className
-      )}
+      className={cn("fixed inset-0 z-50 bg-[#15202bcc] [-webkit-app-region:no-drag]", className)}
       {...props}
     />
   )
@@ -60,26 +72,11 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 rounded-4xl bg-background p-6 text-sm ring-1 ring-foreground/5 duration-100 outline-none sm:max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-          className
-        )}
+        className={cn("fixed top-1/2 left-1/2 z-50 max-h-[85vh] w-[480px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-2xl border bg-surface p-6 shadow-2xl", className)}
         {...props}
       >
         {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close data-slot="dialog-close" asChild>
-            <Button
-              variant="ghost"
-              className="absolute top-4 right-4"
-              size="icon-sm"
-            >
-              <XIcon
-              />
-              <span className="sr-only">Close</span>
-            </Button>
-          </DialogPrimitive.Close>
-        )}
+        {showCloseButton && <DialogCloseButton />}
       </DialogPrimitive.Content>
     </DialogPortal>
   )
@@ -89,7 +86,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2", className)}
+      className={cn("mb-5 flex min-h-8 flex-col justify-center gap-2 pe-8", className)}
       {...props}
     />
   )
@@ -106,17 +103,14 @@ function DialogFooter({
   return (
     <div
       data-slot="dialog-footer"
-      className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-        className
-      )}
+      className={cn("mt-6 flex justify-end gap-2", className)}
       {...props}
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close asChild>
-          <Button variant="outline">Close</Button>
-        </DialogPrimitive.Close>
+        <DialogClose asChild>
+          <Button>关闭</Button>
+        </DialogClose>
       )}
     </div>
   )
@@ -129,7 +123,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg font-medium", className)}
+      className={cn("m-0 text-lg font-semibold text-balance", className)}
       {...props}
     />
   )
@@ -142,16 +136,84 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn(
-        "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
-        className
-      )}
+      className={cn("m-0 text-sm leading-6 text-pretty text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground", className)}
       {...props}
     />
   )
 }
 
+type ModalProps = React.PropsWithChildren<{
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: string
+  footer?: React.ReactNode
+  className?: string
+}>
+
+function Modal({ open, onOpenChange, title, footer, className, children }: ModalProps) {
+  const triggerRef = React.useRef<HTMLElement | null>(null)
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        showCloseButton={false}
+        aria-describedby={undefined}
+        onOpenAutoFocus={() => {
+          triggerRef.current = document.activeElement as HTMLElement | null
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          triggerRef.current?.focus({ preventScroll: true })
+        }}
+        className={className}
+      >
+        <DialogCloseButton />
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        {children}
+        {footer && <DialogFooter>{footer}</DialogFooter>}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function AlertDialog({
+  title,
+  description,
+  cancel,
+  children,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Root> & {
+  title: string
+  description: string
+  cancel: React.ReactElement
+}) {
+  return (
+    <AlertDialogPrimitive.Root {...props}>
+      <AlertDialogPrimitive.Portal>
+        <AlertDialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-[#15202bcc] [-webkit-app-region:no-drag]" />
+        <AlertDialogPrimitive.Content data-slot="dialog-content" className="fixed top-1/2 left-1/2 z-50 max-h-[85vh] w-[480px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-2xl border bg-surface p-6 shadow-2xl">
+          <DialogHeader className="mb-0 pe-0">
+            <AlertDialogPrimitive.Title data-slot="dialog-title" className="m-0 text-lg font-semibold text-balance">
+              {title}
+            </AlertDialogPrimitive.Title>
+            <AlertDialogPrimitive.Description data-slot="dialog-description" className="m-0 text-sm leading-6 text-pretty text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">
+              {description}
+            </AlertDialogPrimitive.Description>
+          </DialogHeader>
+          <DialogFooter>
+            <AlertDialogPrimitive.Cancel asChild>{cancel}</AlertDialogPrimitive.Cancel>
+            {children}
+          </DialogFooter>
+        </AlertDialogPrimitive.Content>
+      </AlertDialogPrimitive.Portal>
+    </AlertDialogPrimitive.Root>
+  )
+}
+
 export {
+  AlertDialog,
   Dialog,
   DialogClose,
   DialogContent,
@@ -162,4 +224,5 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+  Modal,
 }
