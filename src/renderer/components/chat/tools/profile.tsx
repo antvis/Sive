@@ -102,7 +102,7 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
             <p className="mt-0 mb-[9px] text-sm text-foreground/80">
               {`${stats.nullFields.length} 个字段有空值 · ${stats.complete ? '共' : '已知'} ${formatMetric(stats.nullCount)} 个空单元格`}
             </p>
-            <Table className="table-fixed" aria-label={`${model.name} 的空值统计`}>
+            <Table className="table-fixed text-sm" aria-label={`${model.name} 的空值统计`}>
               <thead>
                 <tr>
                   <th scope="col" className="w-[52%]">
@@ -188,7 +188,7 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
             </span>
           </div>
           <Table
-            className="table-fixed max-[520px]:block max-[520px]:[&_td]:border-b-0"
+            className="table-fixed text-sm max-[520px]:block max-[520px]:[&_td]:border-b-0"
             aria-label={`${model.name} 的数值统计`}
           >
             <thead className="max-[520px]:sr-only">
@@ -262,7 +262,7 @@ export function ProfileTool({ profile: { models } }: { profile: Profile }) {
   if (!models.length) return <p className="m-0 text-sm leading-6 text-muted-foreground">未返回数据概况。</p>;
 
   return (
-    <div className="grid min-w-0 gap-4 text-base leading-[1.6] text-foreground">
+    <div className="grid min-w-0 gap-4 text-sm leading-[1.6] text-foreground">
       <div className="flex flex-wrap gap-1.5">
         <Badge variant="secondary">{models.length} 张表</Badge>
         <Badge variant="secondary">{columnCount} 个字段</Badge>

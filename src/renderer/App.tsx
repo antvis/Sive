@@ -20,13 +20,12 @@ import type { Conversation, DatasetSummary, WorkspaceState } from './types';
 const EMPTY_DATASETS: DatasetSummary[] = [];
 const RECENT_CONVERSATION_LIMIT = 5;
 
-type AnalysisSelection = { datasetId: string; chatId: string; saved: boolean };
+type AnalysisSelection = { datasetId: string; chatId: string; draftId: string; saved: boolean };
 
-const analysisSelection = (datasetId: string, conversationId?: string): AnalysisSelection => ({
-  datasetId,
-  chatId: conversationId ?? generateId(),
-  saved: conversationId !== undefined,
-});
+const analysisSelection = (datasetId: string, conversationId?: string): AnalysisSelection => {
+  const chatId = conversationId ?? generateId();
+  return { datasetId, chatId, draftId: chatId, saved: conversationId !== undefined };
+};
 
 export default function App() {
   const settingsWindow = window.location.hash === '#settings';
@@ -128,6 +127,16 @@ function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback
     setPage('analysis');
   };
 
+  const changeDraftDataset = (datasetId: string) => {
+    // A chat ID can already be tied to a data source if saving the first message fails.
+    const chatId = generateId();
+    setAnalysis((current) =>
+      current && !current.saved && current.datasetId !== datasetId
+        ? { ...current, datasetId, chatId }
+        : current,
+    );
+  };
+
   const confirmConversation = useCallback((chatId: string) => {
     setAnalysis((current) =>
       current?.chatId === chatId && !current.saved ? { ...current, saved: true } : current,
@@ -150,7 +159,7 @@ function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback
     <AppShell
       page={page}
       datasets={datasets}
-      activeDatasetId={analysisDatasetId}
+      activeDatasetId={analysisDataset?.id ?? null}
       conversationsByDataset={conversationsByDataset}
       recentConversations={recentConversations}
       activeConversationId={activeConversationId}
@@ -160,11 +169,14 @@ function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback
               <AnalysisPage
                 {...frame}
                 dataset={analysisDataset}
+                datasets={datasets}
+                onDatasetChange={changeDraftDataset}
                 chatId={analysis.chatId}
+                draftId={analysis.draftId}
                 conversationId={activeConversationId}
-                datasetCollapsed={collapsedPreviews[analysis.chatId] ?? false}
+                datasetCollapsed={collapsedPreviews[analysis.draftId] ?? false}
                 onDatasetCollapsedChange={(collapsed) =>
-                  setCollapsedPreviews((current) => ({ ...current, [analysis.chatId]: collapsed }))
+                  setCollapsedPreviews((current) => ({ ...current, [analysis.draftId]: collapsed }))
                 }
                 onConversationChange={confirmConversation}
                 savedMessageIds={state.snippets.map((snippet) => snippet.messageId)}

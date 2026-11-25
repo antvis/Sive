@@ -17,7 +17,7 @@ export function usePanelToggleFocus(
       ?.focus({ preventScroll: true });
   }, [collapsed, container, panelId]);
 
-  return () => {
-    shouldRestore.current = document.activeElement?.getAttribute('aria-controls') === panelId;
+  return (restoreFocus = false) => {
+    shouldRestore.current = restoreFocus || document.activeElement?.getAttribute('aria-controls') === panelId;
   };
 }

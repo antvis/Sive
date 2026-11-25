@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import { Maximize2Icon, Minimize2Icon, PanelRightIcon, Table2Icon } from 'lucide-react';
 import { Tabs } from 'radix-ui';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
-import { Button } from '../../components/Button';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { IconButton } from '../../components/IconButton';
 import { AnalyzeTool } from '../../components/chat/tools/analyze';
@@ -172,7 +171,7 @@ export function AnalysisSidePanel({
               tabContentClassName,
               tab.kind === 'dataset'
                 ? 'overflow-hidden'
-                : 'overflow-auto p-4 text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',
+                : 'overflow-auto p-4 text-sm text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',
             )}
           >
             {tab.kind === 'dataset' ? (
@@ -182,13 +181,6 @@ export function AnalysisSidePanel({
             )}
           </Tabs.Content>
         ))}
-        {!tabs.length && (
-          <div className="grid min-h-0 flex-1 place-content-center bg-surface p-4">
-            <Button autoFocus={!collapsed || fullscreen} onClick={onOpenDataset}>
-              打开数据预览
-            </Button>
-          </div>
-        )}
       </section>
     </Tabs.Root>
   );

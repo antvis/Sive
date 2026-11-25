@@ -12,7 +12,7 @@ export default defineConfig(({ command }) => ({
     plugins: [
       {
         name: 'github-mcp-resources',
-        apply: 'build',
+        apply: () => command === 'build',
         buildStart() {
           const root = resolve('resources/github-mcp');
           accessSync(

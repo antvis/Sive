@@ -25,7 +25,10 @@ const PREVIEW_WIDTH_KEY = 'sive.preview-width';
 
 type Props = AnalysisFrameProps & {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
+  datasets: DatasetSummary[];
+  onDatasetChange: (datasetId: string) => void;
   chatId: string;
+  draftId: string;
   conversationId: string | null;
   datasetCollapsed: boolean;
   onDatasetCollapsedChange: (collapsed: boolean) => void;
@@ -38,11 +41,14 @@ type Props = AnalysisFrameProps & {
 
 export function AnalysisPage({
   dataset,
+  datasets,
+  onDatasetChange,
   titleBar,
   fullscreen,
   onFullscreenChange,
   onPreviewOpen,
   chatId,
+  draftId,
   conversationId,
   datasetCollapsed,
   onDatasetCollapsedChange,
@@ -63,8 +69,8 @@ export function AnalysisPage({
   const rememberToggleFocus = usePanelToggleFocus(workspace, DATASET_PREVIEW_ID, datasetCollapsed);
   const { activeTabId, tabs, selectTab, openDataset, openResult, closeTab } = useAnalysisTabs(chatId);
 
-  const changePreviewCollapsed = (collapsed: boolean) => {
-    rememberToggleFocus();
+  const changePreviewCollapsed = (collapsed: boolean, restoreFocus = false) => {
+    rememberToggleFocus(restoreFocus);
     if (!collapsed) onPreviewOpen();
     onDatasetCollapsedChange(collapsed);
   };
@@ -96,7 +102,17 @@ export function AnalysisPage({
     });
   };
 
-  const togglePreview = () => changePreviewCollapsed(!datasetCollapsed);
+  const togglePreview = () => {
+    if (datasetCollapsed && !tabs.length) openDataset();
+    changePreviewCollapsed(!datasetCollapsed);
+  };
+
+  const closePreviewTab = (id: string) => {
+    closeTab(id);
+    if (tabs.length !== 1 || tabs[0].id !== id) return;
+    if (fullscreen) onFullscreenChange(false);
+    changePreviewCollapsed(true, true);
+  };
 
   const openSidePanel = () => {
     if (datasetCollapsed) changePreviewCollapsed(false);
@@ -148,8 +164,10 @@ export function AnalysisPage({
           <div className={bodyClassName}>
             <ToolPreviewContext value={showResult}>
               <Chat
-                datasetId={dataset.id}
-                datasetName={dataset.name}
+                key={draftId}
+                dataset={dataset}
+                datasets={datasets}
+                onDatasetChange={onDatasetChange}
                 onOpenDatasetPreview={showDataset}
                 chatId={chatId}
                 conversationId={conversationId}
@@ -194,7 +212,7 @@ export function AnalysisPage({
           tabs={tabs}
           activeTabId={activeTabId}
           onTabChange={selectTab}
-          onTabClose={closeTab}
+          onTabClose={closePreviewTab}
           onOpenDataset={showDataset}
           onFullscreenChange={onFullscreenChange}
           onToggleCollapsed={togglePreview}

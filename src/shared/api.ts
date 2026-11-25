@@ -35,7 +35,7 @@ export type Preferences = {
 
 export const DEFAULT_PREFERENCES = {
   language: 'zh-CN',
-  theme: { mode: 'system', fontSize: 14 },
+  theme: { mode: 'system', fontSize: 13 },
   agent: { maxSteps: 10 },
   strategy: { type: 'direct' },
   engine: {

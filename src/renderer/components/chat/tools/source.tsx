@@ -32,8 +32,8 @@ export function SourceTool({ source }: { source: SourceResult }) {
         <span className="grid size-8 shrink-0 place-items-center rounded-md bg-background">
           <DataSourceLogo type={source.sourceType} size={18} />
         </span>
-        <span className="min-w-0 break-words text-base font-medium text-foreground">{source.name}</span>
-        <span className="shrink-0 text-sm text-muted-foreground">
+        <span className="min-w-0 break-words text-sm font-medium text-foreground">{source.name}</span>
+        <span className="shrink-0 text-xs text-muted-foreground">
           {findDatasetSource(source.sourceType)?.label ?? source.sourceType}
         </span>
       </div>
