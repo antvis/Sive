@@ -1,4 +1,4 @@
-import { ArrowsClockwise, PencilSimple } from '@phosphor-icons/react';
+import { PencilIcon, RefreshCwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { IconButton } from '../../components/IconButton';
@@ -28,10 +28,10 @@ export function SourceActions({ datasetId, sourceType }: { datasetId: string; so
 
   return (
     <div className="flex shrink-0" onClick={(event) => event.stopPropagation()} aria-busy={busy}>
-      <IconButton icon={ArrowsClockwise} label="刷新数据源" disabled={busy} onClick={() => void refresh()} />
+      <IconButton icon={RefreshCwIcon} label="刷新数据源" disabled={busy} onClick={() => void refresh()} />
       {source && Dialog && (
         <IconButton
-          icon={PencilSimple}
+          icon={PencilIcon}
           label={`编辑 ${source.label} 连接`}
           disabled={busy}
           onClick={() => setEditing(true)}

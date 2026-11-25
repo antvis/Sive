@@ -1,5 +1,5 @@
 import type { SnippetContent, SnippetUpdateInput } from '@shared/schema';
-import { Export, PencilSimple, PushPin, Trash } from '@phosphor-icons/react';
+import { PencilIcon, PinIcon, ShareIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { THEME_PRESETS } from '@antv/gpt-vis/dist/esm/theme/presets';
 import { ChartThemeContext } from '../../theme';
@@ -93,13 +93,13 @@ export function SnippetCard({
                 disabled={busy}
                 onChange={(value) => void run(() => onUpdate({ templateId: value }))}
               />
-              <IconButton icon={PencilSimple} label="编辑 Snippet" disabled={busy} onClick={startEditing} />
+              <IconButton icon={PencilIcon} label="编辑 Snippet" disabled={busy} onClick={startEditing} />
             </>
           )}
-          {onShare && <IconButton icon={Export} label="分享与导出" disabled={busy} onClick={onShare} />}
+          {onShare && <IconButton icon={ShareIcon} label="分享与导出" disabled={busy} onClick={onShare} />}
           {onDelete && (
             <IconButton
-              icon={Trash}
+              icon={Trash2Icon}
               label="删除 Snippet"
               disabled={busy}
               className="hover:text-danger"
@@ -108,8 +108,8 @@ export function SnippetCard({
           )}
           {onSave && (
             <IconButton
-              icon={PushPin}
-              weight={saved ? 'fill' : 'regular'}
+              icon={PinIcon}
+              iconClassName={saved ? 'fill-current' : undefined}
               label={saved ? '已保存 Snippet' : busy ? '保存中…' : '保存 Snippet'}
               disabled={saved || busy}
               className={saved ? 'text-accent disabled:opacity-100' : undefined}

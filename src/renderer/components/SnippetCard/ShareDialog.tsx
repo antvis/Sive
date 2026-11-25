@@ -1,4 +1,4 @@
-import { Copy, DownloadSimple, ImageSquare } from '@phosphor-icons/react';
+import { CopyIcon, DownloadIcon, ImageIcon } from 'lucide-react';
 import { snapdom } from '@zumer/snapdom';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -72,7 +72,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
         <div className="flex w-full flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2.5 text-muted-foreground">
             <span aria-hidden className="flex size-9 items-center justify-center rounded-lg border bg-page">
-              <ImageSquare size={18} />
+              <ImageIcon size={18} />
             </span>
             <p className="m-0 text-xs font-medium text-ink">
               高清 PNG <span className="ml-1 text-muted-foreground tabular-nums">2×</span>
@@ -84,7 +84,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
               disabled={!!busy}
               onClick={() => void share('clipboard')}
             >
-              <Copy size={16} aria-hidden />
+              <CopyIcon size={16} aria-hidden />
               {busy === 'clipboard' ? '正在生成…' : '复制图片'}
             </Button>
             <Button
@@ -93,7 +93,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
               disabled={!!busy}
               onClick={() => void share('file')}
             >
-              <DownloadSimple size={16} aria-hidden />
+              <DownloadIcon size={16} aria-hidden />
               {busy === 'file' ? '正在保存…' : '保存图片'}
             </Button>
           </div>
@@ -103,7 +103,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
       <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-line!">
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line! bg-surface px-4 py-2.5">
           <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <ImageSquare size={15} aria-hidden />
+            <ImageIcon size={15} aria-hidden />
             图片预览
           </span>
           <div className="flex items-center gap-2 text-xs">

@@ -1,4 +1,4 @@
-import { Check, Plus } from '@phosphor-icons/react';
+import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../components/Button';
 
@@ -86,7 +86,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
               onClick={add}
               aria-label="确认添加模型"
             >
-              <Check size={16} />
+              <CheckIcon size={16} />
             </Button>
           </div>
           {error && <p className="mt-1 mb-0 px-1 text-sm text-danger">{error}</p>}
@@ -98,7 +98,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
           disabled={disabled}
           onClick={() => setAdding(true)}
         >
-          <Plus size={15} />
+          <PlusIcon size={15} />
           添加自定义模型
         </Button>
       )}

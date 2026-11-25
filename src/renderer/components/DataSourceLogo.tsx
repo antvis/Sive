@@ -1,4 +1,4 @@
-import { Database } from '@phosphor-icons/react';
+import { DatabaseIcon } from 'lucide-react';
 import { findDatasetSource } from '@shared/dataSource';
 
 export function DataSourceLogo({ type, size }: { type: string; size: number }) {
@@ -12,6 +12,6 @@ export function DataSourceLogo({ type, size }: { type: string; size: number }) {
       alt=""
     />
   ) : (
-    <Database size={size} className="shrink-0 text-muted-foreground" aria-hidden />
+    <DatabaseIcon size={size} className="shrink-0 text-muted-foreground" aria-hidden />
   );
 }

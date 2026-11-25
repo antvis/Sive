@@ -1,4 +1,4 @@
-import { Archive, ArrowCounterClockwise, Trash } from '@phosphor-icons/react';
+import { ArchiveIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
@@ -43,7 +43,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
   if (!conversations.length) {
     return (
       <div className="grid justify-items-center px-6 py-14 text-center">
-        <Archive size={32} className="text-muted-foreground" />
+        <ArchiveIcon size={32} className="text-muted-foreground" />
         <h2 className="mt-4 mb-2 text-base font-medium">暂无归档会话</h2>
         <p className="m-0 text-muted-foreground">在侧栏归档的分析会话可以在这里恢复或永久删除</p>
       </div>
@@ -85,13 +85,13 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                     </time>
                   </div>
                   <IconButton
-                    icon={Trash}
+                    icon={Trash2Icon}
                     label={`永久删除 ${conversation.title}`}
                     disabled={busy}
                     onClick={() => setDeleting(conversation)}
                   />
                   <IconButton
-                    icon={ArrowCounterClockwise}
+                    icon={RotateCcwIcon}
                     label={`恢复 ${conversation.title}`}
                     disabled={busy}
                     onClick={() =>

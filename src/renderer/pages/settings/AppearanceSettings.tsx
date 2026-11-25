@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun } from '@phosphor-icons/react';
+import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
 import { useState } from 'react';
 import { SegmentedControl } from '../../components/SegmentedControl';
@@ -13,9 +13,9 @@ const languageOptions = [
 ] as const;
 const themeOptions = (
   [
-    ['light', '亮色', Sun],
-    ['dark', '暗色', Moon],
-    ['system', '自动', Monitor],
+    ['light', '亮色', SunIcon],
+    ['dark', '暗色', MoonIcon],
+    ['system', '自动', MonitorIcon],
   ] as const
 ).map(([value, label, Icon]) => ({
   value,

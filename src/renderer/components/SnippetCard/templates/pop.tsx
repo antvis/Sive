@@ -1,4 +1,4 @@
-import { CalendarBlank, CaretDown, Check, Tag } from '@phosphor-icons/react';
+import { CalendarIcon, ChevronDownIcon, CheckIcon, TagIcon } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
 import { Button } from '../../Button';
@@ -65,7 +65,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
               'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-muted-foreground',
             )}
           >
-            <Tag size={13} aria-hidden />
+            <TagIcon size={13} aria-hidden />
             {tag}
           </span>
         ))}
@@ -109,7 +109,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
                   className={summaryToggleClassName}
                 >
                   {summaryExpanded ? '收起洞察' : '展开洞察'}
-                  <CaretDown size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
+                  <ChevronDownIcon size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
                 </button>
               )}
             </div>
@@ -211,7 +211,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
             disabled={busy || !title.trim()}
             onClick={() => void saveEdits()}
           >
-            <Check size={14} aria-hidden />
+            <CheckIcon size={14} aria-hidden />
             {busy ? '保存中…' : '保存修改'}
           </Button>
         </div>
@@ -236,7 +236,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
             title={`保存于 ${new Date(createdAt).toLocaleString('zh-CN')}`}
             className="ml-auto flex shrink-0 items-center gap-1.5 leading-6 tabular-nums"
           >
-            <CalendarBlank size={13} aria-hidden />
+            <CalendarIcon size={13} aria-hidden />
             {new Date(createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
           </time>
         )}

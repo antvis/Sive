@@ -1,4 +1,4 @@
-import { FolderOpen } from '@phosphor-icons/react';
+import { FolderOpenIcon } from 'lucide-react';
 import type { StorageInfo } from '@shared/api';
 import { useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
@@ -76,7 +76,7 @@ export function StorageSettings() {
                   aria-label={`打开${title}目录`}
                   onClick={() => void openDirectory(directory)}
                 >
-                  <FolderOpen size={16} aria-hidden />
+                  <FolderOpenIcon size={16} aria-hidden />
                   打开目录
                 </Button>
               </SettingRow>

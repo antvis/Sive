@@ -1,4 +1,4 @@
-import { ArrowClockwise, Cpu, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { CpuIcon, PencilIcon, PlusIcon, RotateCwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
@@ -135,7 +135,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
               <div className="flex items-center gap-2">
                 {catalogHint && <span className="text-xs text-muted-foreground">{catalogHint}</span>}
                 <IconButton
-                  icon={ArrowClockwise}
+                  icon={RotateCwIcon}
                   iconClassName={discovering ? 'animate-spin' : undefined}
                   className="text-accent hover:bg-accent-soft"
                   disabled={discovering}
@@ -188,7 +188,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
 
   const addService = (
     <Button variant="primary" onClick={() => setEditing('new')}>
-      <Plus size={16} />
+      <PlusIcon size={16} />
       添加服务
     </Button>
   );
@@ -222,13 +222,13 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                   </Button>
                 )}
                 <IconButton
-                  icon={PencilSimple}
+                  icon={PencilIcon}
                   label={`编辑 ${model.name}`}
                   disabled={busy}
                   onClick={() => setEditing(model)}
                 />
                 <IconButton
-                  icon={Trash}
+                  icon={Trash2Icon}
                   label={`删除 ${model.name}`}
                   disabled={busy}
                   onClick={() => setDeleting(model)}
@@ -278,7 +278,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
       </div>
       {!models.length && (
         <div className="grid justify-items-center gap-3 px-6 py-14 text-center">
-          <Cpu size={32} className="text-accent" />
+          <CpuIcon size={32} className="text-accent" />
           <h2 className="m-0 text-base font-medium">连接你的第一个模型服务</h2>
           <p className="m-0 leading-6 text-muted-foreground">支持兼容 OpenAI 接口的云端或本地服务</p>
           <div className="mt-2">{addService}</div>

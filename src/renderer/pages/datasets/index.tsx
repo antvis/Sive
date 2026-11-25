@@ -1,4 +1,12 @@
-import { Columns, Database, FileText, PencilSimple, Plus, Table, Trash } from '@phosphor-icons/react';
+import {
+  Columns2Icon,
+  DatabaseIcon,
+  FileTextIcon,
+  PencilIcon,
+  PlusIcon,
+  Table2Icon,
+  Trash2Icon,
+} from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/Button';
@@ -32,10 +40,10 @@ function DatasetCard({
   const sourceLabel = source?.label ?? dataset.sourceType;
   const stats = [
     dataset.localFile
-      ? { label: '数据量', value: formatFileSize(dataset.fileSize), icon: FileText }
-      : { label: '数据表', value: String(dataset.tableCount ?? 0), icon: Table },
-    { label: '行数', value: dataset.rowCount?.toLocaleString('zh-CN') ?? '—', icon: Database },
-    { label: '列数', value: dataset.columnCount.toLocaleString('zh-CN'), icon: Columns },
+      ? { label: '数据量', value: formatFileSize(dataset.fileSize), icon: FileTextIcon }
+      : { label: '数据表', value: String(dataset.tableCount ?? 0), icon: Table2Icon },
+    { label: '行数', value: dataset.rowCount?.toLocaleString('zh-CN') ?? '—', icon: DatabaseIcon },
+    { label: '列数', value: dataset.columnCount.toLocaleString('zh-CN'), icon: Columns2Icon },
   ];
 
   const saveName = async () => {
@@ -122,7 +130,7 @@ function DatasetCard({
         {action !== 'rename' && (
           <div className="flex shrink-0 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
             <IconButton
-              icon={PencilSimple}
+              icon={PencilIcon}
               label={`重命名 ${dataset.name}`}
               onClick={(event) => {
                 event.stopPropagation();
@@ -132,7 +140,7 @@ function DatasetCard({
               }}
             />
             <IconButton
-              icon={Trash}
+              icon={Trash2Icon}
               label={`删除 ${dataset.name}`}
               onClick={(event) => {
                 event.stopPropagation();
@@ -236,7 +244,7 @@ export function DatasetsPage({
           <p className="mt-2 mb-0 text-muted-foreground">{datasets.length} 个已添加的数据源</p>
         </div>
         <Button variant="primary" onClick={onAdd}>
-          <Plus size={16} />
+          <PlusIcon size={16} />
           添加数据源
         </Button>
       </header>

@@ -1,22 +1,22 @@
 import {
-  CalendarBlank,
-  CaretDown,
-  CaretRight,
-  Hash,
-  Key,
-  MagnifyingGlass,
-  Table,
-  TextT,
-} from '@phosphor-icons/react';
+  CalendarIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  HashIcon,
+  KeyRoundIcon,
+  SearchIcon,
+  Table2Icon,
+  TypeIcon,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import type { DatasetDetail } from '../../types';
 
 function columnIcon(type: string, primary: boolean) {
-  if (primary) return Key;
-  if (/INT|DECIMAL|FLOAT|DOUBLE|NUMERIC/i.test(type)) return Hash;
-  if (/DATE|TIME/i.test(type)) return CalendarBlank;
-  return TextT;
+  if (primary) return KeyRoundIcon;
+  if (/INT|DECIMAL|FLOAT|DOUBLE|NUMERIC/i.test(type)) return HashIcon;
+  if (/DATE|TIME/i.test(type)) return CalendarIcon;
+  return TypeIcon;
 }
 
 export function TableNavigator({
@@ -44,7 +44,7 @@ export function TableNavigator({
     <>
       <div className="shrink-0 p-3">
         <div className="relative">
-          <MagnifyingGlass
+          <SearchIcon
             size={14}
             className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-muted-foreground"
           />
@@ -69,7 +69,7 @@ export function TableNavigator({
             const open = expanded === model.name;
             const primary =
               typeof model.primaryKey === 'string' ? [model.primaryKey] : (model.primaryKey ?? []);
-            const Caret = open ? CaretDown : CaretRight;
+            const Caret = open ? ChevronDownIcon : ChevronRightIcon;
             return (
               <li key={model.name}>
                 <div
@@ -98,7 +98,7 @@ export function TableNavigator({
                     }}
                     className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-2 pr-2 text-left text-base outline-none focus-visible:ring-2 focus-visible:ring-accent aria-[current=true]:font-medium"
                   >
-                    <Table size={15} className="shrink-0" />
+                    <Table2Icon size={15} className="shrink-0" />
                     <span className="min-w-0 flex-1 truncate">{model.name}</span>
                     <span className="shrink-0 text-xs text-muted-foreground" title={`${model.columns.length} 个字段`}>
                       {model.columns.length}

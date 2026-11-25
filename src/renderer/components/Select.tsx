@@ -1,4 +1,4 @@
-import { CaretDown } from '@phosphor-icons/react';
+import { ChevronDownIcon } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -39,7 +39,7 @@ export function Select({
           </option>
         ))}
       </select>
-      <CaretDown
+      <ChevronDownIcon
         size={14}
         className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
         aria-hidden

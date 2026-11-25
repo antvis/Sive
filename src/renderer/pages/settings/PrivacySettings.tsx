@@ -1,4 +1,4 @@
-import { ArrowSquareOut } from '@phosphor-icons/react';
+import { SquareArrowOutUpRightIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
 import { Switch } from 'radix-ui';
 import { useState } from 'react';
@@ -70,7 +70,7 @@ export function PrivacySettings({ preferences }: { preferences: Preferences }) {
               onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}
             >
               https://github.com/antvis/Sive
-              <ArrowSquareOut size={14} aria-hidden />
+              <SquareArrowOutUpRightIcon size={14} aria-hidden />
             </button>
           </p>
         </div>

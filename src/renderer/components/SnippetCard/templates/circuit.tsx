@@ -1,4 +1,4 @@
-import { CalendarBlank, CaretDown, Check, Quotes, Tag } from '@phosphor-icons/react';
+import { CalendarIcon, ChevronDownIcon, CheckIcon, QuoteIcon, TagIcon } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
 import { Button } from '../../Button';
@@ -68,7 +68,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
               'bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-accent',
             )}
           >
-            <Tag size={13} aria-hidden />
+            <TagIcon size={13} aria-hidden />
             {tag}
           </span>
         ))}
@@ -164,7 +164,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
               disabled={busy || !title.trim()}
               onClick={() => void saveEdits()}
             >
-              <Check size={14} aria-hidden />
+              <CheckIcon size={14} aria-hidden />
               {busy ? '保存中…' : '保存修改'}
             </Button>
           </div>
@@ -175,9 +175,10 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
             aria-label="关键洞察"
             className="relative isolate mt-5 rounded-md bg-[linear-gradient(110deg,color-mix(in_srgb,var(--accent)_7%,var(--surface)),var(--surface))] px-4 py-3"
           >
-            <Quotes
+            <QuoteIcon
               size={48}
-              weight="fill"
+              fill="currentColor"
+              stroke="none"
               aria-hidden
               className="pointer-events-none absolute top-1 right-2 -z-10 text-accent/7"
             />
@@ -199,7 +200,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
                   className={summaryToggleClassName}
                 >
                   {summaryExpanded ? '收起洞察' : '展开洞察'}
-                  <CaretDown size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
+                  <ChevronDownIcon size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
                 </button>
               )}
             </div>
@@ -248,7 +249,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
             title={`保存于 ${new Date(createdAt).toLocaleString('zh-CN')}`}
             className="ml-auto flex shrink-0 items-center gap-1.5 leading-6 tabular-nums"
           >
-            <CalendarBlank size={13} aria-hidden />
+            <CalendarIcon size={13} aria-hidden />
             {new Date(createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
           </time>
         )}

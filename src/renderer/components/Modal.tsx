@@ -1,4 +1,4 @@
-import { X } from '@phosphor-icons/react';
+import { XIcon } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useRef } from 'react';
 import type { PropsWithChildren, ReactNode } from 'react';
@@ -39,7 +39,7 @@ export function Modal({ open, onOpenChange, title, footer, className, children }
               className="rounded-md p-1 text-muted-foreground hover:bg-page hover:text-ink"
               aria-label="关闭"
             >
-              <X size={18} />
+              <XIcon size={18} />
             </Dialog.Close>
           </div>
           {children}

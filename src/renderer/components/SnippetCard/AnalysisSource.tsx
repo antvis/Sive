@@ -1,4 +1,4 @@
-import { CaretDown, LinkSimple } from '@phosphor-icons/react';
+import { ChevronDownIcon, LinkIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { SnippetContent } from '@shared/schema';
 import { AnalysisTraceView } from '../chat/tools/analysis-trace-view';
@@ -9,9 +9,9 @@ export function AnalysisSource({ question, trace }: Pick<SnippetContent, 'questi
   return (
     <details className="group/source min-w-0 flex-1" onToggle={(event) => setOpen(event.currentTarget.open)}>
       <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-sm text-sm leading-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
-        <LinkSimple size={13} aria-hidden />
+        <LinkIcon size={13} aria-hidden />
         分析来源
-        <CaretDown size={11} aria-hidden className="group-open/source:rotate-180" />
+        <ChevronDownIcon size={11} aria-hidden className="group-open/source:rotate-180" />
       </summary>
       <p className="mt-2 mb-0 text-sm leading-5 text-pretty wrap-anywhere">{question}</p>
       {open && trace ? (

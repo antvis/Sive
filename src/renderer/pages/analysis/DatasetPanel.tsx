@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { SidebarSimple, Table } from '@phosphor-icons/react';
+import { PanelLeftIcon, Table2Icon } from 'lucide-react';
 import clsx from 'clsx';
 import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
@@ -244,7 +244,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
               showTree ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-workspace-control',
             )}
           >
-            <SidebarSimple size={16} />
+            <PanelLeftIcon size={16} />
             <span>{detail.schema.models.length} 张表</span>
           </button>
         )}
@@ -281,7 +281,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
         <div hidden={compact && showTree} className="flex min-h-0 min-w-0 flex-1 flex-col hidden:hidden">
           <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-2 pb-3 text-xs text-muted-foreground">
             <div className="flex min-w-0 items-center gap-2">
-              <Table size={14} className="shrink-0" />
+              <Table2Icon size={14} className="shrink-0" />
               <span className="truncate text-base font-medium text-ink" title={model?.name}>
                 {model?.name ?? '没有可预览的数据表'}
               </span>

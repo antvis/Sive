@@ -1,4 +1,4 @@
-import { Database, Files, Stack } from '@phosphor-icons/react';
+import { DatabaseIcon, FilesIcon, LayersIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
@@ -7,7 +7,7 @@ import { DATA_SOURCE_GROUPS } from '@shared/dataSource';
 import type { DatasetSource, DatasetSourceAction } from '@shared/dataSource';
 import * as dialogs from './datasetDialogs';
 
-const groupIcons = { Database, Files, Stack };
+const groupIcons = { Database: DatabaseIcon, Files: FilesIcon, Stack: LayersIcon };
 
 function SourceCard({
   source,
