@@ -1,14 +1,11 @@
 import { CalendarIcon, ChevronDownIcon, CheckIcon, QuoteIcon, TagIcon } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
-import { Button } from '../../Button';
+import { Button } from '../../ui/button';
 import { AnalysisSource } from '../AnalysisSource';
 import { Summary } from '../../Summary';
 import { Visualization } from '../../Visualization';
-import { getIntentIcon, titleClassName, summaryClassName, summaryToggleClassName } from '../utils';
-
-const chipClassName =
-  "relative isolate inline-flex min-h-[26px] items-center justify-center gap-[5px] rounded border border-dashed border-[color-mix(in_srgb,var(--accent)_30%,var(--surface))]! px-2 py-[3px] leading-[18px] tabular-nums shadow-[0_2px_3px_color-mix(in_srgb,var(--ink)_5%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[url('/textures/paper-grain.svg')] before:opacity-[0.055] [&_svg]:shrink-0";
+import { getIntentIcon } from '../utils';
 
 export default function DefaultTemplate({ data, createdAt, mode = 'view', card }: SnippetTemplateProps) {
   const {
@@ -44,7 +41,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
       <header className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
         <span
           className={twMerge(
-            chipClassName,
+            "relative isolate inline-flex min-h-[26px] items-center justify-center gap-[5px] rounded border border-dashed border-[color-mix(in_srgb,var(--accent)_30%,var(--surface))]! px-2 py-[3px] leading-[18px] tabular-nums shadow-[0_2px_3px_color-mix(in_srgb,var(--ink)_5%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[url('/textures/paper-grain.svg')] before:opacity-[0.055] [&_svg]:shrink-0",
             '-rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_25%,var(--surface))] font-semibold text-ink',
           )}
           title={`分析类别：${data.intent}`}
@@ -56,7 +53,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
           <span
             key={tag}
             className={twMerge(
-              chipClassName,
+              "relative isolate inline-flex min-h-[26px] items-center justify-center gap-[5px] rounded border border-dashed border-[color-mix(in_srgb,var(--accent)_30%,var(--surface))]! px-2 py-[3px] leading-[18px] tabular-nums shadow-[0_2px_3px_color-mix(in_srgb,var(--ink)_5%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[url('/textures/paper-grain.svg')] before:opacity-[0.055] [&_svg]:shrink-0",
               'rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-accent',
             )}
           >
@@ -72,7 +69,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
           </label>
           <textarea
             id={titleId}
-            className="mt-1 block field-sizing-content max-h-40 min-h-14 w-full resize-none border-0 border-b border-line/65! bg-transparent px-0 py-2 text-xl leading-7 font-semibold text-balance text-ink outline-none placeholder:text-muted-foreground focus:border-accent! disabled:opacity-50"
+            className="mt-1 block field-sizing-content max-h-40 min-h-14 w-full resize-none border-0 border-b border-line/65! bg-transparent px-0 py-2 text-xl leading-7 font-semibold text-balance text-ink outline-none placeholder:text-muted-foreground focus:border-focus! disabled:opacity-50"
             value={title}
             disabled={busy}
             autoFocus
@@ -88,7 +85,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
           aria-level={3}
           className={twMerge(
             'mt-3',
-            titleClassName,
+            'line-clamp-2 max-h-14 text-xl leading-7 font-semibold break-words text-balance tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-container]:text-xl! [&_.t8-p]:line-clamp-2 [&_.t8-p]:m-0! [&_.t8-p]:text-xl! [&_.t8-p]:leading-7! [&_.t8-p]:font-semibold!',
             mode === 'export' && 'line-clamp-none max-h-none [&_.t8-p]:line-clamp-none',
           )}
         >
@@ -126,7 +123,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
       )}
       {editing ? (
         <div className="mt-5">
-          <div className="rounded-md bg-accent-soft/60 p-4 ring-1 ring-line/50 focus-within:ring-accent/50">
+          <div className="rounded-md bg-accent-soft/60 p-4 ring-1 ring-line/50 focus-within:ring-focus/50">
             <label htmlFor={summaryId} className="text-xs font-medium text-muted-foreground">
               关键洞察
             </label>
@@ -141,17 +138,12 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
             />
           </div>
           <div className="mt-3 flex items-center justify-end gap-2">
-            <Button
-              variant="ghost"
-              className="h-9 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              disabled={busy}
-              onClick={cancelEditing}
-            >
+            <Button variant="ghost" className="h-9" disabled={busy} onClick={cancelEditing}>
               取消
             </Button>
             <Button
-              variant="primary"
-              className="h-9 bg-ink! px-4 text-surface! shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              variant="neutral"
+              className="h-9 px-4"
               disabled={busy || !title.trim()}
               onClick={() => void saveEdits()}
             >
@@ -175,7 +167,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
             />
             <div
               className={twMerge(
-                summaryClassName,
+                'min-w-0 text-base leading-relaxed text-pretty tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-p]:m-0! [&_.t8-p]:text-base! [&_.t8-p]:leading-relaxed!',
                 '[&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:rounded-xs [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:bg-accent/8 [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:font-semibold [&_:is(.t8-metric\\_value,.t8-delta\\_value,.t8-ratio\\_value)]:text-accent [&_:is(.t8-metric\\_name,.t8-trend\\_desc)]:font-semibold',
               )}
             >
@@ -193,10 +185,16 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
                   aria-expanded={summaryExpanded}
                   aria-controls={summaryId}
                   onClick={() => setSummaryExpanded(!summaryExpanded)}
-                  className={summaryToggleClassName}
+                  className={
+                    'mt-2 inline-flex items-center gap-1 p-0 text-sm leading-5 text-muted-foreground hover:text-ink focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-focus'
+                  }
                 >
                   {summaryExpanded ? '收起洞察' : '展开洞察'}
-                  <ChevronDownIcon size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
+                  <ChevronDownIcon
+                    size={12}
+                    aria-hidden
+                    className={summaryExpanded ? 'rotate-180' : undefined}
+                  />
                 </button>
               )}
             </div>

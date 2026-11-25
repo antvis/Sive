@@ -4,8 +4,8 @@ import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { Snippet, SnippetExportInput } from '@shared/api';
 import { errorMessage } from '../../utils';
-import { Button } from '../Button';
-import { Modal } from '../Modal';
+import { Button } from '../ui/button';
+import { Modal } from '../ui/dialog';
 import { SnippetCard, templateOptions } from './index';
 import { TemplatePicker } from './TemplatePicker';
 
@@ -80,7 +80,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
           </div>
           <div className="ml-auto flex items-center gap-2">
             <Button
-              className="h-10 gap-2 px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              size="lg"
               disabled={!!busy}
               onClick={() => void share('clipboard')}
             >
@@ -88,8 +88,8 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
               {busy === 'clipboard' ? '正在生成…' : '复制图片'}
             </Button>
             <Button
-              variant="primary"
-              className="h-10 gap-2 bg-ink! px-4 text-surface! shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              variant="neutral"
+              size="lg"
               disabled={!!busy}
               onClick={() => void share('file')}
             >
@@ -124,7 +124,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
           aria-label="Snippet 图片预览"
           aria-busy={!!busy}
           tabIndex={0}
-          className="min-h-0 overflow-auto bg-page focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+          className="min-h-0 overflow-auto bg-page focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-focus"
         >
           <div ref={previewRef} className="mx-auto w-[800px] bg-page p-6">
             <SnippetCard data={snippet} templateId={templateId} createdAt={snippet.createdAt} mode="export" />

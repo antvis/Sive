@@ -3,20 +3,13 @@ import { ArrowUpIcon, RouteIcon, ZapIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { toast } from 'sonner';
 import type { ModelProfile } from '../../types';
-import { cn } from '../../lib/utils';
+import { ComposerFooter } from '../ui/composer';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
   PromptInput,
-  PromptInputBody,
-  PromptInputFooter,
-  PromptInputSelect,
-  PromptInputSelectContent,
-  PromptInputSelectItem,
-  PromptInputSelectTrigger,
-  PromptInputSelectValue,
   PromptInputSubmit,
   PromptInputTextarea,
-  PromptInputTools,
 } from '../ai-elements/prompt-input';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
 
@@ -61,7 +54,6 @@ export function MultimodalInput({
 
   return (
     <PromptInput
-      className="motion-reduce:transition-none! motion-reduce:**:transition-none!"
       onSubmit={onSubmit}
       onResetCapture={(event) => {
         // Text is cleared by the caller; a native reset also changes the model and strategy.
@@ -71,93 +63,70 @@ export function MultimodalInput({
       maxFiles={0}
       onError={() => toast.error('当前对话仅支持文字提问。')}
     >
-      <PromptInputBody>
-        <PromptInputTextarea
-          ref={inputRef}
-          rows={2}
-          className="max-h-25 min-h-[46px] px-1 py-[5px] text-base leading-[1.25] text-chat-foreground placeholder:text-muted-foreground"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder="输入你的分析问题…"
-          aria-label="分析问题"
-        />
-      </PromptInputBody>
-      <PromptInputFooter className="items-end gap-1 p-0">
-        <PromptInputTools className="min-w-0 flex-1 items-end">
-          <PromptInputSelect value={mode} onValueChange={onModeChange} disabled={busy}>
+      <PromptInputTextarea
+        ref={inputRef}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="输入你的分析问题…"
+        aria-label="分析问题"
+      />
+      <ComposerFooter>
+        <div className="flex min-w-0 flex-1 items-end gap-1">
+          <Select value={mode} onValueChange={onModeChange} disabled={busy}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <PromptInputSelectTrigger
-                  aria-label="分析方式"
-                  size="sm"
-                  className="shrink-0 rounded-lg px-1.5 text-sm font-normal transition-[background-color,color,transform] duration-150 ease-[ease] active:scale-[0.94] data-[size=sm]:h-7"
-                >
-                  <PromptInputSelectValue />
-                </PromptInputSelectTrigger>
+                <SelectTrigger aria-label="分析方式" className="shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
               </TooltipTrigger>
-              <TooltipContent className="rounded-lg" side="top" sideOffset={6}>
+              <TooltipContent side="top">
                 选择分析策略
               </TooltipContent>
             </Tooltip>
-            <PromptInputSelectContent
-              className="text-sm"
-              side="top"
-              onCloseAutoFocus={focusInput}
-            >
-              <PromptInputSelectItem value="direct">
+            <SelectContent side="top" onCloseAutoFocus={focusInput}>
+              <SelectItem value="direct">
                 <ZapIcon aria-hidden="true" className="size-3.5 text-muted-foreground" />
                 直接分析
-              </PromptInputSelectItem>
-              <PromptInputSelectItem value="loop">
+              </SelectItem>
+              <SelectItem value="loop">
                 <RouteIcon aria-hidden="true" className="size-3.5 text-muted-foreground" />
                 多步探索
-              </PromptInputSelectItem>
-            </PromptInputSelectContent>
-          </PromptInputSelect>
-          <PromptInputSelect
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
             value={selectedModel}
             onValueChange={onModelChange}
             disabled={!models.length || busy}
           >
-            <PromptInputSelectTrigger
+            <SelectTrigger
               aria-label="选择模型"
-              size="sm"
-              className="ml-auto min-h-7 min-w-0 max-w-full rounded-lg px-1.5 py-1 text-left text-sm font-normal whitespace-normal transition-[background-color,color,transform] duration-150 ease-[ease] active:scale-[0.94] data-[size=sm]:h-auto *:data-[slot=select-value]:line-clamp-none"
+              title={provider?.model}
+              className="ml-auto"
             >
-              <PromptInputSelectValue className="min-w-0 break-all" placeholder="选择模型">
+              <SelectValue placeholder="选择模型">
                 {provider?.model}
-              </PromptInputSelectValue>
-            </PromptInputSelectTrigger>
-            <PromptInputSelectContent
-              className="text-sm"
-              side="top"
-              onCloseAutoFocus={focusInput}
-            >
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent side="top" onCloseAutoFocus={focusInput}>
               {models.flatMap((model) =>
                 model.modelIds.map((id) => (
-                  <PromptInputSelectItem key={modelValue(model.id, id)} value={modelValue(model.id, id)}>
+                  <SelectItem key={modelValue(model.id, id)} value={modelValue(model.id, id)}>
                     {model.name} · {id}
-                  </PromptInputSelectItem>
+                  </SelectItem>
                 )),
               )}
-            </PromptInputSelectContent>
-          </PromptInputSelect>
-        </PromptInputTools>
+            </SelectContent>
+          </Select>
+        </div>
         <PromptInputSubmit
-          className={cn(
-            'size-7 shrink-0 rounded-lg transition-[background-color,color,transform] duration-200 active:translate-y-0 enabled:active:scale-[0.94]',
-            value.trim() || busy
-              ? 'bg-foreground text-background hover:bg-foreground/90'
-              : 'cursor-not-allowed bg-border text-muted-foreground disabled:opacity-100',
-          )}
           status={status}
-          variant="secondary"
           onStop={onStop}
           aria-label={busy ? '停止分析' : '发送问题'}
           disabled={!busy && (!value.trim() || disabled)}
           children={busy ? undefined : <ArrowUpIcon className="size-4" />}
         />
-      </PromptInputFooter>
+      </ComposerFooter>
     </PromptInput>
   );
 }

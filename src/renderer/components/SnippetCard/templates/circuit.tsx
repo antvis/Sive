@@ -1,14 +1,11 @@
 import { CalendarIcon, ChevronDownIcon, CheckIcon, QuoteIcon, TagIcon } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
-import { Button } from '../../Button';
+import { Button } from '../../ui/button';
 import { AnalysisSource } from '../AnalysisSource';
 import { Summary } from '../../Summary';
 import { Visualization } from '../../Visualization';
-import { getIntentIcon, titleClassName, summaryClassName, summaryToggleClassName } from '../utils';
-
-const chipClassName =
-  'inline-flex min-h-7 items-center gap-1.5 rounded-sm border border-line! px-2 py-1 text-xs tabular-nums [&_svg]:shrink-0';
+import { getIntentIcon } from '../utils';
 
 export default function CircuitTemplate({ data, createdAt, mode = 'view', card }: SnippetTemplateProps) {
   const {
@@ -52,7 +49,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
       <header className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
         <span
           className={twMerge(
-            chipClassName,
+            'inline-flex min-h-7 items-center gap-1.5 rounded-sm border border-line! px-2 py-1 text-xs tabular-nums [&_svg]:shrink-0',
             'bg-[color-mix(in_srgb,var(--accent-soft)_25%,var(--surface))] font-semibold text-ink',
           )}
           title={`分析类别：${data.intent}`}
@@ -64,7 +61,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
           <span
             key={tag}
             className={twMerge(
-              chipClassName,
+              'inline-flex min-h-7 items-center gap-1.5 rounded-sm border border-line! px-2 py-1 text-xs tabular-nums [&_svg]:shrink-0',
               'bg-[color-mix(in_srgb,var(--accent-soft)_65%,var(--surface))] font-medium text-accent',
             )}
           >
@@ -81,7 +78,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
             </label>
             <textarea
               id={titleId}
-              className="mt-1 block field-sizing-content max-h-40 min-h-14 w-full resize-none border-0 border-b border-line! bg-transparent px-0 py-2 text-xl leading-7 font-semibold text-balance text-ink outline-none placeholder:text-muted-foreground focus:border-accent! disabled:opacity-50"
+              className="mt-1 block field-sizing-content max-h-40 min-h-14 w-full resize-none border-0 border-b border-line! bg-transparent px-0 py-2 text-xl leading-7 font-semibold text-balance text-ink outline-none placeholder:text-muted-foreground focus:border-focus! disabled:opacity-50"
               value={title}
               disabled={busy}
               autoFocus
@@ -96,7 +93,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
             role="heading"
             aria-level={3}
             className={twMerge(
-              titleClassName,
+              'line-clamp-2 max-h-14 text-xl leading-7 font-semibold break-words text-balance tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-container]:text-xl! [&_.t8-p]:line-clamp-2 [&_.t8-p]:m-0! [&_.t8-p]:text-xl! [&_.t8-p]:leading-7! [&_.t8-p]:font-semibold!',
               mode === 'export' && 'line-clamp-none max-h-none [&_.t8-p]:line-clamp-none',
             )}
           >
@@ -135,7 +132,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
       )}
       {editing ? (
         <div className="mt-5">
-          <div className="rounded-sm border-l-2 border-accent/60! bg-accent/5 px-4 py-3 ring-1 ring-line/60 focus-within:ring-accent/50">
+          <div className="rounded-sm border-l-2 border-accent/60! bg-accent/5 px-4 py-3 ring-1 ring-line/60 focus-within:ring-focus/50">
             <label htmlFor={summaryId} className="text-xs font-medium text-muted-foreground">
               关键洞察
             </label>
@@ -150,17 +147,12 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
             />
           </div>
           <div className="mt-3 flex items-center justify-end gap-2">
-            <Button
-              variant="ghost"
-              className="h-9 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              disabled={busy}
-              onClick={cancelEditing}
-            >
+            <Button variant="ghost" className="h-9 rounded-sm" disabled={busy} onClick={cancelEditing}>
               取消
             </Button>
             <Button
-              variant="primary"
-              className="h-9 rounded-sm bg-ink! px-4 text-surface! focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              variant="neutral"
+              className="h-9 rounded-sm px-4 shadow-none"
               disabled={busy || !title.trim()}
               onClick={() => void saveEdits()}
             >
@@ -182,7 +174,11 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
               aria-hidden
               className="pointer-events-none absolute top-1 right-2 -z-10 text-accent/7"
             />
-            <div className={summaryClassName}>
+            <div
+              className={
+                'min-w-0 text-base leading-relaxed text-pretty tabular-nums [&_.gpt-vis-summary]:bg-transparent! [&_.gpt-vis-summary]:p-0! [&_.t8-p]:m-0! [&_.t8-p]:text-base! [&_.t8-p]:leading-relaxed!'
+              }
+            >
               <div
                 id={summaryId}
                 className={mode === 'export' || summaryExpanded ? undefined : 'line-clamp-3 max-h-[3lh]'}
@@ -197,10 +193,16 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
                   aria-expanded={summaryExpanded}
                   aria-controls={summaryId}
                   onClick={() => setSummaryExpanded(!summaryExpanded)}
-                  className={summaryToggleClassName}
+                  className={
+                    'mt-2 inline-flex items-center gap-1 p-0 text-sm leading-5 text-muted-foreground hover:text-ink focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-focus'
+                  }
                 >
                   {summaryExpanded ? '收起洞察' : '展开洞察'}
-                  <ChevronDownIcon size={12} aria-hidden className={summaryExpanded ? 'rotate-180' : undefined} />
+                  <ChevronDownIcon
+                    size={12}
+                    aria-hidden
+                    className={summaryExpanded ? 'rotate-180' : undefined}
+                  />
                 </button>
               )}
             </div>

@@ -1,13 +1,12 @@
 import { ArchiveIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '../../components/Button';
-import { IconButton } from '../../components/IconButton';
-import { Modal } from '../../components/Modal';
+import { Button } from '../../components/ui/button';
+import { Modal } from '../../components/ui/dialog';
 import { clearConversationUnread } from '../../hooks/useConversationStatus';
 import type { Conversation, DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
-import { SettingInput } from './SettingControls';
+import { Input } from '../../components/ui/input';
 
 type Props = { conversations: Conversation[]; datasets: DatasetSummary[] };
 
@@ -52,7 +51,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
 
   return (
     <section>
-      <SettingInput
+      <Input
         type="search"
         aria-label="搜索归档会话"
         className="mb-5 max-w-80"
@@ -84,20 +83,28 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                       归档于 {new Date(conversation.archivedAt!).toLocaleString('zh-CN')}
                     </time>
                   </div>
-                  <IconButton
-                    icon={Trash2Icon}
-                    label={`永久删除 ${conversation.title}`}
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`永久删除 ${conversation.title}`}
+                    title={`永久删除 ${conversation.title}`}
                     disabled={busy}
                     onClick={() => setDeleting(conversation)}
-                  />
-                  <IconButton
-                    icon={RotateCcwIcon}
-                    label={`恢复 ${conversation.title}`}
+                  >
+                    <Trash2Icon className="size-[16px]" aria-hidden />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`恢复 ${conversation.title}`}
+                    title={`恢复 ${conversation.title}`}
                     disabled={busy}
                     onClick={() =>
                       void perform(() => window.workbench.conversationRestore(conversation.id), '会话已恢复')
                     }
-                  />
+                  >
+                    <RotateCcwIcon className="size-[16px]" aria-hidden />
+                  </Button>
                 </div>
               ))}
             </div>

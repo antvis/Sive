@@ -1,6 +1,6 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import type { AnalysisResponse } from '@antv/ava';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
-import { Tabs } from 'radix-ui';
 import { CodeXmlIcon, FileTextIcon, ListTreeIcon, SquareArrowOutUpRightIcon, Table2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { formatMetric } from '../../../utils';
@@ -9,16 +9,12 @@ import { MessageResponse } from '../../ai-elements/message';
 import { SqlCodeBlock } from '../../ai-elements/sql';
 import { getToolErrorText } from '../../ai-elements/tool';
 import type { ToolPart } from '../../ai-elements/tool';
-import { buttonVariants } from '../../ui/button';
+import { Button } from '../../ui/button';
+import { Checkbox } from '../../ui/checkbox';
 import { CollapsibleSection } from '../../ui/collapsible-section';
 import { Table } from '../../ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
 import { AnalysisTraceView } from './analysis-trace-view';
-
-const scrollContentClass =
-  'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-contain [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring';
-
-const sectionTitleClass = 'text-sm font-semibold text-foreground';
 
 function cellText(value: unknown) {
   if (value === null || value === undefined) return '—';
@@ -65,7 +61,7 @@ function AnalysisTable({
   }
 
   return (
-    <Table className="text-sm">
+    <Table>
       <thead>
         <tr>
           {columns.map((column) => (
@@ -128,7 +124,10 @@ function AnalysisConclusion({
 }) {
   return (
     <div
-      className={cn(scrollContentClass, 'grid grid-cols-1 gap-3 [overflow-wrap:anywhere]')}
+      className={cn(
+        'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-contain [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+        'grid grid-cols-1 gap-3 [overflow-wrap:anywhere]',
+      )}
       role="region"
       aria-label="结论正文"
       tabIndex={0}
@@ -173,9 +172,7 @@ function AnalysisData({
         </span>
         {data.length > 0 && (
           <label className="ml-auto flex cursor-pointer items-center gap-1.5">
-            <input
-              type="checkbox"
-              className="accent-primary"
+            <Checkbox
               checked={originalPrecision}
               onChange={(event) => onPrecisionChange(event.target.checked)}
             />
@@ -183,7 +180,14 @@ function AnalysisData({
           </label>
         )}
       </div>
-      <div className={scrollContentClass} role="region" aria-label="结果数据" tabIndex={0}>
+      <div
+        className={
+          'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-contain [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring'
+        }
+        role="region"
+        aria-label="结果数据"
+        tabIndex={0}
+      >
         <AnalysisTable analysis={analysis} originalPrecision={originalPrecision} />
       </div>
       {truncated && (
@@ -294,12 +298,13 @@ export function AnalyzeTool({
   if (!views.length && !error) return null;
 
   const queryContent = query && (
-    <p className="text-sm leading-6 whitespace-pre-wrap text-foreground [overflow-wrap:anywhere]">
-      {query}
-    </p>
+    <p className="text-sm leading-6 whitespace-pre-wrap text-foreground [overflow-wrap:anywhere]">{query}</p>
   );
   const errorContent = error && (
-    <p role="alert" className="text-sm leading-5 whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]">
+    <p
+      role="alert"
+      className="text-sm leading-5 whitespace-pre-wrap text-destructive [overflow-wrap:anywhere]"
+    >
       {error}
     </p>
   );
@@ -312,76 +317,72 @@ export function AnalyzeTool({
       )}
     >
       {sidePanel && queryContent && (
-        <CollapsibleSection title="分析问题" variant="panel">{queryContent}</CollapsibleSection>
+        <CollapsibleSection title="分析问题" defaultOpen>
+          {queryContent}
+        </CollapsibleSection>
       )}
       {!sidePanel && (queryContent || onOpenPreview) && (
         <div className="flex items-start gap-2">
           {queryContent && (
             <section className="min-w-0 flex-1 space-y-1.5" aria-label="分析问题">
-              <h4 className={sectionTitleClass}>分析问题</h4>
+              <h4 className={'text-sm font-semibold text-foreground'}>分析问题</h4>
               {queryContent}
             </section>
           )}
           {onOpenPreview && (
             <Tooltip>
-              <TooltipTrigger
-                type="button"
-                aria-label="在右侧打开分析结果"
-                className={cn(
-                  buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
-                  'ms-auto size-7 text-muted-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-ring',
-                )}
-                onClick={() => onOpenPreview(query?.trim() || '分析结果')}
-              >
-                <SquareArrowOutUpRightIcon className="size-[15px]" aria-hidden />
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="在右侧打开分析结果"
+                  className="ms-auto text-sidebar-muted"
+                  onClick={() => onOpenPreview(query?.trim() || '分析结果')}
+                >
+                  <SquareArrowOutUpRightIcon className="size-[14px]" aria-hidden />
+                </Button>
               </TooltipTrigger>
-              <TooltipContent sideOffset={6}>
-                在右侧标签页打开
-              </TooltipContent>
+              <TooltipContent>在右侧标签页打开</TooltipContent>
             </Tooltip>
           )}
         </div>
       )}
-      {errorContent && (sidePanel ? <CollapsibleSection title="分析状态" variant="panel">{errorContent}</CollapsibleSection> : errorContent)}
+      {errorContent &&
+        (sidePanel ? (
+          <CollapsibleSection title="分析状态" defaultOpen>
+            {errorContent}
+          </CollapsibleSection>
+        ) : (
+          errorContent
+        ))}
       {sidePanel &&
         views.map(({ value, label, icon, content }) => (
-          <CollapsibleSection key={value} title={label} icon={icon} variant="panel">
+          <CollapsibleSection key={value} title={label} icon={icon} defaultOpen>
             {content}
           </CollapsibleSection>
         ))}
       {!sidePanel && views.length > 0 && (
-        <Tabs.Root
+        <Tabs
           defaultValue={views[0].value}
           className="w-full min-w-0 [--analysis-view-max-height:min(24rem,50dvh)]"
         >
-          <Tabs.List
-            aria-label="分析结果视图"
-            className="grid grid-cols-[repeat(auto-fit,minmax(min(3rem,100%),1fr))] gap-1 rounded-lg bg-workspace-control p-1"
-          >
+          <TabsList aria-label="分析结果视图" className="w-full">
             {views.map(({ value, label, icon: Icon }) => (
-              <Tabs.Trigger
-                key={value}
-                value={value}
-                className="flex min-h-8 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-sm leading-5 font-medium whitespace-nowrap text-muted-foreground hover:bg-workspace-control-active/60 hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-[state=active]:bg-workspace-control-active data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:ring-1 data-[state=active]:ring-foreground/10 @xs:flex-row @xs:gap-1.5"
-              >
+              <TabsTrigger key={value} value={value} className="flex-1">
                 <Icon className="size-3.5 shrink-0" aria-hidden="true" />
                 {label}
-              </Tabs.Trigger>
+              </TabsTrigger>
             ))}
-          </Tabs.List>
+          </TabsList>
           {views.map(({ value, content }) => (
-            <Tabs.Content
-              key={value}
-              value={value}
-              className="mt-2.5 w-full min-w-0 rounded-lg bg-card px-3 py-2.5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
-            >
+            <TabsContent key={value} value={value} className="mt-2.5 w-full rounded-lg bg-card px-3 py-2.5">
               {content}
-            </Tabs.Content>
+            </TabsContent>
           ))}
-        </Tabs.Root>
+        </Tabs>
       )}
       {confirmation && (
-        <CollapsibleSection title="核对说明" defaultOpen variant={sidePanel ? 'panel' : 'inline'}>
+        <CollapsibleSection title="核对说明" defaultOpen>
           <MessageResponse className="space-y-2 text-sm leading-6 text-foreground [overflow-wrap:anywhere]">
             {confirmation[1]}
           </MessageResponse>

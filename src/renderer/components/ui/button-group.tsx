@@ -10,7 +10,7 @@ const buttonGroupVariants = cva(
     variants: {
       orientation: {
         horizontal:
-          "[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none [&>[data-slot]:not(:has(~[data-slot]))]:rounded-r-4xl!",
+          "[&>*:not(:first-child)]:rounded-l-md [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-md [&>[data-slot]:not(:has(~[data-slot]))]:rounded-r-4xl!",
         vertical:
           "flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-4xl!",
       },
@@ -23,7 +23,7 @@ const buttonGroupVariants = cva(
 
 function ButtonGroup({
   className,
-  orientation,
+  orientation = "horizontal",
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof buttonGroupVariants>) {
   return (
@@ -48,8 +48,9 @@ function ButtonGroupText({
 
   return (
     <Comp
+      data-slot="button-group-text"
       className={cn(
-        "flex items-center gap-2 rounded-4xl border bg-muted px-2.5 text-sm font-medium [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+        "flex items-center gap-2 rounded-4xl px-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground tabular-nums [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

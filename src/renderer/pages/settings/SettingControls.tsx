@@ -1,7 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { useId } from 'react';
 import { Input } from '../../components/ui/input';
-import { cn } from '../../lib/utils';
 
 export function SettingGroup({
   title,
@@ -58,7 +57,7 @@ export function SettingField({
   label,
   description,
   ...props
-}: ComponentProps<typeof SettingInput> & { label: string; description: string }) {
+}: ComponentProps<typeof Input> & { label: string; description: string }) {
   const id = useId();
   const descriptionId = `${id}-description`;
 
@@ -68,19 +67,7 @@ export function SettingField({
       <p id={descriptionId} className="m-0 text-xs text-muted-foreground">
         {description}
       </p>
-      <SettingInput {...props} id={id} aria-describedby={descriptionId} />
+      <Input {...props} id={id} aria-describedby={descriptionId} />
     </div>
-  );
-}
-
-export function SettingInput({ className, ...props }: ComponentProps<typeof Input>) {
-  return (
-    <Input
-      {...props}
-      className={cn(
-        'rounded-[10px] border-ink/10 bg-workspace-control-active focus-visible:ring-2 focus-visible:ring-sidebar-focus',
-        className,
-      )}
-    />
   );
 }

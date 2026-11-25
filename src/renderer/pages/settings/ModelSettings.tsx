@@ -2,10 +2,10 @@ import { CpuIcon, PencilIcon, PlusIcon, RotateCwIcon, Trash2Icon } from 'lucide-
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import { Button } from '../../components/Button';
-import { IconButton } from '../../components/IconButton';
-import { Modal } from '../../components/Modal';
-import { Select } from '../../components/Select';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Modal } from '../../components/ui/dialog';
+import { SelectField } from '../../components/ui/select';
 import type { ModelProfile, ModelTestProgress } from '../../types';
 import { errorMessage } from '../../utils';
 import { ModelPicker } from './ModelPicker';
@@ -25,6 +25,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
   const [error, setError] = useState('');
   const currentCatalog =
     catalog && catalog.baseURL === baseURL.trim() && catalog.apiKey === apiKey ? catalog : null;
+  const discoverLabel = currentCatalog ? '刷新模型列表' : '获取可用模型';
 
   const discover = async () => {
     if (!baseURL.trim()) {
@@ -134,14 +135,20 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
               </div>
               <div className="flex items-center gap-2">
                 {catalogHint && <span className="text-xs text-muted-foreground">{catalogHint}</span>}
-                <IconButton
-                  icon={RotateCwIcon}
-                  iconClassName={discovering ? 'animate-spin' : undefined}
-                  className="text-accent hover:bg-accent-soft"
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={discoverLabel}
+                  title={discoverLabel}
+                  className="text-sidebar-muted"
                   disabled={discovering}
                   onClick={() => void discover()}
-                  label={currentCatalog ? '刷新模型列表' : '获取可用模型'}
-                />
+                >
+                  <RotateCwIcon
+                    className={discovering ? 'size-[16px] animate-spin' : 'size-[16px]'}
+                    aria-hidden
+                  />
+                </Button>
               </div>
             </div>
             <p className="m-0 text-xs text-muted-foreground">
@@ -156,7 +163,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
           </div>
         </fieldset>
         {progress && (
-          <div className="mt-4 rounded-lg bg-accent-soft p-3 text-sm leading-5 text-accent" role="status">
+          <div className="mt-4 rounded-lg bg-workspace-control p-3 text-sm leading-5 text-ink" role="status">
             已完成 {progress.completed} / {progress.total}
             {progress.active.length ? `，正在测试：${progress.active.join('、')}` : '，正在保存配置…'}
           </div>
@@ -204,9 +211,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="m-0 truncate text-base font-semibold">{model.name}</h2>
                 {activeModelId === model.id && (
-                  <span className="shrink-0 rounded-md bg-accent-soft px-2 py-0.5 text-xs text-accent">
-                    默认服务
-                  </span>
+                  <Badge variant="secondary">默认服务</Badge>
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 max-sm:opacity-100">
@@ -221,18 +226,26 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                     设为默认
                   </Button>
                 )}
-                <IconButton
-                  icon={PencilIcon}
-                  label={`编辑 ${model.name}`}
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`编辑 ${model.name}`}
+                  title={`编辑 ${model.name}`}
                   disabled={busy}
                   onClick={() => setEditing(model)}
-                />
-                <IconButton
-                  icon={Trash2Icon}
-                  label={`删除 ${model.name}`}
+                >
+                  <PencilIcon className="size-[16px]" aria-hidden />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`删除 ${model.name}`}
+                  title={`删除 ${model.name}`}
                   disabled={busy}
                   onClick={() => setDeleting(model)}
-                />
+                >
+                  <Trash2Icon className="size-[16px]" aria-hidden />
+                </Button>
               </div>
             </div>
 
@@ -260,8 +273,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                     <span>默认模型</span>
                     <span className="text-xs text-muted-foreground">分析对话会预选此模型</span>
                   </div>
-                  <Select
-                    compact
+                  <SelectField
                     aria-label="默认模型"
                     value={model.model}
                     disabled={busy}

@@ -1,18 +1,18 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { useEffect, useId, useRef, useState } from 'react';
 import { PanelLeftIcon, Table2Icon } from 'lucide-react';
 import clsx from 'clsx';
-import { Tabs } from 'radix-ui';
 import { toast } from 'sonner';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
-import { Button } from '../../components/Button';
+import { Button } from '../../components/ui/button';
+import { ButtonGroup, ButtonGroupText } from '../../components/ui/button-group';
 import { DataGrid } from '../../components/DataGrid';
-import { Select } from '../../components/Select';
+import { Input } from '../../components/ui/input';
+import { SelectField } from '../../components/ui/select';
+import { Textarea } from '../../components/ui/textarea';
 import type { DatasetDetail } from '../../types';
 import { errorMessage } from '../../utils';
 import { TableNavigator } from './TableNavigator';
-
-const previewTabClassName =
-  'rounded-lg px-3 py-1.5 text-base font-medium text-muted-foreground outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/60 data-[state=active]:bg-workspace-control-active data-[state=active]:text-ink data-[state=active]:shadow-xs';
 
 function DataPreview({
   datasetId,
@@ -95,31 +95,32 @@ function DataPreview({
           <span title="排序只作用于已读取的当前页；数据变化或没有主键时，翻页结果可能变化。">
             仅排序当前页
           </span>
-          <Select
-            compact
-            className="w-28 max-w-full [&>select]:border-transparent [&>select]:bg-workspace-control"
+          <SelectField
+            className="w-28 max-w-full"
             aria-label="每页行数"
             value={String(pageSize)}
             onChange={(value) => onPageSizeChange(Number(value))}
             options={PREVIEW_PAGE_SIZES.map((size) => ({ value: String(size), label: `${size} 行 / 页` }))}
           />
-          <Button
-            variant="ghost"
-            className="text-xs"
-            disabled={loading || offset === 0}
-            onClick={() => setOffset(Math.max(0, offset - pageSize))}
-          >
-            上一页
-          </Button>
-          <span>第 {offset / pageSize + 1} 页</span>
-          <Button
-            variant="ghost"
-            className="text-xs"
-            disabled={loading || !!error || !hasMore}
-            onClick={() => setOffset(offset + pageSize)}
-          >
-            下一页
-          </Button>
+          <ButtonGroup aria-label="数据分页">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={loading || offset === 0}
+              onClick={() => setOffset(Math.max(0, offset - pageSize))}
+            >
+              上一页
+            </Button>
+            <ButtonGroupText>第 {offset / pageSize + 1} 页</ButtonGroupText>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={loading || !!error || !hasMore}
+              onClick={() => setOffset(offset + pageSize)}
+            >
+              下一页
+            </Button>
+          </ButtonGroup>
         </div>
       </footer>
     </div>
@@ -211,7 +212,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
     detail.schema.relationships?.filter((item) => model && item.models.includes(model.name)) ?? [];
 
   return (
-    <Tabs.Root
+    <Tabs
       ref={root}
       defaultValue="data"
       onValueChange={() => {
@@ -220,33 +221,29 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
       className="flex h-full min-h-0 min-w-0 flex-col"
     >
       <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 px-4 py-2">
-        <Tabs.List aria-label="数据集信息" className="flex rounded-[10px] bg-workspace-control p-0.5">
-          <Tabs.Trigger value="data" className={previewTabClassName}>
+        <TabsList aria-label="数据集信息">
+          <TabsTrigger value="data">
             数据
-          </Tabs.Trigger>
-          <Tabs.Trigger value="fields" className={previewTabClassName}>
+          </TabsTrigger>
+          <TabsTrigger value="fields">
             字段
-          </Tabs.Trigger>
-          <Tabs.Trigger value="semantic" className={previewTabClassName}>
+          </TabsTrigger>
+          <TabsTrigger value="semantic">
             语义层
-          </Tabs.Trigger>
-        </Tabs.List>
+          </TabsTrigger>
+        </TabsList>
         {multipleTables && (
-          <button
+          <Button
             ref={treeToggle}
-            type="button"
+            variant="ghost"
             aria-label={showTree ? '收起表结构' : '打开表结构'}
             aria-expanded={showTree}
             aria-controls={treeId}
             onClick={() => setNavigation((current) => ({ ...current, open: !current.open }))}
-            className={clsx(
-              'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-base outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              showTree ? 'bg-accent-soft text-accent' : 'text-muted-foreground hover:bg-workspace-control',
-            )}
           >
             <PanelLeftIcon size={16} />
             <span>{detail.schema.models.length} 张表</span>
-          </button>
+          </Button>
         )}
       </div>
       <div className="flex min-h-0 flex-1 overflow-hidden">
@@ -288,7 +285,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             </div>
             {model && <span className="shrink-0">{columns.length} 个字段</span>}
           </div>
-          <Tabs.Content value="data" className="flex min-h-0 flex-1 flex-col">
+          <TabsContent value="data" className="flex min-h-0 flex-1 flex-col">
             {model && (
               <DataPreview
                 key={JSON.stringify([model.name, pageSize])}
@@ -299,14 +296,14 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
                 onPageSizeChange={setPageSize}
               />
             )}
-          </Tabs.Content>
-          <Tabs.Content value="fields" className="min-h-0 flex-1 overflow-auto px-4 pt-1 pb-4">
-            <input
+          </TabsContent>
+          <TabsContent value="fields" className="min-h-0 flex-1 overflow-auto px-4 pt-1 pb-4">
+            <Input
               aria-label="搜索字段"
               placeholder="搜索字段"
               value={fieldSearch}
               onChange={(event) => setFieldSearch(event.target.value)}
-              className="mb-3 w-full rounded-lg bg-workspace-control px-3 py-2 text-base outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+              className="mb-3"
             />
             <table className="w-full table-fixed border-collapse text-sm">
               <thead>
@@ -344,12 +341,12 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
                 </ul>
               </section>
             )}
-          </Tabs.Content>
-          <Tabs.Content value="semantic" className="min-h-0 flex-1 overflow-auto p-5">
+          </TabsContent>
+          <TabsContent value="semantic" className="min-h-0 flex-1 overflow-auto p-5">
             <label className="grid gap-2 text-base">
               数据集业务说明
-              <textarea
-                className="min-h-48 resize-none rounded-xl bg-workspace-control p-3 text-base leading-6 outline-none focus:bg-accent-soft"
+              <Textarea
+                className="field-sizing-fixed min-h-48 p-3 text-base leading-6"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 placeholder="描述数据集中的业务概念、字段含义和分析注意事项…"
@@ -358,9 +355,9 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             <Button className="mt-4" variant="primary" disabled={saving} onClick={() => void saveSemantic()}>
               {saving ? '保存中…' : '保存语义'}
             </Button>
-          </Tabs.Content>
+          </TabsContent>
         </div>
       </div>
-    </Tabs.Root>
+    </Tabs>
   );
 }

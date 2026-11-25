@@ -15,8 +15,6 @@ const numericMetrics = [
   ['max', '最大值'],
   ['mean', '均值'],
 ] as const;
-const moreClassName =
-  'mt-[9px] mb-3 h-auto rounded-sm border-0 px-2 py-1 text-xs font-normal text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:no-underline focus-visible:ring-2 focus-visible:ring-ring';
 
 function isNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
@@ -102,7 +100,7 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
             <p className="mt-0 mb-[9px] text-sm text-foreground/80">
               {`${stats.nullFields.length} 个字段有空值 · ${stats.complete ? '共' : '已知'} ${formatMetric(stats.nullCount)} 个空单元格`}
             </p>
-            <Table className="table-fixed text-sm" aria-label={`${model.name} 的空值统计`}>
+            <Table className="table-fixed" aria-label={`${model.name} 的空值统计`}>
               <thead>
                 <tr>
                   <th scope="col" className="w-[52%]">
@@ -153,9 +151,9 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
             {stats.nullFields.length > 3 && (
               <Button
                 type="button"
-                variant="link"
+                variant="ghost"
                 size="xs"
-                className={moreClassName}
+                className="mt-[9px] mb-3"
                 aria-expanded={expandedNulls}
                 aria-controls={nullFieldsId}
                 onClick={() => {
@@ -188,7 +186,7 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
             </span>
           </div>
           <Table
-            className="table-fixed text-sm max-[520px]:block max-[520px]:[&_td]:border-b-0"
+            className="table-fixed max-[520px]:block max-[520px]:[&_td]:border-b-0"
             aria-label={`${model.name} 的数值统计`}
           >
             <thead className="max-[520px]:sr-only">
@@ -233,9 +231,9 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
           {numericColumns.length > 5 && (
             <Button
               type="button"
-              variant="link"
+              variant="ghost"
               size="xs"
-              className={moreClassName}
+              className="mt-[9px] mb-3"
               aria-expanded={expandedNumbers}
               aria-controls={numericFieldsId}
               onClick={() => {
@@ -304,10 +302,10 @@ export function ProfileTool({ profile: { models } }: { profile: Profile }) {
               data-profile-table={model.name}
               open={expandedModel === model.name}
               onOpenChange={(open) => setExpandedModel(open ? model.name : undefined)}
-              className="min-w-0 scroll-mt-4"
+              className="scroll-mt-4"
             >
               <CollapsibleRowTrigger>{heading}</CollapsibleRowTrigger>
-              <CollapsibleContent className="min-w-0">
+              <CollapsibleContent>
                 <ProfileFields model={model} stats={stats} />
               </CollapsibleContent>
             </Collapsible>

@@ -13,7 +13,7 @@ export function Table({
     <Comp
       data-slot="table"
       className={cn(
-        'w-full border-collapse border-0 bg-card text-left text-xs text-foreground divide-y-0',
+        'w-full border-collapse border-0 bg-card text-left text-sm text-foreground divide-y-0',
         '[&_thead]:bg-card [&_th]:border-0 [&_th]:border-b [&_th]:border-border [&_th]:px-3 [&_th]:py-1.5 [&_th]:text-left [&_th]:font-semibold [&_th]:text-foreground',
         '[&_th.text-right]:text-right [&_th.text-center]:text-center',
         '[&_tbody]:divide-y-0 [&_td]:border-0 [&_td]:border-b [&_td]:border-border/40 [&_td]:px-3 [&_td]:py-1.5 [&_td]:align-top',

@@ -77,7 +77,7 @@ function UserMessageContent({ text }: { text: string }) {
           type="button"
           variant="ghost"
           size="sm"
-          className="h-auto self-start rounded-sm p-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground aria-expanded:bg-transparent"
+          className="h-auto self-start rounded-sm p-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
           aria-expanded={expanded}
           aria-controls={contentId}
           onClick={() => setExpanded((value) => !value)}

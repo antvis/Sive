@@ -29,17 +29,17 @@
 
   --font-sans: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
   --font-chat-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
-  --animate-chat-tool-expand: chat-tool-expand 200ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-chat-tool-collapse: chat-tool-collapse 160ms ease-in both;
+  --animate-collapsible-expand: collapsible-expand 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-collapsible-collapse: collapsible-collapse 160ms ease-in both;
   --animate-chat-tool-shimmer: chat-tool-shimmer 1.4s linear infinite;
   --animate-fade-up: fade-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  --animate-select-open: select-open 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
-  --animate-select-close: select-close 120ms ease-in both;
+  --animate-dropdown-open: dropdown-open 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-dropdown-close: dropdown-close 120ms ease-in both;
 
-  @keyframes select-open {
+  @keyframes dropdown-open {
     from {
       opacity: 0;
-      transform: var(--select-enter-transform) scale(0.96);
+      transform: var(--dropdown-enter-transform) scale(0.96);
     }
 
     to {
@@ -48,7 +48,7 @@
     }
   }
 
-  @keyframes select-close {
+  @keyframes dropdown-close {
     from {
       opacity: 1;
       transform: translate(0, 0) scale(1);
@@ -56,11 +56,11 @@
 
     to {
       opacity: 0;
-      transform: var(--select-enter-transform) scale(0.98);
+      transform: var(--dropdown-enter-transform) scale(0.98);
     }
   }
 
-  @keyframes chat-tool-expand {
+  @keyframes collapsible-expand {
     from {
       height: 0;
       opacity: 0;
@@ -71,7 +71,7 @@
     }
   }
 
-  @keyframes chat-tool-collapse {
+  @keyframes collapsible-collapse {
     from {
       height: var(--radix-collapsible-content-height);
       opacity: 1;
@@ -109,7 +109,6 @@
   --color-sidebar-text: var(--muted-foreground);
   --color-sidebar-muted: light-dark(#00000080, #ffffff80);
   --color-sidebar-highlight: light-dark(#f2f2f2, #303030);
-  --color-sidebar-focus: light-dark(oklch(62.6% .205 254.947), oklch(68% .173 253.301));
   --color-workspace-canvas: light-dark(#f1f1f1, #181818);
   --color-workspace-control: light-dark(#f2f2f2, #1b1b1b);
   --color-workspace-control-active: light-dark(#ffffff, #2c2c2c);
@@ -126,6 +125,10 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-soft: var(--accent-soft);
+  --color-focus: var(--ring);
+  --color-selected: light-dark(#efefef, #343434);
+  --color-selected-foreground: var(--ink);
+  --color-control-checked: light-dark(#858585, #8f8f8f);
   --color-danger: var(--danger);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -218,11 +221,11 @@
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.965 0 0);
   --secondary-foreground: oklch(0.38 0 0);
-  --accent-foreground: oklch(0.12 0 0);
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.55 0.15 25);
   --border: oklch(0.9 0 0);
   --input: oklch(0.9 0 0);
-  --ring: oklch(0.5 0 0);
+  --ring: var(--muted);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -235,7 +238,7 @@
   --sidebar-accent: oklch(0.12 0 0 / 0.06);
   --sidebar-accent-foreground: oklch(0.12 0 0);
   --sidebar-border: oklch(0.88 0 0);
-  --sidebar-ring: oklch(0.5 0 0);
+  --sidebar-ring: var(--ring);
 }
 
 :root[data-theme='dark'] {
@@ -249,11 +252,10 @@
   --primary-foreground: oklch(0.195 0 0);
   --secondary: oklch(0.26 0 0);
   --secondary-foreground: oklch(0.75 0 0);
-  --accent-foreground: oklch(0.94 0 0);
+  --accent-foreground: #15191e;
   --destructive: oklch(0.7 0.15 25);
   --border: oklch(0.27 0 0);
   --input: oklch(0.27 0 0);
-  --ring: oklch(0.45 0 0);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -266,7 +268,6 @@
   --sidebar-accent: oklch(0.94 0 0 / 0.06);
   --sidebar-accent-foreground: oklch(0.94 0 0);
   --sidebar-border: oklch(0.25 0 0);
-  --sidebar-ring: oklch(0.45 0 0);
 }
 
 @layer base {
@@ -276,6 +277,10 @@
 
   button {
     @apply [-webkit-app-region:no-drag] enabled:cursor-pointer disabled:cursor-not-allowed;
+  }
+
+  :is(button, input, textarea, select, a[href], summary, [tabindex]):focus-visible {
+    @apply outline-1 outline-offset-1 outline-focus;
   }
 
   [data-settings-window] :is(a[href], input, label, select, textarea) {

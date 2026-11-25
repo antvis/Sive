@@ -1,11 +1,10 @@
 import type { ThemeSpec } from '@antv/gpt-vis';
 import { ChartColumnIncreasingIcon, CheckIcon, Grid2X2Icon } from 'lucide-react';
-import { Popover } from 'radix-ui';
 import { useContext, useState } from 'react';
 import type { RefObject } from 'react';
-import { twMerge } from 'tailwind-merge';
 import { createChartTheme, ThemeContext } from '../../theme';
-import { IconButton } from '../IconButton';
+import { Button } from '../ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 export function TemplatePicker({
   value,
@@ -24,29 +23,30 @@ export function TemplatePicker({
   const theme = useContext(ThemeContext);
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger ref={buttonRef} asChild>
-        <IconButton
-          icon={Grid2X2Icon}
-          label={`切换模板，当前：${value}`}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger ref={buttonRef} asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={`切换模板，当前：${value}`}
+          title={`切换模板，当前：${value}`}
+          className="text-sidebar-muted"
           disabled={disabled}
-          className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        />
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
+        >
+          <Grid2X2Icon className="size-[14px]" aria-hidden />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
           aria-label="选择 Snippet 模板"
           align="end"
-          sideOffset={8}
-          collisionPadding={16}
-          className="z-50 w-80 max-w-[calc(100vw-32px)] rounded-xl border bg-surface p-3 font-sans text-ink shadow-xl"
+          className="w-80"
         >
           <p className="mt-0 mb-3 text-xs font-medium text-muted-foreground">选择模板</p>
           <div className="grid grid-cols-3 gap-2">
             {templates.map((template) => {
               const { tokens } = template.theme ?? createChartTheme(theme);
               return (
-                <button
+                <Button
                   key={template.value}
                   type="button"
                   aria-pressed={value === template.value}
@@ -54,10 +54,7 @@ export function TemplatePicker({
                     setOpen(false);
                     if (value !== template.value) onChange(template.value);
                   }}
-                  className={twMerge(
-                    'min-w-0 overflow-hidden rounded-lg border bg-surface p-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
-                    value === template.value ? 'border-accent! ring-1 ring-accent' : 'hover:border-muted!',
-                  )}
+                  className="block min-w-0 overflow-hidden p-1 text-left font-normal hover:border-muted aria-pressed:border-focus/40"
                 >
                   <span
                     aria-hidden
@@ -73,14 +70,13 @@ export function TemplatePicker({
                   </span>
                   <span className="flex items-center justify-between gap-1 px-1 pt-2 pb-1 text-xs">
                     {template.label}
-                    {value === template.value && <CheckIcon size={12} aria-hidden className="text-accent" />}
+                    {value === template.value && <CheckIcon size={12} aria-hidden />}
                   </span>
-                </button>
+                </Button>
               );
             })}
           </div>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+      </PopoverContent>
+    </Popover>
   );
 }

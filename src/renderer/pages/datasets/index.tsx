@@ -9,10 +9,10 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '../../components/Button';
-import { IconButton } from '../../components/IconButton';
+import { Button } from '../../components/ui/button';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
-import { Modal } from '../../components/Modal';
+import { Modal } from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
 import { SourceActions } from './SourceActions';
 import type { DatasetSummary } from '../../types';
 import { errorMessage } from '../../utils';
@@ -96,7 +96,7 @@ function DatasetCard({
           </span>
           {action === 'rename' ? (
             <input
-              className="min-w-0 flex-1 rounded-md bg-page px-2 py-1 text-base font-semibold outline-none focus:bg-accent-soft"
+              className="min-w-0 flex-1 rounded-md bg-page px-2 py-1 text-base font-semibold focus:bg-selected"
               value={name}
               disabled={busy}
               autoFocus
@@ -129,24 +129,34 @@ function DatasetCard({
         </div>
         {action !== 'rename' && (
           <div className="flex shrink-0 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-            <IconButton
-              icon={PencilIcon}
-              label={`重命名 ${dataset.name}`}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`重命名 ${dataset.name}`}
+              title={`重命名 ${dataset.name}`}
+              className="text-sidebar-muted"
               onClick={(event) => {
                 event.stopPropagation();
                 renameCancelled.current = false;
                 setName(dataset.name);
                 setAction('rename');
               }}
-            />
-            <IconButton
-              icon={Trash2Icon}
-              label={`删除 ${dataset.name}`}
+            >
+              <PencilIcon className="size-[14px]" aria-hidden />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`删除 ${dataset.name}`}
+              title={`删除 ${dataset.name}`}
+              className="text-sidebar-muted"
               onClick={(event) => {
                 event.stopPropagation();
                 setAction('delete');
               }}
-            />
+            >
+              <Trash2Icon className="size-[14px]" aria-hidden />
+            </Button>
           </div>
         )}
       </div>
@@ -249,11 +259,11 @@ export function DatasetsPage({
         </Button>
       </header>
       <div className="mt-6 flex items-center justify-between gap-4">
-        <input
+        <Input
           type="search"
           aria-label="搜索数据源"
           placeholder="按名称搜索数据源…"
-          className="w-72 max-w-full rounded-lg border bg-surface px-3 py-2 text-base"
+          className="w-72 max-w-full"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);

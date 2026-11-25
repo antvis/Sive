@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '../../../components/Button';
+import { Button } from '../../../components/ui/button';
 import { DataGrid } from '../../../components/DataGrid';
-import { Modal } from '../../../components/Modal';
+import { Modal } from '../../../components/ui/dialog';
+import { Textarea } from '../../../components/ui/textarea';
 import { errorMessage } from '../../../utils';
 import { ConnectionField } from './ConnectionDialog';
 
@@ -96,12 +97,12 @@ export function TextImportDialog({ onClose }: { onClose: () => void }) {
             <p className="m-0 text-sm text-muted-foreground">文本将发送至当前默认模型，提取后可预览并确认保存。</p>
             <label className="grid gap-1.5 text-sm">
               文本内容
-              <textarea
+              <Textarea
                 name="text"
                 value={text}
                 disabled={!!busy}
                 placeholder="粘贴包含数据的文本，例如销售记录、调查结果或统计报告。"
-                className="h-40 resize-none rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
+                className="h-40"
                 onChange={(event) => setText(event.target.value)}
               />
             </label>

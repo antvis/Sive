@@ -3,8 +3,9 @@ import type { InputHTMLAttributes, ReactNode } from 'react';
 import { toast } from 'sonner';
 import type { DataSourceConfig } from '@antv/ava';
 import type { DatasetDetail } from '@shared/api';
-import { Button } from '../../../components/Button';
-import { Modal } from '../../../components/Modal';
+import { Button } from '../../../components/ui/button';
+import { Modal } from '../../../components/ui/dialog';
+import { Input } from '../../../components/ui/input';
 import { errorMessage } from '../../../utils';
 
 export type ConnectionDialogProps = {
@@ -25,12 +26,11 @@ export function ConnectionField({
   return (
     <label className="grid gap-1.5 text-sm">
       {label}
-      <input
+      <Input
         type={type}
         required={required}
         pattern={type === 'text' && required ? '.*\\S.*' : undefined}
         autoComplete={type === 'password' ? 'new-password' : 'off'}
-        className="min-w-0 rounded-lg border bg-page px-3 py-2 outline-none focus:border-accent disabled:opacity-50"
         {...props}
         onChange={(event) => onValueChange(event.target.value)}
       />

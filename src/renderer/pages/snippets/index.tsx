@@ -1,11 +1,11 @@
 import { LightbulbIcon } from 'lucide-react';
-import { AlertDialog } from 'radix-ui';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import type { Snippet } from '@shared/schema';
-import { Button } from '../../components/Button';
 import { SnippetCard } from '../../components/SnippetCard';
 import { ShareDialog } from '../../components/SnippetCard/ShareDialog';
+import { Button } from '../../components/ui/button';
+import { AlertDialog } from '../../components/ui/dialog';
 import { errorMessage } from '../../utils';
 
 export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
@@ -84,27 +84,21 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
 
       {sharing && <ShareDialog snippet={sharing} onClose={() => setSharing(null)} />}
 
-      <AlertDialog.Root open={!!deleting} onOpenChange={(open) => !busy && !open && setDeleting(null)}>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 z-50 bg-[#15202bcc]" />
-          <AlertDialog.Content className="fixed top-1/2 left-1/2 z-50 w-[480px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-surface p-6 shadow-2xl">
-            <AlertDialog.Title className="mt-0 mb-4 text-lg font-semibold text-balance">
-              删除 Snippet
-            </AlertDialog.Title>
-            <AlertDialog.Description className="m-0 text-sm leading-6 text-pretty text-muted-foreground">
-              确定删除这个 Snippet 吗？此操作无法撤销。
-            </AlertDialog.Description>
-            <div className="mt-6 flex justify-end gap-2">
-              <AlertDialog.Cancel asChild>
-                <Button disabled={busy}>取消</Button>
-              </AlertDialog.Cancel>
-              <Button variant="danger" disabled={busy} onClick={() => void remove()}>
-                {busy ? '删除中…' : '删除'}
-              </Button>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
+      <AlertDialog
+        open={!!deleting}
+        onOpenChange={(open) => !busy && !open && setDeleting(null)}
+        title="删除 Snippet"
+        description="确定删除这个 Snippet 吗？此操作无法撤销。"
+        cancel={
+          <Button disabled={busy}>
+            取消
+          </Button>
+        }
+      >
+        <Button variant="danger" disabled={busy} onClick={() => void remove()}>
+          {busy ? '删除中…' : '删除'}
+        </Button>
+      </AlertDialog>
     </div>
   );
 }

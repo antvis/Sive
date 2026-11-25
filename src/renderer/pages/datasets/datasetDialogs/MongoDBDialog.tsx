@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
+import { Checkbox } from '../../../components/ui/checkbox';
 import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
@@ -112,9 +113,8 @@ export function MongoDBDialog({ datasetId, onClose }: ConnectionDialogProps) {
         />
       </div>
       <label className="flex items-center gap-2 text-sm">
-        <input
+        <Checkbox
           name="tls"
-          type="checkbox"
           checked={form.tls}
           onChange={(event) => setForm({ ...form, tls: event.target.checked })}
         />

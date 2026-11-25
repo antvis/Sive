@@ -1,7 +1,7 @@
 import { FolderOpenIcon } from 'lucide-react';
 import type { StorageInfo } from '@shared/api';
 import { useEffect, useState } from 'react';
-import { Button } from '../../components/Button';
+import { Button } from '../../components/ui/button';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
 

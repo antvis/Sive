@@ -31,7 +31,7 @@ export function MessageActions({ message, isStreaming }: { message: ChatMessage;
     >
       {text && (
         <Action
-          className="size-7 text-muted-foreground/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          className="size-7 text-muted-foreground/50 hover:text-foreground focus-visible:ring-1 focus-visible:ring-focus"
           label="复制消息"
           tooltip="复制"
           onClick={copy}

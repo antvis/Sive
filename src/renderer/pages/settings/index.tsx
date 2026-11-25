@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import {
   ArchiveIcon,
   ChartLineIcon,
@@ -11,7 +10,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { IconButton } from '../../components/IconButton';
+import { Button } from '../../components/ui/button';
+import { SidebarButton } from '../../components/ui/sidebar';
 import type { WorkspaceState } from '../../types';
 import { AboutSettings } from './AboutSettings';
 import { AnalysisSettings } from './AnalysisSettings';
@@ -52,14 +52,16 @@ export function SettingsWindow({ state, fallback }: { state: WorkspaceState | nu
       className="relative flex h-screen flex-col overflow-hidden bg-white select-none [-webkit-app-region:drag] dark:bg-preview-surface"
     >
       {!isMacOS && (
-        <IconButton
-          icon={XIcon}
-          iconSize={18}
-          label="关闭设置"
+        <Button
           variant="danger"
-          className="absolute top-2 right-2 z-10 size-[28px]! [-webkit-app-region:no-drag] focus-visible:outline-2 focus-visible:outline-sidebar-focus"
+          size="icon-sm"
+          aria-label="关闭设置"
+          title="关闭设置"
+          className="absolute top-2 right-2 z-10 border-0 bg-transparent"
           onClick={() => window.workbench.settingsClose()}
-        />
+        >
+          <XIcon aria-hidden />
+        </Button>
       )}
       {state ? <SettingsContent state={state} /> : <main className="min-h-0 flex-1">{fallback}</main>}
     </div>
@@ -91,22 +93,16 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
                 const count = counts[id] ?? 0;
                 return (
                   <li key={id}>
-                    <button
-                      type="button"
+                    <SidebarButton
                       aria-current={section === id ? 'true' : undefined}
                       aria-controls="settings-panel"
                       onClick={() => setSection(id)}
-                      className={clsx(
-                        'flex min-h-10 w-full items-center gap-2.5 rounded-[12px] px-2.5 py-1.5 text-left text-base transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-focus',
-                        section === id
-                          ? 'bg-ink/5 font-medium text-sidebar-ink'
-                          : 'text-sidebar-text hover:bg-ink/3',
-                      )}
+                      className="w-full"
                     >
                       <Icon size={16} aria-hidden className="shrink-0" />
                       <span className="min-w-0 flex-1">{label}</span>
                       {count > 0 && <span className="text-xs tabular-nums text-sidebar-muted">{count}</span>}
-                    </button>
+                    </SidebarButton>
                   </li>
                 );
               })}

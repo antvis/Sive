@@ -134,8 +134,11 @@ function EventNode({ data, selected }: NodeProps<TraceNode>) {
     <div
       className={cn(
         'size-full rounded-lg border text-left shadow-xs',
-        data.grouped ? 'bg-primary/5' : 'bg-card',
-        selected ? 'border-primary ring-1 ring-primary' : 'border-border hover:border-primary/60',
+        selected
+          ? 'border-focus/40 bg-selected text-selected-foreground'
+          : data.grouped
+            ? 'border-border bg-secondary/40 hover:border-focus/60'
+            : 'border-border bg-card hover:border-focus/60',
       )}
       data-flow-group={data.grouped || undefined}
     >
@@ -149,7 +152,7 @@ function EventNode({ data, selected }: NodeProps<TraceNode>) {
         <span
           className={cn(
             'grid size-7 place-items-center rounded-md',
-            selected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+            selected ? 'bg-ink/10 text-selected-foreground' : 'bg-muted text-muted-foreground',
           )}
         >
           <Icon className="size-3.5" aria-hidden="true" />
@@ -230,7 +233,7 @@ export function AnalysisTraceFlowchart({
         fitViewOptions={fitOptions}
         ariaLabelConfig={ariaLabels}
         proOptions={proOptions}
-        className="[&_.react-flow__node:focus-visible]:rounded-lg [&_.react-flow__node:focus-visible]:outline-2 [&_.react-flow__node:focus-visible]:outline-offset-3 [&_.react-flow__node:focus-visible]:outline-ring"
+        className="[&_.react-flow__node:focus-visible]:rounded-lg [&_.react-flow__node:focus-visible]:outline-1 [&_.react-flow__node:focus-visible]:outline-offset-3 [&_.react-flow__node:focus-visible]:outline-focus"
       >
         <Background gap={18} size={1.5} color="var(--border)" />
         <Controls

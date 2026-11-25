@@ -1,7 +1,7 @@
 import { PencilIcon, RefreshCwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { IconButton } from '../../components/IconButton';
+import { Button } from '../../components/ui/button';
 import { errorMessage } from '../../utils';
 import { findDatasetSource } from '@shared/dataSource';
 import * as dialogs from './datasetDialogs';
@@ -28,14 +28,29 @@ export function SourceActions({ datasetId, sourceType }: { datasetId: string; so
 
   return (
     <div className="flex shrink-0" onClick={(event) => event.stopPropagation()} aria-busy={busy}>
-      <IconButton icon={RefreshCwIcon} label="刷新数据源" disabled={busy} onClick={() => void refresh()} />
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label="刷新数据源"
+        title="刷新数据源"
+        className="text-sidebar-muted"
+        disabled={busy}
+        onClick={() => void refresh()}
+      >
+        <RefreshCwIcon className="size-[14px]" aria-hidden />
+      </Button>
       {source && Dialog && (
-        <IconButton
-          icon={PencilIcon}
-          label={`编辑 ${source.label} 连接`}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={`编辑 ${source.label} 连接`}
+          title={`编辑 ${source.label} 连接`}
+          className="text-sidebar-muted"
           disabled={busy}
           onClick={() => setEditing(true)}
-        />
+        >
+          <PencilIcon className="size-[14px]" aria-hidden />
+        </Button>
       )}
       {editing && Dialog && <Dialog datasetId={datasetId} onClose={() => setEditing(false)} />}
     </div>

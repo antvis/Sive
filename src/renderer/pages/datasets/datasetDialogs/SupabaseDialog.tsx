@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { DatasetDetail, SupabaseOAuthResult } from '@shared/api';
-import { Button } from '../../../components/Button';
-import { Select } from '../../../components/Select';
+import { Button } from '../../../components/ui/button';
+import { SelectField } from '../../../components/ui/select';
 import { errorMessage } from '../../../utils';
 import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
@@ -60,14 +60,18 @@ export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
       />
       <div className="grid gap-1.5 text-sm">
         <span>Supabase 授权</span>
-        <Button variant={session ? 'secondary' : 'primary'} disabled={connecting} onClick={connect}>
+        <Button
+          variant={session ? 'default' : 'primary'}
+          disabled={connecting}
+          onClick={connect}
+        >
           {connecting ? '正在等待浏览器授权…' : session ? '重新授权' : '连接 Supabase'}
         </Button>
       </div>
       {session ? (
         <label className="grid gap-1.5 text-sm">
           项目
-          <Select
+          <SelectField
             aria-label="Supabase 项目"
             className="w-full"
             value={form.projectRef}

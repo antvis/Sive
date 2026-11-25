@@ -230,10 +230,7 @@ export const MessageBranchContent = ({
 
 export type MessageBranchSelectorProps = ComponentProps<typeof ButtonGroup>;
 
-export const MessageBranchSelector = ({
-  className,
-  ...props
-}: MessageBranchSelectorProps) => {
+export const MessageBranchSelector = (props: MessageBranchSelectorProps) => {
   const { totalBranches } = useMessageBranch();
 
   // Don't render if there's only one branch
@@ -241,16 +238,7 @@ export const MessageBranchSelector = ({
     return null;
   }
 
-  return (
-    <ButtonGroup
-      className={cn(
-        "[&>*:not(:first-child)]:rounded-l-md [&>*:not(:last-child)]:rounded-r-md",
-        className
-      )}
-      orientation="horizontal"
-      {...props}
-    />
-  );
+  return <ButtonGroup {...props} />;
 };
 
 export type MessageBranchPreviousProps = ComponentProps<typeof Button>;
@@ -301,20 +289,11 @@ export const MessageBranchNext = ({
 
 export type MessageBranchPageProps = HTMLAttributes<HTMLSpanElement>;
 
-export const MessageBranchPage = ({
-  className,
-  ...props
-}: MessageBranchPageProps) => {
+export const MessageBranchPage = (props: MessageBranchPageProps) => {
   const { currentBranch, totalBranches } = useMessageBranch();
 
   return (
-    <ButtonGroupText
-      className={cn(
-        "border-none bg-transparent text-muted-foreground shadow-none",
-        className
-      )}
-      {...props}
-    >
+    <ButtonGroupText {...props}>
       {currentBranch + 1} of {totalBranches}
     </ButtonGroupText>
   );

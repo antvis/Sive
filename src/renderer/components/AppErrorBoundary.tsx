@@ -1,7 +1,7 @@
 import { captureException } from '@sentry/electron/renderer';
 import { Component } from 'react';
 import type { ReactNode } from 'react';
-import { Button } from './Button';
+import { Button } from './ui/button';
 
 export class AppErrorBoundary extends Component<
   { children: ReactNode },
