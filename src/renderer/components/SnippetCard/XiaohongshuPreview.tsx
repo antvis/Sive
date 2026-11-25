@@ -117,10 +117,14 @@ export function XiaohongshuPreview({
       try {
         const status = await window.workbench.snippetShareStatus();
         if (!active) return;
+        setError('');
         if (status.loggedIn) setLogin(status);
         else timer = setTimeout(() => void check(), 5000);
       } catch (cause) {
-        if (active) setError(errorMessage(cause));
+        if (active) {
+          setError(errorMessage(cause));
+          timer = setTimeout(() => void check(), 5000);
+        }
       }
     };
     timer = setTimeout(() => void check(), 5000);
