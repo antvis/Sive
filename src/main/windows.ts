@@ -63,7 +63,7 @@ export function closeAppWindow(kind: AppWindow, sender: WebContents) {
   if (window?.webContents.id === sender.id) window.close();
 }
 
-export function loadRenderer(window: BrowserWindow, hash?: string) {
+function loadRenderer(window: BrowserWindow, hash?: string) {
   if (process.env.ELECTRON_RENDERER_URL) {
     const url = new URL(process.env.ELECTRON_RENDERER_URL);
     if (hash) url.hash = hash;

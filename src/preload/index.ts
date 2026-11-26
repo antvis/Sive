@@ -2,7 +2,7 @@ import '@sentry/electron/preload';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
 import type { UIMessageChunk } from 'ai';
-import type { ModelTestProgress, SnippetExportApi, WorkbenchApi } from './api';
+import type { ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
   isMacOS: process.platform === 'darwin',
@@ -71,12 +71,4 @@ const api = {
   conversationPurge: (ids) => ipcRenderer.invoke('conversationPurge', ids),
 } satisfies WorkbenchApi;
 
-contextBridge.exposeInMainWorld(
-  'workbench',
-  process.argv.includes('--snippet-export')
-    ? ({
-        getRenderData: () => ipcRenderer.invoke('snippetExport:getRenderData'),
-        renderComplete: (result) => ipcRenderer.send('snippetExport:renderComplete', result),
-      } satisfies SnippetExportApi)
-    : api,
-);
+contextBridge.exposeInMainWorld('workbench', api);

@@ -1,13 +1,40 @@
 import { CopyIcon, DownloadIcon } from 'lucide-react';
-import { useContext, useLayoutEffect, useRef, useState } from 'react';
+import { snapdom } from '@zumer/snapdom';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { SNIPPET_EXPORT_WIDTH } from '@shared/api';
 import type { Snippet, SnippetExportInput } from '@shared/api';
 import { errorMessage } from '../../utils';
-import { ThemeContext } from '../../theme';
 import { Button } from '../ui/button';
 import { Modal } from '../ui/dialog';
 import { SnippetCard } from './index';
+
+async function captureSnippet(container: HTMLDivElement) {
+  await document.fonts.ready;
+
+  // GPT-Vis does not expose render completion. Wait for the rendered DOM and canvas
+  // pixels to settle, including chart animations, instead of using a fixed delay.
+  let previous = '';
+  let stableFrames = 0;
+  const deadline = performance.now() + 10000;
+  while (stableFrames < 3) {
+    if (performance.now() > deadline) throw new Error('图表仍在渲染，请稍后重试。');
+    await new Promise(requestAnimationFrame);
+    const pixels = Array.from(container.querySelectorAll('canvas'), (canvas) => canvas.toDataURL());
+    const current = container.innerHTML + pixels.join('');
+    stableFrames = current === previous ? stableFrames + 1 : 0;
+    previous = current;
+  }
+
+  return snapdom.toBlob(container, {
+    type: 'png',
+    scale: 2,
+    dpr: 1,
+    embedFonts: true,
+    exclude: ['.g2-tooltip'],
+    // Keep tooltip boxes in the clone so snapdom does not reflow unrelated elements.
+    excludeMode: 'hide',
+  });
+}
 
 export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: () => void }) {
   const [busy, setBusy] = useState<SnippetExportInput['target'] | null>(null);
@@ -15,7 +42,6 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
   const [previewScale, setPreviewScale] = useState(1);
   const [viewport, setViewport] = useState<HTMLDivElement | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const theme = useContext(ThemeContext);
 
   useLayoutEffect(() => {
     const preview = previewRef.current;
@@ -34,14 +60,15 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
   }, [viewport]);
 
   const share = async (target: SnippetExportInput['target']) => {
-    if (busy) return;
+    const container = previewRef.current;
+    if (!container || busy) return;
     setBusy(target);
     setError('');
     try {
+      const blob = await captureSnippet(container);
       const exported = await window.workbench.snippetExport({
-        snippet,
-        templateId: snippet.templateId,
-        theme,
+        image: new Uint8Array(await blob.arrayBuffer()),
+        title: container.querySelector('[role="heading"]')?.textContent ?? 'Snippet',
         target,
       });
       if (exported) toast.success(target === 'clipboard' ? '图片已复制' : '图片已保存');
@@ -82,7 +109,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
           className="absolute top-1/2 left-1/2 origin-center"
           style={{ transform: `translate(-50%, -50%) scale(${previewScale})` }}
         >
-          <div ref={previewRef} className="bg-page p-6" style={{ width: SNIPPET_EXPORT_WIDTH }}>
+          <div ref={previewRef} className="bg-page p-6" style={{ width: 800 }}>
             <SnippetCard
               data={snippet}
               templateId={snippet.templateId}
