@@ -184,8 +184,7 @@ export function registerIpc(
     changed();
   });
 
-  ipcMain.handle('analysisStart', async (event, input: AnalysisStartInput) => {
-    const { sender } = event;
+  ipcMain.handle('analysisStart', async ({ sender }, input: AnalysisStartInput, subscriptionId: string) => {
     input = await analysisStartSchema.parseAsync(input);
     await services.dataset.prepareOAuth(input.datasetId);
     const titleUpdate = services.analysis.start(
@@ -193,7 +192,7 @@ export function registerIpc(
       services.model.getDefaultModelConfig(),
       services.settings.getPreferences(),
       (chunk) => {
-        if (!sender.isDestroyed()) sender.send('analysis:chunk', input.message.id, chunk);
+        if (!sender.isDestroyed()) sender.send('analysis:chunk', subscriptionId, input.message.id, chunk);
       },
     );
     changed();
@@ -202,10 +201,9 @@ export function registerIpc(
     });
   });
 
-  ipcMain.handle('analysisReconnect', (event, conversationId: string) => {
-    const { sender } = event;
+  ipcMain.handle('analysisReconnect', ({ sender }, conversationId: string, subscriptionId: string) => {
     return services.analysis.reconnect(conversationId, (messageId, chunk) => {
-      if (!sender.isDestroyed()) sender.send('analysis:chunk', messageId, chunk);
+      if (!sender.isDestroyed()) sender.send('analysis:chunk', subscriptionId, messageId, chunk);
     });
   });
 
