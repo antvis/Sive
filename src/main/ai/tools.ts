@@ -10,7 +10,6 @@ import type { SnippetContent } from '@shared/api';
 import { createAnalysisTraceCollector } from '../util/ava';
 import { localFilePath } from '../util/localFile';
 import { getTextFromLastUserMessage } from '../util/message';
-import { loadSource } from '../util/source';
 import { generateSnippet } from './snippet-agent';
 
 export type ToolDataset = {
@@ -44,7 +43,7 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
       description: 'Load the configured dataset before the first analysis.',
       inputSchema: z.object({}),
       async execute() {
-        await loadSource(ava, dataset.sourceConfig);
+        await ava.source(dataset.sourceConfig);
         let fileSize: number | undefined;
         const file = localFilePath(dataset.sourceConfig);
         if (file) {
@@ -97,7 +96,7 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
           .run(async () => {
             // Persisted tool calls do not restore an in-memory engine after a restart.
             if (!ava.engine) {
-              await loadSource(ava, dataset.sourceConfig);
+              await ava.source(dataset.sourceConfig);
               await ava.schema();
               await ava.profile({ metrics: ['row_count', 'null_count', 'min', 'max', 'mean'] });
               await ava.semantic({}, () => dataset.semantic);

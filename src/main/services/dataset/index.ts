@@ -11,7 +11,6 @@ import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 import { sourceEngine } from '../../util/engine';
-import { loadSource } from '../../util/source';
 import {
   connectGitHub,
   waitForGitHubConnect,
@@ -336,7 +335,7 @@ export class DatasetService {
     try {
       const file = localFilePath(dataset.sourceConfig);
       if (file) await checkLocalFile(file);
-      await loadSource(ava, dataset.sourceConfig);
+      await ava.source(dataset.sourceConfig);
       const reference = model.tableReference;
       const tableName =
         dataset.sourceType === 'github' && reference
@@ -366,7 +365,7 @@ export class DatasetService {
     try {
       const file = localFilePath(dataset.sourceConfig);
       if (file) await checkLocalFile(file);
-      await loadSource(ava, dataset.sourceConfig);
+      await ava.source(dataset.sourceConfig);
       await ava.schema({}, () => dataset.schema);
       await ava.profile({}, () => dataset.profile);
       await ava.semantic({}, () => dataset.semantic);
@@ -384,7 +383,7 @@ export class DatasetService {
       engine: sourceEngine(sourceConfig),
     });
     try {
-      await loadSource(ava, sourceConfig);
+      await ava.source(sourceConfig);
       const schema = await ava.schema();
       const profile = await ava.profile({ metrics: ['row_count'] });
       if (!schema.models.length) throw new Error('未发现可读取的数据表。');
