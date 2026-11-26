@@ -1,6 +1,18 @@
 import { app, net } from 'electron';
 import type { UpdateResult } from '@shared/api';
 
+const UPDATE_ERROR_MESSAGES = {
+  checkFailed: '检查更新失败',
+  invalidVersion: '版本信息无效，无法检查更新。',
+  timeout: '连接 GitHub 超时，请检查网络连接后重试。',
+  network: '无法连接 GitHub，请检查网络或代理设置后重试。',
+  releaseNotFound: '暂未找到可用的正式版本，请稍后再试。',
+  rateLimited: 'GitHub 请求次数已达上限，请稍后再试。',
+  unavailable: 'GitHub 暂时无法提供版本信息，请稍后重试。',
+  invalidResponse: '无法读取 GitHub 版本信息，请稍后重试。',
+  invalidRelease: '未获取到最新正式版本信息。',
+};
+
 const RELEASE_API_URL = 'https://api.github.com/repos/antvis/Sive/releases/latest';
 const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
 
@@ -8,7 +20,7 @@ function parseVersion(version: string) {
   const match = /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([\da-zA-Z.-]+))?(?:\+[\da-zA-Z.-]+)?$/.exec(
     version,
   );
-  if (!match) throw new Error('版本信息无效，无法检查更新。');
+  if (!match) throw new Error(UPDATE_ERROR_MESSAGES.invalidVersion);
 
   return { parts: match.slice(1, 4).map(Number), prerelease: match[4] };
 }
@@ -45,39 +57,31 @@ export class UpdateService {
         signal,
       })
       .catch(() => {
-        throw new Error(
-          signal.aborted
-            ? '连接 GitHub 超时，请检查网络连接后重试。'
-            : '无法连接 GitHub，请检查网络或代理设置后重试。',
-        );
+        throw new Error(signal.aborted ? UPDATE_ERROR_MESSAGES.timeout : UPDATE_ERROR_MESSAGES.network);
       });
-    if (response.status === 404) throw new Error('暂未找到可用的正式版本，请稍后再试。');
+    if (response.status === 404) throw new Error(UPDATE_ERROR_MESSAGES.releaseNotFound);
     if (
       response.status === 429 ||
       (response.status === 403 && response.headers.get('x-ratelimit-remaining') === '0')
     )
-      throw new Error('GitHub 请求次数已达上限，请稍后再试。');
-    if (!response.ok) throw new Error('GitHub 暂时无法提供版本信息，请稍后重试。');
+      throw new Error(UPDATE_ERROR_MESSAGES.rateLimited);
+    if (!response.ok) throw new Error(UPDATE_ERROR_MESSAGES.unavailable);
 
     const release = (await response.json().catch(() => {
-      throw new Error(
-        signal.aborted
-          ? '连接 GitHub 超时，请检查网络连接后重试。'
-          : '无法读取 GitHub 版本信息，请稍后重试。',
-      );
+      throw new Error(signal.aborted ? UPDATE_ERROR_MESSAGES.timeout : UPDATE_ERROR_MESSAGES.invalidResponse);
     })) as {
       tag_name?: string;
       prerelease?: boolean;
       draft?: boolean;
     } | null;
     if (typeof release?.tag_name !== 'string' || release.prerelease || release.draft)
-      throw new Error('未获取到最新正式版本信息。');
+      throw new Error(UPDATE_ERROR_MESSAGES.invalidRelease);
 
     const currentVersion = app.getVersion();
     const latestVersion = release.tag_name.replace(/^v/, '');
     const latest = parseVersion(latestVersion);
     const current = parseVersion(currentVersion);
-    if (latest.prerelease) throw new Error('未获取到最新正式版本信息。');
+    if (latest.prerelease) throw new Error(UPDATE_ERROR_MESSAGES.invalidRelease);
 
     const difference = latest.parts
       .map((part, index) => part - current.parts[index]!)

@@ -93,9 +93,7 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
             {checking && <LoaderCircleIcon size={16} className="motion-safe:animate-spin" aria-hidden />}
             {checking ? '正在检查…' : '检查更新'}
           </Button>
-          <Button
-            onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}
-          >
+          <Button onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}>
             <img src="./logos/github.svg" width={17} height={17} alt="" />
             关注开源项目
           </Button>
