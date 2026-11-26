@@ -4,7 +4,7 @@ import { ThemeContext } from '../../theme';
 import { errorMessage } from '../../utils';
 import { SnippetCard } from './index';
 
-export async function waitForRendering(container: HTMLElement) {
+async function waitForRendering(container: HTMLElement) {
   await document.fonts.ready;
   await Promise.all(Array.from(container.querySelectorAll('img'), (image) => image.decode()));
 
