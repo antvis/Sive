@@ -6,11 +6,14 @@ import {
   LightbulbIcon,
   PanelLeftIcon,
   PencilIcon,
+  PinIcon,
+  PinOffIcon,
   SettingsIcon,
   SquarePenIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { usePinnedConversationGroups } from '../hooks/usePinnedConversationGroups';
 import type { Conversation, DatasetSummary } from '../types';
 import { errorMessage } from '../utils';
 import { ConversationStatus } from './ConversationStatus';
@@ -176,12 +179,31 @@ export function WorkspaceSidebar({
   const initialDatasetId = activeDatasetId ?? datasets[0]?.id;
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [recentSelection, setRecentSelection] = useState<string | null>(null);
+  const { pinnedIds, togglePin } = usePinnedConversationGroups();
   const [windowFullscreen, setWindowFullscreen] = useState(false);
   const isMacOS = window.workbench.isMacOS;
-  const groups = datasets.flatMap((dataset) => {
-    const conversations = conversationsByDataset.get(dataset.id);
-    return conversations?.length ? [{ dataset, conversations }] : [];
-  });
+  const groups = datasets
+    .flatMap((dataset) => {
+      const conversations = conversationsByDataset.get(dataset.id);
+      return conversations?.length ? [{ dataset, conversations }] : [];
+    })
+    .sort((a, b) => {
+      const aIndex = pinnedIds.indexOf(a.dataset.id);
+      const bIndex = pinnedIds.indexOf(b.dataset.id);
+      return (aIndex < 0 ? pinnedIds.length : aIndex) - (bIndex < 0 ? pinnedIds.length : bIndex);
+    });
+  const groupSections = [
+    {
+      id: 'pinned',
+      title: '置顶',
+      groups: groups.filter(({ dataset }) => pinnedIds.includes(dataset.id)),
+    },
+    {
+      id: 'datasets',
+      title: '数据源',
+      groups: groups.filter(({ dataset }) => !pinnedIds.includes(dataset.id)),
+    },
+  ];
   const activeInRecent =
     recentSelection === activeConversationId &&
     recentConversations.some((conversation) => conversation.id === activeConversationId);
@@ -286,25 +308,32 @@ export function WorkspaceSidebar({
         </SidebarList>
       </nav>
       <nav className="mx-2.5 mt-6 flex min-h-0 flex-1 flex-col gap-4" aria-label="分析历史">
-        {groups.length > 0 && (
-          <section className="flex max-h-1/2 min-h-0 flex-col" aria-labelledby="sidebar-datasets-heading">
+        {groupSections.filter(({ groups }) => groups.length > 0).map(({ id, title, groups }) => (
+          <section
+            key={id}
+            className="flex max-h-1/2 min-h-0 flex-col"
+            aria-labelledby={`sidebar-${id}-heading`}
+          >
             <h2
-              id="sidebar-datasets-heading"
+              id={`sidebar-${id}-heading`}
               className="mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80"
             >
-              数据源
+              {title}
             </h2>
             <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-height:28px] scrollbar-none">
               {groups.map(({ dataset, conversations }) => {
                 const open = expanded[dataset.id] !== false;
+                const pinned = pinnedIds.includes(dataset.id);
+                const pinLabel = `${pinned ? '取消置顶' : '置顶'} ${dataset.name}`;
                 const groupId = `sidebar-conversations-${dataset.id}`;
                 return (
                   <div key={dataset.id} className="grid min-w-0 gap-[2px]">
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-px">
+                    <div className="group/conversation-group relative flex min-w-0 items-center">
                       <SidebarButton
+                        className="w-full group-has-[:focus-visible]/conversation-group:pe-[52px] group-hover/conversation-group:pe-[52px]"
                         aria-expanded={open}
                         aria-controls={groupId}
-                        title={dataset.name}
+                        title={pinned ? `${dataset.name}（已置顶）` : dataset.name}
                         onClick={() => setExpanded((current) => ({ ...current, [dataset.id]: !open }))}
                       >
                         <span
@@ -318,19 +347,38 @@ export function WorkspaceSidebar({
                         <DataSourceLogo type={dataset.sourceType} size={16} />
                         <span className="min-w-0 flex-1 truncate">{dataset.name}</span>
                         {!open && (
-                          <ConversationStatus ids={conversations.map((conversation) => conversation.id)} />
+                          <span className="shrink-0 group-has-[:focus-visible]/conversation-group:hidden group-hover/conversation-group:hidden">
+                            <ConversationStatus ids={conversations.map((conversation) => conversation.id)} />
+                          </span>
                         )}
                       </SidebarButton>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-muted-foreground/75 focus-visible:text-ink"
-                        aria-label={`在 ${dataset.name} 新建对话`}
-                        title={`在 ${dataset.name} 新建对话`}
-                        onClick={() => createConversation(dataset.id)}
-                      >
-                        <SquarePenIcon className="size-[14px]" aria-hidden />
-                      </Button>
+                      <div className="pointer-events-none absolute inset-y-0 end-1 flex items-center opacity-0 transition-opacity group-has-[:focus-visible]/conversation-group:pointer-events-auto group-has-[:focus-visible]/conversation-group:opacity-100 group-hover/conversation-group:pointer-events-auto group-hover/conversation-group:opacity-100">
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          className="text-muted-foreground/75 focus-visible:text-ink"
+                          aria-label={pinLabel}
+                          aria-pressed={pinned}
+                          title={pinLabel}
+                          onClick={() => togglePin(dataset.id)}
+                        >
+                          {pinned ? (
+                            <PinOffIcon className="size-[14px]" aria-hidden />
+                          ) : (
+                            <PinIcon className="size-[14px]" aria-hidden />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          className="text-muted-foreground/75 focus-visible:text-ink"
+                          aria-label={`在 ${dataset.name} 新建对话`}
+                          title={`在 ${dataset.name} 新建对话`}
+                          onClick={() => createConversation(dataset.id)}
+                        >
+                          <SquarePenIcon className="size-[14px]" aria-hidden />
+                        </Button>
+                      </div>
                     </div>
                     <div id={groupId} className="mb-[4px]" hidden={!open}>
                       {open && (
@@ -359,14 +407,14 @@ export function WorkspaceSidebar({
               })}
             </SidebarList>
           </section>
-        )}
+        ))}
         <section className="flex min-h-0 flex-col" aria-labelledby="sidebar-recent-heading">
-          <div className="mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80">
+          <div className="group/recent mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80">
             <h2 id="sidebar-recent-heading">最近</h2>
             <Button
               variant="ghost"
               size="icon-sm"
-              className="text-muted-foreground/75 focus-visible:text-ink"
+              className="pointer-events-none text-muted-foreground/75 opacity-0 transition-opacity focus-visible:text-ink group-has-[:focus-visible]/recent:pointer-events-auto group-has-[:focus-visible]/recent:opacity-100 group-hover/recent:pointer-events-auto group-hover/recent:opacity-100"
               aria-label="新建对话"
               title={initialDatasetId ? '新建对话' : '请先添加数据源'}
               disabled={!initialDatasetId}
