@@ -216,7 +216,7 @@ export function WorkspaceSidebar({
   return (
     <aside
       id={WORKSPACE_SIDEBAR_ID}
-      className="flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-2xl bg-sidebar-canvas pb-3 text-base text-sidebar-ink"
+      className="flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-2xl bg-surface pb-3 text-base text-sidebar-ink"
       aria-label="工作台侧边栏"
       inert={inert}
     >

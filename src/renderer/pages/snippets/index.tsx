@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { Snippet } from '@shared/schema';
 import { SnippetCard } from '../../components/SnippetCard';
 import { ShareDialog } from '../../components/SnippetCard/ShareDialog';
+import { WorkspacePage } from '../../components/WorkspacePage';
 import { Button } from '../../components/ui/button';
 import { AlertDialog } from '../../components/ui/dialog';
 import { cn } from '../../lib/utils';
@@ -42,16 +43,10 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-7 pt-4 pb-12 lg:px-10 motion-safe:animate-fade-up">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="m-0 text-3xl leading-tight font-semibold tracking-tight text-balance">洞察 Snippet</h1>
-          <p className="mt-2 mb-0 leading-[1.7] text-pretty text-muted-foreground">
-            <span className="tabular-nums">{snippets.length}</span> 个已保存的数据洞察
-          </p>
-        </div>
-      </header>
-
+    <WorkspacePage
+      title="洞察 Snippet"
+      description={<><span className="tabular-nums">{snippets.length}</span> 个已保存的数据洞察</>}
+    >
       {!snippets.length ? (
         <div className="mt-10 grid justify-items-center rounded-2xl bg-page px-6 py-14 text-center">
           <div className="grid size-12 place-items-center rounded-xl bg-workspace-control text-ink">
@@ -109,6 +104,6 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
           {busy ? '删除中…' : '删除'}
         </Button>
       </AlertDialog>
-    </div>
+    </WorkspacePage>
   );
 }

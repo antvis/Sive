@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { WorkspacePage } from '../../components/WorkspacePage';
 import { Button } from '../../components/ui/button';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { Modal } from '../../components/ui/dialog';
@@ -235,17 +236,16 @@ export function DatasetsPage({
   }, [visibleCount, hasMore, query]);
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-7 pt-4 pb-12 lg:px-10 motion-safe:animate-fade-up">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="m-0 text-3xl leading-tight font-semibold tracking-tight">数据源</h1>
-          <p className="mt-2 mb-0 leading-[1.7] text-muted-foreground">{datasets.length} 个已添加的数据源</p>
-        </div>
+    <WorkspacePage
+      title="数据源"
+      description={`${datasets.length} 个已添加的数据源`}
+      action={
         <Button variant="primary" size="lg" onClick={onAdd}>
           <PlusIcon size={16} />
           添加数据源
         </Button>
-      </header>
+      }
+    >
       <div className="mt-10 flex items-center justify-between gap-4">
         <div className="relative w-72 min-w-0 max-w-full">
           <SearchIcon size={15} aria-hidden className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -282,6 +282,6 @@ export function DatasetsPage({
           <Button onClick={() => setVisibleCount((count) => count + 24)}>显示更多数据源</Button>
         </div>
       )}
-    </div>
+    </WorkspacePage>
   );
 }

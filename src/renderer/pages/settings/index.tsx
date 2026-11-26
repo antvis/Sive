@@ -80,7 +80,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
     <main className="grid min-h-0 flex-1 grid-cols-[clamp(160px,24%,208px)_minmax(0,1fr)] gap-(--workspace-gutter) overflow-hidden">
       <nav
         aria-label="设置分类"
-        className="grid min-h-0 content-start gap-6 overflow-y-auto rounded-2xl bg-sidebar-canvas px-3 pt-12 pb-6"
+        className="grid min-h-0 content-start gap-6 overflow-y-auto rounded-2xl bg-surface px-3 pt-12 pb-6"
       >
         {groups.map(({ label, items }) => (
           <div key={label}>

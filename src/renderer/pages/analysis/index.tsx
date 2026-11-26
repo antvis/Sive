@@ -1,5 +1,6 @@
 import { PanelRightIcon } from 'lucide-react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Group, Panel, usePanelRef } from 'react-resizable-panels';
 import type { AnalysisFrameProps } from '../../components/AppShell';
 import { Chat } from '../../components/chat/chat';
@@ -63,13 +64,60 @@ export function AnalysisPage({
   const conversationPanel = usePanelRef();
   const previewPanel = usePanelRef();
   const previewFullscreenButton = useRef<HTMLButtonElement>(null);
+  const focusPreviewAfterOpening = useRef(false);
+  const capturingPreviewLayout = useRef(false);
   const rememberToggleFocus = usePanelToggleFocus(workspace, DATASET_PREVIEW_ID, datasetCollapsed);
   const { activeTabId, tabs, selectTab, openDataset, openResult, closeTab } = useAnalysisTabs(chatId);
 
+  const restorePreview = useCallback(() => {
+    const panel = previewPanel.current;
+    if (!panel) return;
+
+    if (preferredPreviewWidth.current) panel.resize(preferredPreviewWidth.current);
+    else preferredPreviewWidth.current = panel.getSize().inPixels;
+
+    if (focusPreviewAfterOpening.current) {
+      focusPreviewAfterOpening.current = false;
+      previewFullscreenButton.current?.focus({ preventScroll: true });
+    }
+  }, [previewPanel]);
+
   const changePreviewCollapsed = (collapsed: boolean, restoreFocus = false) => {
     rememberToggleFocus(restoreFocus);
-    if (!collapsed) onPreviewOpen();
-    onDatasetCollapsedChange(collapsed);
+    if (collapsed) focusPreviewAfterOpening.current = false;
+
+    const update = () => {
+      if (!collapsed) onPreviewOpen();
+      onDatasetCollapsedChange(collapsed);
+    };
+
+    if (
+      !workspace.current?.querySelector('[data-draft-slide]') ||
+      !document.startViewTransition ||
+      document.hidden ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      update();
+      return;
+    }
+
+    const transition = document.startViewTransition({
+      types: ['preview-toggle'],
+      update: async () => {
+        capturingPreviewLayout.current = !collapsed;
+        try {
+          flushSync(update);
+          if (!collapsed) {
+            // Let the sidebar's layout update before restoring the saved preview width.
+            await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+            flushSync(restorePreview);
+          }
+        } finally {
+          capturingPreviewLayout.current = false;
+        }
+      },
+    });
+    void transition.ready.catch(() => {});
   };
 
   const collapsePreview = usePanelCollapsePreview(previewPanel, MIN_ANALYSIS_PANEL_WIDTH, () => {
@@ -77,17 +125,11 @@ export function AnalysisPage({
   });
 
   useLayoutEffect(() => {
-    if (datasetCollapsed) return;
+    if (datasetCollapsed || capturingPreviewLayout.current) return;
 
-    const frame = requestAnimationFrame(() => {
-      const panel = previewPanel.current;
-      if (!panel) return;
-
-      if (preferredPreviewWidth.current) panel.resize(preferredPreviewWidth.current);
-      else preferredPreviewWidth.current = panel.getSize().inPixels;
-    });
+    const frame = requestAnimationFrame(restorePreview);
     return () => cancelAnimationFrame(frame);
-  }, [datasetCollapsed, previewPanel]);
+  }, [datasetCollapsed, restorePreview]);
 
   const persistPreviewWidth = () => {
     requestAnimationFrame(() => {
@@ -164,7 +206,7 @@ export function AnalysisPage({
         style={{ overflow: 'hidden' }}
       >
         <section
-          className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl bg-background motion-safe:transition-opacity motion-safe:duration-150"
+          className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl bg-surface motion-safe:transition-opacity motion-safe:duration-150"
           aria-label="对话面板"
           inert={fullscreen}
         >
@@ -179,9 +221,11 @@ export function AnalysisPage({
                   showDataset();
                 }}
                 onOpenDatasetPreview={() => {
+                  if (datasetCollapsed) focusPreviewAfterOpening.current = true;
+                  else previewFullscreenButton.current?.focus({ preventScroll: true });
                   showDataset();
-                  requestAnimationFrame(() => previewFullscreenButton.current?.focus({ preventScroll: true }));
                 }}
+                previewOpen={!datasetCollapsed}
                 toolbar={toolbar}
                 chatId={chatId}
                 conversationId={conversationId}

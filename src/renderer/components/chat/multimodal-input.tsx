@@ -104,7 +104,10 @@ export function MultimodalInput({
 
   const submitButton = (
     <PromptInputSubmit
-      className="size-8 rounded-full in-data-conversation-draft:shrink-0 in-data-conversation-draft:enabled:bg-[light-dark(#1768d4,#8bbcff)] in-data-conversation-draft:enabled:text-[light-dark(#fff,#12233a)] in-data-conversation-draft:enabled:hover:bg-[light-dark(#0d55b8,#a7ceff)]"
+      className={cn(
+        'size-8 rounded-full',
+        welcome && 'enabled:bg-[light-dark(#1768d4,#8bbcff)] enabled:text-[light-dark(#fff,#12233a)] enabled:hover:bg-[light-dark(#0d55b8,#a7ceff)]',
+      )}
       status={status}
       onStop={onStop}
       aria-label={busy ? '停止分析' : '发送问题'}
@@ -115,6 +118,14 @@ export function MultimodalInput({
 
   return (
     <PromptInput
+      composerClassName={
+        welcome
+          ? cn(
+              'border-[light-dark(#c5dced,#355876)] shadow-[length:0_6px_18px_-8px_#2493d959]',
+              'focus-within:border-[light-dark(#8f8f8f,#8c8c8c)]! focus-within:ring-2! focus-within:ring-ink/10',
+            )
+          : undefined
+      }
       onSubmit={onSubmit}
       onResetCapture={(event) => {
         // Text is cleared by the caller; a native reset also changes the model and strategy.
@@ -126,7 +137,7 @@ export function MultimodalInput({
     >
       {datasetSelector && <div className="w-full min-w-0">{datasetSelector}</div>}
       <PromptInputTextarea
-        className="min-h-14 px-2 py-2 leading-normal"
+        className={cn('min-h-14 px-2 py-2 leading-normal', welcome && 'placeholder:text-muted-foreground')}
         ref={inputRef}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -143,11 +154,11 @@ export function MultimodalInput({
               onValueChange={onModeChange}
               className={cn(
                 'relative isolate grid max-w-full shrink-0 grid-cols-2 gap-0 rounded-full border border-[light-dark(#eef2f7,var(--line))] bg-[light-dark(#f6f8fc,var(--workspace-control))] p-[2px]',
-                'before:pointer-events-none before:absolute before:inset-y-[2px] before:left-[2px] before:-z-10 before:w-[calc(50%-2px)] before:rounded-full before:bg-surface before:shadow-card',
+                'before:pointer-events-none before:absolute before:inset-y-[2px] before:left-[2px] before:-z-10 before:w-[calc(50%-2px)] before:rounded-full before:bg-accent-soft before:shadow-card',
                 'motion-safe:before:transition-transform motion-safe:before:duration-[380ms] motion-safe:before:ease-[cubic-bezier(.22,1,.36,1)]',
                 mode === 'loop' && 'before:translate-x-full',
               )}
-              itemClassName="min-h-[24px] gap-[5px] rounded-full px-[6px] py-[3px] leading-tight whitespace-nowrap data-[state=checked]:bg-transparent data-[state=checked]:text-chat-accent"
+              itemClassName="min-h-[24px] gap-[5px] rounded-full px-[6px] py-[3px] leading-tight whitespace-nowrap data-[state=checked]:bg-transparent data-[state=checked]:text-accent"
             />
             <div className="flex min-w-0 flex-1 items-center justify-end gap-1 @max-[20rem]/composer:basis-full">
               {modelSelector}

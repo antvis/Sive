@@ -7,7 +7,6 @@ export function Composer({ className, ...props }: ComponentProps<typeof InputGro
     <InputGroup
       className={cn(
         'gap-2 overflow-hidden rounded-3xl! border-line bg-surface p-2.5 shadow-card transition-[border-color,box-shadow] duration-150 focus-within:border-focus/55! focus-within:ring-0! motion-reduce:transition-none! motion-reduce:**:transition-none!',
-        'in-data-conversation-draft:border-transparent in-data-conversation-draft:p-3 in-data-conversation-draft:shadow-[0_8px_28px_light-dark(#214a8415,#0003)]',
         className,
       )}
       {...props}
@@ -24,7 +23,7 @@ export function ComposerTextarea({
     <InputGroupTextarea
       rows={rows}
       className={cn(
-        'max-h-25 min-h-[46px] px-1 py-[5px] text-base leading-[1.25] text-chat-foreground',
+        'max-h-25 min-h-[46px] px-1 py-[5px] text-base leading-[1.25] text-foreground',
         className,
       )}
       {...props}

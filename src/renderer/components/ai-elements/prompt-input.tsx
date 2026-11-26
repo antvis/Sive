@@ -328,6 +328,7 @@ export type PromptInputProps = Omit<
   HTMLAttributes<HTMLFormElement>,
   "onSubmit" | "onError"
 > & {
+  composerClassName?: string;
   // e.g., "image/*" or leave undefined for any
   accept?: string;
   multiple?: boolean;
@@ -351,6 +352,7 @@ export type PromptInputProps = Omit<
 
 export const PromptInput = ({
   className,
+  composerClassName,
   accept,
   multiple,
   globalDrop,
@@ -764,7 +766,7 @@ export const PromptInput = ({
         ref={formRef}
         {...props}
       >
-        <Composer>{children}</Composer>
+        <Composer className={composerClassName}>{children}</Composer>
       </form>
     </>
   );

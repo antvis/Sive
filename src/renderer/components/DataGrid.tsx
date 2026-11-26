@@ -156,7 +156,7 @@ export function DataGrid({
         </thead>
         <tbody>
           {visible.map((row, index) => (
-            <tr key={index} className="transition-colors even:bg-preview-row hover:bg-selected/60">
+            <tr key={index} className="transition-colors even:bg-page hover:bg-selected/60">
               {columns.map((column) => (
                 <td
                   key={column.name}

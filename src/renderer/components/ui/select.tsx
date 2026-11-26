@@ -6,6 +6,7 @@ import { Select as SelectPrimitive } from "radix-ui"
 import { cn } from "../../lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 import { DropdownList } from "./dropdown-list"
+import { dropdownContentClassName, dropdownItemClassName } from "./dropdown-styles"
 
 function Select({
   ...props
@@ -109,7 +110,7 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          'relative z-50 min-w-44 overflow-x-hidden overflow-y-auto rounded-xl border border-border/80 bg-popover p-1 text-popover-foreground shadow-overlay [--dropdown-enter-transform:translateY(-6px)] data-[side=top]:[--dropdown-enter-transform:translateY(6px)] data-[side=left]:[--dropdown-enter-transform:translateX(6px)] data-[side=right]:[--dropdown-enter-transform:translateX(-6px)] motion-safe:data-[state=open]:animate-dropdown-open motion-safe:data-[state=closed]:animate-dropdown-close',
+          dropdownContentClassName, "p-1",
           "max-h-(--radix-select-content-available-height) max-w-[min(34rem,var(--radix-select-content-available-width))] origin-(--radix-select-content-transform-origin)",
           className
         )}
@@ -153,7 +154,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-md py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+        dropdownItemClassName,
         "pr-8 data-[state=checked]:text-selected-foreground *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}

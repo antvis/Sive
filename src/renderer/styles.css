@@ -1,6 +1,8 @@
 @layer theme, base, xyflow, components, utilities;
 
 @import 'tailwindcss';
+@import './components/chat/draft-animations.css';
+@import './components/ui/dialog-animations.css';
 
 @source '../../node_modules/streamdown/dist';
 @source '../../node_modules/@streamdown/code/dist';
@@ -33,10 +35,6 @@
   --animate-collapsible-collapse: collapsible-collapse 160ms ease-in both;
   --animate-chat-tool-shimmer: chat-tool-shimmer 1.4s linear infinite;
   --animate-fade-up: fade-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  --animate-draft-companion-enter: draft-companion-enter 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-draft-companion-idle: draft-companion-idle 6s ease-in-out 720ms infinite;
-  --animate-draft-companion-bubble: draft-companion-bubble 15.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  --animate-dialog-enter: dialog-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-dropdown-open: dropdown-open 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-dropdown-close: dropdown-close 120ms ease-in both;
 
@@ -105,89 +103,24 @@
       transform: translateY(0);
     }
   }
-
-  @keyframes draft-companion-enter {
-    0% {
-      transform: translateY(8px) scale(0.97);
-    }
-
-    55% {
-      transform: translateY(-4px) scale(1.01);
-    }
-
-    100% {
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  @keyframes draft-companion-idle {
-    0%,
-    70%,
-    100% {
-      transform: none;
-    }
-
-    20% {
-      transform: translateY(-4px) rotate(-2.5deg);
-    }
-
-    42% {
-      transform: translateY(-1px) rotate(2deg);
-    }
-  }
-
-  @keyframes draft-companion-bubble {
-    0%,
-    25%,
-    100% {
-      opacity: 0;
-      transform: translate(-4px, 4px) scale(0.96);
-    }
-
-    2.3%,
-    23% {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @keyframes dialog-enter {
-    from {
-      opacity: 0;
-      scale: 0.97;
-    }
-    to {
-      opacity: 1;
-      scale: 1;
-    }
-  }
 }
 
 @theme inline {
-  --color-sidebar-canvas: var(--surface);
   --color-sidebar-ink: var(--foreground);
   --color-sidebar-text: var(--muted-foreground);
   --color-sidebar-highlight: var(--workspace-control);
   --color-workspace-canvas: var(--workspace-canvas);
   --color-workspace-control: var(--workspace-control);
-  --color-workspace-control-active: var(--surface);
-  --color-preview-row: var(--page);
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-ink: var(--ink);
   --color-muted: var(--workspace-control);
   --color-muted-foreground: var(--muted-foreground);
   --color-placeholder: color-mix(in oklab, var(--muted-foreground) 85%, transparent);
-  --color-chat-foreground: var(--foreground);
-  --color-chat-accent: light-dark(#0876b5, #83caff);
-  --color-chat-link: var(--accent);
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-soft: var(--accent-soft);
-  --color-action: var(--action);
-  --color-action-hover: var(--action-hover);
-  --color-action-foreground: #fff;
   --color-focus: var(--ring);
   --color-selected: var(--selected);
   --color-selected-foreground: var(--selected-foreground);
@@ -195,7 +128,6 @@
   --color-danger: var(--danger);
   --color-card: var(--surface);
   --color-card-foreground: var(--foreground);
-  --color-scrim: light-dark(#1c263145, #0009);
   --radius-sm: 5px;
   --radius-md: 8px;
   --radius-lg: 10px;
@@ -208,6 +140,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -245,8 +178,8 @@
   --client-accent: #0872ad;
   --accent-soft: #eaf4fc;
   --accent-foreground: #fff;
-  --action: #181a1e;
-  --action-hover: #30343b;
+  --primary: #181a1e;
+  --primary-hover: #30343b;
   --selected: #ecedef;
   --selected-foreground: #303236;
   --ring: #2786c2;
@@ -265,7 +198,6 @@
   --foreground: var(--ink);
   --popover: var(--surface);
   --popover-foreground: var(--ink);
-  --primary: var(--action);
   --primary-foreground: #fff;
   --secondary: var(--workspace-control);
   --secondary-foreground: var(--selected-foreground);
@@ -286,8 +218,8 @@
   --client-accent: #83caff;
   --accent-soft: #20394d;
   --accent-foreground: #141d27;
-  --action: #3b4552;
-  --action-hover: #4c5867;
+  --primary: #3b4552;
+  --primary-hover: #4c5867;
   --selected: #303a46;
   --selected-foreground: #edf1f6;
   --ring: #6fb7e9;
@@ -300,29 +232,6 @@
   --sql-string: #86d3a3;
   --sql-literal: #efb57d;
   --sql-comment: #a0a8b2;
-}
-
-[data-conversation-draft] {
-  background:
-    radial-gradient(ellipse 60% 26% at 50% 0%, light-dark(#e9f6ff, #24384c), transparent 70%),
-    radial-gradient(ellipse 70% 22% at 55% 106%, light-dark(#5cbfff52, #2489ce55), transparent),
-    radial-gradient(ellipse 90% 28% at 40% 112%, light-dark(#afe4ff80, #28619763), transparent),
-    light-dark(#fff, #1b232e);
-}
-
-[data-conversation-draft]::before {
-  --grid-line: light-dark(#2f96e90e, #83caff13);
-
-  position: absolute;
-  z-index: -20;
-  inset: 0;
-  pointer-events: none;
-  content: '';
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 26px 26px;
-  mask-image: radial-gradient(ellipse 75% 42% at 50% 0%, #000 10%, transparent 75%);
 }
 
 @layer base {

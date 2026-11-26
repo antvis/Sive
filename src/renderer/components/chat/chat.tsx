@@ -19,11 +19,19 @@ import { ChatWelcomeHeader } from './welcome';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
+const draftBackground = cn(
+  'bg-[light-dark(#fff,#1b232e)]',
+  'bg-[image:radial-gradient(ellipse_60%_26%_at_50%_0%,light-dark(#e9f6ff,#24384c),transparent_70%),radial-gradient(ellipse_70%_22%_at_55%_106%,light-dark(#5cbfff52,#2489ce55),transparent),radial-gradient(ellipse_90%_28%_at_40%_112%,light-dark(#afe4ff80,#28619763),transparent)]',
+  'before:pointer-events-none before:absolute before:inset-0 before:-z-20 before:[--grid-line:light-dark(#2f96e90e,#83caff13)]',
+  'before:bg-[image:linear-gradient(var(--grid-line)_1px,transparent_1px),linear-gradient(90deg,var(--grid-line)_1px,transparent_1px)] before:bg-size-[26px_26px] before:mask-[radial-gradient(ellipse_75%_42%_at_50%_0%,#000_10%,transparent_75%)]',
+);
+
 type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
   datasets: DatasetSummary[];
   onDatasetChange: (datasetId: string) => void;
   onOpenDatasetPreview: () => void;
+  previewOpen: boolean;
   toolbar: ReactNode;
   chatId: string;
   conversationId: string | null;
@@ -40,6 +48,7 @@ export function Chat({
   datasets,
   onDatasetChange,
   onOpenDatasetPreview,
+  previewOpen,
   toolbar,
   chatId,
   conversationId,
@@ -198,8 +207,10 @@ export function Chat({
   return (
     <TooltipProvider>
       <section
-        data-conversation-draft={starting ? '' : undefined}
-        className="relative isolate flex h-full min-h-0 flex-col text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
+        className={cn(
+          'relative isolate flex h-full min-h-0 flex-col text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',
+          starting && draftBackground,
+        )}
         aria-label="AI 对话"
       >
         {toolbar && (
@@ -225,10 +236,11 @@ export function Chat({
         <div className={starting ? 'min-h-0 flex-1 overflow-y-auto' : 'shrink-0'}>
           <div
             className={cn(
-              'mx-auto w-full px-4',
+              'w-full',
               starting
-                ? 'flex min-h-full max-w-[620px] flex-col justify-center px-[clamp(14px,4%,24px)] pt-[calc(var(--workspace-titlebar-height)+4px)] pb-[clamp(36px,13vh,114px)]'
-                : 'max-w-3xl pt-2 pb-4',
+                ? 'max-w-[760px] px-[clamp(14px,5%,40px)] pt-[calc(var(--workspace-titlebar-height)+clamp(24px,5.5vh,72px))] pb-10'
+                : 'mx-auto max-w-3xl px-4 pt-2 pb-4',
+              starting && !previewOpen && 'mx-auto',
             )}
           >
             {starting && (
@@ -236,16 +248,17 @@ export function Chat({
                 datasetName={datasetName}
                 datasetSourceType={dataset.sourceType}
                 onOpenDatasetPreview={onOpenDatasetPreview}
+                previewOpen={previewOpen}
                 showModelNotice={!activeModelId}
                 error={displayError}
               />
             )}
             <div
-              className={
-                starting
-                  ? 'mt-[clamp(32px,5.2vh,48px)] motion-safe:animate-fade-up motion-safe:[animation-delay:50ms] motion-safe:[animation-fill-mode:backwards]'
-                  : undefined
-              }
+              data-draft-slide={starting ? '' : undefined}
+              className={cn(
+                starting &&
+                  'mt-[clamp(8px,calc(5vh-1.6rem),56px)] motion-safe:animate-fade-up motion-safe:[animation-delay:50ms] motion-safe:[animation-fill-mode:backwards]',
+              )}
             >
               {!starting && datasetSelector && <div className="mb-2">{datasetSelector}</div>}
               <MultimodalInput
@@ -267,18 +280,19 @@ export function Chat({
             </div>
             {starting && hasSuggestions && (
               <ul
+                data-draft-slide
                 aria-label="示例问题"
-                className="m-0 mt-[22px] grid min-w-0 list-none gap-0.5 p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
+                className="m-0 mt-3 list-none p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
               >
                 {suggestions.map(({ query }) => (
-                  <li key={query} className="min-w-0">
+                  <li key={query}>
                     <Suggestion
                       suggestion={query}
                       onClick={(value) => {
                         setQuestion(value);
                         inputRef.current?.focus();
                       }}
-                      className="group/example h-auto min-h-9 w-full items-center justify-between gap-3 rounded-lg bg-transparent px-3 py-1.5 text-left text-sm leading-relaxed font-normal whitespace-normal text-muted-foreground/90 hover:bg-workspace-control hover:text-ink focus-visible:bg-workspace-control focus-visible:text-ink motion-reduce:transition-none"
+                      className="group/example h-auto min-h-9 w-full items-center justify-between gap-3 rounded-lg bg-transparent px-3 py-1.5 text-left text-sm leading-relaxed font-normal whitespace-normal text-muted-foreground hover:bg-workspace-control hover:text-ink focus-visible:bg-workspace-control focus-visible:text-ink motion-reduce:transition-none"
                     >
                       <span className="flex min-w-0 items-start gap-2">
                         <span className="shrink-0" aria-hidden>💡</span>
