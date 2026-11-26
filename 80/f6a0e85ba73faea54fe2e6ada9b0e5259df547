@@ -1,0 +1,58 @@
+src/preload/index.ts
+  s_fb34d829a5b74c::t_7e7de1f303995c 30
+src/main/ipc/index.ts
+  s_fb34d829a5b74c::t_0522f2ead40f6b 46-48
+  s_fb34d829a5b74c::t_a031a3cd788419 114-117
+src/main/util/github/client.ts
+  s_fb34d829a5b74c::t_825a1e0f4cab3b 68
+  s_fb34d829a5b74c::t_a14db15146726c 1-2,7-10,12-18,20-23,25-31,33-40,43-46,49,51,55-60,62-64,67,69-72,76-78,80-115,117,121-127,130,133-164
+  s_fb34d829a5b74c::t_f7f1d9c8559c9e 61
+  s_fb34d829a5b74c::t_49505868fbcaa7 52
+src/shared/dataSource.ts
+  s_fb34d829a5b74c::t_5891114f37fa9d 122
+src/renderer/pages/datasets/datasetDialogs/GitHubDialog.tsx
+  s_fb34d829a5b74c::t_e5dca93365bcf0 118-119
+  s_fb34d829a5b74c::t_cfdd42dacc4451 134,136-139,143-152
+  s_fb34d829a5b74c::t_8762d2f396f125 13-14
+  s_fb34d829a5b74c::t_3bba2c1d8570d1 45
+  s_fb34d829a5b74c::t_3fdeb07ffef38f 35-36
+  s_fb34d829a5b74c::t_81a5bab9477175 68-69,72-73,80-86,89-91,94-97
+  s_fb34d829a5b74c::t_00f6b3b6d7d2fc 3
+  s_fb34d829a5b74c::t_0522f2ead40f6b 140-142
+tests/main/util/github-client.test.ts
+  s_fb34d829a5b74c::t_6e69e9803b5727 64,70-79
+  s_fb34d829a5b74c::t_0522f2ead40f6b 117-119
+  s_fb34d829a5b74c::t_aec006fd11d39b 1-63,80-116,120-124
+  s_fb34d829a5b74c::t_ad19e8cc1d55e3 65-69
+src/main/util/source.ts
+  s_fb34d829a5b74c::t_0dac2f37a076e0 4
+src/main/services/dataset/index.ts
+  s_fb34d829a5b74c::t_4eb536d5275187 159-163
+  s_fb34d829a5b74c::t_e116185d14119b 64
+  s_fb34d829a5b74c::t_e621173d906b6f 175-185,193-198,202-204,210-217
+  s_fb34d829a5b74c::t_e28abffb135485 30-33
+  s_fb34d829a5b74c::t_4a62ae9e5e7936 15-20
+src/shared/github.ts
+  s_fb34d829a5b74c::t_deb6f336dfdc50 7,14-17
+  s_fb34d829a5b74c::t_aca1e0e56c80ea 50
+  s_fb34d829a5b74c::t_0c6e611c44832b 18
+src/shared/api.ts
+  s_fb34d829a5b74c::t_0691b141e73190 14
+  s_fb34d829a5b74c::t_9c2e08146c4c95 193-194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "80f6a0e85ba73faea54fe2e6ada9b0e5259df547",
+  "prompts": {},
+  "sessions": {
+    "s_fb34d829a5b74c": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "3c9b7b4e-5c5e-4dcd-b220-1e81f73f8136",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
