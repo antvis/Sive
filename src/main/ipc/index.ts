@@ -13,7 +13,7 @@ import type {
   SnippetExportInput,
 } from '@shared/api';
 import { FILE_SOURCES } from '@shared/dataSource';
-import { analysisStartSchema } from '@shared/api';
+import { analysisStartSchema, snippetExportSchema } from '@shared/api';
 import { githubRepositoryListSchema, githubConnectionIdSchema } from '@shared/github';
 import type { LocalFileFormat } from '@shared/dataSource';
 import { setLocale } from '../util/i18n';
@@ -227,7 +227,7 @@ export function registerIpc(
   });
 
   ipcMain.handle('snippetExport', (event, input: SnippetExportInput) =>
-    exportSnippet(input, BrowserWindow.fromWebContents(event.sender)!),
+    exportSnippet(snippetExportSchema.parse(input), BrowserWindow.fromWebContents(event.sender)!),
   );
 
   ipcMain.handle('settingsSavePreferences', (_event, preferences: Preferences) => {

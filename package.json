@@ -35,7 +35,6 @@
     "@sentry/electron": "8.4.0",
     "@tanstack/react-query": "^5.106.0",
     "@tanstack/react-table": "^8.21.3",
-    "@zumer/snapdom": "^2.22.0",
     "ai": "^7.0.146",
     "better-sqlite3": "13.0.3",
     "bignumber.js": "^9.3.1",

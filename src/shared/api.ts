@@ -66,12 +66,34 @@ export type StorageInfo = { cache: CacheInfo; data: DataStorageInfo };
 export type UpdateResult = { currentVersion: string; latestVersion: string; hasUpdate: boolean };
 
 export const snippetExportSchema = z.object({
-  image: z.instanceof(Uint8Array),
-  title: z.string(),
+  snippet: z.object({
+    question: z.string(),
+    intent: z.string(),
+    title: z.string(),
+    summary: z.string(),
+    spec: z.union([
+      z.string(),
+      z.object({ type: z.string() }).catchall(z.unknown()),
+    ]) as z.ZodType<SnippetSpec>,
+    tags: z.array(z.string()),
+    metrics: z.array(z.object({ label: z.string(), value: z.string(), unit: z.string() })),
+    createdAt: z.string(),
+  }),
+  templateId: z.string(),
+  theme: z.object({ mode: z.enum(['light', 'dark']), fontSize: z.number().min(12).max(20) }),
   target: z.enum(['clipboard', 'file']),
 });
 
 export type SnippetExportInput = z.infer<typeof snippetExportSchema>;
+
+export const SNIPPET_EXPORT_WIDTH = 800;
+
+export const snippetExportRenderedSchema = z.union([
+  z.object({ height: z.number().int().positive().max(16384), title: z.string() }),
+  z.object({ error: z.string() }),
+]);
+
+export type SnippetExportRendered = z.infer<typeof snippetExportRenderedSchema>;
 
 export type DatasetPreviewOptions = { offset: number; limit: number };
 
@@ -222,6 +244,8 @@ export type WorkbenchApi = {
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;
   snippetExport(input: SnippetExportInput): Promise<boolean>;
+  snippetExportGetRenderData(): Promise<SnippetExportInput>;
+  snippetExportRenderComplete(result: SnippetExportRendered): void;
   conversationRename(id: string, title: string): Promise<void>;
   conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;
