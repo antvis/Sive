@@ -38,13 +38,34 @@ export class UpdateService {
   }
 
   private async fetchLatest(): Promise<UpdateResult> {
-    const response = await net.fetch(RELEASE_API_URL, {
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'Sive' },
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!response.ok) throw new Error('检查更新失败，请稍后重试。');
+    const signal = AbortSignal.timeout(10000);
+    const response = await net
+      .fetch(RELEASE_API_URL, {
+        headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'Sive' },
+        signal,
+      })
+      .catch(() => {
+        throw new Error(
+          signal.aborted
+            ? '连接 GitHub 超时，请检查网络连接后重试。'
+            : '无法连接 GitHub，请检查网络或代理设置后重试。',
+        );
+      });
+    if (response.status === 404) throw new Error('暂未找到可用的正式版本，请稍后再试。');
+    if (
+      response.status === 429 ||
+      (response.status === 403 && response.headers.get('x-ratelimit-remaining') === '0')
+    )
+      throw new Error('GitHub 请求次数已达上限，请稍后再试。');
+    if (!response.ok) throw new Error('GitHub 暂时无法提供版本信息，请稍后重试。');
 
-    const release = (await response.json()) as {
+    const release = (await response.json().catch(() => {
+      throw new Error(
+        signal.aborted
+          ? '连接 GitHub 超时，请检查网络连接后重试。'
+          : '无法读取 GitHub 版本信息，请稍后重试。',
+      );
+    })) as {
       tag_name?: string;
       prerelease?: boolean;
       draft?: boolean;
