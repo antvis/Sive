@@ -207,6 +207,7 @@ export function Chat({
             {starting && (
               <ChatWelcomeHeader
                 datasetName={datasetName}
+                datasetSourceType={dataset.sourceType}
                 onOpenDatasetPreview={onOpenDatasetPreview}
                 showModelNotice={!activeModelId}
                 error={displayError}

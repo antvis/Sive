@@ -1,9 +1,11 @@
 import { useContext, useEffect, useRef } from 'react';
 import { cn } from '../../lib/utils';
 import { ThemeContext } from '../../theme';
+import { DataSourceLogo } from '../DataSourceLogo';
 
 type ChatWelcomeHeaderProps = {
   datasetName: string;
+  datasetSourceType: string;
   onOpenDatasetPreview: () => void;
   showModelNotice: boolean;
   error: string | undefined;
@@ -11,6 +13,7 @@ type ChatWelcomeHeaderProps = {
 
 export function ChatWelcomeHeader({
   datasetName,
+  datasetSourceType,
   onOpenDatasetPreview,
   showModelNotice,
   error,
@@ -18,7 +21,7 @@ export function ChatWelcomeHeader({
   return (
     <header className="isolate flex min-w-0 flex-col-reverse gap-3 self-end pb-[clamp(18px,4vh,2.5rem)] @min-[380px]:grid @min-[380px]:grid-cols-[minmax(0,1fr)_auto] @min-[380px]:items-center @min-[380px]:gap-6 motion-safe:animate-fade-up">
       <div className="min-w-0">
-        <h1 className="text-3xl leading-tight font-semibold tracking-tight wrap-anywhere @min-[540px]:text-4xl">
+        <h1 className="text-2xl leading-tight font-semibold tracking-tight wrap-anywhere @min-[540px]:text-3xl">
           向{' '}
           <button
             type="button"
@@ -26,6 +29,9 @@ export function ChatWelcomeHeader({
             className="inline-block max-w-full rounded-sm text-left align-baseline wrap-anywhere text-accent underline-offset-4 hover:underline focus-visible:underline"
             onClick={onOpenDatasetPreview}
           >
+            <span className="me-1.5 inline-flex align-middle">
+              <DataSourceLogo type={datasetSourceType} size={20} />
+            </span>
             {datasetName}
           </button>{' '}
           提问
