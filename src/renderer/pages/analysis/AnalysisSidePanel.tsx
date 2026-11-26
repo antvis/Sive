@@ -1,7 +1,8 @@
 import { Tabs, TabsContent } from '../../components/ui/tabs';
 import clsx from 'clsx';
-import { Maximize2Icon, Minimize2Icon, PanelRightIcon, Table2Icon } from 'lucide-react';
+import { ChartNoAxesCombinedIcon, Maximize2Icon, Minimize2Icon, PanelRightIcon, Table2Icon } from 'lucide-react';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
+import type { RefObject } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
 import { AnalyzeTool } from '../../components/chat/tools/analyze';
 import { Button } from '../../components/ui/button';
@@ -16,6 +17,7 @@ export const DATASET_PREVIEW_ID = 'dataset';
 type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
   fullscreen: boolean;
+  fullscreenButtonRef: RefObject<HTMLButtonElement | null>;
   collapsed: boolean;
   tabs: readonly AnalysisTab[];
   activeTabId: string;
@@ -29,6 +31,7 @@ type Props = {
 export function AnalysisSidePanel({
   dataset,
   fullscreen,
+  fullscreenButtonRef,
   collapsed,
   tabs,
   activeTabId,
@@ -102,7 +105,7 @@ export function AnalysisSidePanel({
         ref={card}
         id={DATASET_PREVIEW_ID}
         className={clsx(
-          'flex h-full min-h-0 w-full min-w-0 flex-col justify-self-end overflow-clip rounded-2xl bg-preview-surface motion-safe:transition-opacity motion-safe:duration-150',
+          'flex h-full min-h-0 w-full min-w-0 flex-col justify-self-end overflow-clip rounded-2xl bg-surface motion-safe:transition-opacity motion-safe:duration-150',
           collapsed && !fullscreen && 'opacity-0',
           fullscreen ? 'fixed inset-y-0 right-0 z-40 rounded-none!' : 'relative z-10',
         )}
@@ -113,8 +116,8 @@ export function AnalysisSidePanel({
       >
         <div
           className={clsx(
-            'mx-px flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-2 [-webkit-app-region:drag]',
-            fullscreen ? 'ps-(--window-titlebar-padding)' : 'ps-[8px]',
+            'flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-2 [-webkit-app-region:drag]',
+            fullscreen ? 'ps-(--window-titlebar-padding)' : 'ps-2',
           )}
         >
           <PanelTabList
@@ -126,7 +129,7 @@ export function AnalysisSidePanel({
                     title: dataset.name,
                     icon: <DataSourceLogo type={dataset.sourceType} size={14} />,
                   }
-                : tab,
+                : { ...tab, icon: <ChartNoAxesCombinedIcon size={14} className="shrink-0" aria-hidden /> },
             )}
             activeTabId={activeTabId}
             visible={!collapsed || fullscreen}
@@ -146,6 +149,7 @@ export function AnalysisSidePanel({
             </Button>
           )}
           <Button
+            ref={fullscreenButtonRef}
             variant="ghost"
             size="icon-sm"
             aria-label={fullscreenLabel}
@@ -178,7 +182,7 @@ export function AnalysisSidePanel({
             value={tab.id}
             forceMount
             className={clsx(
-              'min-h-0 flex-1 bg-surface data-[state=inactive]:hidden',
+              'min-h-0 flex-1 data-[state=inactive]:hidden',
               tab.kind === 'dataset'
                 ? 'overflow-hidden'
                 : 'overflow-auto p-4 text-sm text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',

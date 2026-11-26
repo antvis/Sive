@@ -62,6 +62,7 @@ export function AnalysisPage({
   const workspace = useRef<HTMLDivElement>(null);
   const conversationPanel = usePanelRef();
   const previewPanel = usePanelRef();
+  const previewFullscreenButton = useRef<HTMLButtonElement>(null);
   const rememberToggleFocus = usePanelToggleFocus(workspace, DATASET_PREVIEW_ID, datasetCollapsed);
   const { activeTabId, tabs, selectTab, openDataset, openResult, closeTab } = useAnalysisTabs(chatId);
 
@@ -177,7 +178,10 @@ export function AnalysisPage({
                   onDatasetChange(id);
                   showDataset();
                 }}
-                onOpenDatasetPreview={showDataset}
+                onOpenDatasetPreview={() => {
+                  showDataset();
+                  requestAnimationFrame(() => previewFullscreenButton.current?.focus({ preventScroll: true }));
+                }}
                 toolbar={toolbar}
                 chatId={chatId}
                 conversationId={conversationId}
@@ -220,6 +224,7 @@ export function AnalysisPage({
         <AnalysisSidePanel
           dataset={dataset}
           fullscreen={fullscreen}
+          fullscreenButtonRef={previewFullscreenButton}
           collapsed={datasetCollapsed}
           tabs={tabs}
           activeTabId={activeTabId}

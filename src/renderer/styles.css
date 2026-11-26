@@ -35,7 +35,7 @@
   --animate-fade-up: fade-up 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   --animate-draft-companion-enter: draft-companion-enter 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-draft-companion-idle: draft-companion-idle 6s ease-in-out 720ms infinite;
-  --animate-draft-companion-bubble: draft-companion-bubble 12s ease-in-out infinite;
+  --animate-draft-companion-bubble: draft-companion-bubble 15.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   --animate-dialog-enter: dialog-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-dropdown-open: dropdown-open 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-dropdown-close: dropdown-close 120ms ease-in both;
@@ -137,21 +137,17 @@
   }
 
   @keyframes draft-companion-bubble {
-    0% {
-      opacity: 0;
-      transform: translateY(4px);
-    }
-
-    4%,
-    39% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    45%,
+    0%,
+    25%,
     100% {
       opacity: 0;
-      transform: translateY(-4px);
+      transform: translate(-4px, 4px) scale(0.96);
+    }
+
+    2.3%,
+    23% {
+      opacity: 1;
+      transform: none;
     }
   }
 
@@ -175,7 +171,6 @@
   --color-workspace-canvas: var(--workspace-canvas);
   --color-workspace-control: var(--workspace-control);
   --color-workspace-control-active: var(--surface);
-  --color-preview-surface: var(--page);
   --color-preview-row: var(--page);
   --color-page: var(--page);
   --color-surface: var(--surface);
@@ -184,6 +179,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-placeholder: color-mix(in oklab, var(--muted-foreground) 85%, transparent);
   --color-chat-foreground: var(--foreground);
+  --color-chat-accent: light-dark(#0876b5, #83caff);
   --color-chat-link: var(--accent);
   --color-line: var(--line);
   --color-accent: var(--accent);
@@ -306,10 +302,27 @@
   --sql-comment: #a0a8b2;
 }
 
-[data-draft-background] {
+[data-conversation-draft] {
   background:
-    radial-gradient(ellipse 52% 24% at 57% 108%, light-dark(#48bfff70, #2489ce55), transparent),
-    radial-gradient(ellipse 80% 28% at 44% 113%, light-dark(#afe4ff82, #28619763), transparent);
+    radial-gradient(ellipse 60% 26% at 50% 0%, light-dark(#e9f6ff, #24384c), transparent 70%),
+    radial-gradient(ellipse 70% 22% at 55% 106%, light-dark(#5cbfff52, #2489ce55), transparent),
+    radial-gradient(ellipse 90% 28% at 40% 112%, light-dark(#afe4ff80, #28619763), transparent),
+    light-dark(#fff, #1b232e);
+}
+
+[data-conversation-draft]::before {
+  --grid-line: light-dark(#2f96e90e, #83caff13);
+
+  position: absolute;
+  z-index: -20;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 75% 42% at 50% 0%, #000 10%, transparent 75%);
 }
 
 @layer base {

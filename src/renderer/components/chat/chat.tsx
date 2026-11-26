@@ -15,7 +15,7 @@ import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '.
 import { errorMessage } from '../../utils';
 import { IpcChatTransport } from './ipc-chat-transport';
 import { useConversationRead } from '../../hooks/useConversationStatus';
-import { ChatWelcomeBackground, ChatWelcomeHeader } from './welcome';
+import { ChatWelcomeHeader } from './welcome';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
@@ -167,14 +167,41 @@ export function Chat({
       .catch((cause) => toast.error(errorMessage(cause)));
   };
 
+  const datasetSelector = !conversationId && (
+    <Select value={datasetId} onValueChange={changeDataset} disabled={busy}>
+      <SelectTrigger
+        aria-label="切换数据源"
+        title={datasetName}
+        className={cn(
+          'h-7 rounded-full border-transparent px-2.5',
+          starting
+            ? 'bg-workspace-control/70 text-muted-foreground hover:bg-workspace-control hover:text-ink'
+            : 'bg-surface shadow-card hover:bg-[light-dark(#f5f9ff,#263448)]',
+        )}
+      >
+        <SelectValue>
+          <DataSourceLogo type={dataset.sourceType} size={14} />
+          {datasetName}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent side="top">
+        {datasets.map(({ id, name, sourceType }) => (
+          <SelectItem key={id} value={id}>
+            <DataSourceLogo type={sourceType} size={14} />
+            {name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
   return (
     <TooltipProvider>
       <section
         data-conversation-draft={starting ? '' : undefined}
-        className="relative isolate flex h-full min-h-0 flex-col text-base text-foreground data-conversation-draft:bg-[light-dark(#fafcfe,#1b232e)] [&_code]:font-chat-mono [&_pre]:font-chat-mono"
+        className="relative isolate flex h-full min-h-0 flex-col text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
         aria-label="AI 对话"
       >
-        {starting && <ChatWelcomeBackground />}
         {toolbar && (
           <div
             className={cn(
@@ -200,7 +227,7 @@ export function Chat({
             className={cn(
               'mx-auto w-full px-4',
               starting
-                ? '@container grid min-h-full max-w-[680px] grid-cols-[minmax(0,1fr)] grid-rows-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] px-5 pt-[calc(var(--workspace-titlebar-height)+16px)] pb-[clamp(26px,5.5vh,46px)]'
+                ? 'flex min-h-full max-w-[620px] flex-col justify-center px-[clamp(14px,4%,24px)] pt-[calc(var(--workspace-titlebar-height)+4px)] pb-[clamp(36px,13vh,114px)]'
                 : 'max-w-3xl pt-2 pb-4',
             )}
           >
@@ -216,35 +243,14 @@ export function Chat({
             <div
               className={
                 starting
-                  ? 'motion-safe:animate-fade-up motion-safe:[animation-delay:50ms] motion-safe:[animation-fill-mode:backwards]'
+                  ? 'mt-[clamp(32px,5.2vh,48px)] motion-safe:animate-fade-up motion-safe:[animation-delay:50ms] motion-safe:[animation-fill-mode:backwards]'
                   : undefined
               }
             >
-              {!conversationId && (
-                <div className="mb-2">
-                  <Select value={datasetId} onValueChange={changeDataset} disabled={busy}>
-                    <SelectTrigger
-                      aria-label="切换数据源"
-                      title={datasetName}
-                      className="h-7 rounded-full border-transparent bg-surface px-2.5 shadow-card hover:bg-[light-dark(#f5f9ff,#263448)]"
-                    >
-                      <SelectValue>
-                        <DataSourceLogo type={dataset.sourceType} size={14} />
-                        {datasetName}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent side="top">
-                      {datasets.map(({ id, name, sourceType }) => (
-                        <SelectItem key={id} value={id}>
-                          <DataSourceLogo type={sourceType} size={14} />
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              {!starting && datasetSelector && <div className="mb-2">{datasetSelector}</div>}
               <MultimodalInput
+                welcome={starting}
+                datasetSelector={starting ? datasetSelector : null}
                 inputRef={inputRef}
                 value={question}
                 onChange={setQuestion}
@@ -259,37 +265,33 @@ export function Chat({
                 onModeChange={changeMode}
               />
             </div>
-            {starting && (
-              <div className="min-w-0 pt-3">
-                {hasSuggestions && (
-                  <ul
-                    aria-label="示例问题"
-                    className="m-0 grid list-none gap-0.5 p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
-                  >
-                    {suggestions.map(({ query }) => (
-                      <li key={query} className="min-w-0">
-                        <Suggestion
-                          suggestion={query}
-                          onClick={(value) => {
-                            setQuestion(value);
-                            inputRef.current?.focus();
-                          }}
-                          className="group/example h-auto min-h-9 w-full items-center justify-between gap-3 rounded-lg bg-transparent px-3 py-1.5 text-left text-sm leading-relaxed whitespace-normal text-muted-foreground hover:bg-workspace-control hover:text-ink focus-visible:bg-workspace-control focus-visible:text-ink motion-reduce:transition-none"
-                        >
-                          <span className="flex min-w-0 items-start gap-2">
-                            <span className="shrink-0" aria-hidden>💡</span>
-                            <span className="min-w-0 wrap-anywhere">{query}</span>
-                          </span>
-                          <ArrowUpRightIcon
-                            className="size-3.5 shrink-0 text-accent/70 group-hover/example:text-accent group-focus-visible/example:text-accent"
-                            aria-hidden
-                          />
-                        </Suggestion>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            {starting && hasSuggestions && (
+              <ul
+                aria-label="示例问题"
+                className="m-0 mt-[22px] grid min-w-0 list-none gap-0.5 p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
+              >
+                {suggestions.map(({ query }) => (
+                  <li key={query} className="min-w-0">
+                    <Suggestion
+                      suggestion={query}
+                      onClick={(value) => {
+                        setQuestion(value);
+                        inputRef.current?.focus();
+                      }}
+                      className="group/example h-auto min-h-9 w-full items-center justify-between gap-3 rounded-lg bg-transparent px-3 py-1.5 text-left text-sm leading-relaxed font-normal whitespace-normal text-muted-foreground/90 hover:bg-workspace-control hover:text-ink focus-visible:bg-workspace-control focus-visible:text-ink motion-reduce:transition-none"
+                    >
+                      <span className="flex min-w-0 items-start gap-2">
+                        <span className="shrink-0" aria-hidden>💡</span>
+                        <span className="min-w-0 wrap-anywhere">{query}</span>
+                      </span>
+                      <ArrowUpRightIcon
+                        className="size-3.5 shrink-0 text-accent/70 group-hover/example:text-accent group-focus-visible/example:text-accent"
+                        aria-hidden
+                      />
+                    </Suggestion>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </div>
