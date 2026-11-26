@@ -63,10 +63,12 @@ export function Chat({
     messages,
     setMessages,
     sendMessage,
+    resumeStream,
     status,
     error: chatError,
   } = useChat<ChatMessage>({ id: chatId, transport });
   const [historyLoading, setHistoryLoading] = useState(Boolean(conversationId));
+  const reconnectAttempted = useRef(false);
   const [loadedChatId, setLoadedChatId] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
@@ -84,29 +86,38 @@ export function Chat({
   useEffect(() => {
     let live = true;
     if (!conversationId) {
+      reconnectAttempted.current = true;
       setLoadedChatId(chatId);
       setHistoryLoading(false);
     } else if (!busy) {
       setLoadedChatId(null);
-      window.workbench
-        .analysisGetMessages(conversationId)
-        .then((history) => {
+      const shouldReconnect = !reconnectAttempted.current;
+      reconnectAttempted.current = true;
+
+      const restore = async () => {
+        try {
+          const history = await window.workbench.analysisGetMessages(conversationId);
           if (live) {
             setMessages(history);
             setLoadedChatId(chatId);
           }
-        })
-        .catch((cause) => {
-          if (live) setError(errorMessage(cause));
-        })
-        .finally(() => {
+        } finally {
           if (live) setHistoryLoading(false);
-        });
+        }
+        if (!live || !shouldReconnect) return;
+        await resumeStream();
+        if (!live) return;
+        const history = await window.workbench.analysisGetMessages(conversationId);
+        if (live) setMessages(history);
+      };
+      restore().catch((cause) => {
+        if (live) setError(errorMessage(cause));
+      });
     }
     return () => {
       live = false;
     };
-  }, [chatId, conversationId, busy, setMessages]);
+  }, [chatId, conversationId, busy, setMessages, resumeStream]);
 
   useEffect(() => {
     let live = true;

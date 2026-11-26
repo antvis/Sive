@@ -157,6 +157,8 @@ export const analysisStartSchema = z.object({
 
 export type AnalysisStartInput = z.infer<typeof analysisStartSchema>;
 
+export type AnalysisStreamChunk = UIMessageChunk | 'replaced' | null;
+
 export type WorkspaceState = {
   conversations: Conversation[];
   archivedConversations: Conversation[];
@@ -216,10 +218,13 @@ export type WorkbenchApi = {
   modelOnTestProgress(callback: (progress: ModelTestProgress) => void): () => void;
   modelActivate(id: string, model?: string): Promise<void>;
   modelDelete(id: string): Promise<void>;
-  analysisStart(input: AnalysisStartInput): Promise<void>;
+  analysisStart(input: AnalysisStartInput, subscriptionId: string): Promise<void>;
+  analysisReconnect(conversationId: string, subscriptionId: string): Promise<boolean>;
   analysisCancel(conversationId: string): Promise<void>;
   analysisGetMessages(conversationId: string): Promise<ChatMessage[]>;
-  analysisOnChunk(callback: (messageId: string, chunk: UIMessageChunk | null) => void): () => void;
+  analysisOnChunk(
+    callback: (subscriptionId: string, messageId: string, chunk: AnalysisStreamChunk) => void,
+  ): () => void;
   snippetSave(input: SnippetSaveInput): Promise<Snippet>;
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;

@@ -1,7 +1,13 @@
 import { isTextUIPart } from 'ai';
 import type { UIMessageChunk } from 'ai';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
-import type { AnalysisStartInput, ChatMessage, DuckDBEngineConfig, Preferences } from '@shared/api';
+import type {
+  AnalysisStartInput,
+  AnalysisStreamChunk,
+  ChatMessage,
+  DuckDBEngineConfig,
+  Preferences,
+} from '@shared/api';
 import type { AnalysisOptions } from '@shared/schema';
 import { createAnalysisAgent } from '../../ai';
 import type { AnalysisAgent } from '../../ai';
@@ -13,7 +19,15 @@ import type { ModelConfig } from '../model';
 import type { DatasetRow } from '../../db/schema/datasets';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 
-type Emit = (chunk: UIMessageChunk | null) => void;
+type Emit = (chunk: AnalysisStreamChunk) => void;
+
+type AnalysisTask = {
+  datasetId: string;
+  controller: AbortController;
+  messageId: string;
+  chunks: UIMessageChunk[];
+  emit: Emit;
+};
 
 export class AnalysisService {
   // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
@@ -28,7 +42,7 @@ export class AnalysisService {
     }
   >();
 
-  private tasks = new Map<string, { datasetId: string; controller: AbortController }>();
+  private tasks = new Map<string, AnalysisTask>();
 
   private updatingDatasets = new Set<string>();
 
@@ -116,14 +130,24 @@ export class AnalysisService {
     });
     const agent = this.getAgent(conversation.id, model, dataset, preferences.engine);
     const controller = new AbortController();
-    this.tasks.set(conversation.id, { datasetId: dataset.id, controller });
+    const task: AnalysisTask = {
+      datasetId: dataset.id,
+      controller,
+      messageId: input.message.id,
+      chunks: [],
+      emit,
+    };
+    this.tasks.set(conversation.id, task);
     void this.run(
       conversation.id,
       agent,
       analysisOptions,
       preferences.agent,
       controller,
-      emit,
+      (chunk) => {
+        if (chunk) task.chunks.push(chunk);
+        task.emit(chunk);
+      },
       localFilePath(dataset.sourceConfig),
     );
 
@@ -146,6 +170,16 @@ export class AnalysisService {
 
   cancel(conversationId: string) {
     this.tasks.get(conversationId)?.controller.abort();
+  }
+
+  reconnect(conversationId: string, emit: (messageId: string, chunk: AnalysisStreamChunk) => void) {
+    const task = this.tasks.get(conversationId);
+    if (!task) return false;
+    task.emit('replaced');
+    task.emit = (chunk) => emit(task.messageId, chunk);
+    // Send the replay before yielding to the producer of live chunks.
+    for (const chunk of task.chunks) task.emit(chunk);
+    return true;
   }
 
   private getAgent(
@@ -180,7 +214,7 @@ export class AnalysisService {
     analysisOptions: Required<AnalysisOptions>,
     agentConfig: Preferences['agent'],
     controller: AbortController,
-    emit: Emit,
+    emit: (chunk: UIMessageChunk | null) => void,
     file?: string,
   ) {
     let terminal: Extract<UIMessageChunk, { type: 'error' | 'abort' }> | undefined;
