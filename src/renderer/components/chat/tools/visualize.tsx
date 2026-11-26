@@ -3,26 +3,20 @@ import { toast } from 'sonner';
 import type { SnippetContent } from '@shared/schema';
 import { SnippetCard } from '../../SnippetCard';
 
-export type VisualizationResult = SnippetContent;
-
-export function hasChart(output: VisualizationResult | null | undefined): output is VisualizationResult {
-  return Boolean(output?.spec && output.title);
-}
-
 export function VisualizeTool({
   visualization,
   messageId,
   saved,
   isStreaming,
 }: {
-  visualization: VisualizationResult | null | undefined;
+  visualization: SnippetContent | null | undefined;
   messageId: string;
   saved: boolean;
   isStreaming: boolean;
 }) {
   const savingRef = useRef(false);
 
-  if (!hasChart(visualization)) {
+  if (!visualization?.spec || !visualization.title) {
     return <p className="m-0 text-sm leading-6 text-muted-foreground">未生成图表。</p>;
   }
 

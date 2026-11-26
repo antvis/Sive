@@ -2,9 +2,9 @@ import { DEFAULT_PREFERENCES } from '@shared/api';
 import { generateId } from 'ai';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { Toaster } from 'sonner';
 import { AppShell } from './components/AppShell';
 import { Button } from './components/ui/button';
-import { Toaster } from './components/ui/toaster';
 import { UpdateNotification } from './components/UpdateNotification';
 import type { AppPage } from './components/WorkspaceSidebar';
 import { useWorkspace } from './hooks/useWorkspace';
@@ -77,7 +77,14 @@ export default function App() {
         ) : (
           <Workspace state={state} fallback={fallback} />
         )}
-        <Toaster theme={theme.mode} />
+        <Toaster
+          theme={theme.mode}
+          position="bottom-right"
+          visibleToasts={1}
+          toastOptions={{
+            className: 'w-max! max-w-[calc(100vw-32px)]! min-h-[unset]! rounded-xl! border! border-line! bg-surface! px-[12px]! py-[8px]! text-sm! text-ink! shadow-overlay!',
+          }}
+        />
         <UpdateNotification />
       </ThemeContext>
     </I18nProvider>

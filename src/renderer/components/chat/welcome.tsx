@@ -64,20 +64,6 @@ export function ChatWelcomeHeader({
 
 const prompts = ['最近有什么变化？', '哪组差异最大？', '有没有异常值？', '画张图看看？'];
 
-// Each eye covers the matching painted eye in the companion illustration.
-const companionEyes = [
-  {
-    position: 'left-[27.7%] top-[47.7%]',
-    skin: 'bg-[image:linear-gradient(135deg,#f7f0ed,#ece6e4)]',
-    iris: 'bg-[image:linear-gradient(125deg,#797376,#47434a_78%)]',
-  },
-  {
-    position: 'left-[48.1%] top-[48.9%]',
-    skin: 'bg-[image:linear-gradient(135deg,#e7e2e4,#ddd8dc)]',
-    iris: 'bg-[image:linear-gradient(125deg,#757177,#35343f_78%)]',
-  },
-];
-
 function WelcomeCompanion() {
   const companionRef = useRef<HTMLDivElement>(null);
 
@@ -86,6 +72,8 @@ function WelcomeCompanion() {
     if (!companion) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const listeners = new AbortController();
+    const { signal } = listeners;
 
     const resetGaze = () => companion.style.removeProperty('--companion-gaze');
 
@@ -99,16 +87,11 @@ function WelcomeCompanion() {
       companion.style.setProperty('--companion-gaze', `translate(${x * travel}px, ${y * travel}px)`);
     };
 
-    window.addEventListener('pointermove', trackPointer, { passive: true });
-    window.addEventListener('blur', resetGaze);
-    document.documentElement.addEventListener('pointerleave', resetGaze);
-    reducedMotion.addEventListener('change', resetGaze);
-    return () => {
-      window.removeEventListener('pointermove', trackPointer);
-      window.removeEventListener('blur', resetGaze);
-      document.documentElement.removeEventListener('pointerleave', resetGaze);
-      reducedMotion.removeEventListener('change', resetGaze);
-    };
+    window.addEventListener('pointermove', trackPointer, { passive: true, signal });
+    window.addEventListener('blur', resetGaze, { signal });
+    document.documentElement.addEventListener('pointerleave', resetGaze, { signal });
+    reducedMotion.addEventListener('change', resetGaze, { signal });
+    return () => listeners.abort();
   }, []);
 
   return (
@@ -132,7 +115,18 @@ function WelcomeCompanion() {
               draggable={false}
               className="h-(--companion-height) w-auto"
             />
-            {companionEyes.map(({ position, skin, iris }) => (
+            {[
+              {
+                position: 'left-[27.7%] top-[47.7%]',
+                skin: 'bg-[image:linear-gradient(135deg,#f7f0ed,#ece6e4)]',
+                iris: 'bg-[image:linear-gradient(125deg,#797376,#47434a_78%)]',
+              },
+              {
+                position: 'left-[48.1%] top-[48.9%]',
+                skin: 'bg-[image:linear-gradient(135deg,#e7e2e4,#ddd8dc)]',
+                iris: 'bg-[image:linear-gradient(125deg,#757177,#35343f_78%)]',
+              },
+            ].map(({ position, skin, iris }) => (
               <span key={position} className={cn('absolute h-[13%] w-[9%] -translate-1/2', position)}>
                 <span
                   className={cn('absolute inset-0 mask-[radial-gradient(ellipse_farthest-side,#000_80%,transparent)]', skin)}

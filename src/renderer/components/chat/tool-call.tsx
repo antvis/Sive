@@ -12,6 +12,7 @@ import type { ReactNode } from 'react';
 import { getToolName } from 'ai';
 import type { Profile, Schema, Semantic } from '@antv/ava';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
+import type { SnippetContent } from '@shared/schema';
 import { getToolErrorText, Tool, ToolHeader, ToolOutput } from '../ai-elements/tool';
 import type { ToolPart } from '../ai-elements/tool';
 import { CollapsibleInlineContent } from '../ui/collapsible';
@@ -23,73 +24,59 @@ import { ProfileTool } from './tools/profile';
 import { SemanticTool } from './tools/semantic';
 import { AnalyzeTool } from './tools/analyze';
 import { VisualizeTool } from './tools/visualize';
-import type { VisualizationResult } from './tools/visualize';
 
-const toolLabels: Record<string, string> = {
-  source: '读取数据源',
-  schema: '解析数据结构',
-  profile: '计算统计指标',
-  semantic: '应用业务语义',
-  analyze: '分析数据',
-  visualize: '绘制图表',
+const tools: Partial<Record<string, { title: string; icon: LucideIcon }>> = {
+  source: { title: '读取数据源', icon: DatabaseIcon },
+  schema: { title: '解析数据结构', icon: Columns3Icon },
+  profile: { title: '计算统计指标', icon: ChartColumnIcon },
+  semantic: { title: '应用业务语义', icon: TagsIcon },
+  analyze: { title: '分析数据', icon: SearchIcon },
+  visualize: { title: '绘制图表', icon: ChartLineIcon },
 };
 
-const toolIcons: Record<string, LucideIcon> = {
-  source: DatabaseIcon,
-  schema: Columns3Icon,
-  profile: ChartColumnIcon,
-  semantic: TagsIcon,
-  analyze: SearchIcon,
-  visualize: ChartLineIcon,
-};
-
-function toolContent(
+function renderOutput(
   toolName: string,
-  call: ToolPart,
-  {
-    messageId,
-    savedMessageIds,
-    isStreaming,
-  }: {
-    messageId: string;
-    savedMessageIds: string[];
-    isStreaming: boolean;
-  },
+  output: unknown,
+  messageId: string,
+  saved: boolean,
+  isStreaming: boolean,
 ): ReactNode {
-  let content: ReactNode;
-  if (call.state === 'output-available') {
-    const { output } = call;
-    if (toolName === 'source') content = <SourceTool source={output as SourceResult} />;
-    if (toolName === 'schema') content = <SchemaTool schema={output as Schema} />;
-    if (toolName === 'profile') content = <ProfileTool profile={output as Profile} />;
-    if (toolName === 'semantic') content = <SemanticTool semantic={output as Semantic} />;
-    if (toolName === 'visualize') {
-      content = (
+  switch (toolName) {
+    case 'source':
+      return <SourceTool source={output as SourceResult} />;
+    case 'schema':
+      return <SchemaTool schema={output as Schema} />;
+    case 'profile':
+      return <ProfileTool profile={output as Profile} />;
+    case 'semantic':
+      return <SemanticTool semantic={output as Semantic} />;
+    case 'visualize':
+      return (
         <VisualizeTool
-          visualization={output as VisualizationResult | null | undefined}
+          visualization={output as SnippetContent | null | undefined}
           messageId={messageId}
-          saved={savedMessageIds.includes(messageId)}
+          saved={saved}
           isStreaming={isStreaming}
         />
       );
-    }
+    default:
+      return null;
   }
-  return <ToolOutput output={content} errorText={getToolErrorText(call)} />;
 }
 
 export function ToolCallView({
   call,
   messageId,
-  savedMessageIds,
+  saved,
   isStreaming,
 }: {
   call: ToolPart;
   messageId: string;
-  savedMessageIds: string[];
+  saved: boolean;
   isStreaming: boolean;
 }) {
   const toolName = getToolName(call);
-  const ToolIcon = toolIcons[toolName];
+  const ToolIcon = tools[toolName]?.icon;
   const isAnalysis = toolName === 'analyze';
   const failedAnalysis =
     isAnalysis &&
@@ -113,23 +100,25 @@ export function ToolCallView({
     setExpanded(defaultExpanded);
   }, [defaultExpanded]);
 
-  const header =
-    call.type === 'dynamic-tool'
-      ? { type: call.type, toolName: call.toolName, state }
-      : { type: call.type, state };
-
   return (
     <Tool open={expanded} onOpenChange={setExpanded}>
       <ToolHeader
-        {...header}
-        title={toolLabels[toolName] ?? toolName}
+        state={state}
+        title={tools[toolName]?.title ?? toolName}
         icon={ToolIcon ? <ToolIcon className="size-4 text-muted-foreground" aria-hidden="true" /> : undefined}
       />
       <CollapsibleInlineContent>
         {isAnalysis ? (
           <AnalyzeTool call={call} onOpenPreview={openPreview} />
         ) : (
-          toolContent(toolName, call, { messageId, savedMessageIds, isStreaming })
+          <ToolOutput
+            output={
+              call.state === 'output-available'
+                ? renderOutput(toolName, call.output, messageId, saved, isStreaming)
+                : undefined
+            }
+            errorText={getToolErrorText(call)}
+          />
         )}
       </CollapsibleInlineContent>
     </Tool>

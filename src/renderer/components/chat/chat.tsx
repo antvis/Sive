@@ -19,13 +19,6 @@ import { ChatWelcomeHeader } from './welcome';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
-const draftBackground = cn(
-  'bg-[light-dark(#fff,#1b232e)]',
-  'bg-[image:radial-gradient(ellipse_60%_26%_at_50%_0%,light-dark(#e9f6ff,#24384c),transparent_70%),radial-gradient(ellipse_70%_22%_at_55%_106%,light-dark(#5cbfff52,#2489ce55),transparent),radial-gradient(ellipse_90%_28%_at_40%_112%,light-dark(#afe4ff80,#28619763),transparent)]',
-  'before:pointer-events-none before:absolute before:inset-0 before:-z-20 before:[--grid-line:light-dark(#2f96e90e,#83caff13)]',
-  'before:bg-[image:linear-gradient(var(--grid-line)_1px,transparent_1px),linear-gradient(90deg,var(--grid-line)_1px,transparent_1px)] before:bg-size-[26px_26px] before:mask-[radial-gradient(ellipse_75%_42%_at_50%_0%,#000_10%,transparent_75%)]',
-);
-
 type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
   datasets: DatasetSummary[];
@@ -209,7 +202,12 @@ export function Chat({
       <section
         className={cn(
           'relative isolate flex h-full min-h-0 flex-col text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',
-          starting && draftBackground,
+          starting && [
+            'bg-[light-dark(#fff,#1b232e)]',
+            'bg-[image:radial-gradient(ellipse_60%_26%_at_50%_0%,light-dark(#e9f6ff,#24384c),transparent_70%),radial-gradient(ellipse_70%_22%_at_55%_106%,light-dark(#5cbfff52,#2489ce55),transparent),radial-gradient(ellipse_90%_28%_at_40%_112%,light-dark(#afe4ff80,#28619763),transparent)]',
+            'before:pointer-events-none before:absolute before:inset-0 before:-z-20 before:[--grid-line:light-dark(#2f96e90e,#83caff13)]',
+            'before:bg-[image:linear-gradient(var(--grid-line)_1px,transparent_1px),linear-gradient(90deg,var(--grid-line)_1px,transparent_1px)] before:bg-size-[26px_26px] before:mask-[radial-gradient(ellipse_75%_42%_at_50%_0%,#000_10%,transparent_75%)]',
+          ],
         )}
         aria-label="AI 对话"
       >

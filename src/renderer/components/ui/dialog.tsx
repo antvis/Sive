@@ -7,11 +7,6 @@ import * as React from "react"
 import { cn } from "../../lib/utils"
 import { Button } from "./button"
 
-const overlayClassName = "fixed inset-0 z-50 bg-[light-dark(#1c263145,#0009)] backdrop-blur-[2px] [-webkit-app-region:no-drag]"
-
-const contentClassName =
-  "fixed top-1/2 left-1/2 z-50 max-h-[85vh] w-[480px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-3xl bg-surface p-6 shadow-overlay motion-safe:data-[state=open]:animate-dialog-enter"
-
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -58,7 +53,10 @@ function DialogOverlay({
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
-      className={cn(overlayClassName, className)}
+      className={cn(
+        "fixed inset-0 z-50 bg-[light-dark(#1c263145,#0009)] backdrop-blur-[2px] [-webkit-app-region:no-drag]",
+        className
+      )}
       {...props}
     />
   )
@@ -77,7 +75,10 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        className={cn(contentClassName, className)}
+        className={cn(
+          "fixed top-1/2 left-1/2 z-50 max-h-[85vh] w-[480px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-3xl bg-surface p-6 shadow-overlay motion-safe:data-[state=open]:animate-dialog-enter",
+          className
+        )}
         {...props}
       >
         {children}
@@ -197,8 +198,8 @@ function AlertDialog({
   return (
     <AlertDialogPrimitive.Root {...props}>
       <AlertDialogPrimitive.Portal>
-        <AlertDialogPrimitive.Overlay data-slot="dialog-overlay" className={overlayClassName} />
-        <AlertDialogPrimitive.Content data-slot="dialog-content" className={contentClassName}>
+        <AlertDialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-[light-dark(#1c263145,#0009)] backdrop-blur-[2px] [-webkit-app-region:no-drag]" />
+        <AlertDialogPrimitive.Content data-slot="dialog-content" className="fixed top-1/2 left-1/2 z-50 max-h-[85vh] w-[480px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-3xl bg-surface p-6 shadow-overlay motion-safe:data-[state=open]:animate-dialog-enter">
           <DialogHeader className="mb-0 pe-0">
             <AlertDialogPrimitive.Title data-slot="dialog-title" className="m-0 text-lg font-semibold text-balance">
               {title}

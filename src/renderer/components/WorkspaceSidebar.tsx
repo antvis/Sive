@@ -231,7 +231,7 @@ export function WorkspaceSidebar({
         <div className="flex h-(--workspace-titlebar-height) items-center gap-2 ps-4 pe-[8px]">
           <img
             className="h-[26px] w-auto shrink-0 dark:invert"
-            src="./sive-wordmark.png?v=medium-spaced"
+            src="./sive-wordmark.png"
             alt="Sive"
             width={327}
             height={104}

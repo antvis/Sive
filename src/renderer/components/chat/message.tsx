@@ -16,12 +16,12 @@ export function isVisibleAssistantPart(part: ChatMessage['parts'][number]) {
 function StreamContent({
   parts,
   messageId,
-  savedMessageIds,
+  saved,
   isStreaming,
 }: {
   parts: ChatMessage['parts'];
   messageId: string;
-  savedMessageIds: string[];
+  saved: boolean;
   isStreaming: boolean;
 }) {
   return (
@@ -34,7 +34,7 @@ function StreamContent({
               key={part.toolCallId}
               call={part}
               messageId={messageId}
-              savedMessageIds={savedMessageIds}
+              saved={saved}
               isStreaming={isStreaming}
             />
           );
@@ -122,7 +122,7 @@ export function PreviewMessage({
             <StreamContent
               parts={parts}
               messageId={message.id}
-              savedMessageIds={savedMessageIds}
+              saved={savedMessageIds.includes(message.id)}
               isStreaming={isStreaming}
             />
           )}

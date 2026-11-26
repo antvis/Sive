@@ -14,18 +14,16 @@ const groupIllustrations = {
 
 function SourceOption({
   source,
-  actionLabel,
   status,
   disabled,
   onSelect,
 }: {
-  source: Pick<DatasetSource, 'type' | 'label' | 'description'>;
-  actionLabel: string;
+  source: DatasetSource;
   status?: string;
   disabled: boolean;
   onSelect: () => void;
 }) {
-  const { label, description } = source;
+  const { label, description, actionLabel } = source;
   return (
     <button
       type="button"
@@ -107,7 +105,6 @@ export function DataSourcePicker() {
                 <li key={source.type} className="min-w-0">
                   <SourceOption
                     source={source}
-                    actionLabel={source.actionLabel}
                     status={!source.enable ? '待接入' : importingType === source.type ? '正在导入…' : undefined}
                     disabled={!source.enable || importing}
                     onSelect={() => void selectSource(source)}
