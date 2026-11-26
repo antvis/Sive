@@ -1,24 +1,24 @@
+import { ChartLineIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { toast } from 'sonner';
 import type { SnippetContent } from '@shared/schema';
 import { SnippetCard } from '../../SnippetCard';
+import { getToolErrorText, ToolOutput } from '../../ai-elements/tool';
+import type { ToolPart } from '../../ai-elements/tool';
+import { ToolCallView } from '../tool-call';
 
-export function VisualizeTool({
+function VisualizeTool({
   visualization,
   messageId,
   saved,
   isStreaming,
 }: {
-  visualization: SnippetContent | null | undefined;
+  visualization: SnippetContent;
   messageId: string;
   saved: boolean;
   isStreaming: boolean;
 }) {
   const savingRef = useRef(false);
-
-  if (!visualization?.spec || !visualization.title) {
-    return <p className="m-0 text-sm leading-6 text-muted-foreground">未生成图表。</p>;
-  }
 
   const save = async () => {
     if (savingRef.current || saved || isStreaming) return;
@@ -32,4 +32,39 @@ export function VisualizeTool({
   };
 
   return <SnippetCard data={visualization} saved={saved} onSave={isStreaming ? undefined : save} />;
+}
+
+export function VisualizeToolCall({
+  call,
+  messageId,
+  saved,
+  isStreaming,
+}: {
+  call: ToolPart;
+  messageId: string;
+  saved: boolean;
+  isStreaming: boolean;
+}) {
+  const errorText = getToolErrorText(call);
+  const visualization = call.state === 'output-available' ? (call.output as SnippetContent | null) : null;
+  const output =
+    visualization?.spec && visualization.title ? (
+      <VisualizeTool
+        visualization={visualization}
+        messageId={messageId}
+        saved={saved}
+        isStreaming={isStreaming}
+      />
+    ) : undefined;
+
+  return (
+    <ToolCallView
+      call={call}
+      title="绘制图表"
+      icon={ChartLineIcon}
+      expandOn={output || errorText ? 'completed' : 'never'}
+    >
+      <ToolOutput output={output} errorText={errorText} />
+    </ToolCallView>
+  );
 }
