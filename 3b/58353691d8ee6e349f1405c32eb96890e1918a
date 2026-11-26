@@ -1,0 +1,29 @@
+src/renderer/pages/datasets/datasetDialogs/GitHubDialog.tsx
+  s_fb34d829a5b74c::t_111fb619172bf0 34
+  s_fb34d829a5b74c::t_7939c0418dda94 86
+  s_fb34d829a5b74c::t_7f9f4e04f8e80a 131
+  s_fb34d829a5b74c::t_db71ce76d61067 150,153
+  s_fb34d829a5b74c::t_0bb25235708d18 70
+  s_fb34d829a5b74c::t_d279b2e0214e2b 115-116
+  s_fb34d829a5b74c::t_cda391cd38ad9e 12
+src/main/services/dataset/index.ts
+  s_fb34d829a5b74c::t_3744be061055c7 338,368,386
+src/main/ai/tools.ts
+  s_fb34d829a5b74c::t_426aa8a1d8cd1c 46,99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3b58353691d8ee6e349f1405c32eb96890e1918a",
+  "prompts": {},
+  "sessions": {
+    "s_fb34d829a5b74c": {
+      "agent_id": {
+        "tool": "codefuse",
+        "id": "3c9b7b4e-5c5e-4dcd-b220-1e81f73f8136",
+        "model": "codefuse_official_channel/Kimi-K3.1-Pro:glink_domestic"
+      },
+      "human_author": "hustcc <i@hust.cc>"
+    }
+  }
+}
