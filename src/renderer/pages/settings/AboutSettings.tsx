@@ -1,10 +1,10 @@
-import { SquareArrowOutUpRightIcon } from 'lucide-react';
+import { LoaderCircleIcon, SquareArrowOutUpRightIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../components/ui/button';
 import { Switch } from '../../components/ui/switch';
-import { showUpdateNotification } from '../../components/UpdateNotification';
+import { showUpdateNotification, UPDATE_NOTIFICATION_ID } from '../../components/UpdateNotification';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
 
@@ -18,13 +18,44 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
   }, []);
 
   const checkUpdates = async () => {
+    if (checking) return;
     setChecking(true);
+    toast.loading('正在检查更新…', {
+      id: UPDATE_NOTIFICATION_ID,
+      description: '正在连接 GitHub 获取最新版本信息，请稍候。',
+      duration: Infinity,
+      closeButton: false,
+      action: null,
+    });
     try {
       const result = await window.workbench.aboutCheckUpdates();
       if (result.hasUpdate) showUpdateNotification(result);
-      else toast.success(`当前已是最新版本 ${result.currentVersion}`);
+      else
+        toast.success('当前已是最新版本', {
+          id: UPDATE_NOTIFICATION_ID,
+          description: `当前版本 ${result.currentVersion}，暂无可用更新。`,
+          duration: 5000,
+          closeButton: true,
+          action: null,
+        });
     } catch (cause) {
-      toast.error(errorMessage(cause));
+      toast.error('检查更新失败', {
+        id: UPDATE_NOTIFICATION_ID,
+        description: errorMessage(cause).replace(
+          /^Error invoking remote method 'aboutCheckUpdates': (?:Error: )?/,
+          '',
+        ),
+        duration: 8000,
+        closeButton: true,
+        action: {
+          label: '重试',
+          onClick: (event) => {
+            // Keep the loading toast that reuses this notification ID.
+            event.preventDefault();
+            void checkUpdates();
+          },
+        },
+      });
     } finally {
       setChecking(false);
     }
@@ -63,13 +94,13 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
           <Button
             variant="primary"
             disabled={checking}
+            aria-busy={checking}
             onClick={() => void checkUpdates()}
           >
+            {checking && <LoaderCircleIcon size={16} className="motion-safe:animate-spin" aria-hidden />}
             {checking ? '正在检查…' : '检查更新'}
           </Button>
-          <Button
-            onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}
-          >
+          <Button onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}>
             <img src="./logos/github.svg" width={17} height={17} alt="" />
             关注开源项目
           </Button>
@@ -78,7 +109,7 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
       <SettingGroup>
         <SettingRow
           title="自动检查更新"
-          description="启动后及每 24 小时检查新版本。发现更新时会显示下载入口。"
+          description="启动后及每 24 小时检查新版本。仅提示更新，不会自动下载或安装。"
         >
           <Switch
             aria-label="自动检查更新"

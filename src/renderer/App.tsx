@@ -83,6 +83,9 @@ export default function App() {
           visibleToasts={1}
           toastOptions={{
             className: 'w-max! max-w-[calc(100vw-32px)]! min-h-[unset]! rounded-xl! border! border-line! bg-surface! px-[12px]! py-[8px]! text-sm! text-ink! shadow-overlay!',
+            classNames: {
+              error: '[&_[data-icon]]:text-amber-600 dark:[&_[data-icon]]:text-amber-400',
+            },
           }}
         />
         <UpdateNotification />
