@@ -1,0 +1,146 @@
+assets/logos/clickhouse.svg
+  h_63dffd5e80151f 1-6
+assets/logos/csv.svg
+  h_63dffd5e80151f 1-5
+assets/logos/excel.svg
+  h_63dffd5e80151f 1-68
+assets/logos/github.svg
+  h_63dffd5e80151f 1,3-5
+assets/logos/json.svg
+  h_63dffd5e80151f 1-5
+assets/logos/mysql.svg
+  h_63dffd5e80151f 1-5
+assets/logos/parquet.svg
+  h_63dffd5e80151f 1-10
+assets/logos/postgresql.svg
+  h_63dffd5e80151f 1-18
+assets/logos/simple-icons-LICENSE.txt
+  h_63dffd5e80151f 1
+assets/logos/sqlite.svg
+  h_63dffd5e80151f 1-3
+assets/logos/supabase.svg
+  h_63dffd5e80151f 1-17
+assets/logos/text.svg
+  h_63dffd5e80151f 1-5
+src/main/ai/agent.ts
+  h_63dffd5e80151f 37
+src/main/ai/tools.ts
+  h_63dffd5e80151f 83-84,96-107
+src/main/ipc/index.ts
+  h_63dffd5e80151f 46-48
+src/main/services/update/index.ts
+  h_63dffd5e80151f 4-15,23,53-72,78,84
+src/main/windows.ts
+  h_63dffd5e80151f 90-98
+src/preload/index.ts
+  h_63dffd5e80151f 8-13
+src/renderer/App.tsx
+  h_63dffd5e80151f 23-28,32-33,85-87
+src/renderer/components/AppShell.tsx
+  h_63dffd5e80151f 152
+src/renderer/components/DataGrid.tsx
+  h_63dffd5e80151f 68,73,159
+src/renderer/components/DataSourceLogo.tsx
+  h_63dffd5e80151f 11
+src/renderer/components/UpdateNotification.tsx
+  h_63dffd5e80151f 6-7,10-11,15,19-23
+src/renderer/components/WorkspacePage.tsx
+  h_63dffd5e80151f 1-24
+src/renderer/components/WorkspaceSidebar.tsx
+  h_63dffd5e80151f 12,179-180,189-207,219,226-227,231-238,240-247,260-261,263-264,288,312,327,369,398
+src/renderer/components/ai-elements/message.tsx
+  h_63dffd5e80151f 320
+src/renderer/components/ai-elements/prompt-input.tsx
+  h_63dffd5e80151f 331,355,769
+src/renderer/components/ai-elements/tool.tsx
+  h_63dffd5e80151f 39,41-42,62,66,70
+src/renderer/components/chat/chat.tsx
+  h_63dffd5e80151f 4,6,10,13,18,27-28,44-45,57,80-81,183-210,214-222,225-294,296-315,317-319
+src/renderer/components/chat/message.tsx
+  h_63dffd5e80151f 8,19,24,33,37,113,115,125
+src/renderer/components/chat/messages.tsx
+  h_63dffd5e80151f 2,32,38
+src/renderer/components/chat/multimodal-input.tsx
+  h_63dffd5e80151f 2-3,5,8,19-21,37-41,43-45,67-80,83-90,100,102,109-162,166,168-169,171,181,183
+src/renderer/components/chat/tool-call.tsx
+  h_63dffd5e80151f 1,3-4,10-14,17-21,23-24,26-27,35,37-39,41
+src/renderer/components/chat/tools/analyze.tsx
+  h_63dffd5e80151f 4-12,24-25,232-269,280
+src/renderer/components/chat/tools/index.tsx
+  h_63dffd5e80151f 1-94
+src/renderer/components/chat/tools/visualize.tsx
+  h_63dffd5e80151f 1,6-8,10,16,36-70
+src/renderer/components/chat/welcome.tsx
+  h_63dffd5e80151f 1-159
+src/renderer/components/ui/button.tsx
+  h_63dffd5e80151f 8,12,14,16,21
+src/renderer/components/ui/collapsible.tsx
+  h_63dffd5e80151f 63
+src/renderer/components/ui/composer.tsx
+  h_63dffd5e80151f 9,26
+src/renderer/components/ui/dialog.tsx
+  h_63dffd5e80151f 56-59,78-81,201-202
+src/renderer/components/ui/dropdown-list.tsx
+  h_63dffd5e80151f 53
+src/renderer/components/ui/dropdown-menu.tsx
+  h_63dffd5e80151f 49-50,86,109,154,242,264
+src/renderer/components/ui/input.tsx
+  h_63dffd5e80151f 11
+src/renderer/components/ui/popover.tsx
+  h_63dffd5e80151f 22
+src/renderer/components/ui/segmented-control.tsx
+  h_63dffd5e80151f 3,11-12,21-22,35,41-44
+src/renderer/components/ui/select.tsx
+  h_63dffd5e80151f 42,112-113,157
+src/renderer/components/ui/sidebar.tsx
+  h_63dffd5e80151f 13,61
+src/renderer/components/ui/switch.tsx
+  h_63dffd5e80151f 13,18
+src/renderer/components/ui/tabs.tsx
+  h_63dffd5e80151f 11,22
+src/renderer/components/ui/textarea.tsx
+  h_63dffd5e80151f 10
+src/renderer/components/ui/tooltip.tsx
+  h_63dffd5e80151f 45,51
+src/renderer/pages/WelcomePage.tsx
+  h_63dffd5e80151f 1,6,8
+src/renderer/pages/analysis/AnalysisSidePanel.tsx
+  h_63dffd5e80151f 3,5,20,34,108,119-120,132,145,152,157,169,185
+src/renderer/pages/analysis/DatasetPanel.tsx
+  h_63dffd5e80151f 257
+src/renderer/pages/analysis/index.tsx
+  h_63dffd5e80151f 2-3,66-68,72-84,87-120,128,130,132,170-190,209,213,223-229,271
+src/renderer/pages/datasets/DataSourcePicker.tsx
+  h_63dffd5e80151f 1,9-13,15,17,21-22,26,32-33,35-36,38-42,44,81-99,102-106,108,112-116
+src/renderer/pages/datasets/index.tsx
+  h_63dffd5e80151f 7,13,90,93,118,152,156,160-161,239-243,247-268,270,285
+src/renderer/pages/settings/AboutSettings.tsx
+  h_63dffd5e80151f 1,7,21,23-29,33-40,42-58,97,100,103,112
+src/renderer/pages/settings/ArchivedConversations.tsx
+  h_63dffd5e80151f 72
+src/renderer/pages/settings/ModelSettings.tsx
+  h_63dffd5e80151f 209
+src/renderer/pages/settings/SettingControls.tsx
+  h_63dffd5e80151f 19,22,29
+src/renderer/pages/settings/StorageSettings.tsx
+  h_63dffd5e80151f 75
+src/renderer/pages/settings/index.tsx
+  h_63dffd5e80151f 52,80,83,87,104,118,120-121,124,126
+src/renderer/pages/snippets/index.tsx
+  h_63dffd5e80151f 7,10,20,46-49,51-54,59-66,69,107
+src/renderer/styles.css
+  h_63dffd5e80151f 11-40,66-69,138-194,200-202,206,208,214-216,218-228,232,260-277,284-295,300-301,303-316
+src/shared/api.ts
+  h_63dffd5e80151f 175-176
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "36c3bd7df072b46a955c3c1635d7400256680726",
+  "prompts": {},
+  "humans": {
+    "h_63dffd5e80151f": {
+      "author": "hustcc <i@hust.cc>"
+    }
+  }
+}
