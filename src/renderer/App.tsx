@@ -20,11 +20,17 @@ import type { Conversation, DatasetSummary, WorkspaceState } from './types';
 const EMPTY_DATASETS: DatasetSummary[] = [];
 const RECENT_CONVERSATION_LIMIT = 5;
 
-type AnalysisSelection = { datasetId: string; chatId: string; draftId: string; saved: boolean };
+type AnalysisSelection = {
+  datasetId: string;
+  chatId: string;
+  draftId: string;
+  saved: boolean;
+};
 
 const analysisSelection = (datasetId: string, conversationId?: string): AnalysisSelection => {
   const chatId = conversationId ?? generateId();
-  return { datasetId, chatId, draftId: chatId, saved: conversationId !== undefined };
+  const saved = conversationId !== undefined;
+  return { datasetId, chatId, draftId: chatId, saved };
 };
 
 export default function App() {
@@ -76,17 +82,9 @@ export default function App() {
           position="bottom-right"
           visibleToasts={1}
           toastOptions={{
-            className: 'text-sm!',
-            style: {
-              width: 'max-content',
-              maxWidth: 'calc(100vw - 32px)',
-              minHeight: 'unset',
-              padding: '8px 12px',
-              border: '1px solid var(--line)',
-              borderRadius: '8px',
-              background: 'var(--surface)',
-              color: 'var(--ink)',
-              boxShadow: '0 4px 16px #00000012',
+            className: 'w-max! max-w-[calc(100vw-32px)]! min-h-[unset]! rounded-xl! border! border-line! bg-surface! px-[12px]! py-[8px]! text-sm! text-ink! shadow-overlay!',
+            classNames: {
+              error: '[&_[data-icon]]:text-amber-600 dark:[&_[data-icon]]:text-amber-400',
             },
           }}
         />

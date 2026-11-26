@@ -1,15 +1,10 @@
+import { WorkspacePage } from '../components/WorkspacePage';
 import { DataSourcePicker } from './datasets/DataSourcePicker';
 
 export function WelcomePage() {
   return (
-    <div className="mx-auto px-6 pt-8 pb-12">
-      <header>
-        <h1 className="m-0 text-4xl font-semibold tracking-[-0.03em]">欢迎使用 Sive</h1>
-        <p className="mt-3 mb-0 max-w-150 leading-[1.7] text-muted-foreground">
-          选择下方的数据源，导入或连接后，即可提问并查看分析结果。
-        </p>
-      </header>
+    <WorkspacePage title="添加数据源" description="导入本地文件，或连接数据库和云端应用。">
       <DataSourcePicker />
-    </div>
+    </WorkspacePage>
   );
 }

@@ -80,7 +80,8 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
       execute: () => ava.semantic({}, () => dataset.semantic),
     }),
     analyze: tool({
-      description: 'Analyze the loaded dataset and return the actual query, SQL, text conclusion and rows.',
+      description:
+        'Analyze the configured dataset, loading and preparing it if no engine is loaded, and return the actual query, SQL, text conclusion and rows.',
       inputSchema: z.object({ query: z.string().min(1) }),
       contextSchema: z.object({ strategy: analysisStartSchema.shape.strategy }),
       async execute({ query }, { toolCallId, context: { strategy } }) {
@@ -92,7 +93,18 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
           toolCallId,
         };
         const collector = createAnalysisTraceCollector(ava, options);
-        const result = await collector.run(() => ava.analyze(query, { strategy })).catch(() => null);
+        const result = await collector
+          .run(async () => {
+            // Persisted tool calls do not restore an in-memory engine after a restart.
+            if (!ava.engine) {
+              await loadSource(ava, dataset.sourceConfig);
+              await ava.schema();
+              await ava.profile({ metrics: ['row_count', 'null_count', 'min', 'max', 'mean'] });
+              await ava.semantic({}, () => dataset.semantic);
+            }
+            return ava.analyze(query, { strategy });
+          })
+          .catch(() => null);
         return { result, trace: collector.toJSON() };
       },
       toModelOutput({ output, toolCallId }) {

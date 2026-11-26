@@ -43,6 +43,9 @@ export function registerIpc(
 
   ipcMain.handle('settingsOpen', () => settingsWindow.open());
   ipcMain.on('settingsClose', ({ sender }) => settingsWindow.close(sender));
+  ipcMain.handle('windowIsFullscreen', ({ sender }) =>
+    BrowserWindow.fromWebContents(sender)?.isFullScreen() ?? false,
+  );
 
   ipcMain.handle('workspaceGetState', () => {
     const preferences = services.settings.getPreferences();

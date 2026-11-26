@@ -60,7 +60,7 @@ function CollapsibleInlineTrigger({
     >
       <span className="flex min-w-0 flex-wrap items-center gap-2 gap-y-1">{children}</span>
       <ChevronRightIcon
-        className="size-4 shrink-0 text-inherit opacity-0 transition-[opacity,transform] duration-150 group-hover/collapsible-inline:opacity-100 group-focus-visible/collapsible-inline:opacity-100 group-data-[state=open]/collapsible-inline:rotate-90 group-data-[state=open]/collapsible-inline:opacity-100 motion-reduce:transition-none"
+        className="size-4 shrink-0 text-inherit opacity-0 transition-[opacity,transform] duration-150 group-hover/collapsible-inline:opacity-100 group-focus-visible/collapsible-inline:opacity-100 group-data-[state=open]/collapsible-inline:rotate-90 group-data-[state=open]/collapsible-inline:opacity-100 group-data-disabled/collapsible-inline:hidden motion-reduce:transition-none"
         aria-hidden
       />
       {endContent}

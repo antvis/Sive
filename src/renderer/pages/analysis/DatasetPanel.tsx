@@ -254,7 +254,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             aria-label="表结构"
             className={clsx(
               'flex min-h-0 min-w-0 flex-col hidden:hidden',
-              compact ? 'w-full' : 'w-56 shrink-0 bg-workspace-control/55',
+              compact ? 'w-full' : 'w-56 shrink-0 border-e border-line',
             )}
             onKeyDown={(event) => {
               if (compact && event.key === 'Escape') {

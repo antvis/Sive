@@ -317,7 +317,7 @@ const mermaidOptions = { config: { themeVariables: { fontSize: "var(--text-sm)" 
 const streamdownComponents = {
   table: MarkdownTable,
   a: ({ className, ...props }: ComponentProps<typeof defaultComponents.a>) => (
-    <defaultComponents.a className={cn("font-normal text-chat-link", className)} {...props} />
+    <defaultComponents.a className={cn("font-normal text-accent", className)} {...props} />
   ),
   strong: ({ className, ...props }: ComponentProps<typeof defaultComponents.strong>) => (
     <defaultComponents.strong className={cn("font-semibold", className)} {...props} />

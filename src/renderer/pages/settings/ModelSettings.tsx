@@ -206,7 +206,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
       {error && <p className="mt-0 text-sm text-danger">{error}</p>}
       <div className="grid gap-3">
         {models.map((model) => (
-          <article key={model.id} className="group rounded-xl bg-workspace-control/70 p-4">
+          <article key={model.id} className="group rounded-2xl bg-page p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="m-0 truncate text-base font-semibold">{model.name}</h2>

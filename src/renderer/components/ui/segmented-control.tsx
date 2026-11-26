@@ -1,5 +1,6 @@
 import { RadioGroup } from 'radix-ui';
 import type { ReactNode } from 'react';
+import { cn } from '../../lib/utils';
 
 type SegmentedControlProps<Value extends string> = {
   label: string;
@@ -7,6 +8,8 @@ type SegmentedControlProps<Value extends string> = {
   value: Value;
   onValueChange: (value: Value) => void;
   disabled?: boolean;
+  className?: string;
+  itemClassName?: string;
 };
 
 export function SegmentedControl<Value extends string>({
@@ -15,6 +18,8 @@ export function SegmentedControl<Value extends string>({
   value,
   onValueChange,
   disabled,
+  className,
+  itemClassName,
 }: SegmentedControlProps<Value>) {
   return (
     <RadioGroup.Root
@@ -27,13 +32,16 @@ export function SegmentedControl<Value extends string>({
         const option = options.find(({ value }) => value === next);
         if (option) onValueChange(option.value);
       }}
-      className="flex flex-wrap gap-0.5 rounded-xl border border-ink/10 bg-workspace-control-active p-0.5"
+      className={cn('flex flex-wrap gap-0.5 rounded-xl bg-workspace-control p-0.5', className)}
     >
       {options.map(({ value, label }) => (
         <RadioGroup.Item
           key={value}
           value={value}
-          className="flex min-h-8 items-center justify-center gap-1.5 rounded-[9px] px-2.5 py-1 text-sm text-muted-foreground -outline-offset-1 transition-colors hover:text-ink data-[state=checked]:bg-selected data-[state=checked]:text-selected-foreground disabled:opacity-45"
+          className={cn(
+            'flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-sm text-muted-foreground -outline-offset-1 transition-colors hover:text-ink data-[state=checked]:bg-selected data-[state=checked]:text-selected-foreground disabled:opacity-45',
+            itemClassName,
+          )}
         >
           {label}
         </RadioGroup.Item>

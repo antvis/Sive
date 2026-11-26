@@ -5,7 +5,7 @@ import { Message, MessageContent, MessageResponse } from '../ai-elements/message
 import { Button } from '../ui/button';
 import type { ChatMessage } from '@shared/api';
 import { MessageActions } from './message-actions';
-import { ToolCallView } from './tool-call';
+import { ChatToolCall } from './tools';
 import { getTextFromUIMessage } from './util';
 
 export function isVisibleAssistantPart(part: ChatMessage['parts'][number]) {
@@ -16,12 +16,12 @@ export function isVisibleAssistantPart(part: ChatMessage['parts'][number]) {
 function StreamContent({
   parts,
   messageId,
-  savedMessageIds,
+  saved,
   isStreaming,
 }: {
   parts: ChatMessage['parts'];
   messageId: string;
-  savedMessageIds: string[];
+  saved: boolean;
   isStreaming: boolean;
 }) {
   return (
@@ -30,11 +30,11 @@ function StreamContent({
         if (isTextUIPart(part)) return <MessageResponse key={index}>{part.text}</MessageResponse>;
         if (isToolUIPart(part))
           return (
-            <ToolCallView
+            <ChatToolCall
               key={part.toolCallId}
               call={part}
               messageId={messageId}
-              savedMessageIds={savedMessageIds}
+              saved={saved}
               isStreaming={isStreaming}
             />
           );
@@ -110,9 +110,9 @@ export function PreviewMessage({
       <div className={isUser ? 'flex flex-col items-end gap-2' : 'flex min-w-0'}>
         <MessageContent
           className={cn(
-            'leading-[1.6] text-chat-foreground',
+            'leading-[1.6] text-foreground',
             isUser
-              ? 'w-fit max-w-[min(80%,56ch)] overflow-hidden break-words rounded-2xl rounded-br-lg bg-secondary px-3.5 py-2'
+              ? 'w-fit max-w-[min(88%,56ch)] overflow-hidden wrap-anywhere rounded-2xl rounded-br-sm bg-workspace-control px-4 py-2.5'
               : 'min-w-0 flex-1',
           )}
         >
@@ -122,7 +122,7 @@ export function PreviewMessage({
             <StreamContent
               parts={parts}
               messageId={message.id}
-              savedMessageIds={savedMessageIds}
+              saved={savedMessageIds.includes(message.id)}
               isStreaming={isStreaming}
             />
           )}

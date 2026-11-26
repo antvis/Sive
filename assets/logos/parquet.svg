@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke="#3488BA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Parquet columnar data</title><rect x="4" y="4" width="24" height="24" rx="3"/><path d="M12 4v24M20 4v24"/><path d="M4 12h8M4 20h8M12 9h8M12 16h8M12 23h8M20 14h8M20 21h8"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2166a5">
+  <title>Parquet columnar data</title>
+  <style>@media (prefers-color-scheme: dark) { svg { fill: #78bbfb; } }</style>
+  <rect x="2" y="3" width="5" height="7" rx="1.2"/>
+  <rect x="2" y="12" width="5" height="9" rx="1.2" opacity=".7"/>
+  <rect x="9.5" y="3" width="5" height="11" rx="1.2" opacity=".7"/>
+  <rect x="9.5" y="16" width="5" height="5" rx="1.2"/>
+  <rect x="17" y="3" width="5" height="5" rx="1.2"/>
+  <rect x="17" y="10" width="5" height="11" rx="1.2" opacity=".7"/>
+</svg>

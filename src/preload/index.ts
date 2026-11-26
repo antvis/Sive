@@ -5,6 +5,12 @@ import type { ModelTestProgress, WorkbenchApi } from './api';
 
 const api = {
   isMacOS: process.platform === 'darwin',
+  windowIsFullscreen: () => ipcRenderer.invoke('windowIsFullscreen'),
+  windowOnFullscreenChange: (callback) => {
+    const listener = (_event: IpcRendererEvent, fullscreen: boolean) => callback(fullscreen);
+    ipcRenderer.on('window:fullscreen-changed', listener);
+    return () => ipcRenderer.removeListener('window:fullscreen-changed', listener);
+  },
   workspaceGetState: () => ipcRenderer.invoke('workspaceGetState'),
   workspaceOnChange: (callback: () => void) => {
     const listener = () => callback();

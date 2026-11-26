@@ -149,7 +149,7 @@ export function AppShell({ page, activeDatasetId, renderAnalysis, children, ...s
               {children}
             </>
           ) : (
-            <main className="flex h-full min-w-0 flex-col overflow-hidden rounded-[16px] bg-surface">
+            <main className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl bg-surface">
               <div className="relative top-(--workspace-titlebar-row-offset) flex shrink-0">{titleBar}</div>
               <div className="min-h-0 flex-1 overflow-auto">{children}</div>
             </main>

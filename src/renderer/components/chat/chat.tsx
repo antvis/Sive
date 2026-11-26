@@ -1,16 +1,21 @@
 import { useChat } from '@ai-sdk/react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
+import { ArrowUpRightIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { DataSourceLogo } from '../DataSourceLogo';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
+import { Suggestion } from '../ai-elements/suggestion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { TooltipProvider } from '../ui/tooltip';
+import { cn } from '../../lib/utils';
 import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
 import { IpcChatTransport } from './ipc-chat-transport';
 import { useConversationRead } from '../../hooks/useConversationStatus';
+import { ChatWelcomeHeader } from './welcome';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
@@ -19,6 +24,8 @@ type Props = {
   datasets: DatasetSummary[];
   onDatasetChange: (datasetId: string) => void;
   onOpenDatasetPreview: () => void;
+  previewOpen: boolean;
+  toolbar: ReactNode;
   chatId: string;
   conversationId: string | null;
   visible: boolean;
@@ -34,6 +41,8 @@ export function Chat({
   datasets,
   onDatasetChange,
   onOpenDatasetPreview,
+  previewOpen,
+  toolbar,
   chatId,
   conversationId,
   visible,
@@ -45,6 +54,7 @@ export function Chat({
 }: Props) {
   const { id: datasetId, name: datasetName } = dataset;
   const [question, setQuestion] = useState('');
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const transport = useMemo(
     () => new IpcChatTransport(onConversationChange, (cause) => toast.error(errorMessage(cause))),
     [onConversationChange],
@@ -67,6 +77,8 @@ export function Chat({
   const activeModel = activeProvider?.model ?? '';
 
   const busy = status === 'submitted' || status === 'streaming';
+  const starting = !historyLoading && !busy && messages.length === 0;
+  const hasSuggestions = !suggestionsLoading && suggestions.length > 0;
   const displayError = error || chatError?.message;
 
   useConversationRead(chatId, visible && loadedChatId === chatId && !historyLoading && !busy);
@@ -168,62 +180,143 @@ export function Chat({
       .catch((cause) => toast.error(errorMessage(cause)));
   };
 
+  const datasetSelector = !conversationId && (
+    <Select value={datasetId} onValueChange={changeDataset} disabled={busy}>
+      <SelectTrigger
+        aria-label="切换数据源"
+        title={datasetName}
+        className={cn(
+          'h-7 rounded-full border-transparent px-2.5',
+          starting
+            ? 'bg-workspace-control/70 text-muted-foreground hover:bg-workspace-control hover:text-ink'
+            : 'bg-surface shadow-card hover:bg-[light-dark(#f5f9ff,#263448)]',
+        )}
+      >
+        <SelectValue>
+          <DataSourceLogo type={dataset.sourceType} size={14} />
+          {datasetName}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent side="top">
+        {datasets.map(({ id, name, sourceType }) => (
+          <SelectItem key={id} value={id}>
+            <DataSourceLogo type={sourceType} size={14} />
+            {name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
   return (
     <TooltipProvider>
       <section
-        className="flex h-full min-h-0 flex-col text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono"
+        className={cn(
+          'relative isolate flex h-full min-h-0 flex-col text-base text-foreground [&_code]:font-chat-mono [&_pre]:font-chat-mono',
+          starting && [
+            'bg-[light-dark(#fff,#1b232e)]',
+            'bg-[image:radial-gradient(ellipse_60%_26%_at_50%_0%,light-dark(#e9f6ff,#24384c),transparent_70%),radial-gradient(ellipse_70%_22%_at_55%_106%,light-dark(#5cbfff52,#2489ce55),transparent),radial-gradient(ellipse_90%_28%_at_40%_112%,light-dark(#afe4ff80,#28619763),transparent)]',
+            'before:pointer-events-none before:absolute before:inset-0 before:-z-20 before:[--grid-line:light-dark(#2f96e90e,#83caff13)]',
+            'before:bg-[image:linear-gradient(var(--grid-line)_1px,transparent_1px),linear-gradient(90deg,var(--grid-line)_1px,transparent_1px)] before:bg-size-[26px_26px] before:mask-[radial-gradient(ellipse_75%_42%_at_50%_0%,#000_10%,transparent_75%)]',
+          ],
+        )}
         aria-label="AI 对话"
       >
-        <Messages
-          key={chatId}
-          datasetName={datasetName}
-          onOpenDatasetPreview={onOpenDatasetPreview}
-          messages={messages}
-          savedMessageIds={savedMessageIds}
-          historyLoading={historyLoading}
-          isStreaming={busy}
-          suggestions={suggestions}
-          suggestionsLoading={suggestionsLoading}
-          hasModel={Boolean(activeModelId)}
-          error={displayError}
-          onSuggestion={setQuestion}
-        />
-        <div className="mx-auto w-full max-w-3xl shrink-0 px-5 pt-3 pb-4">
-          {!conversationId && (
-            <Select value={datasetId} onValueChange={changeDataset} disabled={busy}>
-              <SelectTrigger
-                aria-label="切换数据源"
-                title={datasetName}
-                className="mb-1.5"
-              >
-                <SelectValue>
-                  <DataSourceLogo type={dataset.sourceType} size={14} />
-                  {datasetName}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent side="top">
-                {datasets.map(({ id, name, sourceType }) => (
-                  <SelectItem key={id} value={id}>
-                    <DataSourceLogo type={sourceType} size={14} />
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <MultimodalInput
-            value={question}
-            onChange={setQuestion}
-            onSubmit={start}
-            onStop={() => transport.stop(chatId)}
-            status={status}
-            disabled={!activeModelId || historyLoading}
-            models={models}
-            activeModelId={activeModelId}
-            onModelChange={changeModel}
-            mode={preferences.strategy.type}
-            onModeChange={changeMode}
+        {toolbar && (
+          <div
+            className={cn(
+              'top-(--workspace-titlebar-row-offset) z-10 mx-px flex h-(--workspace-titlebar-height) items-center gap-1 pe-2',
+              starting ? 'absolute inset-x-0' : 'relative shrink-0',
+            )}
+          >
+            {toolbar}
+          </div>
+        )}
+        {!starting && (
+          <Messages
+            key={chatId}
+            messages={messages}
+            savedMessageIds={savedMessageIds}
+            historyLoading={historyLoading}
+            isStreaming={busy}
+            error={displayError}
           />
+        )}
+        <div className={starting ? 'min-h-0 flex-1 overflow-y-auto' : 'shrink-0'}>
+          <div
+            className={cn(
+              'w-full',
+              starting
+                ? 'max-w-[760px] px-[clamp(14px,5%,40px)] pt-[calc(var(--workspace-titlebar-height)+clamp(24px,5.5vh,72px))] pb-10'
+                : 'mx-auto max-w-3xl px-4 pt-2 pb-4',
+              starting && !previewOpen && 'mx-auto',
+            )}
+          >
+            {starting && (
+              <ChatWelcomeHeader
+                datasetName={datasetName}
+                datasetSourceType={dataset.sourceType}
+                onOpenDatasetPreview={onOpenDatasetPreview}
+                previewOpen={previewOpen}
+                showModelNotice={!activeModelId}
+                error={displayError}
+              />
+            )}
+            <div
+              data-draft-slide={starting ? '' : undefined}
+              className={cn(
+                starting &&
+                  'mt-[clamp(8px,calc(5vh-1.6rem),56px)] motion-safe:animate-fade-up motion-safe:[animation-delay:50ms] motion-safe:[animation-fill-mode:backwards]',
+              )}
+            >
+              {!starting && datasetSelector && <div className="mb-2">{datasetSelector}</div>}
+              <MultimodalInput
+                welcome={starting}
+                datasetSelector={starting ? datasetSelector : null}
+                inputRef={inputRef}
+                value={question}
+                onChange={setQuestion}
+                onSubmit={start}
+                onStop={() => transport.stop(chatId)}
+                status={status}
+                disabled={!activeModelId || historyLoading}
+                models={models}
+                activeModelId={activeModelId}
+                onModelChange={changeModel}
+                mode={preferences.strategy.type}
+                onModeChange={changeMode}
+              />
+            </div>
+            {starting && hasSuggestions && (
+              <ul
+                data-draft-slide
+                aria-label="示例问题"
+                className="m-0 mt-3 list-none p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
+              >
+                {suggestions.map(({ query }) => (
+                  <li key={query}>
+                    <Suggestion
+                      suggestion={query}
+                      onClick={(value) => {
+                        setQuestion(value);
+                        inputRef.current?.focus();
+                      }}
+                      className="group/example h-auto min-h-9 w-full items-center justify-between gap-3 rounded-lg bg-transparent px-3 py-1.5 text-left text-sm leading-relaxed font-normal whitespace-normal text-muted-foreground hover:bg-workspace-control hover:text-ink focus-visible:bg-workspace-control focus-visible:text-ink motion-reduce:transition-none"
+                    >
+                      <span className="flex min-w-0 items-start gap-2">
+                        <span className="shrink-0" aria-hidden>💡</span>
+                        <span className="min-w-0 wrap-anywhere">{query}</span>
+                      </span>
+                      <ArrowUpRightIcon
+                        className="size-3.5 shrink-0 text-accent/70 group-hover/example:text-accent group-focus-visible/example:text-accent"
+                        aria-hidden
+                      />
+                    </Suggestion>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </section>
     </TooltipProvider>
