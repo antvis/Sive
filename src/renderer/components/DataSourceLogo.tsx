@@ -8,7 +8,7 @@ export function DataSourceLogo({ type, size }: { type: string; size: number }) {
       src={source.logo}
       width={size}
       height={size}
-      className="shrink-0 object-contain [[data-theme=dark]_&]:brightness-150"
+      className="shrink-0 object-contain"
       alt=""
     />
   ) : (
