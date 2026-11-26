@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { BrowserWindow } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import type { BrowserWindowConstructorOptions, WebContents } from 'electron';
 
 type AppWindow = 'workspace' | 'settings';
@@ -61,6 +61,16 @@ export function isAppWindowOpen(kind: AppWindow) {
 export function closeAppWindow(kind: AppWindow, sender: WebContents) {
   const window = windows.get(kind);
   if (window?.webContents.id === sender.id) window.close();
+}
+
+export function focusSenderWindow(sender: WebContents) {
+  if (sender.isDestroyed()) return;
+  const window = BrowserWindow.fromWebContents(sender);
+  if (!window || window.isDestroyed()) return;
+  if (process.platform === 'darwin') app.focus({ steal: true });
+  if (window.isMinimized()) window.restore();
+  window.show();
+  window.focus();
 }
 
 function loadRenderer(window: BrowserWindow, hash?: string) {

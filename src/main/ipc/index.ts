@@ -20,6 +20,7 @@ import { setLocale } from '../util/i18n';
 import { localSource } from '../util/localFile';
 import { getStorageInfo, systemOpen } from '../util/system';
 import { exportSnippet } from '../util/snippetExport';
+import { focusSenderWindow } from '../windows';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -106,9 +107,11 @@ export function registerIpc(
     services.dataset.test(sourceConfig, authSessionId),
   );
 
-  ipcMain.handle('githubConnect', (_event, connectionId: unknown) =>
-    services.dataset.connectGitHub(githubConnectionIdSchema.parse(connectionId)),
-  );
+  ipcMain.handle('githubConnect', async (event, connectionId: unknown) => {
+    const result = await services.dataset.connectGitHub(githubConnectionIdSchema.parse(connectionId));
+    focusSenderWindow(event.sender);
+    return result;
+  });
 
   ipcMain.handle('githubConnectCancel', (_event, connectionId: unknown) =>
     services.dataset.cancelGitHubConnect(githubConnectionIdSchema.parse(connectionId)),
@@ -120,10 +123,7 @@ export function registerIpc(
 
   ipcMain.handle('oAuthStart', async (event, type: DataSourceConfig['type']) => {
     const result = await services.dataset.oAuthStart(type);
-    if (process.platform === 'darwin') app.focus({ steal: true });
-    const window = BrowserWindow.fromWebContents(event.sender);
-    window?.show();
-    window?.focus();
+    focusSenderWindow(event.sender);
     return result;
   });
 
