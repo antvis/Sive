@@ -119,7 +119,7 @@ export const DATA_SOURCE_GROUPS = [
         type: 'github',
         enable: true,
         label: 'GitHub',
-        description: '使用访问令牌，分析仓库的 Issue 与 PR',
+        description: '通过 OAuth 授权，分析仓库的 Issue 与 PR',
         color: '#687682',
         logo: './logos/github.svg',
         action: { type: 'connection', dialog: 'GitHubDialog' },
