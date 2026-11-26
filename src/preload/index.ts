@@ -2,7 +2,7 @@ import '@sentry/electron/preload';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
 import type { UIMessageChunk } from 'ai';
-import type { ModelTestProgress, WorkbenchApi } from './api';
+import type { ModelTestProgress, SnippetExportApi, WorkbenchApi } from './api';
 
 const api = {
   isMacOS: process.platform === 'darwin',
@@ -67,8 +67,6 @@ const api = {
   snippetUpdate: (messageId, input) => ipcRenderer.invoke('snippetUpdate', messageId, input),
   snippetRemove: (messageId) => ipcRenderer.invoke('snippetRemove', messageId),
   snippetExport: (input) => ipcRenderer.invoke('snippetExport', input),
-  snippetExportGetRenderData: () => ipcRenderer.invoke('snippetExport:getRenderData'),
-  snippetExportRenderComplete: (result) => ipcRenderer.send('snippetExport:renderComplete', result),
   conversationRestore: (id) => ipcRenderer.invoke('conversationRestore', id),
   conversationPurge: (ids) => ipcRenderer.invoke('conversationPurge', ids),
 } satisfies WorkbenchApi;
@@ -76,9 +74,9 @@ const api = {
 contextBridge.exposeInMainWorld(
   'workbench',
   process.argv.includes('--snippet-export')
-    ? {
-        snippetExportGetRenderData: api.snippetExportGetRenderData,
-        snippetExportRenderComplete: api.snippetExportRenderComplete,
-      }
+    ? ({
+        getRenderData: () => ipcRenderer.invoke('snippetExport:getRenderData'),
+        renderComplete: (result) => ipcRenderer.send('snippetExport:renderComplete', result),
+      } satisfies SnippetExportApi)
     : api,
 );

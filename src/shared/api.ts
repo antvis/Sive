@@ -95,6 +95,11 @@ export const snippetExportRenderedSchema = z.union([
 
 export type SnippetExportRendered = z.infer<typeof snippetExportRenderedSchema>;
 
+export type SnippetExportApi = {
+  getRenderData(): Promise<SnippetExportInput>;
+  renderComplete(result: SnippetExportRendered): void;
+};
+
 export type DatasetPreviewOptions = { offset: number; limit: number };
 
 export type SupabaseOAuthResult = {
@@ -244,8 +249,6 @@ export type WorkbenchApi = {
   snippetUpdate(messageId: string, input: SnippetUpdateInput): Promise<void>;
   snippetRemove(messageId: string): Promise<void>;
   snippetExport(input: SnippetExportInput): Promise<boolean>;
-  snippetExportGetRenderData(): Promise<SnippetExportInput>;
-  snippetExportRenderComplete(result: SnippetExportRendered): void;
   conversationRename(id: string, title: string): Promise<void>;
   conversationArchive(id: string): Promise<void>;
   conversationRestore(id: string): Promise<void>;

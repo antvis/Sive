@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { SnippetExportInput } from '@shared/api';
+import type { SnippetExportApi, SnippetExportInput } from '@shared/api';
 import { ThemeContext } from '../../theme';
 import { errorMessage } from '../../utils';
 import { SnippetCard } from './index';
@@ -34,21 +34,23 @@ async function waitForRendering(container: HTMLElement) {
 }
 
 export function SnippetExportPage() {
+  // The export preload exposes its own API under the same workbench namespace.
+  const api = window.workbench as unknown as SnippetExportApi;
   const [input, setInput] = useState<SnippetExportInput>();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    void window.workbench
-      .snippetExportGetRenderData()
+    void api
+      .getRenderData()
       .then((data) => {
         document.documentElement.dataset.theme = data.theme.mode;
         document.documentElement.style.fontSize = `${data.theme.fontSize}px`;
         setInput(data);
       })
       .catch((cause) => {
-        window.workbench.snippetExportRenderComplete({ error: errorMessage(cause) });
+        api.renderComplete({ error: errorMessage(cause) });
       });
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     if (!input) return;
@@ -59,19 +61,19 @@ export function SnippetExportPage() {
         const container = containerRef.current!;
         await waitForRendering(container);
         if (cancelled) return;
-        window.workbench.snippetExportRenderComplete({
+        api.renderComplete({
           height: Math.ceil(container.getBoundingClientRect().height),
           title: container.querySelector('[role="heading"]')?.textContent ?? 'Snippet',
         });
       } catch (cause) {
-        if (!cancelled) window.workbench.snippetExportRenderComplete({ error: errorMessage(cause) });
+        if (!cancelled) api.renderComplete({ error: errorMessage(cause) });
       }
     };
     void report();
     return () => {
       cancelled = true;
     };
-  }, [input]);
+  }, [api, input]);
 
   return input ? (
     <ThemeContext value={input.theme}>
