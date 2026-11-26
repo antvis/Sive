@@ -72,7 +72,7 @@ export function StorageSettings() {
                 }
               >
                 <Button
-                  className="border-0 bg-workspace-control-active hover:bg-sidebar-highlight"
+                  className="bg-surface hover:bg-workspace-control"
                   aria-label={`打开${title}目录`}
                   onClick={() => void openDirectory(directory)}
                 >

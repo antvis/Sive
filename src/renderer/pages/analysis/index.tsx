@@ -1,5 +1,6 @@
 import { PanelRightIcon } from 'lucide-react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Group, Panel, usePanelRef } from 'react-resizable-panels';
 import type { AnalysisFrameProps } from '../../components/AppShell';
 import { Chat } from '../../components/chat/chat';
@@ -62,13 +63,61 @@ export function AnalysisPage({
   const workspace = useRef<HTMLDivElement>(null);
   const conversationPanel = usePanelRef();
   const previewPanel = usePanelRef();
+  const previewFullscreenButton = useRef<HTMLButtonElement>(null);
+  const focusPreviewAfterOpening = useRef(false);
+  const capturingPreviewLayout = useRef(false);
   const rememberToggleFocus = usePanelToggleFocus(workspace, DATASET_PREVIEW_ID, datasetCollapsed);
   const { activeTabId, tabs, selectTab, openDataset, openResult, closeTab } = useAnalysisTabs(chatId);
 
+  const restorePreview = useCallback(() => {
+    const panel = previewPanel.current;
+    if (!panel) return;
+
+    if (preferredPreviewWidth.current) panel.resize(preferredPreviewWidth.current);
+    else preferredPreviewWidth.current = panel.getSize().inPixels;
+
+    if (focusPreviewAfterOpening.current) {
+      focusPreviewAfterOpening.current = false;
+      previewFullscreenButton.current?.focus({ preventScroll: true });
+    }
+  }, [previewPanel]);
+
   const changePreviewCollapsed = (collapsed: boolean, restoreFocus = false) => {
     rememberToggleFocus(restoreFocus);
-    if (!collapsed) onPreviewOpen();
-    onDatasetCollapsedChange(collapsed);
+    if (collapsed) focusPreviewAfterOpening.current = false;
+
+    const update = () => {
+      if (!collapsed) onPreviewOpen();
+      onDatasetCollapsedChange(collapsed);
+    };
+
+    if (
+      !workspace.current?.querySelector('[data-draft-slide]') ||
+      !document.startViewTransition ||
+      document.hidden ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      update();
+      return;
+    }
+
+    const transition = document.startViewTransition({
+      types: ['preview-toggle'],
+      update: async () => {
+        capturingPreviewLayout.current = !collapsed;
+        try {
+          flushSync(update);
+          if (!collapsed) {
+            // Let the sidebar's layout update before restoring the saved preview width.
+            await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+            flushSync(restorePreview);
+          }
+        } finally {
+          capturingPreviewLayout.current = false;
+        }
+      },
+    });
+    void transition.ready.catch(() => {});
   };
 
   const collapsePreview = usePanelCollapsePreview(previewPanel, MIN_ANALYSIS_PANEL_WIDTH, () => {
@@ -76,17 +125,11 @@ export function AnalysisPage({
   });
 
   useLayoutEffect(() => {
-    if (datasetCollapsed) return;
+    if (datasetCollapsed || capturingPreviewLayout.current) return;
 
-    const frame = requestAnimationFrame(() => {
-      const panel = previewPanel.current;
-      if (!panel) return;
-
-      if (preferredPreviewWidth.current) panel.resize(preferredPreviewWidth.current);
-      else preferredPreviewWidth.current = panel.getSize().inPixels;
-    });
+    const frame = requestAnimationFrame(restorePreview);
     return () => cancelAnimationFrame(frame);
-  }, [datasetCollapsed, previewPanel]);
+  }, [datasetCollapsed, restorePreview]);
 
   const persistPreviewWidth = () => {
     requestAnimationFrame(() => {
@@ -124,6 +167,27 @@ export function AnalysisPage({
     openSidePanel();
   };
 
+  const toolbar = !fullscreen && (
+    <>
+      {titleBar}
+      {datasetCollapsed && (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="展开右侧面板"
+          title="展开右侧面板"
+          className="rounded-full text-muted-foreground"
+          aria-controls={DATASET_PREVIEW_ID}
+          aria-expanded={false}
+          aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
+          onClick={togglePreview}
+        >
+          <PanelRightIcon className="size-[16px]" aria-hidden />
+        </Button>
+      )}
+    </>
+  );
+
   return (
     <Group
       orientation="horizontal"
@@ -142,31 +206,11 @@ export function AnalysisPage({
         style={{ overflow: 'hidden' }}
       >
         <section
-          className={
-            'flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[16px] bg-surface motion-safe:transition-opacity motion-safe:duration-150 dark:bg-background'
-          }
+          className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl bg-surface motion-safe:transition-opacity motion-safe:duration-150"
           aria-label="对话面板"
           inert={fullscreen}
         >
-          <div className="relative top-(--workspace-titlebar-row-offset) flex h-(--workspace-titlebar-height) shrink-0 items-center gap-1 pe-[8px]">
-            {!fullscreen && titleBar}
-            {datasetCollapsed && !fullscreen && (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="展开右侧面板"
-                title="展开右侧面板"
-                className="text-black/50 dark:text-white/50"
-                aria-controls={DATASET_PREVIEW_ID}
-                aria-expanded={false}
-                aria-keyshortcuts="Meta+Shift+B Control+Shift+B"
-                onClick={togglePreview}
-              >
-                <PanelRightIcon className="size-[16px]" aria-hidden />
-              </Button>
-            )}
-          </div>
-          <div className={'min-h-0 min-w-0 flex-1 overflow-hidden'}>
+          <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
             <ToolPreviewContext value={showResult}>
               <Chat
                 key={draftId}
@@ -176,7 +220,13 @@ export function AnalysisPage({
                   onDatasetChange(id);
                   showDataset();
                 }}
-                onOpenDatasetPreview={showDataset}
+                onOpenDatasetPreview={() => {
+                  if (datasetCollapsed) focusPreviewAfterOpening.current = true;
+                  else previewFullscreenButton.current?.focus({ preventScroll: true });
+                  showDataset();
+                }}
+                previewOpen={!datasetCollapsed}
+                toolbar={toolbar}
                 chatId={chatId}
                 conversationId={conversationId}
                 visible={!fullscreen}
@@ -218,6 +268,7 @@ export function AnalysisPage({
         <AnalysisSidePanel
           dataset={dataset}
           fullscreen={fullscreen}
+          fullscreenButtonRef={previewFullscreenButton}
           collapsed={datasetCollapsed}
           tabs={tabs}
           activeTabId={activeTabId}

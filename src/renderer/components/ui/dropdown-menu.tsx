@@ -46,7 +46,8 @@ function DropdownMenuContent({
         sideOffset={sideOffset}
         align={align}
         className={cn(
-          'relative z-50 min-w-44 overflow-x-hidden overflow-y-auto rounded-[10px] border border-border/60 bg-popover p-1 text-popover-foreground shadow-lg [--dropdown-enter-transform:translateY(-6px)] data-[side=top]:[--dropdown-enter-transform:translateY(6px)] data-[side=left]:[--dropdown-enter-transform:translateX(6px)] data-[side=right]:[--dropdown-enter-transform:translateX(-6px)] motion-safe:data-[state=open]:animate-dropdown-open motion-safe:data-[state=closed]:animate-dropdown-close',
+          'relative z-50 min-w-44 overflow-x-hidden overflow-y-auto rounded-xl border border-border/80 bg-popover text-popover-foreground shadow-overlay [--dropdown-enter-transform:translateY(-6px)] data-[side=top]:[--dropdown-enter-transform:translateY(6px)] data-[side=left]:[--dropdown-enter-transform:translateX(6px)] data-[side=right]:[--dropdown-enter-transform:translateX(-6px)] motion-safe:data-[state=open]:animate-dropdown-open motion-safe:data-[state=closed]:animate-dropdown-close',
+          "p-1",
           "max-h-(--radix-dropdown-menu-content-available-height) max-w-(--radix-dropdown-menu-content-available-width) origin-(--radix-dropdown-menu-content-transform-origin)",
           "w-(--radix-dropdown-menu-trigger-width)",
           className
@@ -82,7 +83,7 @@ function DropdownMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-[6px] py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-md py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
         "group/dropdown-menu-item pr-2 focus:text-foreground not-data-[variant=destructive]:focus:**:text-foreground data-inset:pl-9.5",
         className
       )}
@@ -105,7 +106,7 @@ function DropdownMenuCheckboxItem({
       data-slot="dropdown-menu-checkbox-item"
       data-inset={inset}
       className={cn(
-        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-[6px] py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-md py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
         "pr-8 data-[state=checked]:text-selected-foreground focus:text-selected-foreground focus:**:text-foreground data-inset:pl-9.5",
         className
       )}
@@ -150,7 +151,7 @@ function DropdownMenuRadioItem({
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
       className={cn(
-        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-[6px] py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-md py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
         "pr-8 data-[state=checked]:text-selected-foreground focus:text-selected-foreground focus:**:text-foreground data-inset:pl-9.5",
         className
       )}
@@ -238,7 +239,7 @@ function DropdownMenuSubTrigger({
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-[6px] py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+        'relative z-10 flex min-h-[30px] w-full cursor-default items-center gap-2 rounded-md py-1.5 pl-2 text-sm leading-4 font-normal outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
         "pr-2 focus:text-foreground focus:**:text-foreground data-inset:pl-9.5 data-open:bg-selected data-open:text-selected-foreground",
         className
       )}
@@ -260,7 +261,7 @@ function DropdownMenuSubContent({
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
       sideOffset={sideOffset}
-      className={cn('relative z-50 min-w-44 overflow-x-hidden overflow-y-auto rounded-[10px] border border-border/60 bg-popover p-1 text-popover-foreground shadow-lg [--dropdown-enter-transform:translateY(-6px)] data-[side=top]:[--dropdown-enter-transform:translateY(6px)] data-[side=left]:[--dropdown-enter-transform:translateX(6px)] data-[side=right]:[--dropdown-enter-transform:translateX(-6px)] motion-safe:data-[state=open]:animate-dropdown-open motion-safe:data-[state=closed]:animate-dropdown-close', "max-h-(--radix-dropdown-menu-content-available-height) max-w-(--radix-dropdown-menu-content-available-width) origin-(--radix-dropdown-menu-content-transform-origin)", "min-w-36", className)}
+      className={cn('relative z-50 min-w-44 overflow-x-hidden overflow-y-auto rounded-xl border border-border/80 bg-popover text-popover-foreground shadow-overlay [--dropdown-enter-transform:translateY(-6px)] data-[side=top]:[--dropdown-enter-transform:translateY(6px)] data-[side=left]:[--dropdown-enter-transform:translateX(6px)] data-[side=right]:[--dropdown-enter-transform:translateX(-6px)] motion-safe:data-[state=open]:animate-dropdown-open motion-safe:data-[state=closed]:animate-dropdown-close', "p-1", "max-h-(--radix-dropdown-menu-content-available-height) max-w-(--radix-dropdown-menu-content-available-width) origin-(--radix-dropdown-menu-content-transform-origin)", "min-w-36", className)}
       {...props}
     >
       <DropdownList asChild={props.asChild}>{children}</DropdownList>

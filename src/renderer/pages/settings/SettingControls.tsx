@@ -16,17 +16,17 @@ export function SettingGroup({
   return (
     <section>
       {(title || description || action) && (
-        <header className="mb-3 px-4">
+        <header className="mb-3 px-1">
           {(title || action) && (
             <div className="flex items-baseline gap-3">
-              {title && <h2 className="m-0 text-sm font-medium text-muted-foreground">{title}</h2>}
+              {title && <h2 className="m-0 text-sm font-semibold text-ink">{title}</h2>}
               {action && <div className="ml-auto shrink-0">{action}</div>}
             </div>
           )}
           {description && <div className="mt-1 text-sm text-muted-foreground">{description}</div>}
         </header>
       )}
-      <div className="divide-y divide-ink/7 rounded-[16px] bg-workspace-control/60 px-4 dark:bg-preview-row">
+      <div className="divide-y divide-line/80 rounded-2xl bg-page px-4">
         {children}
       </div>
     </section>

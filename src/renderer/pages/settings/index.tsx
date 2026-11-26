@@ -49,7 +49,7 @@ export function SettingsWindow({ state, fallback }: { state: WorkspaceState | nu
   return (
     <div
       data-settings-window
-      className="relative flex h-screen flex-col overflow-hidden bg-white select-none [-webkit-app-region:drag] dark:bg-preview-surface"
+      className="relative flex h-screen flex-col overflow-hidden bg-workspace-canvas p-(--workspace-gutter) select-none [-webkit-app-region:drag]"
     >
       {!isMacOS && (
         <Button
@@ -77,14 +77,14 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
   };
 
   return (
-    <main className="grid min-h-0 flex-1 grid-cols-[clamp(176px,26%,224px)_minmax(0,1fr)] overflow-hidden">
+    <main className="grid min-h-0 flex-1 grid-cols-[clamp(160px,24%,208px)_minmax(0,1fr)] gap-(--workspace-gutter) overflow-hidden">
       <nav
         aria-label="设置分类"
-        className="grid min-h-0 content-start gap-7 overflow-y-auto bg-preview-row px-3 pt-12 pb-6"
+        className="grid min-h-0 content-start gap-6 overflow-y-auto rounded-2xl bg-surface px-3 pt-12 pb-6"
       >
         {groups.map(({ label, items }) => (
           <div key={label}>
-            <p id={`settings-group-${items[0]}`} className="m-0 mb-2 px-2 text-sm text-black/50 dark:text-white/50">
+            <p id={`settings-group-${items[0]}`} className="m-0 mb-2 px-2.5 text-xs font-medium text-muted-foreground">
               {label}
             </p>
             <ul aria-labelledby={`settings-group-${items[0]}`} className="m-0 grid list-none gap-1 p-0">
@@ -101,7 +101,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
                     >
                       <Icon size={16} aria-hidden className="shrink-0" />
                       <span className="min-w-0 flex-1">{label}</span>
-                      {count > 0 && <span className="text-xs tabular-nums text-black/50 dark:text-white/50">{count}</span>}
+                      {count > 0 && <span className="text-xs tabular-nums text-muted-foreground">{count}</span>}
                     </SidebarButton>
                   </li>
                 );
@@ -115,15 +115,15 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
         key={section}
         id="settings-panel"
         aria-labelledby="settings-panel-title"
-        className="min-h-0 min-w-0 overflow-y-auto px-[clamp(20px,5vw,40px)] pt-7 pb-8"
+        className="min-h-0 min-w-0 overflow-y-auto rounded-2xl bg-surface px-[clamp(20px,5vw,40px)] pt-8 pb-8"
       >
-        <div className="mb-8">
-          <h1 id="settings-panel-title" className="m-0 text-xl font-medium text-ink/85">
+        <div className="mb-10 motion-safe:animate-fade-up">
+          <h1 id="settings-panel-title" className="m-0 text-3xl leading-tight font-semibold tracking-tight">
             {label}
           </h1>
-          {description && <p className="mt-1 mb-0 text-sm font-light text-muted-foreground">{description}</p>}
+          {description && <p className="mt-2 mb-0 leading-[1.7] text-muted-foreground">{description}</p>}
         </div>
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8 motion-safe:animate-fade-up">
           {section === 'appearance' && <AppearanceSettings preferences={state.preferences} />}
           {section === 'models' && (
             <ModelSettings models={state.models} activeModelId={state.activeModelId} />

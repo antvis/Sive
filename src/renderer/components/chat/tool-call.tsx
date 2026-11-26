@@ -14,7 +14,7 @@ export function ToolCallView({
   children,
 }: {
   call: ToolPart;
-  title?: string;
+  title: string;
   icon?: LucideIcon;
   state?: ToolPart['state'];
   expandOn?: 'running' | 'completed' | 'click' | 'never';
@@ -31,15 +31,10 @@ export function ToolCallView({
     setExpanded(defaultExpanded);
   }, [defaultExpanded]);
 
-  const header =
-    call.type === 'dynamic-tool'
-      ? { type: call.type, toolName: call.toolName, state }
-      : { type: call.type, state };
-
   return (
     <Tool disabled={!canExpand} open={canExpand && expanded} onOpenChange={setExpanded}>
       <ToolHeader
-        {...header}
+        state={state}
         title={title}
         icon={Icon ? <Icon className="size-4 text-muted-foreground" aria-hidden="true" /> : undefined}
       />

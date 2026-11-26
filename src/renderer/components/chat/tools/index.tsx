@@ -59,12 +59,12 @@ const dataTools = new Map<
 export function ChatToolCall({
   call,
   messageId,
-  savedMessageIds,
+  saved,
   isStreaming,
 }: {
   call: ToolPart;
   messageId: string;
-  savedMessageIds: string[];
+  saved: boolean;
   isStreaming: boolean;
 }) {
   const name = getToolName(call);
@@ -74,7 +74,7 @@ export function ChatToolCall({
       <VisualizeToolCall
         call={call}
         messageId={messageId}
-        saved={savedMessageIds.includes(messageId)}
+        saved={saved}
         isStreaming={isStreaming}
       />
     );
@@ -87,7 +87,7 @@ export function ChatToolCall({
   const expandOn = tool ? (output || errorText ? 'click' : 'never') : 'running';
 
   return (
-    <ToolCallView call={call} title={tool?.title} icon={tool?.icon} expandOn={expandOn}>
+    <ToolCallView call={call} title={tool?.title ?? name} icon={tool?.icon} expandOn={expandOn}>
       <ToolOutput output={output} errorText={errorText} />
     </ToolCallView>
   );

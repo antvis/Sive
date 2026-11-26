@@ -5,20 +5,20 @@ import { Slot } from "radix-ui"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-lg text-base font-medium transition-[background-color,color,border-color] [&[aria-expanded=true][aria-haspopup]]:bg-selected [&[aria-expanded=true][aria-haspopup]]:text-selected-foreground aria-pressed:bg-selected aria-pressed:text-selected-foreground disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "inline-flex items-center justify-center rounded-lg text-base font-medium transition-[background-color,color,border-color,scale] motion-safe:enabled:active:scale-[0.97] [&[aria-expanded=true][aria-haspopup]]:bg-selected [&[aria-expanded=true][aria-haspopup]]:text-selected-foreground aria-pressed:bg-selected aria-pressed:text-selected-foreground disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "border bg-surface text-ink hover:bg-page",
+        default: "bg-workspace-control text-ink hover:bg-selected",
         outline:
-          "border border-border bg-input/30 hover:bg-input/50 hover:text-foreground",
+          "border border-line bg-surface text-ink hover:bg-page",
         secondary:
-          "bg-workspace-control text-ink hover:bg-ink/10",
+          "bg-workspace-control text-ink hover:bg-selected hover:text-selected-foreground",
         ghost: "text-muted-foreground hover:bg-page hover:text-ink",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-current",
-        primary: "bg-accent text-accent-foreground enabled:hover:bg-accent/95",
+        primary: "rounded-full bg-primary text-primary-foreground shadow-[inset_0_1px_0_#ffffff1f,0_2px_4px_#00000019] enabled:hover:bg-primary-hover",
         neutral: "bg-ink text-surface shadow-sm hover:opacity-90",
         danger: "border border-danger/30 bg-danger/5 text-danger hover:bg-danger/10",
       },

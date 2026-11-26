@@ -50,7 +50,7 @@ export function DropdownList({
         aria-hidden="true"
         data-slot="dropdown-highlight"
         className={cn(
-          'pointer-events-none absolute inset-x-0 top-0 rounded-[6px] motion-safe:transition-[transform,height,opacity] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]',
+          'pointer-events-none absolute inset-x-0 top-0 rounded-md motion-safe:transition-[transform,height,opacity] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]',
           highlight.destructive ? 'bg-destructive/10' : 'bg-selected',
         )}
         style={{

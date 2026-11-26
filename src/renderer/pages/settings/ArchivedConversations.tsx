@@ -69,7 +69,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                 {items.length} 个分析会话
               </span>
             </h2>
-            <div className="rounded-xl bg-workspace-control/70 px-4">
+            <div className="rounded-2xl bg-page px-4">
               {items.map((conversation) => (
                 <div key={conversation.id} className="flex items-center gap-3 py-3">
                   <div className="min-w-0 flex-1">

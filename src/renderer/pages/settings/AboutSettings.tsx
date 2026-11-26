@@ -47,7 +47,14 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
         ),
         duration: 8000,
         closeButton: true,
-        action: { label: '重试', onClick: () => void checkUpdates() },
+        action: {
+          label: '重试',
+          onClick: (event) => {
+            // Keep the loading toast that reuses this notification ID.
+            event.preventDefault();
+            void checkUpdates();
+          },
+        },
       });
     } finally {
       setChecking(false);

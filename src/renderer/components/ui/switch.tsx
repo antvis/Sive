@@ -10,12 +10,12 @@ export function Switch({
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        'flex h-6 w-11 items-center rounded-full bg-ink/17 p-0.5 transition-[background-color] data-[state=checked]:bg-accent disabled:opacity-45',
+        'flex h-6 w-11 items-center rounded-full bg-ink/22 p-0.5 transition-[background-color] data-[state=checked]:bg-ink/75 disabled:opacity-45',
         className,
       )}
       {...props}
     >
-      <SwitchPrimitive.Thumb className="size-5 rounded-full bg-white shadow-xs motion-safe:transition-transform data-[state=checked]:translate-x-5 data-[state=checked]:bg-accent-foreground" />
+      <SwitchPrimitive.Thumb className="size-5 rounded-full bg-surface shadow-xs motion-safe:transition-transform data-[state=checked]:translate-x-5" />
     </SwitchPrimitive.Root>
   );
 }

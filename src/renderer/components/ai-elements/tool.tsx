@@ -36,17 +36,10 @@ export function getToolErrorText(call: ToolPart) {
 }
 
 export type ToolHeaderProps = {
-  title?: string;
+  title: string;
   icon?: ReactNode;
-  className?: string;
-} & (
-  | { type: ToolUIPart["type"]; state: ToolUIPart["state"]; toolName?: never }
-  | {
-      type: DynamicToolUIPart["type"];
-      state: DynamicToolUIPart["state"];
-      toolName: string;
-    }
-);
+  state: ToolPart["state"];
+};
 
 const statusLabels: Partial<Record<ToolPart["state"], string>> = {
   "approval-requested": "等待授权",
@@ -66,30 +59,15 @@ export const getStatusBadge = (status: ToolPart["state"]) =>
     </Badge>
   ) : null;
 
-export const ToolHeader = ({
-  className,
-  title,
-  icon,
-  type,
-  state,
-  toolName,
-  ...props
-}: ToolHeaderProps) => {
-  const derivedName =
-    type === "dynamic-tool" ? toolName : type.split("-").slice(1).join("-");
-  const action = title ?? derivedName;
+export const ToolHeader = ({ title, icon, state }: ToolHeaderProps) => {
   const running = state === "input-streaming" || state === "input-available";
 
   return (
-    <CollapsibleInlineTrigger
-      className={className}
-      endContent={getStatusBadge(state)}
-      {...props}
-    >
+    <CollapsibleInlineTrigger endContent={getStatusBadge(state)}>
       {icon ?? <WrenchIcon className="size-4 text-muted-foreground" aria-hidden />}
       <span className={cn(
         running && "motion-safe:animate-chat-tool-shimmer motion-safe:bg-[linear-gradient(90deg,var(--muted-foreground)_35%,var(--foreground)_50%,var(--muted-foreground)_65%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:[-webkit-text-fill-color:transparent]"
-      )}>{running ? `正在${action}…` : action}</span>
+      )}>{running ? `正在${title}…` : title}</span>
     </CollapsibleInlineTrigger>
   );
 };
