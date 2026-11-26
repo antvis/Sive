@@ -6,7 +6,6 @@ pnpm-lock.yaml
 dist/
 dist-electron/
 release/
-resources/github-mcp/
 coverage/
 *.tsbuildinfo
 
