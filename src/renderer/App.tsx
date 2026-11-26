@@ -77,6 +77,9 @@ export default function App() {
           visibleToasts={1}
           toastOptions={{
             className: 'text-sm!',
+            classNames: {
+              error: '[&_[data-icon]]:text-amber-600 dark:[&_[data-icon]]:text-amber-400',
+            },
             style: {
               width: 'max-content',
               maxWidth: 'calc(100vw - 32px)',
