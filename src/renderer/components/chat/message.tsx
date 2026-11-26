@@ -5,7 +5,7 @@ import { Message, MessageContent, MessageResponse } from '../ai-elements/message
 import { Button } from '../ui/button';
 import type { ChatMessage } from '@shared/api';
 import { MessageActions } from './message-actions';
-import { ChatToolCall } from './tools';
+import { ToolCallView } from './tool-call';
 import { getTextFromUIMessage } from './util';
 
 export function isVisibleAssistantPart(part: ChatMessage['parts'][number]) {
@@ -30,7 +30,7 @@ function StreamContent({
         if (isTextUIPart(part)) return <MessageResponse key={index}>{part.text}</MessageResponse>;
         if (isToolUIPart(part))
           return (
-            <ChatToolCall
+            <ToolCallView
               key={part.toolCallId}
               call={part}
               messageId={messageId}

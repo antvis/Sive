@@ -1,15 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import type { AnalysisResponse } from '@antv/ava';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
-import {
-  CodeXmlIcon,
-  FileTextIcon,
-  ListTreeIcon,
-  SearchIcon,
-  SquareArrowOutUpRightIcon,
-  Table2Icon,
-} from 'lucide-react';
-import { useContext, useState } from 'react';
+import { CodeXmlIcon, FileTextIcon, ListTreeIcon, SquareArrowOutUpRightIcon, Table2Icon } from 'lucide-react';
+import { useState } from 'react';
 import { formatMetric } from '../../../utils';
 import { cn } from '../../../lib/utils';
 import { MessageResponse } from '../../ai-elements/message';
@@ -21,8 +14,6 @@ import { Checkbox } from '../../ui/checkbox';
 import { CollapsibleSection } from '../../ui/collapsible-section';
 import { Table } from '../../ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
-import { ToolCallView } from '../tool-call';
-import { ToolPreviewContext } from '../tool-preview';
 import { AnalysisTraceView } from './analysis-trace-view';
 
 function cellText(value: unknown) {
@@ -229,44 +220,6 @@ function isLegacyAnalysisResult(value: unknown): value is AnalysisResponse {
   );
 }
 
-function getAnalysisDetails(call: ToolPart) {
-  const output = call.state === 'output-available' ? call.output : undefined;
-  const savedResult = isAnalysisToolResult(output) ? output : undefined;
-  const analysis = savedResult ? savedResult.result : isLegacyAnalysisResult(output) ? output : undefined;
-  const trace = savedResult?.trace;
-  const error =
-    getToolErrorText(call) ??
-    trace?.error ??
-    (analysis === null ? (trace?.status === 'cancelled' ? '分析已取消。' : '分析未完成。') : undefined);
-
-  return { analysis, trace, error };
-}
-
-export function AnalyzeToolCall({ call, messageId }: { call: ToolPart; messageId: string }) {
-  const { analysis, trace, error } = getAnalysisDetails(call);
-  const openToolPreview = useContext(ToolPreviewContext);
-  const onOpenPreview = openToolPreview
-    ? (title: string) =>
-        openToolPreview({
-          id: `tool-${encodeURIComponent(JSON.stringify([messageId, call.toolCallId]))}`,
-          title,
-          call,
-        })
-    : undefined;
-
-  return (
-    <ToolCallView
-      call={call}
-      title="分析数据"
-      icon={SearchIcon}
-      state={analysis === null ? 'output-error' : call.state}
-      expandOn={analysis || trace || error ? 'completed' : 'never'}
-    >
-      <AnalyzeTool call={call} onOpenPreview={onOpenPreview} />
-    </ToolCallView>
-  );
-}
-
 export function AnalyzeTool({
   call,
   onOpenPreview,
@@ -277,7 +230,14 @@ export function AnalyzeTool({
   sidePanel?: boolean;
 }) {
   const [originalPrecision, setOriginalPrecision] = useState(false);
-  const { analysis, trace, error } = getAnalysisDetails(call);
+  const output = call.state === 'output-available' ? call.output : undefined;
+  const savedResult = isAnalysisToolResult(output) ? output : undefined;
+  const analysis = savedResult ? savedResult.result : isLegacyAnalysisResult(output) ? output : undefined;
+  const trace = savedResult?.trace;
+  const error =
+    getToolErrorText(call) ??
+    trace?.error ??
+    (analysis === null ? (trace?.status === 'cancelled' ? '分析已取消。' : '分析未完成。') : undefined);
   const input = call.input;
   const inputQuery =
     input && typeof input === 'object' && 'query' in input && typeof input.query === 'string'
