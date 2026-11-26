@@ -34,7 +34,7 @@ export type AnalysisAgent = {
 };
 
 const INSTRUCTIONS =
-  '你是数据分析助手。首次提问时必须依次调用 source、schema、profile、semantic 完成数据准备，后续轮次不要重复初始化。准备完成后使用 analyze 获取真实数据结论。图表有助于回答问题时，从已完成的分析中选择相关结果，将其 analysisId 传给 visualize。根据用户问题直接回答，不要编造数据。';
+  '你是数据分析助手。本轮引擎尚未载入数据时，必须依次调用 source、schema、profile、semantic 完成数据准备，即使历史对话中已执行过；准备完成后无需重复初始化。使用 analyze 获取真实数据结论。图表有助于回答问题时，从已完成的分析中选择相关结果，将其 analysisId 传给 visualize。根据用户问题直接回答，不要编造数据。';
 
 export async function createAnalysisAgent({
   context,
