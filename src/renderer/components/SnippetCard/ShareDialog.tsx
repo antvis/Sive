@@ -1,13 +1,12 @@
-import { CopyIcon, DownloadIcon, ImageIcon } from 'lucide-react';
+import { CopyIcon, DownloadIcon } from 'lucide-react';
 import { snapdom } from '@zumer/snapdom';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { Snippet, SnippetExportInput } from '@shared/api';
 import { errorMessage } from '../../utils';
 import { Button } from '../ui/button';
 import { Modal } from '../ui/dialog';
-import { SnippetCard, templateOptions } from './index';
-import { TemplatePicker } from './TemplatePicker';
+import { SnippetCard } from './index';
 
 async function captureSnippet(container: HTMLDivElement) {
   await document.fonts.ready;
@@ -32,15 +31,33 @@ async function captureSnippet(container: HTMLDivElement) {
     dpr: 1,
     embedFonts: true,
     exclude: ['.g2-tooltip'],
-    excludeMode: 'remove',
+    // Keep tooltip boxes in the clone so snapdom does not reflow unrelated elements.
+    excludeMode: 'hide',
   });
 }
 
 export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: () => void }) {
-  const [templateId, setTemplateId] = useState(snippet.templateId);
   const [busy, setBusy] = useState<SnippetExportInput['target'] | null>(null);
   const [error, setError] = useState('');
+  const [previewScale, setPreviewScale] = useState(1);
+  const [viewport, setViewport] = useState<HTMLDivElement | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const preview = previewRef.current;
+    if (!preview || !viewport) return;
+
+    const resize = () => {
+      setPreviewScale(
+        Math.min(1, viewport.clientWidth / preview.offsetWidth, viewport.clientHeight / preview.offsetHeight),
+      );
+    };
+    const observer = new ResizeObserver(resize);
+    observer.observe(viewport);
+    observer.observe(preview);
+    resize();
+    return () => observer.disconnect();
+  }, [viewport]);
 
   const share = async (target: SnippetExportInput['target']) => {
     const container = previewRef.current;
@@ -67,67 +84,38 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
       open
       onOpenChange={(open) => !busy && !open && onClose()}
       title="分享与导出"
-      className="flex w-[920px] flex-col overflow-hidden"
+      className="flex h-[min(800px,85vh)] w-[920px] flex-col overflow-hidden"
       footer={
-        <div className="flex w-full flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5 text-muted-foreground">
-            <span aria-hidden className="flex size-9 items-center justify-center rounded-lg border bg-page">
-              <ImageIcon size={18} />
-            </span>
-            <p className="m-0 text-xs font-medium text-ink">
-              高清 PNG <span className="ml-1 text-muted-foreground tabular-nums">2×</span>
-            </p>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <Button
-              size="lg"
-              disabled={!!busy}
-              onClick={() => void share('clipboard')}
-            >
-              <CopyIcon size={16} aria-hidden />
-              {busy === 'clipboard' ? '正在生成…' : '复制图片'}
-            </Button>
-            <Button
-              variant="neutral"
-              size="lg"
-              disabled={!!busy}
-              onClick={() => void share('file')}
-            >
-              <DownloadIcon size={16} aria-hidden />
-              {busy === 'file' ? '正在保存…' : '保存图片'}
-            </Button>
-          </div>
+        <div className="flex items-center gap-2">
+          <Button size="lg" disabled={!!busy} onClick={() => void share('clipboard')}>
+            <CopyIcon size={16} aria-hidden />
+            {busy === 'clipboard' ? '正在生成…' : '复制图片'}
+          </Button>
+          <Button variant="neutral" size="lg" disabled={!!busy} onClick={() => void share('file')}>
+            <DownloadIcon size={16} aria-hidden />
+            {busy === 'file' ? '正在保存…' : '保存图片'}
+          </Button>
         </div>
       }
     >
-      <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-line!">
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line! bg-surface px-4 py-2.5">
-          <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <ImageIcon size={15} aria-hidden />
-            图片预览
-          </span>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">模板</span>
-            <span className="font-medium">
-              {templateOptions.find(({ value }) => value === templateId)?.label}
-            </span>
-            <TemplatePicker
-              value={templateId}
-              templates={templateOptions}
-              disabled={!!busy}
-              onChange={setTemplateId}
-            />
-          </div>
-        </div>
+      <div
+        ref={setViewport}
+        role="region"
+        aria-label="Snippet 图片预览"
+        aria-busy={!!busy}
+        className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-line! bg-page"
+      >
         <div
-          role="region"
-          aria-label="Snippet 图片预览"
-          aria-busy={!!busy}
-          tabIndex={0}
-          className="min-h-0 overflow-auto bg-page focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+          className="absolute top-1/2 left-1/2 origin-center"
+          style={{ transform: `translate(-50%, -50%) scale(${previewScale})` }}
         >
-          <div ref={previewRef} className="mx-auto w-[800px] bg-page p-6">
-            <SnippetCard data={snippet} templateId={templateId} createdAt={snippet.createdAt} mode="export" />
+          <div ref={previewRef} className="bg-page p-6" style={{ width: 800 }}>
+            <SnippetCard
+              data={snippet}
+              templateId={snippet.templateId}
+              createdAt={snippet.createdAt}
+              mode="export"
+            />
           </div>
         </div>
       </div>
