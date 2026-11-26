@@ -83,8 +83,7 @@ async function captureSnippet(input: SnippetExportInput, parent: BrowserWindow) 
         else reject(new Error('图片尺寸超出支持范围或页面未正确渲染。'));
       });
     });
-    await loadRenderer(window, 'snippet-export');
-    const result = await rendered;
+    const [, result] = await Promise.all([loadRenderer(window, 'snippet-export'), rendered]);
     if ('error' in result) throw new Error(result.error);
     const { data: png } = await contents.debugger.sendCommand('Page.captureScreenshot', {
       format: 'png',

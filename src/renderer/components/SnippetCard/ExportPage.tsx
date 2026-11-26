@@ -13,12 +13,29 @@ async function waitForRendering(container: HTMLElement) {
   // after layout has settled for 2s, rather than blocking export indefinitely.
   let previousLayout = '';
   let previousPixels = '';
+  let chartStarted = false;
   let layoutStableSince = performance.now();
   let pixelsStableSince = layoutStableSince;
   const deadline = layoutStableSince + 15000;
   while (true) {
     if (performance.now() > deadline) throw new Error('图表仍在渲染，请稍后重试。');
     await new Promise(requestAnimationFrame);
+    if (!chartStarted) {
+      // An empty chart can stay stable while its renderer is still initializing.
+      chartStarted = Array.from(container.querySelectorAll('[data-visualization]')).every((chart) => {
+        const canvases = Array.from(chart.querySelectorAll('canvas'));
+        if (!canvases.length)
+          return Boolean(
+            chart.textContent?.trim() || chart.querySelector('svg :is(path,rect,circle,line,text)'),
+          );
+        return canvases.some((canvas) => {
+          if (!canvas.width || !canvas.height) return false;
+          const pixels = canvas.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height).data;
+          return pixels?.some((value, index) => index % 4 === 3 && value > 0);
+        });
+      });
+      if (!chartStarted) continue;
+    }
     const pixels = Array.from(container.querySelectorAll('canvas'), (canvas) => canvas.toDataURL());
     const rect = container.getBoundingClientRect();
     const layout = `${rect.width},${rect.height},${container.innerHTML}`;

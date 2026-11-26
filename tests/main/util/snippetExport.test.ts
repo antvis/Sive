@@ -70,6 +70,7 @@ vi.mock('../../../src/main/windows', () => ({
 }));
 
 import { exportSnippet } from '../../../src/main/util/snippetExport';
+import { loadRenderer } from '../../../src/main/windows';
 
 const input: SnippetExportInput = {
   snippet: {
@@ -130,6 +131,19 @@ describe('exportSnippet', () => {
     await assertion;
     expect(state.windows[0].destroyed).toBe(true);
     expect(parent.listenerCount('closed')).toBe(0);
+  });
+
+  it('rejects invalid dimensions received before the page finishes loading', async () => {
+    vi.mocked(loadRenderer).mockImplementationOnce(async (window: any) => {
+      window.webContents.ipc.emit('snippetExport:renderComplete', {}, { height: 0, title: '' });
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    await expect(exportSnippet(input, parent)).rejects.toThrow('图片尺寸超出支持范围');
+    expect(state.windows[0].destroyed).toBe(true);
+    expect(parent.listenerCount('closed')).toBe(0);
+    expect(clipboard.write).not.toHaveBeenCalled();
+    expect(writeFile).not.toHaveBeenCalled();
   });
 
   it('saves the captured PNG with a safe filename', async () => {

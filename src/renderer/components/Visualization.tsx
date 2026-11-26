@@ -47,5 +47,12 @@ export function Visualization({
     return <Summary syntax={syntax} />;
   }
 
-  return <div ref={containerRef} className="w-full min-w-0 max-w-full overflow-hidden" style={{ height }} />;
+  return (
+    <div
+      ref={containerRef}
+      data-visualization
+      className="w-full min-w-0 max-w-full overflow-hidden"
+      style={{ height }}
+    />
+  );
 }
