@@ -97,7 +97,7 @@ export default function App() {
 function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback: ReactNode }) {
   const [page, setPage] = useState<AppPage>('welcome');
   const [analysis, setAnalysis] = useState<AnalysisSelection | null>(null);
-  const [collapsedPreviews, setCollapsedPreviews] = useState<Record<string, boolean>>({});
+  const [datasetCollapsed, setDatasetCollapsed] = useState(false);
   const analysisDatasetId = analysis?.datasetId ?? null;
   const activeConversationId = analysis?.saved ? analysis.chatId : null;
   const datasets = state?.datasets ?? EMPTY_DATASETS;
@@ -172,10 +172,8 @@ function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback
                 chatId={analysis.chatId}
                 draftId={analysis.draftId}
                 conversationId={activeConversationId}
-                datasetCollapsed={collapsedPreviews[analysis.draftId] ?? false}
-                onDatasetCollapsedChange={(collapsed) =>
-                  setCollapsedPreviews((current) => ({ ...current, [analysis.draftId]: collapsed }))
-                }
+                datasetCollapsed={datasetCollapsed}
+                onDatasetCollapsedChange={setDatasetCollapsed}
                 onConversationChange={confirmConversation}
                 savedMessageIds={state.snippets.map((snippet) => snippet.messageId)}
                 models={state.models}
