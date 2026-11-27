@@ -442,8 +442,8 @@ function TraceWorkspace({
           <div
             key={selected.id}
             className={cn(
-              'min-h-0 min-w-0 overflow-auto overscroll-contain px-3.5 py-4 [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-              !fullscreen && 'max-h-(--analysis-view-max-height)',
+              'min-h-0 min-w-0 overflow-auto px-3.5 py-4 [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+              fullscreen ? 'overscroll-contain' : 'max-h-(--analysis-view-max-height) overscroll-x-contain',
             )}
             tabIndex={0}
           >

@@ -134,7 +134,7 @@ function AnalysisConclusion({
   return (
     <div
       className={cn(
-        'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-contain [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+        'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-x-contain [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring',
         'grid grid-cols-1 gap-3 [overflow-wrap:anywhere]',
       )}
       role="region"
@@ -191,7 +191,7 @@ function AnalysisData({
       </div>
       <div
         className={
-          'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-contain [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring'
+          'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-x-contain [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring'
         }
         role="region"
         aria-label="结果数据"
