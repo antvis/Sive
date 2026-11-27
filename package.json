@@ -1,7 +1,7 @@
 {
   "name": "sive",
   "productName": "Sive",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "A lightweight, open source data management and analysis software based on AVA v4.",
   "license": "MIT",
@@ -93,7 +93,7 @@
   },
   "packageManager": "pnpm@10.30.3",
   "pnpm": {
-    "dangerouslyAllowAllBuilds": true
+    "onlyBuiltDependencies": ["cpu-features", "ssh2"]
   },
   "config": {
     "electron": {
