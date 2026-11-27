@@ -31,14 +31,13 @@ type AnalysisTask = {
 };
 
 export class AnalysisService {
-  // Add a Map to store agents associated with conversation IDs, along with their dataset IDs and engine keys.
-  // This allows for efficient retrieval and management of agents during analysis tasks.
-  // When the engine key changes, the existing agent is disposed of and a new one is created to ensure that the analysis uses the correct engine configuration.
+  // Reuse each conversation's agent until its engine configuration or output language changes.
   private agents = new Map<
     string,
     {
       dataset: Pick<DatasetRow, 'id' | 'name'>;
       engineKey: string;
+      language: Preferences['language'];
       agent: Promise<AnalysisAgent>;
     }
   >();
@@ -151,7 +150,7 @@ export class AnalysisService {
       }
       return { conversation, shouldName: !existing || needsInitialTitle };
     });
-    const agent = this.getAgent(conversation.id, model, dataset, preferences.engine);
+    const agent = this.getAgent(conversation.id, model, dataset, preferences.engine, preferences.language);
     const controller = new AbortController();
     const task: AnalysisTask = {
       datasetId: dataset.id,
@@ -175,12 +174,17 @@ export class AnalysisService {
       localFilePath(dataset.sourceConfig),
     );
 
-    if (shouldName) return this.nameConversation(conversation.id, question, model);
+    if (shouldName) return this.nameConversation(conversation.id, question, model, preferences.language);
   }
 
-  private async nameConversation(conversationId: string, question: string, model: ModelConfig) {
+  private async nameConversation(
+    conversationId: string,
+    question: string,
+    model: ModelConfig,
+    language: Preferences['language'],
+  ) {
     try {
-      const title = await generateConversationTitle(question, model);
+      const title = await generateConversationTitle(question, model, language);
       if (!title || title === question) return false;
       return this.repositories.conversations.updateTitleIfCurrent(conversationId, question, title);
     } catch (error) {
@@ -211,24 +215,23 @@ export class AnalysisService {
     model: ModelConfig,
     dataset: DatasetRow,
     engine: DuckDBEngineConfig,
+    language: Preferences['language'],
   ): Promise<AnalysisAgent> {
     const credentialKey =
       dataset.sourceConfig.type === 'supabase' ? dataset.sourceConfig.options.accessToken : '';
     const engineKey = JSON.stringify([engine, credentialKey]);
     const existing = this.agents.get(conversationId);
-    if (existing?.engineKey === engineKey) return existing.agent;
-    // If the engine key has changed, dispose of the existing agent and create a new one, ensuring that the analysis uses the correct engine configuration,
-    //  and keep the old agent in the map until the new one is created to avoid race conditions, or interupting an ongoing analysis task that is using the old agent.
+    if (existing?.engineKey === engineKey && existing.language === language) return existing.agent;
     if (existing) {
       this.agents.delete(conversationId);
       void existing.agent.then((agent) => agent.dispose()).catch(() => {});
     }
 
-    const agent = createAnalysisAgent({ context: { dataset }, model, engine }).catch((error) => {
+    const agent = createAnalysisAgent({ context: { dataset }, model, engine, language }).catch((error) => {
       this.agents.delete(conversationId);
       throw error;
     });
-    this.agents.set(conversationId, { dataset, engineKey, agent });
+    this.agents.set(conversationId, { dataset, engineKey, language, agent });
     return agent;
   }
 

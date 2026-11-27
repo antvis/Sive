@@ -136,7 +136,11 @@ export function registerIpc(
   });
 
   ipcMain.handle('datasetExtractText', (_event, text: string) =>
-    services.dataset.extractText(text, services.model.getDefaultModelConfig()),
+    services.dataset.extractText(
+      text,
+      services.model.getDefaultModelConfig(),
+      services.settings.getPreferences().language,
+    ),
   );
 
   ipcMain.handle(
@@ -157,7 +161,11 @@ export function registerIpc(
   );
 
   ipcMain.handle('datasetSuggest', (_event, id: string) =>
-    services.dataset.suggest(id, services.model.getDefaultModelConfig()),
+    services.dataset.suggest(
+      id,
+      services.model.getDefaultModelConfig(),
+      services.settings.getPreferences().language,
+    ),
   );
 
   ipcMain.handle('datasetRename', (_event, id: string, name: string) => {

@@ -1,12 +1,12 @@
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA } from '@antv/ava';
 import { ToolLoopAgent, createAgentUIStream, generateId, isStepCount } from 'ai';
 import type { InferUIMessageChunk, UIMessageStreamOnEndCallback } from 'ai';
 import { DEFAULT_PREFERENCES } from '@shared/api';
-import type { ChatMessage, DuckDBEngineConfig } from '@shared/api';
+import type { ChatMessage, DuckDBEngineConfig, Preferences } from '@shared/api';
 import type { ModelConfig } from '../services/model';
 import { errorText } from '../util';
 import { sourceEngine } from '../util/engine';
+import { createLanguageModel } from './model';
 import { createTools } from './tools';
 import type { ToolContext, ToolOptions } from './tools';
 
@@ -14,6 +14,7 @@ type CreateAgentInput = {
   context: ToolContext;
   model: ModelConfig;
   engine: DuckDBEngineConfig;
+  language: Preferences['language'];
 };
 
 type StreamInput = {
@@ -40,15 +41,15 @@ export async function createAnalysisAgent({
   context,
   model,
   engine,
+  language,
 }: CreateAgentInput): Promise<AnalysisAgent> {
-  const provider = createOpenAICompatible({ name: 'sive', baseURL: model.baseURL, apiKey: model.apiKey });
-  const languageModel = provider.chatModel(model.model);
+  const languageModel = createLanguageModel(model, language);
   const ava = new AVA({
     llm: { model: languageModel },
     engine: sourceEngine(context.dataset.sourceConfig, engine),
   });
 
-  const tools = createTools(ava, context, languageModel);
+  const tools = createTools(ava, context, languageModel, language);
 
   const agent = new ToolLoopAgent<AgentCallOptions, typeof tools>({
     model: languageModel,

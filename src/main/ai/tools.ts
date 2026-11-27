@@ -6,7 +6,7 @@ import type { AnalysisStrategyConfig, AVA, DataSourceConfig, Profile, Schema, Se
 import { isAnalysisToolResult, requireAnalysisResult } from '@shared/analysis-trace';
 import type { AnalysisToolOutput } from '@shared/analysis-trace';
 import { analysisStartSchema } from '@shared/api';
-import type { SnippetContent } from '@shared/api';
+import type { Preferences, SnippetContent } from '@shared/api';
 import { createAnalysisTraceCollector } from '../util/ava';
 import { localFilePath } from '../util/localFile';
 import { getTextFromLastUserMessage } from '../util/message';
@@ -37,7 +37,12 @@ type AnalysisTools = Record<'source' | 'schema' | 'profile' | 'semantic', Execut
   visualize: ExecutableTool<Tool<{ analysisId: string }, SnippetContent | null>>;
 };
 
-export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageModel): AnalysisTools {
+export function createTools(
+  ava: AVA,
+  { dataset }: ToolContext,
+  model: LanguageModel,
+  language: Preferences['language'],
+): AnalysisTools {
   return {
     source: tool({
       description: 'Load the configured dataset before the first analysis.',
@@ -138,7 +143,7 @@ export function createTools(ava: AVA, { dataset }: ToolContext, model: LanguageM
         });
         return {
           question,
-          intent: formatted?.intent ?? '数据笔记',
+          intent: formatted?.intent ?? (language === 'zh-CN' ? '数据笔记' : 'Data note'),
           title: formatted?.title ?? title,
           summary: formatted?.summary ?? analysis.text,
           spec,

@@ -1,14 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { statSync } from 'node:fs';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { AVA, sourceInputSchema } from '@antv/ava';
-import type { DataSourceConfig, JavaScriptEngine, LLMConfig, Semantic } from '@antv/ava';
+import type { DataSourceConfig, JavaScriptEngine, Semantic } from '@antv/ava';
+import { createLanguageModel } from '../../ai/model';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { DatasetExtras, DatasetRow, SupabaseOAuthCredentials } from '../../db/schema/datasets';
 import { required } from '../../util';
 import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
-import type { DatasetPreviewOptions } from '@shared/api';
+import type { DatasetPreviewOptions, Preferences } from '@shared/api';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 import { sourceEngine } from '../../util/engine';
 import {
@@ -281,9 +281,9 @@ export class DatasetService {
     await this.readSource(connection.sourceConfig);
   }
 
-  async extractText(text: string, config: LLMConfig) {
+  async extractText(text: string, config: ModelConfig, language: Preferences['language']) {
     const ava = new AVA({
-      llm: { ...config, maxRetries: 0 },
+      llm: { model: createLanguageModel(config, language), maxRetries: 0 },
       engine: { type: 'javascript' },
     });
     try {
@@ -354,12 +354,11 @@ export class DatasetService {
     }
   }
 
-  async suggest(id: string, config: ModelConfig) {
+  async suggest(id: string, config: ModelConfig, language: Preferences['language']) {
     await this.prepareOAuth(id);
     const dataset = required(this.get(id), '数据源不存在或已删除。');
-    const provider = createOpenAICompatible({ name: 'sive', baseURL: config.baseURL, apiKey: config.apiKey });
     const ava = new AVA({
-      llm: { model: provider.chatModel(config.model) },
+      llm: { model: createLanguageModel(config, language) },
       engine: sourceEngine(dataset.sourceConfig),
     });
     try {
