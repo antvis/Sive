@@ -86,15 +86,10 @@
                   <div class="platform-submenu-panel">
                     <button class="platform-choice" type="button" disabled data-arch="x64">
                       <span>Mac Intel 芯片</span><span class="coming-soon">待上线</span></button
-                    ><a
-                      class="platform-choice"
-                      href="https://github.com/antvis/Sive/releases"
-                      target="_blank"
-                      rel="noreferrer"
-                      data-arch="arm64"
-                      ><span>Mac Apple 芯片</span
-                      ><span class="current-chip" hidden aria-label="当前芯片"></span
-                    ></a>
+                    ><button class="platform-choice" type="button" data-installer="mac" data-arch="arm64">
+                      <span>Mac Apple 芯片</span><span class="coming-soon installer-status" hidden></span
+                      ><span class="current-chip" hidden aria-label="当前芯片"></span>
+                    </button>
                   </div>
                 </details>
                 <details class="platform-submenu">
@@ -104,14 +99,9 @@
                     ><span class="chevron" aria-hidden="true">›</span>
                   </summary>
                   <div class="platform-submenu-panel">
-                    <a
-                      class="platform-choice"
-                      href="https://github.com/antvis/Sive/releases"
-                      target="_blank"
-                      rel="noreferrer"
-                      data-arch="x64"
-                      ><span>Windows x64</span
-                      ><span class="current-chip" hidden aria-label="当前芯片"></span></a
+                    <button class="platform-choice" type="button" data-installer="windows" data-arch="x64">
+                      <span>Windows x64</span><span class="coming-soon installer-status" hidden></span
+                      ><span class="current-chip" hidden aria-label="当前芯片"></span></button
                     ><button class="platform-choice" type="button" disabled data-arch="arm64">
                       <span>Windows ARM64</span><span class="coming-soon">待上线</span>
                     </button>
@@ -175,15 +165,10 @@
                   <div class="platform-submenu-panel">
                     <button class="platform-choice" type="button" disabled data-arch="x64">
                       <span>Mac Intel 芯片</span><span class="coming-soon">待上线</span></button
-                    ><a
-                      class="platform-choice"
-                      href="https://github.com/antvis/Sive/releases"
-                      target="_blank"
-                      rel="noreferrer"
-                      data-arch="arm64"
-                      ><span>Mac Apple 芯片</span
-                      ><span class="current-chip" hidden aria-label="当前芯片"></span
-                    ></a>
+                    ><button class="platform-choice" type="button" data-installer="mac" data-arch="arm64">
+                      <span>Mac Apple 芯片</span><span class="coming-soon installer-status" hidden></span
+                      ><span class="current-chip" hidden aria-label="当前芯片"></span>
+                    </button>
                   </div>
                 </details>
                 <details class="platform-submenu">
@@ -193,14 +178,9 @@
                     ><span class="chevron" aria-hidden="true">›</span>
                   </summary>
                   <div class="platform-submenu-panel">
-                    <a
-                      class="platform-choice"
-                      href="https://github.com/antvis/Sive/releases"
-                      target="_blank"
-                      rel="noreferrer"
-                      data-arch="x64"
-                      ><span>Windows x64</span
-                      ><span class="current-chip" hidden aria-label="当前芯片"></span></a
+                    <button class="platform-choice" type="button" data-installer="windows" data-arch="x64">
+                      <span>Windows x64</span><span class="coming-soon installer-status" hidden></span
+                      ><span class="current-chip" hidden aria-label="当前芯片"></span></button
                     ><button class="platform-choice" type="button" disabled data-arch="arm64">
                       <span>Windows ARM64</span><span class="coming-soon">待上线</span>
                     </button>
@@ -339,25 +319,21 @@
         <h2 id="download-title">开始分析你的数据</h2>
         <p>开源、免费就在你的桌面</p>
         <div class="download-buttons">
-          <a
-            class="button download-platform"
-            href="https://github.com/antvis/Sive/releases"
-            target="_blank"
-            rel="noreferrer"
-            ><svg class="icon filled"><use href="#i-apple" /></svg
-            ><span>下载 macOS 版<small>Apple silicon</small></span
-            ><svg class="icon"><use href="#i-download" /></svg></a
-          ><a
-            class="button download-platform windows"
-            href="https://github.com/antvis/Sive/releases"
-            target="_blank"
-            rel="noreferrer"
-            ><svg class="icon filled"><use href="#i-windows" /></svg
-            ><span>下载 Windows 版<small>Windows x64</small></span
-            ><svg class="icon"><use href="#i-download" /></svg
-          ></a>
+          <button class="button download-platform" type="button" data-installer="mac">
+            <svg class="icon filled"><use href="#i-apple" /></svg
+            ><span
+              >下载 macOS 版<small>Apple silicon<span class="installer-status" hidden></span></small></span
+            ><svg class="icon"><use href="#i-download" /></svg>
+          </button>
+          <button class="button download-platform windows" type="button" data-installer="windows">
+            <svg class="icon filled"><use href="#i-windows" /></svg
+            ><span
+              >下载 Windows 版<small>Windows x64<span class="installer-status" hidden></span></small></span
+            ><svg class="icon"><use href="#i-download" /></svg>
+          </button>
         </div>
-        <p class="download-note">前往 GitHub Releases 选择对应安装包 · MIT 开源</p>
+        <span id="installer-feedback" role="status"></span>
+        <p class="download-note">MIT 开源</p>
       </section>
       <nav class="chapter-progress" aria-label="演示章节">
         <a href="#connect" aria-label="第 1 步：连接数据"><span></span></a
