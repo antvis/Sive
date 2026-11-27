@@ -13,6 +13,7 @@ import { TooltipProvider } from '../ui/tooltip';
 import { cn } from '../../lib/utils';
 import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
+import { useI18n } from '../../i18n';
 import { IpcChatTransport } from './ipc-chat-transport';
 import { useConversationActivity, useConversationRead } from '../../hooks/useConversationStatus';
 import { ChatWelcomeHeader } from './welcome';
@@ -52,6 +53,7 @@ export function Chat({
   activeModelId,
   preferences,
 }: Props) {
+  const i18n = useI18n();
   const { id: datasetId, name: datasetName } = dataset;
   const [question, setQuestion] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -291,11 +293,27 @@ export function Chat({
                 onModeChange={changeMode}
               />
             </div>
+            {starting && ((activeModelId && suggestionsLoading) || hasSuggestions) && (
+              <p className="mt-3 mb-1 px-3 text-sm text-muted-foreground">试试这样问：</p>
+            )}
+            {starting && activeModelId && suggestionsLoading && (
+              <div role="status">
+                <span className="sr-only">{i18n('chat.suggestionsLoading')}</span>
+                <div aria-hidden="true" className="motion-safe:animate-pulse">
+                  {['w-3/5', 'w-4/5', 'w-1/2'].map((width) => (
+                    <div key={width} className="flex min-h-9 items-center gap-2 px-3 py-1.5">
+                      <span className="size-4 shrink-0 rounded-full bg-workspace-control" />
+                      <span className={cn('h-4 rounded bg-workspace-control', width)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {starting && hasSuggestions && (
               <ul
                 data-draft-slide
-                aria-label="示例问题"
-                className="m-0 mt-3 list-none p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
+                aria-label={i18n('chat.suggestions')}
+                className="m-0 list-none p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
               >
                 {suggestions.map(({ query }) => (
                   <li key={query}>
