@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { CopyIcon, DownloadIcon } from 'lucide-react';
 import { snapdom } from '@zumer/snapdom';
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -17,7 +18,7 @@ async function captureSnippet(container: HTMLDivElement) {
   let stableFrames = 0;
   const deadline = performance.now() + 10000;
   while (stableFrames < 3) {
-    if (performance.now() > deadline) throw new Error('图表仍在渲染，请稍后重试。');
+    if (performance.now() > deadline) throw new Error(i18n('errors.snippet.chartRendering'));
     await new Promise(requestAnimationFrame);
     const pixels = Array.from(container.querySelectorAll('canvas'), (canvas) => canvas.toDataURL());
     const current = container.innerHTML + pixels.join('');
@@ -37,6 +38,7 @@ async function captureSnippet(container: HTMLDivElement) {
 }
 
 export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: () => void }) {
+  useI18n();
   const [busy, setBusy] = useState<SnippetExportInput['target'] | null>(null);
   const [error, setError] = useState('');
   const [previewScale, setPreviewScale] = useState(1);
@@ -71,7 +73,8 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
         title: container.querySelector('[role="heading"]')?.textContent ?? 'Snippet',
         target,
       });
-      if (exported) toast.success(target === 'clipboard' ? '图片已复制' : '图片已保存');
+      if (exported)
+        toast.success(target === 'clipboard' ? i18n('snippet.export.copied') : i18n('snippet.export.saved'));
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -83,17 +86,17 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
     <Modal
       open
       onOpenChange={(open) => !busy && !open && onClose()}
-      title="分享与导出"
+      title={i18n('snippet.export.title')}
       className="flex h-[min(800px,85vh)] w-[920px] flex-col overflow-hidden"
       footer={
         <div className="flex items-center gap-2">
           <Button size="lg" disabled={!!busy} onClick={() => void share('clipboard')}>
             <CopyIcon size={16} aria-hidden />
-            {busy === 'clipboard' ? '正在生成…' : '复制图片'}
+            {busy === 'clipboard' ? i18n('snippet.export.generating') : i18n('snippet.export.copyImage')}
           </Button>
           <Button variant="neutral" size="lg" disabled={!!busy} onClick={() => void share('file')}>
             <DownloadIcon size={16} aria-hidden />
-            {busy === 'file' ? '正在保存…' : '保存图片'}
+            {busy === 'file' ? i18n('snippet.export.saving') : i18n('snippet.export.saveImage')}
           </Button>
         </div>
       }
@@ -101,7 +104,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
       <div
         ref={setViewport}
         role="region"
-        aria-label="Snippet 图片预览"
+        aria-label={i18n('snippet.export.previewLabel')}
         aria-busy={!!busy}
         className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-line! bg-page"
       >

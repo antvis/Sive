@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../i18n';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import type { UpdateResult } from '@shared/api';
@@ -6,18 +7,18 @@ import { errorMessage } from '../utils';
 export const UPDATE_NOTIFICATION_ID = 'app-update';
 
 export function showUpdateNotification(result: UpdateResult) {
-  toast.info(`发现新版本 ${result.latestVersion}`, {
+  toast.info(i18n('updates.availableTitle', [result.latestVersion]), {
     id: UPDATE_NOTIFICATION_ID,
-    description: `当前版本 ${result.currentVersion}。请前往 GitHub 查看更新内容，下载并手动安装新版本。`,
+    description: i18n('updates.availableDescription', [result.currentVersion]),
     duration: Infinity,
     closeButton: true,
     action: {
-      label: '查看更新',
+      label: i18n('updates.actions.view'),
       onClick: () => {
         void window.workbench
           .systemOpen('url', 'https://github.com/antvis/Sive/releases/latest')
           .catch((cause) =>
-            toast.error('无法打开更新页面', {
+            toast.error(i18n('errors.update.openPageFailed'), {
               description: errorMessage(cause),
             }),
           );
@@ -27,6 +28,7 @@ export function showUpdateNotification(result: UpdateResult) {
 }
 
 export function UpdateNotification() {
+  useI18n();
   useEffect(() => {
     const notify = () => {
       void window.workbench

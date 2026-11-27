@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import type { ChatMessage } from '@shared/api';
 import { CopyIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -7,6 +8,7 @@ import { MessageAction as Action, MessageActions as Actions } from '../ai-elemen
 import { getTextFromUIMessage } from './util';
 
 export function MessageActions({ message, isStreaming }: { message: ChatMessage; isStreaming: boolean }) {
+  useI18n();
   const text = getTextFromUIMessage(message, '\n').trim();
   const createdAt = message.metadata?.createdAt;
   const time = createdAt ? formatMessageTime(createdAt) : '';
@@ -16,9 +18,9 @@ export function MessageActions({ message, isStreaming }: { message: ChatMessage;
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('已复制');
+      toast.success(i18n('common.status.copied'));
     } catch {
-      toast.error('复制失败，请重试');
+      toast.error(i18n('errors.clipboard.copyFailed'));
     }
   };
 
@@ -32,8 +34,8 @@ export function MessageActions({ message, isStreaming }: { message: ChatMessage;
       {text && (
         <Action
           className="size-7 text-muted-foreground/50 hover:text-foreground focus-visible:ring-1 focus-visible:ring-focus"
-          label="复制消息"
-          tooltip="复制"
+          label={i18n('chat.actions.copyMessage')}
+          tooltip={i18n('common.actions.copy')}
           onClick={copy}
         >
           <CopyIcon className="size-3.5" aria-hidden="true" />
@@ -42,7 +44,7 @@ export function MessageActions({ message, isStreaming }: { message: ChatMessage;
       {createdAt && time && (
         <time
           dateTime={createdAt}
-          title={new Date(createdAt).toLocaleString('zh-CN')}
+          title={new Date(createdAt).toLocaleString(i18n.locale)}
           className={cn('px-1 text-xs text-muted-foreground/50', message.role === 'user' && 'order-first')}
         >
           {time}

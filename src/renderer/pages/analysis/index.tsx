@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { PanelRightIcon } from 'lucide-react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -54,6 +55,7 @@ export function AnalysisPage({
   activeModelId,
   preferences,
 }: Props) {
+  useI18n();
   const [initialPreviewWidth] = useState(() => readWidth(PREVIEW_WIDTH_KEY, 0) || undefined);
   const [initialConversationWidth] = useState(() =>
     initialPreviewWidth ? undefined : readWidth(CONVERSATION_WIDTH_KEY, DEFAULT_CONVERSATION_WIDTH),
@@ -164,8 +166,8 @@ export function AnalysisPage({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="展开右侧面板"
-          title="展开右侧面板"
+          aria-label={i18n('sidePanel.actions.expand')}
+          title={i18n('sidePanel.actions.expand')}
           className="rounded-full text-muted-foreground"
           aria-controls={DATASET_PREVIEW_ID}
           aria-expanded={false}
@@ -197,7 +199,7 @@ export function AnalysisPage({
       >
         <section
           className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl bg-surface motion-safe:transition-opacity motion-safe:duration-150"
-          aria-label="对话面板"
+          aria-label={i18n('chat.panelLabel')}
           inert={fullscreen}
         >
           <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
@@ -231,7 +233,7 @@ export function AnalysisPage({
         </section>
       </Panel>
       <ResizeHandle
-        aria-label="调整对话与右侧面板宽度"
+        aria-label={i18n('sidePanel.resizeLabel')}
         className={datasetCollapsed ? 'w-0' : undefined}
         disabled={datasetCollapsed || fullscreen}
         disableDoubleClick

@@ -1,3 +1,5 @@
+import { i18n } from '../i18n';
+
 export function supabaseError(error: unknown): unknown {
   if (typeof error !== 'object' || error === null || !('status' in error) || error.status !== 403)
     return error;
@@ -16,7 +18,7 @@ export function supabaseError(error: unknown): unknown {
   const missing = payload.missing_permissions;
   if (Array.isArray(missing)) {
     const permissions = missing.filter((item): item is string => typeof item === 'string');
-    if (permissions.length) details.push(`缺少权限：${permissions.join(', ')}`);
+    if (permissions.length) details.push(i18n('errors.oauth.missingPermissions', [permissions.join(', ')]));
   }
   for (const key of ['message', 'hint'] as const) {
     const value = payload[key];
@@ -25,8 +27,8 @@ export function supabaseError(error: unknown): unknown {
 
   return new Error(
     details.length
-      ? `Supabase 权限不足：${details.join('；')}`
-      : 'Supabase 权限不足，请检查授权组织、项目范围及 database:read 权限。',
+      ? i18n('errors.supabase.missingPermissions', [details.join('；')])
+      : i18n('errors.supabase.insufficientScope'),
     { cause: error },
   );
 }

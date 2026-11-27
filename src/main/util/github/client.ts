@@ -1,3 +1,4 @@
+import { i18n } from '../i18n';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { shell } from 'electron';
 import { z } from 'zod';
@@ -42,12 +43,12 @@ function form(values: Record<string, string>) {
 
 async function json(response: Response) {
   const payload: unknown = await response.json().catch(() => null);
-  if (!payload) throw new Error('GitHub 返回了无效响应，请重试。');
+  if (!payload) throw new Error(i18n('errors.github.invalidResponse'));
   return payload;
 }
 
 export async function connectGitHub(id: string) {
-  if (authorizing) throw new Error('已有 GitHub 授权正在进行。');
+  if (authorizing) throw new Error(i18n('errors.github.authorizationInProgress'));
   const controller = new AbortController();
   const current: PendingAuthorization = { id, controller, deviceCode: '', interval: 0, expiresAt: 0 };
   authorizing = current;
@@ -56,7 +57,7 @@ export async function connectGitHub(id: string) {
       ...form({ client_id: GITHUB_CLIENT_ID, scope: 'repo read:user' }),
       signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30000)]),
     });
-    if (!response.ok) throw new Error(`GitHub 设备授权启动失败（${response.status}）。`);
+    if (!response.ok) throw new Error(i18n('errors.github.deviceAuthorizationFailed', [response.status]));
     const data = deviceCodeSchema.parse(await json(response));
     Object.assign(current, {
       deviceCode: data.device_code,
@@ -68,14 +69,14 @@ export async function connectGitHub(id: string) {
     return { userCode: data.user_code, verificationUri: data.verification_uri };
   } catch (error) {
     if (authorizing?.id === id) authorizing = undefined;
-    if (controller.signal.aborted) throw new Error('GitHub 授权已取消。');
+    if (controller.signal.aborted) throw new Error(i18n('errors.github.authorizationCancelled'));
     throw error;
   }
 }
 
 export async function waitForGitHubConnect(id: string) {
   const current = authorizing;
-  if (!current || current.id !== id) throw new Error('GitHub 授权会话不存在或已过期。');
+  if (!current || current.id !== id) throw new Error(i18n('errors.github.sessionNotFound'));
   try {
     while (Date.now() < current.expiresAt) {
       const response = await fetch(ACCESS_TOKEN_URL, {
@@ -92,7 +93,8 @@ export async function waitForGitHubConnect(id: string) {
           headers: { Authorization: `Bearer ${data.access_token}`, Accept: 'application/vnd.github+json' },
           signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(30000)]),
         });
-        if (!accountResponse.ok) throw new Error(`GitHub 账号信息读取失败（${accountResponse.status}）。`);
+        if (!accountResponse.ok)
+          throw new Error(i18n('errors.github.accountRequestFailed', [accountResponse.status]));
         const account = z.object({ login: z.string().min(1) }).parse(await json(accountResponse));
         return { token: data.access_token, login: account.login };
       }
@@ -102,16 +104,16 @@ export async function waitForGitHubConnect(id: string) {
         current.interval += 5;
         await sleep(current.interval * 1000, undefined, { signal: current.controller.signal });
       } else if (data.error === 'access_denied') {
-        throw new Error('GitHub 授权已拒绝。');
+        throw new Error(i18n('errors.github.authorizationDenied'));
       } else if (data.error === 'expired_token') {
-        throw new Error('GitHub 验证码已过期，请重新连接。');
+        throw new Error(i18n('errors.github.deviceCodeExpired'));
       } else {
-        throw new Error('GitHub 授权失败，请重新连接。');
+        throw new Error(i18n('errors.github.authorizationFailed'));
       }
     }
-    throw new Error('GitHub 验证码已过期，请重新连接。');
+    throw new Error(i18n('errors.github.deviceCodeExpired'));
   } catch (error) {
-    if (current.controller.signal.aborted) throw new Error('GitHub 授权已取消。');
+    if (current.controller.signal.aborted) throw new Error(i18n('errors.github.authorizationCancelled'));
     throw error;
   } finally {
     if (authorizing === current) authorizing = undefined;
@@ -139,7 +141,7 @@ export async function listGitHubRepositories(
     headers: { Authorization: `Bearer ${session.token}`, Accept: 'application/vnd.github+json' },
     signal: AbortSignal.timeout(30000),
   });
-  if (!response.ok) throw new Error(`GitHub 仓库列表读取失败（${response.status}）。`);
+  if (!response.ok) throw new Error(i18n('errors.github.repositoriesRequestFailed', [response.status]));
   const data = z
     .object({
       total_count: z.number().int().nonnegative(),

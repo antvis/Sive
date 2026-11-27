@@ -18,7 +18,10 @@ export class SnippetService {
 
   save(input: SnippetSaveInput) {
     return this.database.write(() => {
-      const message = required(this.repositories.messages.get(input.messageId), '分析消息不存在。');
+      const message = required(
+        this.repositories.messages.get(input.messageId),
+        i18n('errors.snippet.messageNotFound'),
+      );
       const existing = this.repositories.snippets.getByMessageId(input.messageId);
       if (existing) return existing;
 
@@ -49,7 +52,10 @@ export class SnippetService {
 
   update(messageId: string, input: SnippetUpdateInput) {
     this.database.write(() => {
-      const snippet = required(this.repositories.snippets.getByMessageId(messageId), 'Snippet 不存在。');
+      const snippet = required(
+        this.repositories.snippets.getByMessageId(messageId),
+        i18n('errors.snippet.notFound'),
+      );
       const title = input.title?.trim();
       if (title === '') throw new Error(i18n('errors.snippetTitleRequired'));
       this.repositories.snippets.update(snippet.id, {

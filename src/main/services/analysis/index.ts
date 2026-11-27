@@ -1,3 +1,5 @@
+import { i18n } from '../../util/i18n';
+import { getMessages } from '@shared/i18n';
 import { isTextUIPart } from 'ai';
 import type { UIMessageChunk } from 'ai';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
@@ -56,9 +58,9 @@ export class AnalysisService {
   ) {}
 
   async beginDatasetUpdate(datasetId: string) {
-    if (this.updatingDatasets.has(datasetId)) throw new Error('数据源正在更新，请稍后重试。');
+    if (this.updatingDatasets.has(datasetId)) throw new Error(i18n('errors.dataset.updateInProgress'));
     if ([...this.tasks.values()].some((task) => task.datasetId === datasetId))
-      throw new Error('该数据源正在分析，请等待分析结束后刷新。');
+      throw new Error(i18n('errors.dataset.analysisInProgress'));
     this.updatingDatasets.add(datasetId);
     try {
       await this.disposeDatasetAgents(datasetId);
@@ -81,7 +83,7 @@ export class AnalysisService {
   }
 
   getMessages(conversationId: string): ChatMessage[] {
-    required(this.repositories.conversations.get(conversationId), '会话不存在。');
+    required(this.repositories.conversations.get(conversationId), i18n('errors.conversation.notFound'));
     return this.repositories.messages
       .listByConversationId(conversationId)
       .map(({ id, role, parts, createdAt }) => ({ id, role, parts, metadata: { createdAt } }));
@@ -111,10 +113,13 @@ export class AnalysisService {
       .map((part) => part.text)
       .join('')
       .trim();
-    if (!question) throw new Error('请输入分析问题。');
-    if (this.updatingDatasets.has(input.datasetId)) throw new Error('数据源正在更新，请稍后重试。');
-    const dataset = required(this.repositories.datasets.get(input.datasetId), '数据源不存在或已删除。');
-    if (this.tasks.has(input.chatId)) throw new Error('请等待当前分析完成。');
+    if (!question) throw new Error(i18n('errors.analysis.questionRequired'));
+    if (this.updatingDatasets.has(input.datasetId)) throw new Error(i18n('errors.dataset.updateInProgress'));
+    const dataset = required(
+      this.repositories.datasets.get(input.datasetId),
+      i18n('errors.dataset.notFound'),
+    );
+    if (this.tasks.has(input.chatId)) throw new Error(i18n('errors.analysis.alreadyRunning'));
     const now = new Date().toISOString();
     const analysisOptions = { strategy: input.strategy, model: model.model };
     const { conversation, shouldName } = this.database.write(() => {
@@ -128,10 +133,13 @@ export class AnalysisService {
           createdAt: now,
           updatedAt: now,
         });
-      if (conversation.datasetId !== dataset.id) throw new Error('会话与数据集不匹配。');
+      if (conversation.datasetId !== dataset.id) throw new Error(i18n('errors.conversation.datasetMismatch'));
 
       const sequence = this.repositories.messages.nextSequence(conversation.id);
-      const needsInitialTitle = sequence === 0 && existing?.title === '新建分析';
+      const needsInitialTitle =
+        sequence === 0 &&
+        (existing?.title === getMessages('zh-CN')['conversation.defaultTitle'] ||
+          existing?.title === getMessages('en-US')['conversation.defaultTitle']);
       this.repositories.messages.insert({
         id: input.message.id,
         conversationId: conversation.id,
@@ -284,8 +292,8 @@ export class AnalysisService {
             });
           }
           if (cancelled) return;
-          if (outcome.status === 'failed') throw outcome.error ?? new Error('分析失败，请重试。');
-          if (!completed) throw new Error('分析流意外结束。');
+          if (outcome.status === 'failed') throw outcome.error ?? new Error(i18n('errors.analysis.failed'));
+          if (!completed) throw new Error(i18n('errors.analysis.streamInterrupted'));
         },
       });
       for await (const chunk of stream) {

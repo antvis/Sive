@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../../i18n';
 import type { Semantic } from '@antv/ava';
 
 function semanticSummary(semantic: Semantic) {
@@ -7,18 +8,17 @@ function semanticSummary(semantic: Semantic) {
   const cubes = semantic.cubes?.length ?? 0;
   const relationships = semantic.relationships?.length ?? 0;
   const summaries = [
-    models ? `${models} 个数据模型` : '',
-    fields ? `${fields} 个语义字段` : '',
-    cubes ? `${cubes} 个业务指标` : '',
-    relationships ? `${relationships} 个数据关系` : '',
+    models ? i18n('semantics.summary.modelCount', [models]) : '',
+    fields ? i18n('semantics.summary.columnCount', [fields]) : '',
+    cubes ? i18n('semantics.summary.metricCount', [cubes]) : '',
+    relationships ? i18n('semantics.summary.relationshipCount', [relationships]) : '',
   ].filter(Boolean);
   return summaries.length
-    ? `已应用业务语义层，包含 ${summaries.join('、')}。`
-    : '当前数据集未配置额外业务描述。';
+    ? i18n('semantics.summary.applied', [summaries.join('、')])
+    : i18n('semantics.summary.empty');
 }
 
 export function SemanticTool({ semantic }: { semantic: Semantic }) {
-  return (
-    <p className="m-0 text-sm leading-6 text-muted-foreground">{semanticSummary(semantic)}</p>
-  );
+  useI18n();
+  return <p className="m-0 text-sm leading-6 text-muted-foreground">{semanticSummary(semantic)}</p>;
 }

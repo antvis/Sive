@@ -1,3 +1,4 @@
+import { i18n } from '../../util/i18n';
 import { randomUUID } from 'node:crypto';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateText } from 'ai';
@@ -12,7 +13,7 @@ function modelURL(value: string) {
   const url = new URL(value);
   const localHTTP = url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
   if ((url.protocol !== 'https:' && !localHTTP) || url.username || url.password || url.search || url.hash) {
-    throw new Error('服务地址需使用 HTTPS，或本机 HTTP 地址，且不能包含凭据、查询参数或锚点。');
+    throw new Error(i18n('errors.model.invalidUrl'));
   }
   return value.replace(/\/+$/, '');
 }
@@ -28,9 +29,10 @@ export class ModelService {
     if (!input.credentialSourceId) return '';
     const source = required(
       this.repositories.modelProviders.get(input.credentialSourceId),
-      '凭据来源不存在。',
+      i18n('errors.model.credentialSourceNotFound'),
     );
-    if (source.baseUrl !== input.baseURL) throw new Error('服务地址已修改，请重新填写密钥。');
+    if (source.baseUrl !== input.baseURL)
+      throw new Error(i18n('errors.model.credentialsRequiredAfterUrlChange'));
     return source.encryptedKey ? decrypt(source.encryptedKey) : '';
   }
 
@@ -52,14 +54,14 @@ export class ModelService {
 
   getDefaultModelConfig(): ModelConfig {
     const active = this.repositories.settings.getActiveModel();
-    if (!active.providerId) throw new Error('请先在设置中配置默认模型服务。');
+    if (!active.providerId) throw new Error(i18n('errors.model.defaultRequired'));
     const provider = required(
       this.repositories.modelProviders.get(active.providerId),
-      '默认模型服务不存在。',
+      i18n('errors.model.defaultNotFound'),
     );
     const model =
       active.model && provider.modelNames.includes(active.model) ? active.model : provider.modelNames[0];
-    if (!model) throw new Error('默认模型服务没有可用模型。');
+    if (!model) throw new Error(i18n('errors.model.defaultHasNoModels'));
     const apiKey = provider.encryptedKey ? decrypt(provider.encryptedKey) : undefined;
     return { baseURL: provider.baseUrl, model, apiKey };
   }
@@ -71,10 +73,10 @@ export class ModelService {
       headers: { Accept: 'application/json', ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}) },
       signal: AbortSignal.timeout(10_000),
     });
-    if (!response.ok) throw new Error(`获取模型列表失败（HTTP ${response.status}）。`);
+    if (!response.ok) throw new Error(i18n('errors.model.listRequestFailed', [response.status]));
     const body: unknown = await response.json();
     if (!body || typeof body !== 'object' || !('data' in body) || !Array.isArray(body.data)) {
-      throw new Error('模型服务返回了无法识别的模型列表。');
+      throw new Error(i18n('errors.model.invalidListResponse'));
     }
     return [
       ...new Set(
@@ -88,7 +90,7 @@ export class ModelService {
   }
 
   async test(input: ModelInput, report: (progress: ModelTestProgress) => void) {
-    if (!input.modelIds.length) throw new Error('请至少选择一个模型。');
+    if (!input.modelIds.length) throw new Error(i18n('errors.model.selectionRequired'));
     const baseURL = modelURL(input.baseURL);
     const apiKey = this.resolveApiKey({ ...input, baseURL });
     const provider = createOpenAICompatible({ name: 'sive', baseURL, apiKey: apiKey || undefined });
@@ -130,14 +132,14 @@ export class ModelService {
     const now = new Date().toISOString();
     this.database.write(() => {
       const existing = input.id
-        ? required(this.repositories.modelProviders.get(input.id), '模型服务不存在。')
+        ? required(this.repositories.modelProviders.get(input.id), i18n('errors.model.providerNotFound'))
         : undefined;
       let encryptedKey: string | null = null;
       if (input.apiKey) encryptedKey = encrypt(input.apiKey);
       else if (input.credentialSourceId) {
         const source = required(
           this.repositories.modelProviders.get(input.credentialSourceId),
-          '凭据来源不存在。',
+          i18n('errors.model.credentialSourceNotFound'),
         );
         if (source.baseUrl === input.baseURL) encryptedKey = source.encryptedKey;
       }
@@ -154,8 +156,11 @@ export class ModelService {
   }
 
   activate(id: string, model?: string) {
-    const provider = required(this.repositories.modelProviders.get(id), '模型服务不存在。');
-    if (model && !provider.modelNames.includes(model)) throw new Error('所选模型不属于该服务。');
+    const provider = required(
+      this.repositories.modelProviders.get(id),
+      i18n('errors.model.providerNotFound'),
+    );
+    if (model && !provider.modelNames.includes(model)) throw new Error(i18n('errors.model.providerMismatch'));
     const active = this.repositories.settings.getActiveModel();
     const selected =
       model ??
@@ -167,7 +172,7 @@ export class ModelService {
 
   remove(id: string) {
     this.database.write(() => {
-      required(this.repositories.modelProviders.get(id), '模型服务不存在。');
+      required(this.repositories.modelProviders.get(id), i18n('errors.model.providerNotFound'));
       this.repositories.modelProviders.remove(id);
       if (this.repositories.settings.getActiveModel().providerId === id) {
         this.repositories.settings.saveActiveModel({ providerId: '' });

@@ -1,16 +1,35 @@
+import { i18n } from '../../util/i18n';
 import { app, net } from 'electron';
 import type { UpdateResult } from '@shared/api';
 
 const UPDATE_ERROR_MESSAGES = {
-  checkFailed: '检查更新失败',
-  invalidVersion: '版本信息无效，无法检查更新。',
-  timeout: '连接 GitHub 超时，请检查网络连接后重试。',
-  network: '无法连接 GitHub，请检查网络或代理设置后重试。',
-  releaseNotFound: '暂未找到可用的正式版本，请稍后再试。',
-  rateLimited: 'GitHub 请求次数已达上限，请稍后再试。',
-  unavailable: 'GitHub 暂时无法提供版本信息，请稍后重试。',
-  invalidResponse: '无法读取 GitHub 版本信息，请稍后重试。',
-  invalidRelease: '未获取到最新正式版本信息。',
+  get checkFailed() {
+    return i18n('errors.update.checkFailed');
+  },
+  get invalidVersion() {
+    return i18n('errors.update.invalidVersion');
+  },
+  get timeout() {
+    return i18n('errors.update.timeout');
+  },
+  get network() {
+    return i18n('errors.update.network');
+  },
+  get releaseNotFound() {
+    return i18n('errors.update.releaseNotFound');
+  },
+  get rateLimited() {
+    return i18n('errors.update.rateLimited');
+  },
+  get unavailable() {
+    return i18n('errors.update.unavailable');
+  },
+  get invalidResponse() {
+    return i18n('errors.update.invalidResponse');
+  },
+  get invalidRelease() {
+    return i18n('errors.update.invalidRelease');
+  },
 };
 
 const RELEASE_API_URL = 'https://api.github.com/repos/antvis/Sive/releases/latest';

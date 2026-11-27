@@ -18,7 +18,11 @@ vi.mock('electron', () => ({
   },
 }));
 
-it.each(['zh-CN', 'en-US'] as const)('uses %s for titles and agents', async (language) => {
+it.each(
+  (['zh-CN', 'en-US'] as const).flatMap((language) =>
+    [undefined, '新建分析', 'New analysis'].map((title) => ({ language, title })),
+  ),
+)('uses $language for titles and agents with initial title $title', async ({ language, title }) => {
   vi.mocked(createAnalysisAgent).mockClear();
   vi.mocked(generateConversationTitle).mockClear();
   const testDb = await createTestDb();
@@ -37,6 +41,15 @@ it.each(['zh-CN', 'en-US'] as const)('uses %s for titles and agents', async (lan
       updatedAt: now,
     });
     const query = '销量是多少？';
+    if (title) {
+      repositories.conversations.insert({
+        id: 'chat',
+        datasetId: dataset.id,
+        title,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
     const strategy = { type: 'direct' } as const;
     const output: AnalysisToolOutput = {
       result: { query, text: '销量为 10。', data: [], schema: [] },

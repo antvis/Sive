@@ -1,3 +1,5 @@
+import { i18n, useI18n } from '../../../i18n';
+import { translateError } from '@shared/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import type { AnalysisResponse } from '@antv/ava';
 import { isAnalysisToolResult } from '@shared/analysis-trace';
@@ -39,6 +41,7 @@ function AnalysisTable({
   analysis: AnalysisResponse;
   originalPrecision: boolean;
 }) {
+  useI18n();
   const { data, schema: columns } = analysis;
 
   const numericColumn = (type?: string) => /INT|FLOAT|DOUBLE|REAL|DECIMAL|NUMERIC|NUMBER/i.test(type ?? '');
@@ -58,7 +61,7 @@ function AnalysisTable({
           title={cellText(value)}
         >
           {typeof value === 'number' && !originalPrecision
-            ? value.toLocaleString('zh-CN', { maximumFractionDigits: 3 })
+            ? value.toLocaleString(i18n.locale, { maximumFractionDigits: 3 })
             : cellText(value)}
         </span>
       </div>
@@ -113,7 +116,7 @@ function AnalysisTable({
         {!data.length && (
           <tr>
             <td colSpan={columns.length} className="text-muted-foreground">
-              未返回数据行。
+              {i18n('analysis.result.noRows')}
             </td>
           </tr>
         )}
@@ -131,6 +134,7 @@ function AnalysisConclusion({
   content: string;
   limitations?: string;
 }) {
+  useI18n();
   return (
     <div
       className={cn(
@@ -138,7 +142,7 @@ function AnalysisConclusion({
         'grid grid-cols-1 gap-3 [overflow-wrap:anywhere]',
       )}
       role="region"
-      aria-label="结论正文"
+      aria-label={i18n('analysis.result.conclusionLabel')}
       tabIndex={0}
     >
       {content && (
@@ -146,14 +150,14 @@ function AnalysisConclusion({
       )}
       {limitations && (
         <div className="space-y-1">
-          <p className="text-xs font-medium text-foreground">分析局限</p>
+          <p className="text-xs font-medium text-foreground">{i18n('analysis.result.limitations')}</p>
           <MessageResponse className="space-y-1 text-xs leading-5 text-muted-foreground">
             {limitations}
           </MessageResponse>
         </div>
       )}
       {analysis.markdown && analysis.text && analysis.markdown !== analysis.text && (
-        <CollapsibleSection title="原始文本">
+        <CollapsibleSection title={i18n('analysis.result.originalText')}>
           <p className="whitespace-pre-wrap text-xs leading-5 text-muted-foreground">{analysis.text}</p>
         </CollapsibleSection>
       )}
@@ -170,14 +174,20 @@ function AnalysisData({
   originalPrecision: boolean;
   onPrecisionChange: (value: boolean) => void;
 }) {
+  useI18n();
   const { data, schema, rowCount, truncated, truncatedBy } = analysis;
 
   return (
     <div className="w-full min-w-0 space-y-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
         <span className="tabular-nums">
-          {data.length} 行 · {schema.length} 列
-          {rowCount !== undefined && rowCount !== data.length && ` · 查询共 ${rowCount} 行`}
+          {i18n('analysis.result.dimensions', [
+            data.length,
+            schema.length,
+            rowCount !== undefined &&
+              rowCount !== data.length &&
+              i18n('analysis.result.totalRowsSuffix', [rowCount]),
+          ])}
         </span>
         {data.length > 0 && (
           <label className="ml-auto flex cursor-pointer items-center gap-1.5">
@@ -185,7 +195,7 @@ function AnalysisData({
               checked={originalPrecision}
               onChange={(event) => onPrecisionChange(event.target.checked)}
             />
-            原始精度
+            {i18n('analysis.result.originalPrecision')}
           </label>
         )}
       </div>
@@ -194,20 +204,21 @@ function AnalysisData({
           'max-h-(--analysis-view-max-height) w-full min-w-0 overflow-auto overscroll-x-contain [scrollbar-gutter:stable] focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring'
         }
         role="region"
-        aria-label="结果数据"
+        aria-label={i18n('analysis.result.dataLabel')}
         tabIndex={0}
       >
         <AnalysisTable analysis={analysis} originalPrecision={originalPrecision} />
       </div>
       {truncated && (
         <p className="text-xs leading-5 text-muted-foreground" role="status">
-          查询结果已截断
-          {truncatedBy === 'maxRows'
-            ? '（达到行数限制）'
-            : truncatedBy === 'maxResultBytes'
-              ? '（达到大小限制）'
-              : ''}
-          ，已返回 {data.length} 行。
+          {i18n('analysis.result.truncatedDescription', [
+            truncatedBy === 'maxRows'
+              ? i18n('analysis.result.rowLimitReason')
+              : truncatedBy === 'maxResultBytes'
+                ? i18n('analysis.result.sizeLimitReason')
+                : '',
+            data.length,
+          ])}
         </p>
       )}
     </div>
@@ -237,12 +248,17 @@ function getAnalysisDetails(call: ToolPart) {
   const error =
     getToolErrorText(call) ??
     trace?.error ??
-    (analysis === null ? (trace?.status === 'cancelled' ? '分析已取消。' : '分析未完成。') : undefined);
+    (analysis === null
+      ? trace?.status === 'cancelled'
+        ? i18n('errors.analysis.cancelled')
+        : i18n('errors.analysis.incomplete')
+      : undefined);
 
-  return { analysis, trace, error };
+  return { analysis, trace, error: error ? translateError(i18n.locale, error) : undefined };
 }
 
 export function AnalyzeToolCall({ call, messageId }: { call: ToolPart; messageId: string }) {
+  useI18n();
   const { analysis, trace, error } = getAnalysisDetails(call);
   const openToolPreview = useContext(ToolPreviewContext);
   const onOpenPreview = openToolPreview
@@ -257,7 +273,7 @@ export function AnalyzeToolCall({ call, messageId }: { call: ToolPart; messageId
   return (
     <ToolCallView
       call={call}
-      title="分析数据"
+      title={i18n('analysis.tools.analyze')}
       icon={SearchIcon}
       state={analysis === null ? 'output-error' : call.state}
       expandOn={analysis || trace || error ? 'completed' : 'never'}
@@ -276,6 +292,7 @@ export function AnalyzeTool({
   onOpenPreview?: (title: string) => void;
   sidePanel?: boolean;
 }) {
+  useI18n();
   const [originalPrecision, setOriginalPrecision] = useState(false);
   const { analysis, trace, error } = getAnalysisDetails(call);
   const input = call.input;
@@ -296,7 +313,7 @@ export function AnalyzeTool({
   const views = [
     {
       value: 'conclusion',
-      label: '结论',
+      label: i18n('analysis.result.conclusion'),
       icon: FileTextIcon,
       content:
         analysis && (conclusion.trim() || limitations) ? (
@@ -305,7 +322,7 @@ export function AnalyzeTool({
     },
     {
       value: 'data',
-      label: '数据',
+      label: i18n('common.labels.data'),
       icon: Table2Icon,
       content: analysis ? (
         <AnalysisData
@@ -322,14 +339,14 @@ export function AnalyzeTool({
       content: analysis?.sql ? (
         <SqlCodeBlock
           code={analysis.sql}
-          label="执行 SQL"
+          label={i18n('analysis.result.sqlTab')}
           maxHeight={sidePanel ? undefined : 'var(--analysis-view-max-height)'}
         />
       ) : null,
     },
     {
       value: 'trace',
-      label: '过程回顾',
+      label: i18n('analysis.result.processTab'),
       icon: ListTreeIcon,
       content: trace ? <AnalysisTraceView trace={trace} /> : null,
     },
@@ -357,15 +374,15 @@ export function AnalyzeTool({
       )}
     >
       {sidePanel && queryContent && (
-        <CollapsibleSection title="分析问题" defaultOpen>
+        <CollapsibleSection title={i18n('chat.input.label')} defaultOpen>
           {queryContent}
         </CollapsibleSection>
       )}
       {!sidePanel && (queryContent || onOpenPreview) && (
         <div className="flex items-start gap-2">
           {queryContent && (
-            <section className="min-w-0 flex-1 space-y-1.5" aria-label="分析问题">
-              <h4 className={'text-sm font-semibold text-foreground'}>分析问题</h4>
+            <section className="min-w-0 flex-1 space-y-1.5" aria-label={i18n('chat.input.label')}>
+              <h4 className={'text-sm font-semibold text-foreground'}>{i18n('chat.input.label')}</h4>
               {queryContent}
             </section>
           )}
@@ -375,21 +392,21 @@ export function AnalyzeTool({
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="在右侧打开分析结果"
+                  aria-label={i18n('analysis.result.openInSidePanel')}
                   className="ms-auto text-black/50 dark:text-white/50"
-                  onClick={() => onOpenPreview(query?.trim() || '分析结果')}
+                  onClick={() => onOpenPreview(query?.trim() || i18n('analysis.result.title'))}
                 >
                   <SquareArrowOutUpRightIcon className="size-[14px]" aria-hidden />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>在右侧标签页打开</TooltipContent>
+              <TooltipContent>{i18n('analysis.result.openInSideTab')}</TooltipContent>
             </Tooltip>
           )}
         </div>
       )}
       {errorContent &&
         (sidePanel ? (
-          <CollapsibleSection title="分析状态" defaultOpen>
+          <CollapsibleSection title={i18n('analysis.statusLabel')} defaultOpen>
             {errorContent}
           </CollapsibleSection>
         ) : (
@@ -406,7 +423,7 @@ export function AnalyzeTool({
           defaultValue={views[0].value}
           className="w-full min-w-0 [--analysis-view-max-height:min(24rem,50dvh)]"
         >
-          <TabsList aria-label="分析结果视图" className="w-full">
+          <TabsList aria-label={i18n('analysis.result.viewsLabel')} className="w-full">
             {views.map(({ value, label, icon: Icon }) => (
               <TabsTrigger key={value} value={value} className="flex-1">
                 <Icon className="size-3.5 shrink-0" aria-hidden="true" />
@@ -422,7 +439,7 @@ export function AnalyzeTool({
         </Tabs>
       )}
       {confirmation && (
-        <CollapsibleSection title="核对说明" defaultOpen>
+        <CollapsibleSection title={i18n('analysis.trace.verificationNotes')} defaultOpen>
           <MessageResponse className="space-y-2 text-sm leading-6 text-foreground [overflow-wrap:anywhere]">
             {confirmation[1]}
           </MessageResponse>

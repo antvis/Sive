@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../../i18n';
 import { CalendarIcon, ChevronDownIcon, CheckIcon, QuoteIcon, TagIcon } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
@@ -8,6 +9,7 @@ import { Visualization } from '../../Visualization';
 import { getIntentIcon } from '../utils';
 
 export default function DefaultTemplate({ data, createdAt, mode = 'view', card }: SnippetTemplateProps) {
+  useI18n();
   const {
     editing,
     title,
@@ -44,7 +46,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
             "relative isolate inline-flex min-h-[26px] items-center justify-center gap-[5px] rounded border border-dashed border-[color-mix(in_srgb,var(--accent)_30%,var(--surface))]! px-2 py-[3px] leading-[18px] tabular-nums shadow-[0_2px_3px_color-mix(in_srgb,var(--ink)_5%,transparent)] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[url('/textures/paper-grain.svg')] before:opacity-[0.055] [&_svg]:shrink-0",
             '-rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_25%,var(--surface))] font-semibold text-ink',
           )}
-          title={`分析类别：${data.intent}`}
+          title={i18n('snippet.categoryLabel', [data.intent])}
         >
           <IntentIcon size={13} aria-hidden className="text-accent" />
           {data.intent}
@@ -65,7 +67,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
       {editing ? (
         <div className="mt-4">
           <label htmlFor={titleId} className="text-xs font-medium text-muted-foreground">
-            标题
+            {i18n('common.fields.title')}
           </label>
           <textarea
             id={titleId}
@@ -73,8 +75,8 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
             value={title}
             disabled={busy}
             autoFocus
-            aria-label="Snippet 标题"
-            placeholder="为这份洞察起个标题"
+            aria-label={i18n('snippet.editor.titleLabel')}
+            placeholder={i18n('snippet.editor.titlePlaceholder')}
             onChange={(event) => setTitle(event.target.value)}
           />
         </div>
@@ -105,7 +107,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
       )}
       {data.metrics.length > 0 && (
         <dl
-          aria-label="关键指标"
+          aria-label={i18n('snippet.metrics.title')}
           className="mt-5 grid grid-flow-col auto-cols-fr gap-3 border-y border-line/65! py-4"
         >
           {data.metrics.map((metric, index) => (
@@ -125,21 +127,21 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
         <div className="mt-5">
           <div className="rounded-md bg-accent-soft/60 p-4 ring-1 ring-line/50 focus-within:ring-focus/50">
             <label htmlFor={summaryId} className="text-xs font-medium text-muted-foreground">
-              关键洞察
+              {i18n('snippet.insights.title')}
             </label>
             <textarea
               id={summaryId}
               className="mt-2 block field-sizing-content max-h-72 min-h-24 w-full resize-none border-0 bg-transparent p-0 text-base leading-relaxed text-pretty text-ink outline-none disabled:opacity-50"
               value={summary}
               disabled={busy}
-              aria-label="Snippet 洞察描述"
-              placeholder="记录数据里的关键发现…"
+              aria-label={i18n('snippet.editor.descriptionLabel')}
+              placeholder={i18n('snippet.editor.descriptionPlaceholder')}
               onChange={(event) => setSummary(event.target.value)}
             />
           </div>
           <div className="mt-3 flex items-center justify-end gap-2">
             <Button variant="ghost" className="h-9" disabled={busy} onClick={cancelEditing}>
-              取消
+              {i18n('common.actions.cancel')}
             </Button>
             <Button
               variant="neutral"
@@ -148,14 +150,14 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
               onClick={() => void saveEdits()}
             >
               <CheckIcon size={14} aria-hidden />
-              {busy ? '保存中…' : '保存修改'}
+              {busy ? i18n('common.status.saving') : i18n('common.actions.saveChanges')}
             </Button>
           </div>
         </div>
       ) : (
         data.summary.trim() && (
           <section
-            aria-label="关键洞察"
+            aria-label={i18n('snippet.insights.title')}
             className="relative isolate mt-5 rotate-[-0.35deg] rounded-md border border-[color-mix(in_srgb,var(--accent)_14%,var(--surface))]! bg-[linear-gradient(165deg,color-mix(in_srgb,var(--accent-soft)_90%,var(--surface)),color-mix(in_srgb,var(--accent-soft)_55%,var(--surface)))] p-4 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--surface)_65%,transparent),1px_4px_7px_-5px_color-mix(in_srgb,var(--ink)_22%,transparent)] after:pointer-events-none after:absolute after:-right-px after:-bottom-px after:size-4 after:rounded-[3px_0_5px] after:bg-[linear-gradient(135deg,transparent_48%,color-mix(in_srgb,var(--accent)_20%,var(--surface))_50%,var(--surface)_90%)]"
           >
             <QuoteIcon
@@ -189,7 +191,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
                     'mt-2 inline-flex items-center gap-1 p-0 text-sm leading-5 text-muted-foreground hover:text-ink focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-focus'
                   }
                 >
-                  {summaryExpanded ? '收起洞察' : '展开洞察'}
+                  {summaryExpanded ? i18n('snippet.insights.collapse') : i18n('snippet.insights.expand')}
                   <ChevronDownIcon
                     size={12}
                     aria-hidden
@@ -207,7 +209,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
         </p>
       )}
       <figure className="relative mx-0 mt-5 mb-0 min-w-0 rounded-lg">
-        <figcaption className="sr-only">图表分析</figcaption>
+        <figcaption className="sr-only">{i18n('snippet.chart.title')}</figcaption>
         <Visualization spec={chartSpec} height={360} />
       </figure>
       <footer className="mt-3 flex items-start justify-between gap-4 border-t border-line/65! pt-3 text-xs text-muted-foreground">
@@ -217,9 +219,7 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
               aria-hidden
               className="size-4 shrink-0 bg-current [mask:url('/sive.svg')_center/contain_no-repeat]"
             />
-            <span>
-              Made with <span className="font-semibold text-ink">Sive</span>
-            </span>
+            <span>{i18n('snippet.export.attribution')}</span>
           </span>
         ) : (
           <AnalysisSource question={data.question} trace={data.trace} />
@@ -227,11 +227,11 @@ export default function DefaultTemplate({ data, createdAt, mode = 'view', card }
         {createdAt && (
           <time
             dateTime={createdAt}
-            title={`保存于 ${new Date(createdAt).toLocaleString('zh-CN')}`}
+            title={i18n('snippet.savedAt', [new Date(createdAt).toLocaleString(i18n.locale)])}
             className="ml-auto flex shrink-0 items-center gap-1.5 leading-6 tabular-nums"
           >
             <CalendarIcon size={13} aria-hidden />
-            {new Date(createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
+            {new Date(createdAt).toLocaleDateString(i18n.locale, { month: 'short', day: 'numeric' })}
           </time>
         )}
       </footer>

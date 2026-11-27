@@ -1,5 +1,8 @@
 "use client";
 
+import { i18n, useI18n } from '../../i18n';
+import { translateError } from '@shared/i18n';
+
 import type { DynamicToolUIPart, ToolUIPart } from "ai";
 import { isToolOutputErrorUIPart } from "ai";
 import type { ComponentProps, ReactNode } from "react";
@@ -31,8 +34,8 @@ export const Tool = ({ className, ...props }: ToolProps) => (
 export type ToolPart = ToolUIPart | DynamicToolUIPart;
 
 export function getToolErrorText(call: ToolPart) {
-  if (isToolOutputErrorUIPart(call)) return call.errorText;
-  if (call.state === "output-denied") return "工具执行已拒绝。";
+  if (isToolOutputErrorUIPart(call)) return translateError(i18n.locale, call.errorText);
+  if (call.state === "output-denied") return i18n("errors.tool.executionDenied");
 }
 
 export type ToolHeaderProps = {
@@ -42,8 +45,8 @@ export type ToolHeaderProps = {
 };
 
 const statusLabels: Partial<Record<ToolPart["state"], string>> = {
-  "approval-requested": "等待授权",
-  "output-denied": "已拒绝",
+  get "approval-requested"() { return i18n("tool.status.awaitingApproval"); },
+  get "output-denied"() { return i18n("tool.status.denied"); },
 };
 
 const statusIcons: Partial<Record<ToolPart["state"], ReactNode>> = {
@@ -60,6 +63,7 @@ export const getStatusBadge = (status: ToolPart["state"]) =>
   ) : null;
 
 export const ToolHeader = ({ title, icon, state }: ToolHeaderProps) => {
+  useI18n();
   const running = state === "input-streaming" || state === "input-available";
 
   return (
@@ -67,7 +71,7 @@ export const ToolHeader = ({ title, icon, state }: ToolHeaderProps) => {
       {icon ?? <WrenchIcon className="size-4 text-muted-foreground" aria-hidden />}
       <span className={cn(
         running && "motion-safe:animate-chat-tool-shimmer motion-safe:bg-[linear-gradient(90deg,var(--muted-foreground)_35%,var(--foreground)_50%,var(--muted-foreground)_65%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:[-webkit-text-fill-color:transparent]"
-      )}>{running ? `正在${title}…` : title}</span>
+      )}>{running ? i18n("tool.status.runningTitle", [title]) : title}</span>
     </CollapsibleInlineTrigger>
   );
 };
@@ -76,16 +80,19 @@ export type ToolInputProps = ComponentProps<"div"> & {
   input: ToolPart["input"];
 };
 
-export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
-  <div className={cn("space-y-2 overflow-hidden", className)} {...props}>
-    <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-      Parameters
-    </h4>
-    <div className="rounded-md bg-muted/50">
-      <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
+export const ToolInput = ({ className, input, ...props }: ToolInputProps) => {
+  useI18n();
+  return (
+    <div className={cn("space-y-2 overflow-hidden", className)} {...props}>
+      <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+        {i18n("tool.input.title")}
+      </h4>
+      <div className="rounded-md bg-muted/50">
+        <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export type ToolOutputProps = ComponentProps<"div"> & {
   output: ToolPart["output"];
@@ -98,6 +105,7 @@ export const ToolOutput = ({
   errorText,
   ...props
 }: ToolOutputProps) => {
+  useI18n();
   if (!(output || errorText)) {
     return null;
   }

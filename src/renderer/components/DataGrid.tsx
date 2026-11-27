@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../i18n';
 import type { Profile, QueryColumn } from '@antv/ava';
 import clsx from 'clsx';
 import { ArrowDownIcon, ArrowDownUpIcon, ArrowUpIcon } from 'lucide-react';
@@ -19,6 +20,7 @@ export function DataGrid({
   profile: Profile['models'][number] | undefined;
   resetKey: number;
 }) {
+  useI18n();
   const [sorting, setSorting] = useState<{ name: string; descending: boolean } | null>(null);
   const [widths, setWidths] = useState(new Map<string, number>());
   const drag = useRef<{ name: string; x: number; width: number } | null>(null);
@@ -29,7 +31,7 @@ export function DataGrid({
     return [...rows].sort((a, b) =>
       compareTableColumn(a[sorting.name], b[sorting.name], column, sorting.descending),
     );
-  }, [rows, profile, sorting]);
+  }, [rows, profile, sorting, i18n.locale]);
 
   useEffect(() => {
     setSorting(null);
@@ -71,8 +73,8 @@ export function DataGrid({
                   <button
                     type="button"
                     className="group/sort flex w-full items-center gap-2 rounded-sm text-left hover:text-accent focus-visible:text-accent"
-                    aria-label={`排序：${column.name}`}
-                    title={`${column.name}（仅排序当前页）`}
+                    aria-label={i18n('dataGrid.sort.label', [column.name])}
+                    title={i18n('dataGrid.sort.currentPageOnly', [column.name])}
                     onClick={() =>
                       setSorting(
                         !sorted
@@ -97,12 +99,12 @@ export function DataGrid({
                   <span
                     role="separator"
                     tabIndex={0}
-                    aria-label={`调整列宽：${column.name}`}
+                    aria-label={i18n('dataGrid.resize.label', [column.name])}
                     aria-orientation="vertical"
                     aria-valuemin={MIN_WIDTH}
                     aria-valuemax={MAX_WIDTH}
                     aria-valuenow={width}
-                    title="拖动或使用左右方向键调整列宽，双击恢复"
+                    title={i18n('dataGrid.resize.instructions')}
                     className="absolute top-0 right-0 h-full w-2 cursor-col-resize touch-none select-none after:absolute after:inset-y-1 after:end-0 after:w-px after:rounded-full after:bg-focus/65 after:opacity-0 hover:after:opacity-100 focus-visible:after:opacity-100"
                     onClick={(event) => event.stopPropagation()}
                     onDoubleClick={() => resize(column.name, DEFAULT_WIDTH)}
@@ -171,7 +173,7 @@ export function DataGrid({
           {!visible.length && (
             <tr>
               <td colSpan={Math.max(columns.length, 1)} className="p-8 text-center text-muted-foreground">
-                暂无数据
+                {i18n('common.empty.noData')}
               </td>
             </tr>
           )}

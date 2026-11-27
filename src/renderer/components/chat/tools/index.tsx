@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../../i18n';
 import type { Profile, Schema, Semantic } from '@antv/ava';
 import { getToolName } from 'ai';
 import { ChartColumnIcon, Columns3Icon, DatabaseIcon, TagsIcon } from 'lucide-react';
@@ -25,7 +26,9 @@ const dataTools = new Map<
   [
     'source',
     {
-      title: '读取数据源',
+      get title() {
+        return i18n('analysis.tools.source');
+      },
       icon: DatabaseIcon,
       render: (output) => <SourceTool source={output as SourceResult} />,
     },
@@ -33,7 +36,9 @@ const dataTools = new Map<
   [
     'schema',
     {
-      title: '解析数据结构',
+      get title() {
+        return i18n('analysis.tools.schema');
+      },
       icon: Columns3Icon,
       render: (output) => <SchemaTool schema={output as Schema} />,
     },
@@ -41,7 +46,9 @@ const dataTools = new Map<
   [
     'profile',
     {
-      title: '计算统计指标',
+      get title() {
+        return i18n('analysis.tools.profile');
+      },
       icon: ChartColumnIcon,
       render: (output) => <ProfileTool profile={output as Profile} />,
     },
@@ -49,7 +56,9 @@ const dataTools = new Map<
   [
     'semantic',
     {
-      title: '应用业务语义',
+      get title() {
+        return i18n('analysis.tools.semantic');
+      },
       icon: TagsIcon,
       render: (output) => <SemanticTool semantic={output as Semantic} />,
     },
@@ -67,17 +76,11 @@ export function ChatToolCall({
   saved: boolean;
   isStreaming: boolean;
 }) {
+  useI18n();
   const name = getToolName(call);
   if (name === 'analyze') return <AnalyzeToolCall call={call} messageId={messageId} />;
   if (name === 'visualize') {
-    return (
-      <VisualizeToolCall
-        call={call}
-        messageId={messageId}
-        saved={saved}
-        isStreaming={isStreaming}
-      />
-    );
+    return <VisualizeToolCall call={call} messageId={messageId} saved={saved} isStreaming={isStreaming} />;
   }
 
   const tool = dataTools.get(name);

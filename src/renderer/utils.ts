@@ -1,20 +1,29 @@
+import { i18n } from './i18n';
+import { translateError } from '@shared/i18n';
+import { findDatasetSource } from '@shared/dataSource';
+
+export function datasetSourceLabel(type: string) {
+  const source = findDatasetSource(type);
+  return source ? i18n(source.labelKey) : type;
+}
+
 export function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : '操作失败，请稍后重试。';
+  return error instanceof Error ? translateError(i18n.locale, error.message) : i18n('errors.operationFailed');
 }
 
 export function formatMessageTime(value: string, now = new Date()) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
 
-  const time = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const time = date.toLocaleTimeString(i18n.locale, { hour: '2-digit', minute: '2-digit', hour12: false });
   if (date.toDateString() === now.toDateString()) return time;
 
   const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
   if (date >= weekStart && date <= now) {
-    return `${date.toLocaleDateString('zh-CN', { weekday: 'long' })} ${time}`;
+    return `${date.toLocaleDateString(i18n.locale, { weekday: 'long' })} ${time}`;
   }
 
-  const day = date.toLocaleDateString('zh-CN', {
+  const day = date.toLocaleDateString(i18n.locale, {
     year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -40,5 +49,5 @@ export function saveWidth(key: string, width: number) {
 }
 
 export function formatMetric(value: number) {
-  return value.toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+  return value.toLocaleString(i18n.locale, { maximumFractionDigits: 2 });
 }

@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../../i18n';
 import { useCallback, useState } from 'react';
 import type { DatasetDetail, SupabaseOAuthResult } from '@shared/api';
 import { Button } from '../../../components/ui/button';
@@ -7,6 +8,7 @@ import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
+  useI18n();
   const [form, setForm] = useState({ name: '', projectRef: '' });
   const [session, setSession] = useState<SupabaseOAuthResult | null>(null);
   const [connecting, setConnecting] = useState(false);
@@ -14,7 +16,7 @@ export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
 
   const loadConnection = useCallback((connection: DatasetDetail) => {
     const { sourceConfig } = connection;
-    if (sourceConfig.type !== 'supabase') throw new Error('只有 Supabase 数据源支持此操作。');
+    if (sourceConfig.type !== 'supabase') throw new Error(i18n('errors.supabase.sourceTypeMismatch'));
     setForm({ name: connection.name, projectRef: sourceConfig.options.projectRef });
     setSession(null);
   }, []);
@@ -25,7 +27,7 @@ export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
     setError('');
     try {
       const result = await window.workbench.oAuthStart('supabase');
-      if (!result.projects.length) throw new Error('当前 Supabase 账户未发现可连接的项目。');
+      if (!result.projects.length) throw new Error(i18n('errors.supabase.noProjects'));
       setSession(result);
       setForm((current) => ({
         name: current.name || result.projects[0].name,
@@ -53,26 +55,26 @@ export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
       onLoad={loadConnection}
     >
       <ConnectionField
-        label="数据源名称"
+        label={i18n('datasets.fields.name')}
         name="name"
         value={form.name}
         onValueChange={(value) => setForm({ ...form, name: value })}
       />
       <div className="grid gap-1.5 text-sm">
-        <span>Supabase 授权</span>
-        <Button
-          variant={session ? 'default' : 'primary'}
-          disabled={connecting}
-          onClick={connect}
-        >
-          {connecting ? '正在等待浏览器授权…' : session ? '重新授权' : '连接 Supabase'}
+        <span>{i18n('connections.supabase.authorizationLabel')}</span>
+        <Button variant={session ? 'default' : 'primary'} disabled={connecting} onClick={connect}>
+          {connecting
+            ? i18n('connections.supabase.waitingAuthorization')
+            : session
+              ? i18n('connections.supabase.reauthorize')
+              : i18n('connections.supabase.connect')}
         </Button>
       </div>
       {session ? (
         <label className="grid gap-1.5 text-sm">
-          项目
+          {i18n('connections.supabase.projectLabel')}
           <SelectField
-            aria-label="Supabase 项目"
+            aria-label={i18n('connections.supabase.projectSelectLabel')}
             className="w-full"
             value={form.projectRef}
             options={session.projects.map((project) => ({ value: project.id, label: project.name }))}
@@ -82,8 +84,8 @@ export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
       ) : (
         <p className="m-0 text-xs text-muted-foreground">
           {form.projectRef
-            ? `当前项目：${form.projectRef}。保存前请重新授权。`
-            : '通过系统浏览器安全授权，无需填写访问令牌。'}
+            ? i18n('connections.supabase.reauthorizationDescription', [form.projectRef])
+            : i18n('connections.supabase.authorizationDescription')}
         </p>
       )}
       {error && (

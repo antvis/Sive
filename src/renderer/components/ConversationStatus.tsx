@@ -1,11 +1,14 @@
+import { i18n, useI18n } from '../i18n';
 import { CircleIcon, LoaderCircleIcon } from 'lucide-react';
 import { useConversationStatus } from '../hooks/useConversationStatus';
 
 export function ConversationStatus({ ids }: { ids: string[] }) {
+  useI18n();
   const status = useConversationStatus(ids);
   if (status === 'idle') return null;
 
-  const label = status === 'running' ? '正在运行' : '有内容未查收';
+  const label =
+    status === 'running' ? i18n('conversation.status.running') : i18n('conversation.status.unread');
   return (
     <span
       title={label}

@@ -1,11 +1,8 @@
+import { i18n, useI18n } from '../../i18n';
 import type { ChatMessage } from '@shared/api';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useMemo } from 'react';
-import {
-  Conversation,
-  ConversationContent,
-  ConversationScrollButton,
-} from '../ai-elements/conversation';
+import { Conversation, ConversationContent, ConversationScrollButton } from '../ai-elements/conversation';
 import { isVisibleAssistantPart, PreviewMessage } from './message';
 import { getMessagesForDisplay } from './util';
 
@@ -17,13 +14,8 @@ type Props = {
   error?: string;
 };
 
-export function Messages({
-  messages,
-  savedMessageIds,
-  historyLoading,
-  isStreaming,
-  error,
-}: Props) {
+export function Messages({ messages, savedMessageIds, historyLoading, isStreaming, error }: Props) {
+  useI18n();
   const latestMessage = messages.at(-1);
   const displayMessages = useMemo(() => getMessagesForDisplay(messages), [messages]);
 
@@ -36,7 +28,7 @@ export function Messages({
         {historyLoading ? (
           <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
             <LoaderCircleIcon className="size-4 animate-spin" aria-hidden="true" />
-            正在加载会话…
+            {i18n('chat.loadingHistory')}
           </p>
         ) : (
           displayMessages.map((message) => (
@@ -52,7 +44,7 @@ export function Messages({
           (latestMessage?.role !== 'assistant' || !latestMessage.parts.some(isVisibleAssistantPart)) && (
             <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
               <LoaderCircleIcon className="size-4 animate-spin" aria-hidden="true" />
-              正在分析…
+              {i18n('chat.analyzing')}
             </p>
           )}
         {error && (
@@ -62,7 +54,7 @@ export function Messages({
         )}
       </ConversationContent>
       <ConversationScrollButton
-        aria-label="回到底部"
+        aria-label={i18n('chat.actions.scrollToBottom')}
         className="size-8 rounded-full border-border bg-background shadow-none"
       />
     </Conversation>

@@ -1,153 +1,172 @@
+import type { MessageKey } from './i18n';
+
+type DatasetSourceDefinition = {
+  type: string;
+  enable: boolean;
+  labelKey: MessageKey;
+  descriptionKey: MessageKey;
+  color: string;
+  logo: string;
+  actionLabelKey: MessageKey;
+  action:
+    | { type: 'file'; format: string; extensions: readonly string[] }
+    | { type: 'connection' | 'import'; dialog: string };
+};
+
 export const DATA_SOURCE_GROUPS = [
   {
-    title: '文件与文本',
+    titleKey: 'datasets.groups.files',
     icon: 'Files',
     sources: [
       {
         type: 'csv-file',
         enable: true,
-        label: 'CSV',
-        description: '逗号分隔的纯文本表格格式',
+        labelKey: 'datasets.sources.csv.label',
+        descriptionKey: 'datasets.sources.csv.description',
         color: '#25804d',
         logo: './logos/csv.svg',
         action: { type: 'file', format: 'csv', extensions: ['csv'] },
-        actionLabel: '选择文件',
+        actionLabelKey: 'datasets.actions.chooseFile',
       },
       {
         type: 'json-file',
         enable: true,
-        label: 'JSON',
-        description: '轻量级数据交换格式',
+        labelKey: 'datasets.sources.json.label',
+        descriptionKey: 'datasets.sources.json.description',
         color: '#8054b6',
         logo: './logos/json.svg',
         action: { type: 'file', format: 'json', extensions: ['json'] },
-        actionLabel: '选择文件',
+        actionLabelKey: 'datasets.actions.chooseFile',
       },
       {
         type: 'excel',
         enable: true,
-        label: 'Excel',
-        description: '支持多个工作表的电子表格格式',
+        labelKey: 'datasets.sources.excel.label',
+        descriptionKey: 'datasets.sources.excel.description',
         color: '#18734b',
         logo: './logos/excel.svg',
         action: { type: 'file', format: 'xlsx', extensions: ['xlsx'] },
-        actionLabel: '选择文件',
+        actionLabelKey: 'datasets.actions.chooseFile',
       },
       {
         type: 'parquet',
         enable: true,
-        label: 'Parquet',
-        description: '面向分析的列式数据文件',
+        labelKey: 'datasets.sources.parquet.label',
+        descriptionKey: 'datasets.sources.parquet.description',
         color: '#a66a1c',
         logo: './logos/parquet.svg',
         action: { type: 'file', format: 'parquet', extensions: ['parquet'] },
-        actionLabel: '选择文件',
+        actionLabelKey: 'datasets.actions.chooseFile',
       },
       {
         type: 'text',
         enable: true,
-        label: '文本',
-        description: '通过模型从文本中提取结构化数据',
+        labelKey: 'datasets.sources.text.label',
+        descriptionKey: 'datasets.sources.text.description',
         color: '#687682',
         logo: './logos/text.svg',
         action: { type: 'import', dialog: 'TextImportDialog' },
-        actionLabel: '提取数据',
+        actionLabelKey: 'datasets.textImport.extract',
       },
     ],
   },
   {
-    title: '数据库',
+    titleKey: 'datasets.groups.databases',
     icon: 'Database',
     sources: [
       {
         type: 'mysql',
         enable: true,
-        label: 'MySQL',
-        description: '开源关系型数据库',
+        labelKey: 'datasets.sources.mysql.label',
+        descriptionKey: 'datasets.sources.mysql.description',
         color: '#28769a',
         logo: './logos/mysql.svg',
         action: { type: 'connection', dialog: 'MySQLDialog' },
-        actionLabel: '配置连接',
+        actionLabelKey: 'datasets.actions.configureConnection',
       },
       {
         type: 'postgresql',
         enable: true,
-        label: 'PostgreSQL',
-        description: '通用对象关系型数据库',
+        labelKey: 'datasets.sources.postgresql.label',
+        descriptionKey: 'datasets.sources.postgresql.description',
         color: '#336791',
         logo: './logos/postgresql.svg',
         action: { type: 'connection', dialog: 'PostgreSQLDialog' },
-        actionLabel: '配置连接',
+        actionLabelKey: 'datasets.actions.configureConnection',
       },
       {
         type: 'sqlite',
         enable: true,
-        label: 'SQLite',
-        description: '轻量级本地文件数据库，支持多表分析',
+        labelKey: 'datasets.sources.sqlite.label',
+        descriptionKey: 'datasets.sources.sqlite.description',
         color: '#28769a',
         logo: './logos/sqlite.svg',
         action: { type: 'file', format: 'sqlite', extensions: ['sqlite', 'sqlite3', 'db'] },
-        actionLabel: '选择文件',
+        actionLabelKey: 'datasets.actions.chooseFile',
       },
       {
         type: 'mongodb',
         enable: true,
-        label: 'MongoDB',
-        description: '面向文档的 NoSQL 数据库',
+        labelKey: 'datasets.sources.mongodb.label',
+        descriptionKey: 'datasets.sources.mongodb.description',
         color: '#25804d',
         logo: './logos/mongodb.svg',
         action: { type: 'connection', dialog: 'MongoDBDialog' },
-        actionLabel: '配置连接',
+        actionLabelKey: 'datasets.actions.configureConnection',
       },
       {
         type: 'clickhouse',
         enable: true,
-        label: 'ClickHouse',
-        description: '面向实时分析的列式数据库',
+        labelKey: 'datasets.sources.clickhouse.label',
+        descriptionKey: 'datasets.sources.clickhouse.description',
         color: '#687682',
         logo: './logos/clickhouse.svg',
         action: { type: 'connection', dialog: 'ClickHouseDialog' },
-        actionLabel: '配置连接',
+        actionLabelKey: 'datasets.actions.configureConnection',
       },
     ],
   },
   {
-    title: 'SaaS 应用',
+    titleKey: 'datasets.groups.saas',
     icon: 'Stack',
     sources: [
       {
         type: 'github',
         enable: true,
-        label: 'GitHub',
-        description: '通过 OAuth 授权，分析仓库的 Issue 与 PR',
+        labelKey: 'datasets.sources.github.label',
+        descriptionKey: 'datasets.sources.github.description',
         color: '#687682',
         logo: './logos/github.svg',
         action: { type: 'connection', dialog: 'GitHubDialog' },
-        actionLabel: '连接仓库',
+        actionLabelKey: 'datasets.actions.connectRepository',
       },
       {
         type: 'supabase',
         enable: true,
-        label: 'Supabase',
-        description: '基于 PostgreSQL 的云端数据库',
+        labelKey: 'datasets.sources.supabase.label',
+        descriptionKey: 'datasets.sources.supabase.description',
         color: '#687682',
         logo: './logos/supabase.svg',
         action: { type: 'connection', dialog: 'SupabaseDialog' },
-        actionLabel: '配置连接',
+        actionLabelKey: 'datasets.actions.configureConnection',
       },
       {
         type: 'feishu-bitable',
         enable: true,
-        label: '飞书多维表格',
-        description: '飞书中的协作表格与业务数据',
+        labelKey: 'datasets.sources.feishu.label',
+        descriptionKey: 'datasets.sources.feishu.description',
         color: '#687682',
         logo: './logos/feishu-bitable.svg',
         action: { type: 'connection', dialog: 'FeishuBitableDialog' },
-        actionLabel: '配置连接',
+        actionLabelKey: 'datasets.actions.configureConnection',
       },
     ],
   },
-] as const;
+] as const satisfies readonly {
+  titleKey: MessageKey;
+  icon: 'Files' | 'Database' | 'Stack';
+  sources: readonly DatasetSourceDefinition[];
+}[];
 
 export type DatasetSource = (typeof DATA_SOURCE_GROUPS)[number]['sources'][number];
 

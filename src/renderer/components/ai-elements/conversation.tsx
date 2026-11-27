@@ -1,6 +1,9 @@
 "use client";
 
+import { i18n, useI18n } from "../../i18n";
+
 import type { ComponentProps } from "react";
+import type { MessageKey } from "@shared/i18n";
 
 import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
@@ -42,32 +45,35 @@ export type ConversationEmptyStateProps = Omit<ComponentProps<"div">, "title"> &
 
 export const ConversationEmptyState = ({
   className,
-  title = "No messages yet",
-  description = "Start a conversation to see messages here",
+  title = i18n("chat.empty.title"),
+  description = i18n("chat.empty.description"),
   icon,
   children,
   ...props
-}: ConversationEmptyStateProps) => (
-  <div
-    className={cn(
-      "flex size-full flex-col items-center justify-center gap-3 p-8 text-center",
-      className
-    )}
-    {...props}
-  >
-    {children ?? (
-      <>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
-        <div className="space-y-1">
-          <h3 className="font-medium text-2xl tracking-tight">{title}</h3>
-          {description && (
-            <p className="mt-3 text-muted-foreground text-sm leading-6">{description}</p>
-          )}
-        </div>
-      </>
-    )}
-  </div>
-);
+}: ConversationEmptyStateProps) => {
+  useI18n();
+  return (
+    <div
+      className={cn(
+        "flex size-full flex-col items-center justify-center gap-3 p-8 text-center",
+        className
+      )}
+      {...props}
+    >
+      {children ?? (
+        <>
+          {icon && <div className="text-muted-foreground">{icon}</div>}
+          <div className="space-y-1">
+            <h3 className="font-medium text-2xl tracking-tight">{title}</h3>
+            {description && (
+              <p className="mt-3 text-muted-foreground text-sm leading-6">{description}</p>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 export type ConversationScrollButtonProps = ComponentProps<typeof Button>;
 
@@ -75,6 +81,7 @@ export const ConversationScrollButton = ({
   className,
   ...props
 }: ConversationScrollButtonProps) => {
+  useI18n();
   const { isAtBottom, scrollToBottom } = useStickToBottomContext();
 
   const handleScrollToBottom = useCallback(() => {
@@ -88,6 +95,7 @@ export const ConversationScrollButton = ({
           "absolute bottom-4 left-[50%] translate-x-[-50%] rounded-full dark:bg-background dark:hover:bg-muted",
           className
         )}
+        aria-label={i18n("chat.actions.scrollToLatest")}
         onClick={handleScrollToBottom}
         size="icon"
         type="button"
@@ -114,9 +122,16 @@ export type ConversationDownloadProps = Omit<
   formatMessage?: (message: ConversationMessage, index: number) => string;
 };
 
+const roleLabelKeys = {
+  user: "chat.roles.user",
+  assistant: "chat.roles.assistant",
+  system: "chat.roles.system",
+  data: "chat.roles.data",
+  tool: "chat.roles.tool",
+} as const satisfies Record<ConversationMessage["role"], MessageKey>;
+
 const defaultFormatMessage = (message: ConversationMessage): string => {
-  const roleLabel =
-    message.role.charAt(0).toUpperCase() + message.role.slice(1);
+  const roleLabel = i18n(roleLabelKeys[message.role]);
   return `**${roleLabel}:** ${message.content}`;
 };
 
@@ -136,6 +151,7 @@ export const ConversationDownload = ({
   children,
   ...props
 }: ConversationDownloadProps) => {
+  useI18n();
   const handleDownload = useCallback(() => {
     const markdown = messagesToMarkdown(messages, formatMessage);
     const blob = new Blob([markdown], { type: "text/markdown" });
@@ -155,6 +171,7 @@ export const ConversationDownload = ({
         "absolute top-4 right-4 rounded-full dark:bg-background dark:hover:bg-muted",
         className
       )}
+      aria-label={i18n("chat.actions.download")}
       onClick={handleDownload}
       size="icon"
       type="button"

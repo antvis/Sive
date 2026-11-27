@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { LoaderCircleIcon, SquareArrowOutUpRightIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
 import { useEffect, useState } from 'react';
@@ -9,6 +10,7 @@ import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
 
 export function AboutSettings({ preferences }: { preferences: Preferences }) {
+  useI18n();
   const [version, setVersion] = useState('');
   const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -20,9 +22,9 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
   const checkUpdates = async () => {
     if (checking) return;
     setChecking(true);
-    toast.loading('正在检查更新…', {
+    toast.loading(i18n('updates.checkingTitle'), {
       id: UPDATE_NOTIFICATION_ID,
-      description: '正在连接 GitHub 获取最新版本信息，请稍候。',
+      description: i18n('updates.checkingDescription'),
       duration: Infinity,
       closeButton: false,
       action: null,
@@ -31,15 +33,15 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
       const result = await window.workbench.aboutCheckUpdates();
       if (result.hasUpdate) showUpdateNotification(result);
       else
-        toast.success('当前已是最新版本', {
+        toast.success(i18n('updates.upToDateTitle'), {
           id: UPDATE_NOTIFICATION_ID,
-          description: `当前版本 ${result.currentVersion}，暂无可用更新。`,
+          description: i18n('updates.upToDateDescription', [result.currentVersion]),
           duration: 5000,
           closeButton: true,
           action: null,
         });
     } catch (cause) {
-      toast.error('检查更新失败', {
+      toast.error(i18n('errors.update.checkFailed'), {
         id: UPDATE_NOTIFICATION_ID,
         description: errorMessage(cause).replace(
           /^Error invoking remote method 'aboutCheckUpdates': (?:Error: )?/,
@@ -48,7 +50,7 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
         duration: 8000,
         closeButton: true,
         action: {
-          label: '重试',
+          label: i18n('common.actions.retry'),
           onClick: (event) => {
             // Keep the loading toast that reuses this notification ID.
             event.preventDefault();
@@ -79,9 +81,11 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
         <h2 className="mt-5 mb-2 text-2xl font-semibold">Sive</h2>
         <p className="m-0 text-sm text-muted-foreground">Sive, See it Live, Share it Real.</p>
         <p className="mx-auto mt-4 mb-0 max-w-md text-sm leading-6 text-muted-foreground">
-          基于 AntV AVA 的 AI 桌面数据管理与分析工作台，让数据理解、分析和图表可视化在一个工作台中完成
+          {i18n('settings.about.description')}
         </p>
-        <p className="mt-5 mb-0 text-sm text-muted-foreground">版本 {version || '读取中…'} · MIT License</p>
+        <p className="mt-5 mb-0 text-sm text-muted-foreground">
+          {i18n('settings.about.versionLicense', [version || i18n('common.status.reading')])}
+        </p>
         <Button
           variant="link"
           className="mx-auto mt-3 flex w-fit"
@@ -98,21 +102,21 @@ export function AboutSettings({ preferences }: { preferences: Preferences }) {
             onClick={() => void checkUpdates()}
           >
             {checking && <LoaderCircleIcon size={16} className="motion-safe:animate-spin" aria-hidden />}
-            {checking ? '正在检查…' : '检查更新'}
+            {checking ? i18n('updates.checking') : i18n('updates.actions.check')}
           </Button>
           <Button onClick={() => void window.workbench.systemOpen('url', 'https://github.com/antvis/Sive')}>
             <img src="./logos/github.svg" width={17} height={17} alt="" />
-            关注开源项目
+            {i18n('settings.about.openSourceProject')}
           </Button>
         </div>
       </section>
       <SettingGroup>
         <SettingRow
-          title="自动检查更新"
-          description="启动后及每 24 小时检查新版本。仅提示更新，不会自动下载或安装。"
+          title={i18n('settings.about.autoUpdateTitle')}
+          description={i18n('settings.about.autoUpdateDescription')}
         >
           <Switch
-            aria-label="自动检查更新"
+            aria-label={i18n('settings.about.autoUpdateTitle')}
             checked={preferences.autoCheckUpdates}
             disabled={saving}
             onCheckedChange={(checked) => void updateAutomaticCheck(checked)}

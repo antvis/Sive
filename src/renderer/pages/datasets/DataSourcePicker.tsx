@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { ChevronRightIcon } from 'lucide-react';
 import { useState } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
@@ -5,6 +6,7 @@ import { useImportLocal } from '../../hooks/useImportLocal';
 import { DATA_SOURCE_GROUPS } from '@shared/dataSource';
 import type { DatasetSource, DatasetSourceAction } from '@shared/dataSource';
 import * as dialogs from './datasetDialogs';
+import { datasetSourceLabel } from '../../utils';
 
 const groupIllustrations = {
   Database: './illustrations/source-databases-ceramic.png',
@@ -23,13 +25,16 @@ function SourceOption({
   disabled: boolean;
   onSelect: () => void;
 }) {
-  const { label, description, actionLabel } = source;
+  useI18n();
+  const label = datasetSourceLabel(source.type);
+  const description = i18n(source.descriptionKey);
+  const actionLabel = i18n(source.actionLabelKey);
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onSelect}
-      aria-label={`${label}：${description}。${status ?? actionLabel}`}
+      aria-label={`${label}: ${description}. ${status ?? actionLabel}`}
       className="group flex min-h-16 w-full min-w-0 items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-foreground transition-colors enabled:hover:bg-selected disabled:opacity-55"
     >
       <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface">
@@ -41,12 +46,17 @@ function SourceOption({
           {status ?? description}
         </small>
       </span>
-      <ChevronRightIcon size={15} className="shrink-0 text-muted-foreground group-hover:text-ink" aria-hidden />
+      <ChevronRightIcon
+        size={15}
+        className="shrink-0 text-muted-foreground group-hover:text-ink"
+        aria-hidden
+      />
     </button>
   );
 }
 
 export function DataSourcePicker() {
+  useI18n();
   const { importing, importLocal } = useImportLocal();
   const [connection, setConnection] = useState<Extract<
     DatasetSourceAction,
@@ -83,10 +93,10 @@ export function DataSourcePicker() {
         className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] items-start gap-6"
         aria-busy={importing}
       >
-        {DATA_SOURCE_GROUPS.map(({ title, icon, sources }) => (
+        {DATA_SOURCE_GROUPS.map(({ titleKey, icon, sources }) => (
           <section
             key={icon}
-            aria-label={title}
+            aria-label={i18n(titleKey)}
             className="min-w-0 rounded-3xl bg-page px-4 pt-3 pb-4 shadow-card transition-[box-shadow,translate] hover:shadow-card-raised motion-safe:hover:-translate-y-0.5"
           >
             <div className="relative isolate flex h-32 items-end overflow-hidden rounded-2xl bg-surface px-3.5 pb-3.5">
@@ -97,7 +107,7 @@ export function DataSourcePicker() {
                 className="pointer-events-none absolute end-2 top-1/2 -z-10 h-32 w-[48%] -translate-y-1/2 object-contain object-right"
               />
               <h2 className="relative max-w-[48%] text-xl leading-tight font-semibold tracking-tight text-foreground wrap-anywhere">
-                {title}
+                {i18n(titleKey)}
               </h2>
             </div>
             <ul className="mt-3 grid gap-1.5">
@@ -105,7 +115,13 @@ export function DataSourcePicker() {
                 <li key={source.type} className="min-w-0">
                   <SourceOption
                     source={source}
-                    status={!source.enable ? '待接入' : importingType === source.type ? '正在导入…' : undefined}
+                    status={
+                      !source.enable
+                        ? i18n('datasets.picker.comingSoon')
+                        : importingType === source.type
+                          ? i18n('datasets.import.inProgress')
+                          : undefined
+                    }
                     disabled={!source.enable || importing}
                     onSelect={() => void selectSource(source)}
                   />

@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../../i18n';
 import { Background, Controls, Handle, MarkerType, Position, ReactFlow } from '@xyflow/react';
 import type { Edge, Node, NodeProps, OnNodesChange, XYPosition } from '@xyflow/react';
 import '@xyflow/react/style.css';
@@ -28,11 +29,30 @@ const operationGap = 24;
 const nodeIcons = { analysis: WorkflowIcon, step: LayersIcon, operation: TerminalIcon };
 const fitOptions = { padding: 0.14, maxZoom: 1 };
 const ariaLabels = {
-  'node.a11yDescription.default': '按 Enter 或空格选中节点并查看详情。',
-  'node.a11yDescription.keyboardDisabled': '按 Enter 或空格选中节点并查看详情。',
-  'controls.zoomIn.ariaLabel': '放大流程图',
-  'controls.zoomOut.ariaLabel': '缩小流程图',
-  'controls.fitView.ariaLabel': '查看完整流程图',
+  get 'edge.a11yDescription.default'() {
+    return i18n('analysis.flowchart.edgeInstructions');
+  },
+  get 'controls.ariaLabel'() {
+    return i18n('analysis.flowchart.controlsLabel');
+  },
+  get 'handle.ariaLabel'() {
+    return i18n('analysis.flowchart.connectionHandle');
+  },
+  get 'node.a11yDescription.default'() {
+    return i18n('analysis.flowchart.nodeInstructions');
+  },
+  get 'node.a11yDescription.keyboardDisabled'() {
+    return i18n('analysis.flowchart.nodeInstructions');
+  },
+  get 'controls.zoomIn.ariaLabel'() {
+    return i18n('analysis.flowchart.zoomIn');
+  },
+  get 'controls.zoomOut.ariaLabel'() {
+    return i18n('analysis.flowchart.zoomOut');
+  },
+  get 'controls.fitView.ariaLabel'() {
+    return i18n('analysis.flowchart.fitView');
+  },
 };
 const proOptions = { hideAttribution: true };
 
@@ -128,6 +148,7 @@ function layoutEvents(events: TraceFlowEvent[]) {
 }
 
 function EventNode({ data, selected }: NodeProps<TraceNode>) {
+  useI18n();
   const Icon = nodeIcons[data.kind];
 
   return (
@@ -187,6 +208,7 @@ export function AnalysisTraceFlowchart({
   onSelect: (id: string | undefined) => void;
   fullscreen: boolean;
 }) {
+  useI18n();
   const canvasId = useId();
   const { nodes, edges } = useMemo(() => layoutEvents(events), [events]);
   const selectedNodes = useMemo(
@@ -213,7 +235,7 @@ export function AnalysisTraceFlowchart({
         fullscreen ? 'h-full' : 'h-72',
       )}
       role="region"
-      aria-label="分析事件流程图"
+      aria-label={i18n('analysis.flowchart.regionLabel')}
     >
       <ReactFlow
         id={canvasId}
@@ -231,7 +253,7 @@ export function AnalysisTraceFlowchart({
         preventScrolling={fullscreen}
         fitView
         fitViewOptions={fitOptions}
-        ariaLabelConfig={ariaLabels}
+        ariaLabelConfig={{ ...ariaLabels }}
         proOptions={proOptions}
         className="[&_.react-flow__node:focus-visible]:rounded-lg [&_.react-flow__node:focus-visible]:outline-1 [&_.react-flow__node:focus-visible]:outline-offset-3 [&_.react-flow__node:focus-visible]:outline-focus"
       >
@@ -240,7 +262,7 @@ export function AnalysisTraceFlowchart({
           orientation="horizontal"
           showInteractive={false}
           fitViewOptions={fitOptions}
-          aria-label="流程图视图控制"
+          aria-label={i18n('analysis.flowchart.controlsLabel')}
           className="m-3 overflow-hidden rounded-md border border-border [&_button]:size-8 [&_button_svg]:size-3.5"
         />
       </ReactFlow>

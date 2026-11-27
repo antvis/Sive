@@ -16,10 +16,11 @@ import { FILE_SOURCES } from '@shared/dataSource';
 import { analysisStartSchema } from '@shared/api';
 import { githubRepositoryListSchema, githubConnectionIdSchema } from '@shared/github';
 import type { LocalFileFormat } from '@shared/dataSource';
-import { setLocale } from '../util/i18n';
+import { setLocale, i18n } from '../util/i18n';
 import { localSource } from '../util/localFile';
 import { getStorageInfo, systemOpen } from '../util/system';
 import { exportSnippet } from '../util/snippetExport';
+import { updateApplicationMenu } from '../menu';
 
 export const WORKSPACE_CHANGED_CHANNEL = 'workspace:changed';
 
@@ -67,18 +68,20 @@ export function registerIpc(
 
   ipcMain.handle('datasetSelectLocal', async (event, format?: LocalFileFormat, lastDirectory?: string) => {
     const source = FILE_SOURCES.find((source) => source.action.format === format);
-    if (format !== undefined && !source) throw new Error('不支持的文件格式。');
-    const formatName = source?.label;
+    if (format !== undefined && !source) throw new Error(i18n('errors.files.unsupportedFormat'));
+    const formatName = source ? i18n(source.labelKey) : undefined;
     const extensions = (source ? [source] : FILE_SOURCES).flatMap<string>(
       (source) => source.action.extensions,
     );
     const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
-      title: '选择数据文件',
+      title: i18n('datasets.import.fileDialogTitle'),
       defaultPath: typeof lastDirectory === 'string' && lastDirectory ? lastDirectory : undefined,
       properties: ['openFile'],
       filters: [
         {
-          name: formatName ? `${formatName} 文件` : '数据文件',
+          name: formatName
+            ? i18n('datasets.import.formatFilter', [formatName])
+            : i18n('datasets.import.allFilesFilter'),
           extensions,
         },
       ],
@@ -86,7 +89,7 @@ export function registerIpc(
     if (result.canceled) return null;
     const filePath = result.filePaths[0];
     if (format && !extensions.includes(path.extname(filePath).slice(1).toLowerCase()))
-      throw new Error(`请选择 ${formatName} 文件。`);
+      throw new Error(i18n('errors.files.expectedFormat', [formatName]));
     return {
       name: path.basename(filePath, path.extname(filePath)).trim(),
       sourceConfig: localSource(filePath),
@@ -235,7 +238,7 @@ export function registerIpc(
 
   ipcMain.handle('analysisMarkRead', (_event, conversationId: string, messageId: string) => {
     if (typeof conversationId !== 'string' || !conversationId || typeof messageId !== 'string' || !messageId)
-      throw new Error('无效的会话已读状态。');
+      throw new Error(i18n('errors.conversation.invalidReadStatus'));
     services.analysis.markRead(conversationId, messageId);
   });
 
@@ -263,6 +266,7 @@ export function registerIpc(
     services.settings.savePreferences(preferences);
     services.update.setAutomatic(preferences.autoCheckUpdates);
     setLocale(preferences.language);
+    updateApplicationMenu();
     changed();
   });
 

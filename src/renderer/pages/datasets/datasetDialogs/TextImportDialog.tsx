@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../../i18n';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../../components/ui/button';
@@ -8,6 +9,7 @@ import { errorMessage } from '../../../utils';
 import { ConnectionField } from './ConnectionDialog';
 
 export function TextImportDialog({ onClose }: { onClose: () => void }) {
+  useI18n();
   const [name, setName] = useState('');
   const [text, setText] = useState('');
   const [rows, setRows] = useState<Record<string, unknown>[] | null>(null);
@@ -33,7 +35,7 @@ export function TextImportDialog({ onClose }: { onClose: () => void }) {
     setError('');
     try {
       await window.workbench.datasetSave(name.trim(), { type: 'json', options: { data: rows } });
-      toast.success('文本提取数据已保存');
+      toast.success(i18n('datasets.textImport.saved'));
       onClose();
     } catch (cause) {
       setError(errorMessage(cause));
@@ -50,7 +52,7 @@ export function TextImportDialog({ onClose }: { onClose: () => void }) {
       onOpenChange={(open) => {
         if (!open && !busy) onClose();
       }}
-      title={rows ? '确认提取结果' : '从文本提取数据'}
+      title={rows ? i18n('datasets.textImport.confirmTitle') : i18n('datasets.textImport.title')}
       footer={
         rows ? (
           <>
@@ -61,22 +63,24 @@ export function TextImportDialog({ onClose }: { onClose: () => void }) {
                 setError('');
               }}
             >
-              返回修改
+              {i18n('datasets.textImport.back')}
             </Button>
             <Button variant="primary" disabled={!!busy || !name.trim()} onClick={() => void save()}>
-              {busy === 'save' ? '正在保存…' : '确认保存'}
+              {busy === 'save' ? i18n('snippet.export.saving') : i18n('datasets.textImport.confirmSave')}
             </Button>
           </>
         ) : (
           <Button variant="primary" disabled={!!busy || !text.trim()} onClick={() => void extract()}>
-            {busy === 'extract' ? '正在提取…' : '提取数据'}
+            {busy === 'extract'
+              ? i18n('datasets.textImport.extracting')
+              : i18n('datasets.textImport.extract')}
           </Button>
         )
       }
     >
       <div className="grid gap-3" aria-busy={!!busy}>
         <ConnectionField
-          label="数据源名称"
+          label={i18n('datasets.fields.name')}
           name="name"
           value={name}
           disabled={!!busy}
@@ -85,8 +89,7 @@ export function TextImportDialog({ onClose }: { onClose: () => void }) {
         {rows ? (
           <>
             <p className="m-0 text-sm text-muted-foreground">
-              已提取 {rows.length} 条数据，预览前 {Math.min(rows.length, 20)} 条。
-              请核对结果，确认后保存全部数据。
+              {i18n('datasets.textImport.previewDescription', [rows.length, Math.min(rows.length, 20)])}
             </p>
             <div className="flex h-48 min-w-0 overflow-hidden rounded-lg border">
               <DataGrid rows={rows.slice(0, 20)} columns={columns} profile={undefined} resetKey={0} />
@@ -94,14 +97,16 @@ export function TextImportDialog({ onClose }: { onClose: () => void }) {
           </>
         ) : (
           <>
-            <p className="m-0 text-sm text-muted-foreground">文本将发送至当前默认模型，提取后可预览并确认保存。</p>
+            <p className="m-0 text-sm text-muted-foreground">
+              {i18n('datasets.textImport.privacyDescription')}
+            </p>
             <label className="grid gap-1.5 text-sm">
-              文本内容
+              {i18n('datasets.textImport.textLabel')}
               <Textarea
                 name="text"
                 value={text}
                 disabled={!!busy}
-                placeholder="粘贴包含数据的文本，例如销售记录、调查结果或统计报告。"
+                placeholder={i18n('datasets.textImport.textPlaceholder')}
                 className="h-40"
                 onChange={(event) => setText(event.target.value)}
               />

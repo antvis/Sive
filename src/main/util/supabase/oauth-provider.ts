@@ -1,3 +1,4 @@
+import { i18n } from '../i18n';
 import { randomUUID } from 'node:crypto';
 import { shell } from 'electron';
 import type {
@@ -60,7 +61,7 @@ export class SupabaseOAuthProvider implements OAuthClientProvider {
   }
 
   async saveClientInformation(info: StoredOAuthClientInformation, ctx?: OAuthClientInformationContext) {
-    if (!ctx) throw new Error('OAuth issuer 缺失。');
+    if (!ctx) throw new Error(i18n('errors.oauth.issuerMissing'));
     this.clients.set(ctx.issuer, info);
     await this.onChange(this.credentials);
   }
@@ -81,8 +82,8 @@ export class SupabaseOAuthProvider implements OAuthClientProvider {
   }
 
   async redirectToAuthorization(url: URL) {
-    if (!this.interactive) throw new Error('Supabase 授权已失效，请重新授权。');
-    if (url.protocol !== 'https:') throw new Error('OAuth 授权地址必须使用 HTTPS。');
+    if (!this.interactive) throw new Error(i18n('errors.supabase.authorizationExpired'));
+    if (url.protocol !== 'https:') throw new Error(i18n('errors.oauth.httpsRequired'));
     await shell.openExternal(url.toString());
   }
 
@@ -91,7 +92,7 @@ export class SupabaseOAuthProvider implements OAuthClientProvider {
   }
 
   codeVerifier() {
-    if (!this.verifier) throw new Error('PKCE code verifier 缺失。');
+    if (!this.verifier) throw new Error(i18n('errors.oauth.verifierMissing'));
     return this.verifier;
   }
 

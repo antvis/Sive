@@ -8,7 +8,7 @@ import { Button } from './components/ui/button';
 import { UpdateNotification } from './components/UpdateNotification';
 import type { AppPage } from './components/WorkspaceSidebar';
 import { useWorkspace } from './hooks/useWorkspace';
-import { I18nProvider } from './i18n';
+import { useI18n } from './i18n';
 import { AnalysisPage } from './pages/analysis';
 import { DatasetsPage } from './pages/datasets';
 import { SettingsWindow } from './pages/settings';
@@ -34,6 +34,7 @@ const analysisSelection = (datasetId: string, conversationId?: string): Analysis
 };
 
 export default function App() {
+  const i18n = useI18n();
   const settingsWindow = window.location.hash === '#settings';
   const { state, error, refresh } = useWorkspace();
   const [systemDark, setSystemDark] = useState(
@@ -58,19 +59,24 @@ export default function App() {
     root.style.fontSize = `${theme.fontSize}px`;
   }, [theme]);
 
+  useLayoutEffect(() => {
+    document.documentElement.lang = i18n.locale;
+    document.title = settingsWindow ? i18n('settings.title') : 'Sive';
+  }, [i18n.locale, settingsWindow]);
+
   const fallback =
     !state &&
     (error ? (
       <div className="grid h-full place-content-center justify-items-center gap-4">
         <p className="m-0 text-danger">{error}</p>
-        <Button onClick={() => void refresh()}>重新加载</Button>
+        <Button onClick={() => void refresh()}>{i18n('common.actions.reload')}</Button>
       </div>
     ) : (
-      <div className="grid h-full place-items-center text-muted-foreground">正在加载工作台…</div>
+      <div className="grid h-full place-items-center text-muted-foreground">{i18n('workspace.loading')}</div>
     ));
 
   return (
-    <I18nProvider language={state?.preferences.language}>
+    <>
       <ThemeContext value={theme}>
         {settingsWindow ? (
           <SettingsWindow state={state} fallback={fallback} />
@@ -78,11 +84,14 @@ export default function App() {
           <Workspace state={state} fallback={fallback} />
         )}
         <Toaster
+          containerAriaLabel={i18n('notifications.regionLabel')}
           theme={theme.mode}
           position="bottom-right"
           visibleToasts={1}
           toastOptions={{
-            className: 'w-max! max-w-[calc(100vw-32px)]! min-h-[unset]! rounded-xl! border! border-line! bg-surface! px-[12px]! py-[8px]! text-sm! text-ink! shadow-overlay!',
+            closeButtonAriaLabel: i18n('notifications.actions.close'),
+            className:
+              'w-max! max-w-[calc(100vw-32px)]! min-h-[unset]! rounded-xl! border! border-line! bg-surface! px-[12px]! py-[8px]! text-sm! text-ink! shadow-overlay!',
             classNames: {
               error: '[&_[data-icon]]:text-amber-600 dark:[&_[data-icon]]:text-amber-400',
             },
@@ -90,11 +99,12 @@ export default function App() {
         />
         <UpdateNotification />
       </ThemeContext>
-    </I18nProvider>
+    </>
   );
 }
 
 function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback: ReactNode }) {
+  useI18n();
   const [page, setPage] = useState<AppPage>('welcome');
   const [analysis, setAnalysis] = useState<AnalysisSelection | null>(null);
   const [datasetCollapsed, setDatasetCollapsed] = useState(false);

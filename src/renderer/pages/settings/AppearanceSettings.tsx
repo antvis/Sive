@@ -1,4 +1,6 @@
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { MessageKey } from '@shared/i18n';
 import type { Preferences } from '@shared/api';
 import { useState } from 'react';
 import { SegmentedControl } from '../../components/ui/segmented-control';
@@ -12,24 +14,27 @@ const languageOptions = [
   { value: 'zh-CN', label: '中文（简体）' },
   { value: 'en-US', label: 'English' },
 ] as const;
-const themeOptions = (
-  [
-    ['light', '亮色', SunIcon],
-    ['dark', '暗色', MoonIcon],
-    ['system', '自动', MonitorIcon],
-  ] as const
-).map(([value, label, Icon]) => ({
-  value,
-  label: (
-    <>
-      <Icon size={16} aria-hidden />
-      {label}
-    </>
-  ),
-}));
+const themes = [
+  ['light', 'settings.appearance.themes.light', SunIcon],
+  ['dark', 'settings.appearance.themes.dark', MoonIcon],
+  ['system', 'settings.appearance.themes.system', MonitorIcon],
+] as const satisfies readonly (readonly [
+  value: Preferences['theme']['mode'],
+  labelKey: MessageKey,
+  icon: LucideIcon,
+])[];
 
 export function AppearanceSettings({ preferences }: { preferences: Preferences }) {
   const i18n = useI18n();
+  const themeOptions = themes.map(([value, labelKey, Icon]) => ({
+    value,
+    label: (
+      <>
+        <Icon size={16} aria-hidden />
+        {i18n(labelKey)}
+      </>
+    ),
+  }));
   const theme = preferences.theme;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -48,7 +53,7 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
 
   return (
     <>
-      <SettingGroup title="外观">
+      <SettingGroup title={i18n('settings.appearance.title')}>
         <SettingRow
           title={i18n('settings.language.title')}
           description={i18n('settings.language.description')}
@@ -61,19 +66,25 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
             onValueChange={(language) => void update({ ...preferences, language })}
           />
         </SettingRow>
-        <SettingRow title="主题亮暗" description="亮色、暗色或自动">
+        <SettingRow
+          title={i18n('settings.appearance.themeTitle')}
+          description={i18n('settings.appearance.themeDescription')}
+        >
           <SegmentedControl
-            label="主题亮暗"
+            label={i18n('settings.appearance.themeTitle')}
             options={themeOptions}
             value={theme.mode}
             disabled={saving}
             onValueChange={(mode) => void update({ ...preferences, theme: { ...theme, mode } })}
           />
         </SettingRow>
-        <SettingRow title="界面字号" description="调整应用中的文字大小">
+        <SettingRow
+          title={i18n('settings.appearance.fontSizeTitle')}
+          description={i18n('settings.appearance.fontSizeDescription')}
+        >
           <div className="w-56 max-w-full">
             <Slider
-              aria-label="界面字号"
+              aria-label={i18n('settings.appearance.fontSizeTitle')}
               aria-valuetext={`${theme.fontSize}px`}
               list="font-size-stops"
               min={0}
@@ -93,10 +104,12 @@ export function AppearanceSettings({ preferences }: { preferences: Preferences }
                 <option key={size} value={index} label={`${size}px`} />
               ))}
             </datalist>
-            <div className="grid grid-cols-6 text-xs text-muted-foreground">
-              <span>小</span>
-              <span className="text-center">默认</span>
-              <span className="col-start-6 text-right">大</span>
+            <div className="relative flex justify-between text-xs text-muted-foreground">
+              <span>{i18n('settings.appearance.fontSizeSmall')}</span>
+              <span className="absolute left-[40%] -translate-x-1/2">
+                {i18n('settings.appearance.fontSizeDefault')}
+              </span>
+              <span>{i18n('settings.appearance.fontSizeLarge')}</span>
             </div>
           </div>
         </SettingRow>

@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { useEffect, useId, useRef, useState } from 'react';
 import { PanelLeftIcon, Table2Icon } from 'lucide-react';
@@ -27,6 +28,7 @@ function DataPreview({
   pageSize: number;
   onPageSizeChange: (size: number) => void;
 }) {
+  useI18n();
   const [offset, setOffset] = useState(0);
   const [retry, setRetry] = useState(0);
   const [preview, setPreview] = useState<{
@@ -63,7 +65,7 @@ function DataPreview({
             className="absolute inset-0 grid place-items-center bg-surface text-sm text-muted-foreground"
             role="status"
           >
-            正在读取数据…
+            {i18n('datasetPreview.loadingData')}
           </div>
         ) : error ? (
           <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 bg-surface p-4 text-center text-sm">
@@ -74,7 +76,7 @@ function DataPreview({
                 setRetry((value) => value + 1);
               }}
             >
-              重试预览
+              {i18n('datasetPreview.actions.retry')}
             </Button>
           </div>
         ) : null}
@@ -82,43 +84,52 @@ function DataPreview({
       <footer className="flex shrink-0 flex-wrap items-center gap-3 border-t border-ink/10 px-4 py-3 text-xs text-muted-foreground">
         <span className="mr-auto" aria-live="polite">
           {loading
-            ? '正在读取…'
+            ? i18n('datasetPreview.pagination.loading')
             : error
-              ? '读取失败'
+              ? i18n('datasetPreview.pagination.failed')
               : rows.length
-                ? `第 ${offset + 1}–${offset + rows.length} 行${hasMore ? '' : ' · 已到末页'}`
+                ? i18n('datasetPreview.pagination.rowRange', [
+                    offset + 1,
+                    offset + rows.length,
+                    hasMore ? '' : i18n('datasetPreview.pagination.lastPageSuffix'),
+                  ])
                 : offset
-                  ? '本页暂无数据，可返回上一页'
-                  : '暂无数据'}
+                  ? i18n('datasetPreview.pagination.emptyPage')
+                  : i18n('common.empty.noData')}
         </span>
         <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-2">
-          <span title="排序只作用于已读取的当前页；数据变化或没有主键时，翻页结果可能变化。">
-            仅排序当前页
+          <span title={i18n('datasetPreview.sort.description')}>
+            {i18n('datasetPreview.sort.currentPage')}
           </span>
           <SelectField
             className="w-28 max-w-full"
-            aria-label="每页行数"
+            aria-label={i18n('datasetPreview.pagination.pageSizeLabel')}
             value={String(pageSize)}
             onChange={(value) => onPageSizeChange(Number(value))}
-            options={PREVIEW_PAGE_SIZES.map((size) => ({ value: String(size), label: `${size} 行 / 页` }))}
+            options={PREVIEW_PAGE_SIZES.map((size) => ({
+              value: String(size),
+              label: i18n('datasetPreview.pagination.pageSizeOption', [size]),
+            }))}
           />
-          <ButtonGroup aria-label="数据分页">
+          <ButtonGroup aria-label={i18n('datasetPreview.pagination.label')}>
             <Button
               variant="ghost"
               size="sm"
               disabled={loading || offset === 0}
               onClick={() => setOffset(Math.max(0, offset - pageSize))}
             >
-              上一页
+              {i18n('datasetPreview.pagination.previous')}
             </Button>
-            <ButtonGroupText>第 {offset / pageSize + 1} 页</ButtonGroupText>
+            <ButtonGroupText>
+              {i18n('datasetPreview.pagination.pageNumber', [offset / pageSize + 1])}
+            </ButtonGroupText>
             <Button
               variant="ghost"
               size="sm"
               disabled={loading || !!error || !hasMore}
               onClick={() => setOffset(offset + pageSize)}
             >
-              下一页
+              {i18n('datasetPreview.pagination.next')}
             </Button>
           </ButtonGroup>
         </div>
@@ -128,6 +139,7 @@ function DataPreview({
 }
 
 export function DatasetPanel({ datasetId }: { datasetId: string }) {
+  useI18n();
   const [detail, setDetail] = useState<DatasetDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -150,7 +162,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
       .then((dataset) => {
         if (!live) return;
         if (!dataset) {
-          setError('数据源不存在或已删除。');
+          setError(i18n('errors.dataset.notFound'));
           return;
         }
         setDetail(dataset);
@@ -189,7 +201,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
       const semantic = { ...detail.semantic, description };
       await window.workbench.datasetSaveSemantic(datasetId, semantic);
       setDetail({ ...detail, semantic });
-      toast.success('语义已保存');
+      toast.success(i18n('semantics.notifications.saved'));
     } catch (cause) {
       toast.error(errorMessage(cause));
     } finally {
@@ -197,7 +209,12 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
     }
   };
 
-  if (loading) return <div className="grid h-full place-items-center text-muted-foreground">正在加载数据集…</div>;
+  if (loading)
+    return (
+      <div className="grid h-full place-items-center text-muted-foreground">
+        {i18n('datasetPreview.loadingDataset')}
+      </div>
+    );
   if (error) return <div className="grid h-full place-items-center p-6 text-center text-danger">{error}</div>;
   if (!detail) return null;
   const model = detail.schema.models.find((item) => item.name === table) ?? detail.schema.models[0];
@@ -225,25 +242,23 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           <Button
             ref={treeToggle}
             variant="ghost"
-            aria-label={showTree ? '收起表结构' : '打开表结构'}
+            aria-label={
+              showTree
+                ? i18n('datasetPreview.actions.collapseSchema')
+                : i18n('datasetPreview.actions.openSchema')
+            }
             aria-expanded={showTree}
             aria-controls={treeId}
             onClick={() => setNavigation((current) => ({ ...current, open: !current.open }))}
           >
             <PanelLeftIcon size={16} />
-            <span>{detail.schema.models.length} 张表</span>
+            <span>{i18n('profile.summary.tableCount', [detail.schema.models.length])}</span>
           </Button>
         )}
-        <TabsList aria-label="数据集信息">
-          <TabsTrigger value="data">
-            数据
-          </TabsTrigger>
-          <TabsTrigger value="fields">
-            字段
-          </TabsTrigger>
-          <TabsTrigger value="semantic">
-            语义层
-          </TabsTrigger>
+        <TabsList aria-label={i18n('datasetPreview.info.title')}>
+          <TabsTrigger value="data">{i18n('common.labels.data')}</TabsTrigger>
+          <TabsTrigger value="fields">{i18n('common.labels.columns')}</TabsTrigger>
+          <TabsTrigger value="semantic">{i18n('datasetPreview.tabs.semantics')}</TabsTrigger>
         </TabsList>
       </div>
       <div className="flex min-h-0 flex-1 overflow-hidden">
@@ -251,7 +266,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           <aside
             id={treeId}
             hidden={!showTree}
-            aria-label="表结构"
+            aria-label={i18n('datasetPreview.tabs.schema')}
             className={clsx(
               'flex min-h-0 min-w-0 flex-col hidden:hidden',
               compact ? 'w-full' : 'w-56 shrink-0 border-e border-line',
@@ -280,10 +295,12 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             <div className="flex min-w-0 items-center gap-2">
               <Table2Icon size={14} className="shrink-0" />
               <span className="truncate text-base font-medium text-ink" title={model?.name}>
-                {model?.name ?? '没有可预览的数据表'}
+                {model?.name ?? i18n('datasetPreview.empty.tables')}
               </span>
             </div>
-            {model && <span className="shrink-0">{columns.length} 个字段</span>}
+            {model && (
+              <span className="shrink-0">{i18n('profile.summary.columnCount', [columns.length])}</span>
+            )}
           </div>
           <TabsContent value="data" className="flex min-h-0 flex-1 flex-col">
             {model && (
@@ -299,8 +316,8 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           </TabsContent>
           <TabsContent value="fields" className="min-h-0 flex-1 overflow-auto px-4 pt-1 pb-4">
             <Input
-              aria-label="搜索字段"
-              placeholder="搜索字段"
+              aria-label={i18n('datasetPreview.search.columns')}
+              placeholder={i18n('datasetPreview.search.columns')}
               value={fieldSearch}
               onChange={(event) => setFieldSearch(event.target.value)}
               className="mb-3"
@@ -308,9 +325,9 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             <table className="w-full table-fixed border-collapse text-sm">
               <thead>
                 <tr className="border-b border-ink/10 text-left text-muted-foreground">
-                  <th className="w-2/5 py-2 pr-3 font-medium">字段名</th>
-                  <th className="w-2/5 py-2 pr-3 font-medium">数据类型</th>
-                  <th className="py-2 font-medium">约束</th>
+                  <th className="w-2/5 py-2 pr-3 font-medium">{i18n('schema.columns.name')}</th>
+                  <th className="w-2/5 py-2 pr-3 font-medium">{i18n('schema.columns.dataType')}</th>
+                  <th className="py-2 font-medium">{i18n('schema.columns.constraints')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -319,7 +336,10 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
                     <td className="py-3 pr-3 text-base break-all">{column.name}</td>
                     <td className="py-3 pr-3 break-all text-muted-foreground">{column.type}</td>
                     <td className="py-3 text-muted-foreground">
-                      {[primaryKey.includes(column.name) && '主键', column.notNull && '非空']
+                      {[
+                        primaryKey.includes(column.name) && i18n('schema.columns.primaryKey'),
+                        column.notNull && i18n('schema.columns.notNull'),
+                      ]
                         .filter(Boolean)
                         .join(' · ') || '—'}
                     </td>
@@ -327,15 +347,19 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
                 ))}
               </tbody>
             </table>
-            {!fields.length && <p className="text-sm text-muted-foreground">没有匹配的字段</p>}
+            {!fields.length && (
+              <p className="text-sm text-muted-foreground">{i18n('datasetPreview.empty.columnSearch')}</p>
+            )}
             {!!relationships.length && (
               <section className="mt-5 text-sm">
-                <h3 className="text-sm font-medium">外键关系</h3>
+                <h3 className="text-sm font-medium">{i18n('schema.relationships.foreignKeys')}</h3>
                 <ul className="space-y-2 pl-4">
                   {relationships.map((relation) => (
                     <li key={relation.name}>
                       <span>{relation.name}</span>
-                      <code className="mt-1 block break-all text-sm text-muted-foreground">{relation.condition}</code>
+                      <code className="mt-1 block break-all text-sm text-muted-foreground">
+                        {relation.condition}
+                      </code>
                     </li>
                   ))}
                 </ul>
@@ -344,16 +368,16 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
           </TabsContent>
           <TabsContent value="semantic" className="min-h-0 flex-1 overflow-auto p-5">
             <label className="grid gap-2 text-base">
-              数据集业务说明
+              {i18n('semantics.editor.label')}
               <Textarea
                 className="field-sizing-fixed min-h-48 p-3 text-base leading-6"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
-                placeholder="描述数据集中的业务概念、字段含义和分析注意事项…"
+                placeholder={i18n('semantics.editor.placeholder')}
               />
             </label>
             <Button className="mt-4" variant="primary" disabled={saving} onClick={() => void saveSemantic()}>
-              {saving ? '保存中…' : '保存语义'}
+              {saving ? i18n('common.status.saving') : i18n('semantics.actions.save')}
             </Button>
           </TabsContent>
         </div>

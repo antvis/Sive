@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { CpuIcon, PencilIcon, PlusIcon, RotateCwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -14,6 +15,7 @@ import { SettingField } from './SettingControls';
 type Catalog = { baseURL: string; apiKey: string; ids: string[] };
 
 function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => void }) {
+  useI18n();
   const [name, setName] = useState(model?.name ?? '');
   const [baseURL, setBaseURL] = useState(model?.baseURL ?? '');
   const [apiKey, setApiKey] = useState('');
@@ -25,11 +27,13 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
   const [error, setError] = useState('');
   const currentCatalog =
     catalog && catalog.baseURL === baseURL.trim() && catalog.apiKey === apiKey ? catalog : null;
-  const discoverLabel = currentCatalog ? '刷新模型列表' : '获取可用模型';
+  const discoverLabel = currentCatalog
+    ? i18n('settings.models.actions.refreshList')
+    : i18n('settings.models.actions.fetchList');
 
   const discover = async () => {
     if (!baseURL.trim()) {
-      setError('请先填写服务地址。');
+      setError(i18n('errors.model.urlRequired'));
       return;
     }
     setDiscovering(true);
@@ -52,7 +56,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
   const save = async (event: FormEvent) => {
     event.preventDefault();
     if (!name.trim() || !baseURL.trim() || !modelIds.length) {
-      setError('请填写服务名称、服务地址，并至少选择一个模型。');
+      setError(i18n('errors.model.requiredFields'));
       return;
     }
     setSaving(true);
@@ -68,7 +72,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
         modelIds,
         credentialSourceId: model?.id,
       });
-      toast.success('模型测试通过并已保存');
+      toast.success(i18n('settings.models.notifications.saved'));
       onClose();
     } catch (cause) {
       setError(errorMessage(cause));
@@ -81,22 +85,24 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
 
   const catalogHint = currentCatalog
     ? currentCatalog.ids.length
-      ? `${currentCatalog.ids.length} 个模型`
-      : '未返回模型，请手动添加'
+      ? i18n('settings.models.modelCount', [currentCatalog.ids.length])
+      : i18n('settings.models.empty.list')
     : '';
 
   return (
     <Modal
       open
       onOpenChange={() => !saving && onClose()}
-      title={model ? '编辑模型服务' : '添加模型服务'}
+      title={model ? i18n('settings.models.editTitle') : i18n('settings.models.addTitle')}
       footer={
         <>
           <Button onClick={onClose} disabled={saving}>
-            取消
+            {i18n('common.actions.cancel')}
           </Button>
           <Button variant="primary" type="submit" form="model-form" disabled={saving || discovering}>
-            {saving ? '测试并保存中…' : '测试并保存'}
+            {saving
+              ? i18n('settings.models.status.testingAndSaving')
+              : i18n('settings.models.actions.testAndSave')}
           </Button>
         </>
       }
@@ -104,34 +110,40 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
       <form id="model-form" onSubmit={(event) => void save(event)}>
         <fieldset disabled={saving} className="grid min-w-0 gap-4 border-0 p-0">
           <SettingField
-            label="服务名称"
-            description="用来区分不同的模型服务"
+            label={i18n('settings.models.fields.nameTitle')}
+            description={i18n('settings.models.fields.nameDescription')}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="例如：云端模型服务"
+            placeholder={i18n('settings.models.fields.namePlaceholder')}
             required
           />
           <SettingField
-            label="服务地址"
-            description="填写服务商提供的 API 基础地址"
+            label={i18n('settings.models.fields.urlTitle')}
+            description={i18n('settings.models.fields.urlDescription')}
             value={baseURL}
             onChange={(e) => setBaseURL(e.target.value)}
             placeholder="https://example.com/v1"
             required
           />
           <SettingField
-            label="密钥"
-            description="服务要求认证时，填写服务商提供的 API 密钥"
+            label={i18n('settings.models.fields.apiKeyTitle')}
+            description={i18n('settings.models.fields.apiKeyDescription')}
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={model?.hasKey ? '留空复用已保存的密钥' : '本地无认证服务可留空'}
+            placeholder={
+              model?.hasKey
+                ? i18n('settings.models.fields.apiKeyReusePlaceholder')
+                : i18n('settings.models.fields.apiKeyOptionalPlaceholder')
+            }
           />
           <div className="grid gap-1.5 text-sm">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span>启用模型</span>
-                <span className="text-xs text-muted-foreground">已选择 {modelIds.length} 个</span>
+                <span>{i18n('settings.models.enabledTitle')}</span>
+                <span className="text-xs text-muted-foreground">
+                  {i18n('settings.models.selectedCount', [modelIds.length])}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 {catalogHint && <span className="text-xs text-muted-foreground">{catalogHint}</span>}
@@ -152,7 +164,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
               </div>
             </div>
             <p className="m-0 text-xs text-muted-foreground">
-              从列表中选择要启用的模型，也可以手动添加模型 ID
+              {i18n('settings.models.selectionDescription')}
             </p>
             <ModelPicker
               options={currentCatalog?.ids ?? []}
@@ -164,8 +176,13 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
         </fieldset>
         {progress && (
           <div className="mt-4 rounded-lg bg-workspace-control p-3 text-sm leading-5 text-ink" role="status">
-            已完成 {progress.completed} / {progress.total}
-            {progress.active.length ? `，正在测试：${progress.active.join('、')}` : '，正在保存配置…'}
+            {i18n('settings.models.testProgress', [
+              progress.completed,
+              progress.total,
+              progress.active.length
+                ? i18n('settings.models.testingModelSuffix', [progress.active.join('、')])
+                : i18n('settings.models.savingConfigurationSuffix'),
+            ])}
           </div>
         )}
         {error && <p className="mt-4 mb-0 text-sm text-danger">{error}</p>}
@@ -175,6 +192,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
 }
 
 export function ModelSettings({ models, activeModelId }: { models: ModelProfile[]; activeModelId: string }) {
+  useI18n();
   const [editing, setEditing] = useState<ModelProfile | 'new' | null>(null);
   const [deleting, setDeleting] = useState<ModelProfile | null>(null);
   const [busy, setBusy] = useState(false);
@@ -196,7 +214,7 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
   const addService = (
     <Button variant="primary" onClick={() => setEditing('new')}>
       <PlusIcon size={16} />
-      添加服务
+      {i18n('settings.models.actions.add')}
     </Button>
   );
 
@@ -211,7 +229,9 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="m-0 truncate text-base font-semibold">{model.name}</h2>
                 {activeModelId === model.id && (
-                  <Badge className="bg-accent text-accent-foreground">默认服务</Badge>
+                  <Badge className="bg-accent text-accent-foreground">
+                    {i18n('settings.models.defaultProvider')}
+                  </Badge>
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 max-sm:opacity-100">
@@ -220,17 +240,20 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                     variant="ghost"
                     disabled={busy}
                     onClick={() =>
-                      void perform(() => window.workbench.modelActivate(model.id), '已设为默认服务')
+                      void perform(
+                        () => window.workbench.modelActivate(model.id),
+                        i18n('settings.models.notifications.defaultProviderUpdated'),
+                      )
                     }
                   >
-                    设为默认
+                    {i18n('settings.models.actions.setDefault')}
                   </Button>
                 )}
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`编辑 ${model.name}`}
-                  title={`编辑 ${model.name}`}
+                  aria-label={i18n('common.actions.editLabel', [model.name])}
+                  title={i18n('common.actions.editLabel', [model.name])}
                   disabled={busy}
                   onClick={() => setEditing(model)}
                 >
@@ -239,8 +262,8 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`删除 ${model.name}`}
-                  title={`删除 ${model.name}`}
+                  aria-label={i18n('common.actions.deleteLabel', [model.name])}
+                  title={i18n('common.actions.deleteLabel', [model.name])}
                   disabled={busy}
                   onClick={() => setDeleting(model)}
                 >
@@ -251,34 +274,45 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
 
             <dl className="mt-4 grid gap-2 text-sm leading-5">
               <div className="flex gap-3">
-                <dt className="w-16 shrink-0 text-muted-foreground">服务地址</dt>
+                <dt className="w-16 shrink-0 text-muted-foreground">
+                  {i18n('settings.models.fields.urlTitle')}
+                </dt>
                 <dd className="m-0 min-w-0 break-all text-ink">{model.baseURL}</dd>
               </div>
               <div className="flex gap-3">
-                <dt className="w-16 shrink-0 text-muted-foreground">可用模型</dt>
+                <dt className="w-16 shrink-0 text-muted-foreground">
+                  {i18n('settings.models.availableTitle')}
+                </dt>
                 <dd className="m-0 min-w-0 leading-5 text-ink">
                   {model.modelIds.join('、')}
-                  <span className="ml-2 text-muted-foreground">（{model.modelIds.length} 个）</span>
+                  <span className="ml-2 text-muted-foreground">
+                    {i18n('settings.models.availableCount', [model.modelIds.length])}
+                  </span>
                 </dd>
               </div>
             </dl>
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <span className="text-sm text-muted-foreground">
-                最近更新：{new Date(model.updatedAt).toLocaleString('zh-CN')}
+                {i18n('settings.models.updatedAt', [new Date(model.updatedAt).toLocaleString(i18n.locale)])}
               </span>
               {activeModelId === model.id && (
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <div className="grid gap-1">
-                    <span>默认模型</span>
-                    <span className="text-xs text-muted-foreground">分析对话会预选此模型</span>
+                    <span>{i18n('settings.models.defaultModelTitle')}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {i18n('settings.models.defaultModelDescription')}
+                    </span>
                   </div>
                   <SelectField
-                    aria-label="默认模型"
+                    aria-label={i18n('settings.models.defaultModelTitle')}
                     value={model.model}
                     disabled={busy}
                     onChange={(selected) =>
-                      void perform(() => window.workbench.modelActivate(model.id, selected), '默认模型已更新')
+                      void perform(
+                        () => window.workbench.modelActivate(model.id, selected),
+                        i18n('settings.models.notifications.defaultModelUpdated'),
+                      )
                     }
                     options={model.modelIds.map((id) => ({ value: id, label: id }))}
                   />
@@ -291,8 +325,8 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
       {!models.length && (
         <div className="grid justify-items-center gap-3 px-6 py-14 text-center">
           <CpuIcon size={32} className="text-accent" />
-          <h2 className="m-0 text-base font-medium">连接你的第一个模型服务</h2>
-          <p className="m-0 leading-6 text-muted-foreground">支持兼容 OpenAI 接口的云端或本地服务</p>
+          <h2 className="m-0 text-base font-medium">{i18n('settings.models.empty.title')}</h2>
+          <p className="m-0 leading-6 text-muted-foreground">{i18n('settings.models.empty.description')}</p>
           <div className="mt-2">{addService}</div>
         </div>
       )}
@@ -306,10 +340,10 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
       <Modal
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title="删除模型服务"
+        title={i18n('settings.models.deleteTitle')}
         footer={
           <>
-            <Button onClick={() => setDeleting(null)}>取消</Button>
+            <Button onClick={() => setDeleting(null)}>{i18n('common.actions.cancel')}</Button>
             <Button
               variant="danger"
               disabled={busy}
@@ -317,15 +351,17 @@ export function ModelSettings({ models, activeModelId }: { models: ModelProfile[
                 void perform(async () => {
                   await window.workbench.modelDelete(deleting!.id);
                   setDeleting(null);
-                }, '模型服务已删除')
+                }, i18n('settings.models.notifications.deleted'))
               }
             >
-              删除
+              {i18n('common.actions.delete')}
             </Button>
           </>
         }
       >
-        <p className="m-0 leading-6 text-muted-foreground">确定删除“{deleting?.name}”及其模型配置吗？</p>
+        <p className="m-0 leading-6 text-muted-foreground">
+          {i18n('settings.models.deleteDescription', [deleting?.name])}
+        </p>
       </Modal>
     </section>
   );

@@ -1,8 +1,9 @@
+import { i18n } from './i18n';
 import { safeStorage } from 'electron';
 
 function assertAvailable() {
   if (!safeStorage.isEncryptionAvailable()) {
-    throw new Error('系统加密能力不可用，无法安全保存凭据。');
+    throw new Error(i18n('errors.credentials.encryptionUnavailable'));
   }
 }
 
@@ -16,6 +17,6 @@ export function decrypt(value: string) {
   try {
     return safeStorage.decryptString(Buffer.from(value, 'base64'));
   } catch {
-    throw new Error('凭据无法解密，请重新配置数据源或模型服务。');
+    throw new Error(i18n('errors.credentials.decryptionFailed'));
   }
 }

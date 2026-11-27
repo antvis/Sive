@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { LightbulbIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -11,6 +12,7 @@ import { cn } from '../../lib/utils';
 import { errorMessage } from '../../utils';
 
 export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
+  useI18n();
   const [deleting, setDeleting] = useState<Snippet | null>(null);
   const [sharing, setSharing] = useState<Snippet | null>(null);
   const [busy, setBusy] = useState(false);
@@ -34,7 +36,7 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
     try {
       await window.workbench.snippetRemove(deleting.messageId);
       setDeleting(null);
-      toast.success('Snippet 已删除');
+      toast.success(i18n('snippet.notifications.deleted'));
     } catch (cause) {
       toast.error(errorMessage(cause));
     } finally {
@@ -44,16 +46,20 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
 
   return (
     <WorkspacePage
-      title="洞察 Snippet"
-      description={<><span className="tabular-nums">{snippets.length}</span> 个已保存的数据洞察</>}
+      title={i18n('snippets.title')}
+      description={
+        <>
+          <span className="tabular-nums">{snippets.length}</span> {i18n('snippets.savedCountSuffix')}
+        </>
+      }
     >
       {!snippets.length ? (
         <div className="mt-10 grid justify-items-center rounded-2xl bg-page px-6 py-14 text-center">
           <div className="grid size-12 place-items-center rounded-xl bg-workspace-control text-ink">
             <LightbulbIcon size={23} aria-hidden />
           </div>
-          <h2 className="mt-4 mb-2 text-base font-medium">暂无数据洞察</h2>
-          <p className="m-0 text-muted-foreground">在分析图表中点击“保存 Snippet”后即可查看。</p>
+          <h2 className="mt-4 mb-2 text-base font-medium">{i18n('snippets.empty.title')}</h2>
+          <p className="m-0 text-muted-foreground">{i18n('snippets.empty.description')}</p>
         </div>
       ) : (
         <div
@@ -73,7 +79,7 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
                       createdAt={snippet.createdAt}
                       onUpdate={async (input) => {
                         await window.workbench.snippetUpdate(snippet.messageId, input);
-                        toast.success('Snippet 已更新');
+                        toast.success(i18n('snippet.notifications.updated'));
                       }}
                       onDelete={() => setDeleting(snippet)}
                       onShare={() => setSharing(snippet)}
@@ -91,16 +97,12 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
       <AlertDialog
         open={!!deleting}
         onOpenChange={(open) => !busy && !open && setDeleting(null)}
-        title="删除 Snippet"
-        description="确定删除这个 Snippet 吗？此操作无法撤销。"
-        cancel={
-          <Button disabled={busy}>
-            取消
-          </Button>
-        }
+        title={i18n('snippet.actions.delete')}
+        description={i18n('snippet.deleteConfirmation')}
+        cancel={<Button disabled={busy}>{i18n('common.actions.cancel')}</Button>}
       >
         <Button variant="danger" disabled={busy} onClick={() => void remove()}>
-          {busy ? '删除中…' : '删除'}
+          {busy ? i18n('common.status.deleting') : i18n('common.actions.delete')}
         </Button>
       </AlertDialog>
     </WorkspacePage>

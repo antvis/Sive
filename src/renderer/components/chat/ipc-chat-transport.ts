@@ -1,3 +1,4 @@
+import { i18n } from '../../i18n';
 import type { ChatTransport, UIMessageChunk } from 'ai';
 import { analysisStartSchema } from '../../../shared/api';
 import type { ChatMessage } from '../../../shared/api';
@@ -25,7 +26,7 @@ export class IpcChatTransport implements ChatTransport<ChatMessage> {
     abortSignal,
     trigger,
   }: Parameters<ChatTransport<ChatMessage>['sendMessages']>[0]) {
-    if (trigger !== 'submit-message') throw new Error('暂不支持重新生成消息。');
+    if (trigger !== 'submit-message') throw new Error(i18n('errors.chat.regenerationUnsupported'));
     const input = await analysisStartSchema.parseAsync({ ...body, chatId, message: messages.at(-1) });
     const { stream } = this.subscribe(chatId, abortSignal, async (subscriptionId) => {
       await window.workbench.analysisStart(input, subscriptionId);

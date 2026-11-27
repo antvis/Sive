@@ -14,6 +14,7 @@ import { cn } from '../../lib/utils';
 import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
 import { useI18n } from '../../i18n';
+import { translateError } from '@shared/i18n';
 import { IpcChatTransport } from './ipc-chat-transport';
 import { useConversationActivity, useConversationRead } from '../../hooks/useConversationStatus';
 import { ChatWelcomeHeader } from './welcome';
@@ -86,7 +87,8 @@ export function Chat({
   const historyReady = loadedHistoryKey === historyKey && !historyLoading;
   const starting = !historyLoading && !busy && messages.length === 0;
   const hasSuggestions = !suggestionsLoading && suggestions.length > 0;
-  const displayError = error || chatError?.message;
+  const rawError = error || chatError?.message;
+  const displayError = rawError ? translateError(i18n.locale, rawError) : undefined;
 
   useConversationRead(chatId, visible && historyReady && !busy);
 
@@ -190,7 +192,7 @@ export function Chat({
   const datasetSelector = !conversationId && (
     <Select value={datasetId} onValueChange={changeDataset} disabled={busy}>
       <SelectTrigger
-        aria-label="切换数据源"
+        aria-label={i18n('chat.actions.switchDataset')}
         title={datasetName}
         className={cn(
           'h-7 rounded-full border-transparent px-2.5',
@@ -227,7 +229,7 @@ export function Chat({
             'before:bg-[image:linear-gradient(var(--grid-line)_1px,transparent_1px),linear-gradient(90deg,var(--grid-line)_1px,transparent_1px)] before:bg-size-[26px_26px] before:mask-[radial-gradient(ellipse_75%_42%_at_50%_0%,#000_10%,transparent_75%)]',
           ],
         )}
-        aria-label="AI 对话"
+        aria-label={i18n('chat.regionLabel')}
       >
         {toolbar && (
           <div
@@ -295,7 +297,9 @@ export function Chat({
               />
             </div>
             {starting && ((activeModelId && suggestionsLoading) || hasSuggestions) && (
-              <p className="mt-3 mb-1 px-3 text-sm text-muted-foreground">试试这样问：</p>
+              <p className="mt-3 mb-1 px-3 text-sm text-muted-foreground">
+                {i18n('chat.suggestionsHeading')}
+              </p>
             )}
             {starting && activeModelId && suggestionsLoading && (
               <div role="status">
@@ -327,7 +331,9 @@ export function Chat({
                       className="group/example h-auto min-h-9 w-full items-center justify-between gap-3 rounded-lg bg-transparent px-3 py-1.5 text-left text-sm leading-relaxed font-normal whitespace-normal text-muted-foreground hover:bg-workspace-control hover:text-ink focus-visible:bg-workspace-control focus-visible:text-ink motion-reduce:transition-none"
                     >
                       <span className="flex min-w-0 items-start gap-2">
-                        <span className="shrink-0" aria-hidden>💡</span>
+                        <span className="shrink-0" aria-hidden>
+                          💡
+                        </span>
                         <span className="min-w-0 wrap-anywhere">{query}</span>
                       </span>
                       <ArrowUpRightIcon

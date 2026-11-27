@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { ArchiveIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -11,12 +12,14 @@ import { Input } from '../../components/ui/input';
 type Props = { conversations: Conversation[]; datasets: DatasetSummary[] };
 
 export function ArchivedConversations({ conversations, datasets }: Props) {
+  useI18n();
   const [query, setQuery] = useState('');
   const [deleting, setDeleting] = useState<Conversation | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const sourceName = (id: string) => datasets.find((dataset) => dataset.id === id)?.name ?? '数据源已删除';
+  const sourceName = (id: string) =>
+    datasets.find((dataset) => dataset.id === id)?.name ?? i18n('datasets.notifications.deleted');
   const needle = query.trim().toLocaleLowerCase();
   const filtered = conversations.filter((conversation) =>
     `${conversation.title} ${sourceName(conversation.datasetId)}`.toLocaleLowerCase().includes(needle),
@@ -43,8 +46,8 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
     return (
       <div className="grid justify-items-center px-6 py-14 text-center">
         <ArchiveIcon size={32} className="text-muted-foreground" />
-        <h2 className="mt-4 mb-2 text-base font-medium">暂无归档会话</h2>
-        <p className="m-0 text-muted-foreground">在侧栏归档的分析会话可以在这里恢复或永久删除</p>
+        <h2 className="mt-4 mb-2 text-base font-medium">{i18n('settings.archived.empty.title')}</h2>
+        <p className="m-0 text-muted-foreground">{i18n('settings.archived.empty.description')}</p>
       </div>
     );
   }
@@ -53,11 +56,11 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
     <section>
       <Input
         type="search"
-        aria-label="搜索归档会话"
+        aria-label={i18n('settings.archived.search.label')}
         className="mb-5 max-w-80"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="搜索会话标题或数据源"
+        placeholder={i18n('settings.archived.search.placeholder')}
       />
       {error && <p className="mt-0 text-sm text-danger">{error}</p>}
       <div className="grid grid-cols-1 gap-5">
@@ -66,7 +69,7 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
             <h2 className="mt-0 mb-2 text-base font-medium">
               {sourceName(datasetId)}
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                {items.length} 个分析会话
+                {i18n('settings.archived.count', [items.length])}
               </span>
             </h2>
             <div className="rounded-2xl bg-page px-4">
@@ -80,14 +83,16 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                       {conversation.title}
                     </strong>
                     <time className="mt-1 block text-xs text-muted-foreground">
-                      归档于 {new Date(conversation.archivedAt!).toLocaleString('zh-CN')}
+                      {i18n('settings.archived.archivedAt', [
+                        new Date(conversation.archivedAt!).toLocaleString(i18n.locale),
+                      ])}
                     </time>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`永久删除 ${conversation.title}`}
-                    title={`永久删除 ${conversation.title}`}
+                    aria-label={i18n('settings.archived.actions.purgeLabel', [conversation.title])}
+                    title={i18n('settings.archived.actions.purgeLabel', [conversation.title])}
                     disabled={busy}
                     onClick={() => setDeleting(conversation)}
                   >
@@ -96,11 +101,14 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`恢复 ${conversation.title}`}
-                    title={`恢复 ${conversation.title}`}
+                    aria-label={i18n('settings.archived.actions.restoreLabel', [conversation.title])}
+                    title={i18n('settings.archived.actions.restoreLabel', [conversation.title])}
                     disabled={busy}
                     onClick={() =>
-                      void perform(() => window.workbench.conversationRestore(conversation.id), '会话已恢复')
+                      void perform(
+                        () => window.workbench.conversationRestore(conversation.id),
+                        i18n('settings.archived.notifications.restored'),
+                      )
                     }
                   >
                     <RotateCcwIcon className="size-[16px]" aria-hidden />
@@ -113,16 +121,16 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
       </div>
       {!groups.size && (
         <p className="py-12 text-center text-sm text-muted-foreground">
-          没有匹配的会话，试试其他关键词或数据源
+          {i18n('settings.archived.empty.search')}
         </p>
       )}
       <Modal
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title="永久删除分析会话"
+        title={i18n('settings.archived.purgeTitle')}
         footer={
           <>
-            <Button onClick={() => setDeleting(null)}>取消</Button>
+            <Button onClick={() => setDeleting(null)}>{i18n('common.actions.cancel')}</Button>
             <Button
               variant="danger"
               disabled={busy}
@@ -131,17 +139,15 @@ export function ArchivedConversations({ conversations, datasets }: Props) {
                   await window.workbench.conversationPurge([deleting!.id]);
                   clearConversationUnread(deleting!.id);
                   setDeleting(null);
-                }, '已永久删除')
+                }, i18n('settings.archived.notifications.purged'))
               }
             >
-              永久删除
+              {i18n('settings.archived.actions.purge')}
             </Button>
           </>
         }
       >
-        <p className="m-0 leading-6 text-muted-foreground">
-          会话的分析结果和收藏将一并删除，数据源不受影响。此操作无法恢复
-        </p>
+        <p className="m-0 leading-6 text-muted-foreground">{i18n('settings.archived.purgeDescription')}</p>
       </Modal>
     </section>
   );

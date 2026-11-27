@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getMessages } from './i18n';
 
 export const githubConnectionIdSchema = z.uuid();
 
@@ -27,7 +28,7 @@ export function githubRepository(value: string) {
   if (repository.startsWith('https://')) {
     const url = new URL(repository);
     if (url.hostname !== 'github.com' || url.username || url.password || url.port) {
-      throw new Error('请输入 github.com 的仓库地址。');
+      throw new Error(getMessages('zh-CN')['errors.github.repositoryHostInvalid']);
     }
     repository = url.pathname
       .replace(/^\//, '')
@@ -36,7 +37,7 @@ export function githubRepository(value: string) {
   }
   repository = repository.replace(/\.git$/, '');
   if (!/^[a-z\d](?:[a-z\d-]{0,38})\/[a-z\d_.-]+$/i.test(repository) || /\/(\.|\.\.)$/.test(repository)) {
-    throw new Error('请输入 owner/repo 或 https://github.com/owner/repo。');
+    throw new Error(getMessages('zh-CN')['errors.github.repositoryFormatInvalid']);
   }
   return repository;
 }

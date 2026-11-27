@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../components/ui/button';
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function ModelPicker({ options, value, onChange, disabled }: Props) {
+  useI18n();
   const [adding, setAdding] = useState(false);
   const [manual, setManual] = useState('');
   const [error, setError] = useState('');
@@ -26,7 +28,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
     const id = manual.trim();
     if (!id) return;
     if (all.includes(id)) {
-      setError('该模型已在列表中。');
+      setError(i18n('errors.model.duplicate'));
       return;
     }
     onChange([...value, id]);
@@ -50,7 +52,9 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
           </label>
         ))}
         {!all.length && (
-          <p className="m-0 px-1 py-3 text-center text-sm text-muted-foreground">请获取或手动添加模型</p>
+          <p className="m-0 px-1 py-3 text-center text-sm text-muted-foreground">
+            {i18n('models.picker.empty')}
+          </p>
         )}
       </div>
 
@@ -82,8 +86,8 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
                   setAdding(false);
                 }
               }}
-              placeholder="输入模型 ID，Enter 添加"
-              aria-label="自定义模型 ID"
+              placeholder={i18n('models.picker.customPlaceholder')}
+              aria-label={i18n('models.picker.customLabel')}
             />
             <InputGroupAddon align="inline-end">
               <InputGroupButton
@@ -91,7 +95,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
                 disabled={disabled || !manual.trim()}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={add}
-                aria-label="确认添加模型"
+                aria-label={i18n('models.picker.confirmCustom')}
               >
                 <CheckIcon aria-hidden />
               </InputGroupButton>
@@ -107,7 +111,7 @@ export function ModelPicker({ options, value, onChange, disabled }: Props) {
           onClick={() => setAdding(true)}
         >
           <PlusIcon size={15} />
-          添加自定义模型
+          {i18n('models.picker.addCustom')}
         </Button>
       )}
     </div>

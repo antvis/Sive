@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../i18n';
 import clsx from 'clsx';
 import { XIcon } from 'lucide-react';
 import { Tabs } from 'radix-ui';
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export function PanelTabList({ label, tabs, activeTabId, visible, className, onClose }: Props) {
+  useI18n();
   const activeTab = useRef<HTMLButtonElement>(null);
   const restoreFocus = useRef(false);
 
@@ -69,8 +71,8 @@ export function PanelTabList({ label, tabs, activeTabId, visible, className, onC
             <Button
               variant="ghost"
               size="icon-xs"
-              aria-label={`关闭${title}标签`}
-              title={`关闭${title}标签`}
+              aria-label={i18n("sidePanel.tabs.closeLabel", [title])}
+              title={i18n("sidePanel.tabs.closeLabel", [title])}
               tabIndex={-1}
               className="me-1 hover:bg-ink/5"
               onClick={() => closeTab(id)}

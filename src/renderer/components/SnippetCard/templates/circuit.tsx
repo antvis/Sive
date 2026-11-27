@@ -1,3 +1,4 @@
+import { i18n, useI18n } from '../../../i18n';
 import { CalendarIcon, ChevronDownIcon, CheckIcon, QuoteIcon, TagIcon } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
@@ -8,6 +9,7 @@ import { Visualization } from '../../Visualization';
 import { getIntentIcon } from '../utils';
 
 export default function CircuitTemplate({ data, createdAt, mode = 'view', card }: SnippetTemplateProps) {
+  useI18n();
   const {
     editing,
     title,
@@ -52,7 +54,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
             'inline-flex min-h-7 items-center gap-1.5 rounded-sm border border-line! px-2 py-1 text-xs tabular-nums [&_svg]:shrink-0',
             'bg-[color-mix(in_srgb,var(--accent-soft)_25%,var(--surface))] font-semibold text-ink',
           )}
-          title={`分析类别：${data.intent}`}
+          title={i18n('snippet.categoryLabel', [data.intent])}
         >
           <IntentIcon size={13} aria-hidden className="text-accent" />
           {data.intent}
@@ -74,7 +76,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
         {editing ? (
           <div>
             <label htmlFor={titleId} className="text-xs font-medium text-muted-foreground">
-              标题
+              {i18n('common.fields.title')}
             </label>
             <textarea
               id={titleId}
@@ -82,8 +84,8 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
               value={title}
               disabled={busy}
               autoFocus
-              aria-label="Snippet 标题"
-              placeholder="为这份洞察起个标题"
+              aria-label={i18n('snippet.editor.titleLabel')}
+              placeholder={i18n('snippet.editor.titlePlaceholder')}
               onChange={(event) => setTitle(event.target.value)}
             />
           </div>
@@ -114,7 +116,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
       </div>
       {data.metrics.length > 0 && (
         <dl
-          aria-label="关键指标"
+          aria-label={i18n('snippet.metrics.title')}
           className="mt-5 grid grid-flow-col auto-cols-fr gap-4 border-y border-line! py-4"
         >
           {data.metrics.map((metric, index) => (
@@ -134,21 +136,21 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
         <div className="mt-5">
           <div className="rounded-sm border-l-2 border-accent/60! bg-accent/5 px-4 py-3 ring-1 ring-line/60 focus-within:ring-focus/50">
             <label htmlFor={summaryId} className="text-xs font-medium text-muted-foreground">
-              关键洞察
+              {i18n('snippet.insights.title')}
             </label>
             <textarea
               id={summaryId}
               className="mt-2 block field-sizing-content max-h-72 min-h-24 w-full resize-none border-0 bg-transparent p-0 text-base leading-relaxed text-pretty text-ink outline-none disabled:opacity-50"
               value={summary}
               disabled={busy}
-              aria-label="Snippet 洞察描述"
-              placeholder="记录数据里的关键发现…"
+              aria-label={i18n('snippet.editor.descriptionLabel')}
+              placeholder={i18n('snippet.editor.descriptionPlaceholder')}
               onChange={(event) => setSummary(event.target.value)}
             />
           </div>
           <div className="mt-3 flex items-center justify-end gap-2">
             <Button variant="ghost" className="h-9 rounded-sm" disabled={busy} onClick={cancelEditing}>
-              取消
+              {i18n('common.actions.cancel')}
             </Button>
             <Button
               variant="neutral"
@@ -157,14 +159,14 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
               onClick={() => void saveEdits()}
             >
               <CheckIcon size={14} aria-hidden />
-              {busy ? '保存中…' : '保存修改'}
+              {busy ? i18n('common.status.saving') : i18n('common.actions.saveChanges')}
             </Button>
           </div>
         </div>
       ) : (
         data.summary.trim() && (
           <section
-            aria-label="关键洞察"
+            aria-label={i18n('snippet.insights.title')}
             className="relative isolate mt-5 rounded-md bg-[linear-gradient(110deg,color-mix(in_srgb,var(--accent)_7%,var(--surface)),var(--surface))] px-4 py-3"
           >
             <QuoteIcon
@@ -197,7 +199,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
                     'mt-2 inline-flex items-center gap-1 p-0 text-sm leading-5 text-muted-foreground hover:text-ink focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-focus'
                   }
                 >
-                  {summaryExpanded ? '收起洞察' : '展开洞察'}
+                  {summaryExpanded ? i18n('snippet.insights.collapse') : i18n('snippet.insights.expand')}
                   <ChevronDownIcon
                     size={12}
                     aria-hidden
@@ -216,7 +218,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
       )}
       <figure className="relative mx-0 mt-6 mb-0 min-w-0 border-y border-line/60! pt-3 pb-2">
         <figcaption className="mb-3 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="text-accent">图表分析</span>
+          <span className="text-accent">{i18n('snippet.chart.title')}</span>
           <span aria-hidden className="h-px flex-1 bg-line" />
           <svg viewBox="0 0 80 80" aria-hidden className="size-6 text-accent" fill="none">
             <path
@@ -238,9 +240,7 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
               aria-hidden
               className="size-4 shrink-0 bg-current [mask:url('/sive.svg')_center/contain_no-repeat]"
             />
-            <span>
-              Made with <span className="font-semibold text-ink">Sive</span>
-            </span>
+            <span>{i18n('snippet.export.attribution')}</span>
           </span>
         ) : (
           <AnalysisSource question={data.question} trace={data.trace} />
@@ -248,11 +248,11 @@ export default function CircuitTemplate({ data, createdAt, mode = 'view', card }
         {createdAt && (
           <time
             dateTime={createdAt}
-            title={`保存于 ${new Date(createdAt).toLocaleString('zh-CN')}`}
+            title={i18n('snippet.savedAt', [new Date(createdAt).toLocaleString(i18n.locale)])}
             className="ml-auto flex shrink-0 items-center gap-1.5 leading-6 tabular-nums"
           >
             <CalendarIcon size={13} aria-hidden />
-            {new Date(createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
+            {new Date(createdAt).toLocaleDateString(i18n.locale, { month: 'short', day: 'numeric' })}
           </time>
         )}
       </footer>

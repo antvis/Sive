@@ -10,6 +10,7 @@ import type {
 import type { UIMessage, UIMessageChunk } from 'ai';
 import { isTextUIPart, validateUIMessages } from 'ai';
 import { z } from 'zod';
+import { getMessages } from './i18n';
 import type { LocalFileFormat } from './dataSource';
 import type { GitHubDeviceAuthorization, GitHubRepositoryPage, GitHubRepositoryListInput } from './github';
 
@@ -145,7 +146,7 @@ export const analysisStartSchema = z.object({
   message: z.unknown().transform(async (value) => {
     const [message] = await validateUIMessages<ChatMessage>({ messages: [value] });
     if (message.role !== 'user' || !message.parts.every(isTextUIPart)) {
-      throw new Error('仅支持发送用户文本消息。');
+      throw new Error(getMessages('zh-CN')['errors.chat.userTextOnly']);
     }
     return message;
   }),
