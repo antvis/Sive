@@ -213,7 +213,7 @@
   --color-focus: var(--ring);
   --color-selected: var(--selected);
   --color-selected-foreground: var(--selected-foreground);
-  --color-control-checked: var(--accent-fill);
+  --color-control-checked: light-dark(var(--ring), var(--accent));
   --color-danger: var(--danger);
   --color-card: var(--surface);
   --color-card-foreground: var(--foreground);
@@ -265,16 +265,15 @@
   --line: #e6e7e9;
   --workspace-control: #f1f2f3;
   --client-accent: #1566a9;
-  --accent-fill: #2e8fd9;
   --accent-soft: #cfe9ff;
   --accent-foreground: #fff;
   --primary: #181a1e;
   --primary-hover: #30343b;
   --selected: #f2f2f5;
   --selected-foreground: #303236;
-  --ring: var(--accent-fill);
+  --ring: #2e8fd9;
   --danger: #b4343c;
-  --chart-palette: var(--accent-fill), #6267b6, #c58332, #b45f60, #46947b, #667d99;
+  --chart-palette: var(--ring), #6267b6, #c58332, #b45f60, #46947b, #667d99;
   --chart-text-palette: var(--accent), #5258a2, #8f5b23, #994649, #30745e, #52677e;
   --chart-stroke: #84939f;
   --sql-keyword: #244fc4;
@@ -306,7 +305,6 @@
   --line: #343d48;
   --workspace-control: #2a323c;
   --client-accent: #83caff;
-  --accent-fill: var(--accent);
   --accent-soft: #20394d;
   --accent-foreground: #141d27;
   --primary: #3b4552;

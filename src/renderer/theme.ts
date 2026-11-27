@@ -50,6 +50,8 @@ export function createChartTheme(
       .split(',')
       .map((value) => value.trim());
 
+  const chartPalette = palette('chart-palette');
+
   const theme: ThemeSpec = {
     id: `sive-desktop-${mode}`,
     label: 'Sive Desktop',
@@ -57,7 +59,7 @@ export function createChartTheme(
       '适配 Sive 客户端的清爽便签主题：系统字体与灰白底色，青绿搭配蓝色、杏色和珊瑚色，以柔和层次统一统计图、关系图、表格和叙述摘要。',
     baseTheme: mode === 'dark' ? 'dark' : 'default',
     tokens: {
-      colorDefault: color('accent-fill'),
+      colorDefault: chartPalette[0],
       colorBackground: color('surface'),
       colorSurface: color('page'),
       colorText: color('ink'),
@@ -67,7 +69,7 @@ export function createChartTheme(
       colorPositive: color('accent'),
       colorNegative: color('danger'),
       colorNeutral: color('muted-foreground'),
-      category10: palette('chart-palette'),
+      category10: chartPalette,
       fontFamily: styles.fontFamily,
       fontWeight: 400,
       lineHeight,
@@ -151,7 +153,7 @@ export function createChartTheme(
         style: { palette: palette('chart-text-palette') },
       },
       venn: { style: { mark: { path: { fillOpacity: 0.3 } }, label: { fill: color('ink') } } },
-      waterfall: { style: { palette: [color('accent'), color('danger'), palette('chart-palette')[1]] } },
+      waterfall: { style: { palette: [color('accent'), color('danger'), chartPalette[1]] } },
     },
   };
 
