@@ -2,11 +2,9 @@ import {
   Columns2Icon,
   DatabaseIcon,
   FileTextIcon,
-  PencilIcon,
   PlusIcon,
   SearchIcon,
   Table2Icon,
-  Trash2Icon,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -87,7 +85,7 @@ function DatasetCard({
   };
 
   return (
-    <article className="group relative isolate rounded-2xl bg-page p-5 shadow-card transition-[box-shadow,translate] hover:shadow-card-raised motion-safe:hover:-translate-y-0.5">
+    <article className="relative isolate rounded-2xl bg-page p-5 shadow-card transition-[box-shadow,translate] hover:shadow-card-raised motion-safe:hover:-translate-y-0.5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface">
@@ -122,32 +120,18 @@ function DatasetCard({
             </button>
           )}
         </div>
-        {action !== 'rename' && (
-          <div className="relative z-10 flex shrink-0 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`重命名 ${dataset.name}`}
-              title={`重命名 ${dataset.name}`}
-              onClick={() => {
-                renameCancelled.current = false;
-                setName(dataset.name);
-                setAction('rename');
-              }}
-            >
-              <PencilIcon className="size-[14px]" aria-hidden />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`删除 ${dataset.name}`}
-              title={`删除 ${dataset.name}`}
-              onClick={() => setAction('delete')}
-            >
-              <Trash2Icon className="size-[14px]" aria-hidden />
-            </Button>
-          </div>
-        )}
+        <SourceActions
+          datasetId={dataset.id}
+          datasetName={dataset.name}
+          sourceType={dataset.sourceType}
+          disabled={busy || action !== null}
+          onRename={() => {
+            renameCancelled.current = false;
+            setName(dataset.name);
+            setAction('rename');
+          }}
+          onDelete={() => setAction('delete')}
+        />
       </div>
       <div className="mt-5 grid grid-cols-3 gap-2 rounded-xl bg-surface py-3">
         {stats.map(({ label, value, icon: StatIcon }) => (
@@ -169,9 +153,6 @@ function DatasetCard({
           {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}
         </span>
         <span>更新于 {dataset.updatedAt.slice(0, 10)}</span>
-        <div className="relative z-10 ml-auto">
-          <SourceActions datasetId={dataset.id} sourceType={dataset.sourceType} />
-        </div>
       </footer>
       {dataset.fileUnavailable && (
         <p className="mt-2 mb-0 text-sm text-danger">文件不可用，请检查原文件或重新导入。</p>
