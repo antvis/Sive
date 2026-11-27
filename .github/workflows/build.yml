@@ -30,4 +30,4 @@ jobs:
         run: pnpm test
 
       - name: Build
-        run: echo "Build step is currently disabled. Please enable it when ready."
+        run: pnpm build

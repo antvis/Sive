@@ -96,7 +96,7 @@ Sive 桌面软件支持的数据源完全来源于 AVA v4，目前支持以下�
 
 ## 💻 参与贡献
 
-环境要求：Node.js >= 22.13，pnpm 10。
+环境要求：Node.js >= 22.14.0，pnpm 10。
 
 ```bash
 pnpm install
@@ -104,11 +104,7 @@ pnpm electron:install   # 安装 Electron 二进制，已配置国内镜像
 pnpm dev                # 启动开发环境
 ```
 
-打包桌面应用：
-
-```bash
-pnpm package            # 产物输出到 release/
-```
+桌面安装包统一由 GitHub Actions 在推送版本标签后构建。
 
 Electron + React 19 + TypeScript + Tailwind CSS，主进程负责 AI（AVA）与 SQLite 持久化，渲染进程通过 `window.workbench` 与主进程通信，详见 [AGENTS.md](./AGENTS.md)。
 
