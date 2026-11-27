@@ -27,7 +27,7 @@ export function CollapsibleSection({
       <CollapsibleInlineContent>
         <div
           tabIndex={0}
-          className="max-h-[min(360px,48dvh)] overflow-y-auto overscroll-y-contain rounded-sm focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+          className="max-h-[min(360px,48dvh)] overflow-y-auto rounded-sm focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-focus"
         >
           {children}
         </div>
