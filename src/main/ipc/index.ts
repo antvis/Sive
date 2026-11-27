@@ -41,6 +41,8 @@ export function registerIpc(
     }
   };
 
+  services.analysis.onActivityChange = changed;
+
   ipcMain.handle('settingsOpen', () => settingsWindow.open());
   ipcMain.on('settingsClose', ({ sender }) => settingsWindow.close(sender));
   ipcMain.handle(
@@ -52,6 +54,7 @@ export function registerIpc(
     const preferences = services.settings.getPreferences();
     return {
       conversations: services.conversation.list(),
+      conversationActivities: services.analysis.getActivities(),
       archivedConversations: services.conversation.listArchived(),
       datasets: services.dataset.listSummaries(),
       snippets: services.snippet.list(),
@@ -203,7 +206,6 @@ export function registerIpc(
         if (!sender.isDestroyed()) sender.send('analysis:chunk', subscriptionId, input.message.id, chunk);
       },
     );
-    changed();
     void titleUpdate?.then((renamed) => {
       if (renamed) changed();
     });
@@ -222,6 +224,12 @@ export function registerIpc(
   ipcMain.handle('analysisGetMessages', (_event, conversationId: string) =>
     services.analysis.getMessages(conversationId),
   );
+
+  ipcMain.handle('analysisMarkRead', (_event, conversationId: string, messageId: string) => {
+    if (typeof conversationId !== 'string' || !conversationId || typeof messageId !== 'string' || !messageId)
+      throw new Error('无效的会话已读状态。');
+    services.analysis.markRead(conversationId, messageId);
+  });
 
   ipcMain.handle('snippetSave', (_event, input: SnippetSaveInput) => {
     const result = services.snippet.save(input);

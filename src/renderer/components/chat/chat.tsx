@@ -14,7 +14,7 @@ import { cn } from '../../lib/utils';
 import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
 import { IpcChatTransport } from './ipc-chat-transport';
-import { useConversationRead } from '../../hooks/useConversationStatus';
+import { useConversationActivity, useConversationRead } from '../../hooks/useConversationStatus';
 import { ChatWelcomeHeader } from './welcome';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
@@ -68,43 +68,47 @@ export function Chat({
     error: chatError,
   } = useChat<ChatMessage>({ id: chatId, transport });
   const [historyLoading, setHistoryLoading] = useState(Boolean(conversationId));
-  const reconnectAttempted = useRef(false);
-  const [loadedChatId, setLoadedChatId] = useState<string | null>(null);
+  const reconnectAttempted = useRef<string | null>(null);
+  const [loadedHistoryKey, setLoadedHistoryKey] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestResult[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [error, setError] = useState('');
   const activeProvider = models.find((model) => model.id === activeModelId);
   const activeModel = activeProvider?.model ?? '';
 
-  const busy = status === 'submitted' || status === 'streaming';
+  const activity = useConversationActivity(chatId);
+  const streamBusy = status === 'submitted' || status === 'streaming';
+  const running = activity?.status === 'running';
+  const busy = streamBusy || running;
+  const historyKey = JSON.stringify([chatId, activity?.messageId, running]);
+  const historyReady = loadedHistoryKey === historyKey && !historyLoading;
   const starting = !historyLoading && !busy && messages.length === 0;
   const hasSuggestions = !suggestionsLoading && suggestions.length > 0;
   const displayError = error || chatError?.message;
 
-  useConversationRead(chatId, visible && loadedChatId === chatId && !historyLoading && !busy);
+  useConversationRead(chatId, visible && historyReady && !busy);
 
   useEffect(() => {
     let live = true;
     if (!conversationId) {
-      reconnectAttempted.current = true;
-      setLoadedChatId(chatId);
+      setLoadedHistoryKey(historyKey);
       setHistoryLoading(false);
-    } else if (!busy) {
-      setLoadedChatId(null);
-      const shouldReconnect = !reconnectAttempted.current;
-      reconnectAttempted.current = true;
+    } else if (!streamBusy) {
+      setHistoryLoading(true);
 
       const restore = async () => {
         try {
           const history = await window.workbench.analysisGetMessages(conversationId);
           if (live) {
             setMessages(history);
-            setLoadedChatId(chatId);
+            setLoadedHistoryKey(historyKey);
           }
         } finally {
           if (live) setHistoryLoading(false);
         }
-        if (!live || !shouldReconnect) return;
+        if (!live || !running || reconnectAttempted.current === historyKey) return;
+        // Commit the attempt only after a live history load; effect cleanup may interrupt restoration.
+        reconnectAttempted.current = historyKey;
         await resumeStream();
         if (!live) return;
         const history = await window.workbench.analysisGetMessages(conversationId);
@@ -117,7 +121,7 @@ export function Chat({
     return () => {
       live = false;
     };
-  }, [chatId, conversationId, busy, setMessages, resumeStream]);
+  }, [conversationId, streamBusy, historyKey, running, setMessages, resumeStream]);
 
   useEffect(() => {
     let live = true;
@@ -152,7 +156,7 @@ export function Chat({
   };
 
   const start = async ({ text }: PromptInputMessage) => {
-    if (!text.trim() || !activeModelId || busy || historyLoading) return;
+    if (!text.trim() || !activeModelId || busy || !historyReady) return;
     setError('');
     setQuestion('');
     await sendMessage(
@@ -278,8 +282,8 @@ export function Chat({
                 onChange={setQuestion}
                 onSubmit={start}
                 onStop={() => transport.stop(chatId)}
-                status={status}
-                disabled={!activeModelId || historyLoading}
+                status={running && !streamBusy ? 'submitted' : status}
+                disabled={!activeModelId || !historyReady}
                 models={models}
                 activeModelId={activeModelId}
                 onModelChange={changeModel}
