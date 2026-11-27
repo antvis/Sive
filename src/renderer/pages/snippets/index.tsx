@@ -58,7 +58,7 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
       ) : (
         <div
           className={cn(
-            'mt-10 grid grid-cols-1 items-start gap-6',
+            'mt-10 grid grid-cols-1 items-start gap-6 **:scrollbar-none',
             visibleColumns > 1 && 'grid-cols-2',
           )}
         >
