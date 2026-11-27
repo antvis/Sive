@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { WorkspaceState } from '../types';
 import { errorMessage } from '../utils';
+import { syncConversationActivities } from './useConversationStatus';
 
 export function useWorkspace() {
   const [state, setState] = useState<WorkspaceState | null>(null);
@@ -8,7 +9,9 @@ export function useWorkspace() {
 
   const refresh = useCallback(async () => {
     try {
-      setState(await window.workbench.workspaceGetState());
+      const next = await window.workbench.workspaceGetState();
+      syncConversationActivities(next.conversationActivities);
+      setState(next);
       setError('');
     } catch (cause) {
       setError(errorMessage(cause));

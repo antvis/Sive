@@ -159,8 +159,15 @@ export type AnalysisStartInput = z.infer<typeof analysisStartSchema>;
 
 export type AnalysisStreamChunk = UIMessageChunk | 'replaced' | null;
 
+export type ConversationActivity = {
+  conversationId: string;
+  messageId: string;
+  status: 'running' | 'unread' | 'idle';
+};
+
 export type WorkspaceState = {
   conversations: Conversation[];
+  conversationActivities: ConversationActivity[];
   archivedConversations: Conversation[];
   datasets: DatasetSummary[];
   snippets: Snippet[];
@@ -222,6 +229,7 @@ export type WorkbenchApi = {
   analysisReconnect(conversationId: string, subscriptionId: string): Promise<boolean>;
   analysisCancel(conversationId: string): Promise<void>;
   analysisGetMessages(conversationId: string): Promise<ChatMessage[]>;
+  analysisMarkRead(conversationId: string, messageId: string): Promise<void>;
   analysisOnChunk(
     callback: (subscriptionId: string, messageId: string, chunk: AnalysisStreamChunk) => void,
   ): () => void;

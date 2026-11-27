@@ -62,6 +62,8 @@ const api = {
     ipcRenderer.invoke('analysisReconnect', conversationId, subscriptionId),
   analysisCancel: (conversationId) => ipcRenderer.invoke('analysisCancel', conversationId),
   analysisGetMessages: (conversationId) => ipcRenderer.invoke('analysisGetMessages', conversationId),
+  analysisMarkRead: (conversationId, messageId) =>
+    ipcRenderer.invoke('analysisMarkRead', conversationId, messageId),
   analysisOnChunk: (callback) => {
     const listener = (_event: IpcRendererEvent, ...args: Parameters<typeof callback>) => callback(...args);
     ipcRenderer.on('analysis:chunk', listener);
