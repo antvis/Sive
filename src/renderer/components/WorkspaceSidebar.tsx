@@ -307,11 +307,11 @@ export function WorkspaceSidebar({
           </SidebarButton>
         </SidebarList>
       </nav>
-      <nav className="mx-2.5 mt-6 flex min-h-0 flex-1 flex-col gap-4" aria-label="分析历史">
+      <nav className="mx-2.5 mt-6 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto scrollbar-none" aria-label="分析历史">
         {groupSections.filter(({ groups }) => groups.length > 0).map(({ id, title, groups }) => (
           <section
             key={id}
-            className="flex max-h-1/2 min-h-0 flex-col"
+            className="flex shrink-0 flex-col"
             aria-labelledby={`sidebar-${id}-heading`}
           >
             <h2
@@ -320,7 +320,7 @@ export function WorkspaceSidebar({
             >
               {title}
             </h2>
-            <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-height:28px] scrollbar-none">
+            <SidebarList className="[--sidebar-row-height:28px]">
               {groups.map(({ dataset, conversations }) => {
                 const open = expanded[dataset.id] !== false;
                 const pinned = pinnedIds.includes(dataset.id);
@@ -382,7 +382,7 @@ export function WorkspaceSidebar({
                     </div>
                     <div id={groupId} className="mb-[4px]" hidden={!open}>
                       {open && (
-                        <SidebarList className="max-h-56 min-w-0 overflow-y-auto ps-[24px] [--sidebar-row-gap:1px] [--sidebar-row-height:26px] scrollbar-none">
+                        <SidebarList className="min-w-0 ps-[24px] [--sidebar-row-gap:1px] [--sidebar-row-height:26px]">
                           {conversations.map((conversation) => (
                             <ConversationItem
                               key={conversation.id}
@@ -408,7 +408,7 @@ export function WorkspaceSidebar({
             </SidebarList>
           </section>
         ))}
-        <section className="flex min-h-0 flex-col" aria-labelledby="sidebar-recent-heading">
+        <section className="flex shrink-0 flex-col" aria-labelledby="sidebar-recent-heading">
           <div className="group/recent mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80">
             <h2 id="sidebar-recent-heading">最近</h2>
             <Button
@@ -423,7 +423,7 @@ export function WorkspaceSidebar({
               <SquarePenIcon className="size-[14px]" aria-hidden />
             </Button>
           </div>
-          <SidebarList className="min-h-0 overflow-y-auto [--sidebar-row-gap:2px] [--sidebar-row-height:28px] scrollbar-none">
+          <SidebarList className="[--sidebar-row-gap:2px] [--sidebar-row-height:28px]">
             {recentConversations.map((conversation) => (
               <ConversationItem
                 key={conversation.id}
