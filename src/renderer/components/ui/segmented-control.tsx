@@ -39,7 +39,8 @@ export function SegmentedControl<Value extends string>({
           key={value}
           value={value}
           className={cn(
-            'flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-sm text-muted-foreground -outline-offset-1 transition-colors hover:text-ink data-[state=checked]:bg-selected data-[state=checked]:text-selected-foreground disabled:opacity-45',
+            'flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-sm text-muted-foreground -outline-offset-1 transition-colors hover:text-ink disabled:opacity-45',
+            'data-[state=checked]:bg-[light-dark(var(--accent-soft),var(--accent))] data-[state=checked]:text-[color:light-dark(var(--accent),var(--accent-foreground))]',
             itemClassName,
           )}
         >
