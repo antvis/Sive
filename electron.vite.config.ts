@@ -2,9 +2,37 @@ import { defineConfig } from 'electron-vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'node:path';
+import { renameSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+import { dirname } from 'node:path';
 
 // Electron must launch as a desktop app even when the parent runs in Node mode.
 delete process.env.ELECTRON_RUN_AS_NODE;
+
+if (process.platform === 'darwin') {
+  const require = createRequire(import.meta.url);
+  const appBundle = resolve(dirname(require('electron')), '../..');
+  const namedAppBundle = resolve(dirname(appBundle), 'Sive.app');
+
+  // macOS can display the .app filename instead of the name in Info.plist.
+  if (appBundle !== namedAppBundle) {
+    // Reinstalling Electron restores Electron.app alongside the previously renamed bundle.
+    rmSync(namedAppBundle, { recursive: true, force: true });
+    renameSync(appBundle, namedAppBundle);
+    writeFileSync(
+      resolve(dirname(require.resolve('electron')), 'path.txt'),
+      'Sive.app/Contents/MacOS/Electron',
+    );
+  }
+  process.env.ELECTRON_EXEC_PATH = resolve(namedAppBundle, 'Contents/MacOS/Electron');
+  const plist = resolve(namedAppBundle, 'Contents/Info.plist');
+
+  // macOS reads the Dock label from the app bundle, not Electron's app.setName().
+  for (const key of ['CFBundleDisplayName', 'CFBundleName']) {
+    execFileSync('/usr/libexec/PlistBuddy', ['-c', `Set :${key} Sive`, plist]);
+  }
+}
 
 export default defineConfig(({ command }) => ({
   main: {
