@@ -8,7 +8,7 @@ type Props = PropsWithChildren<{
 
 export function WorkspacePage({ title, description, action, children }: Props) {
   return (
-    <div className="mx-auto w-full max-w-[1200px] px-7 pt-4 pb-12 lg:px-10 motion-safe:animate-fade-up">
+    <div className="min-h-full w-full px-7 pt-4 pb-12 lg:px-10 motion-safe:animate-fade-up">
       <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="m-0 text-3xl leading-tight font-semibold tracking-tight text-balance">{title}</h1>

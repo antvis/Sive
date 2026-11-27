@@ -267,7 +267,7 @@ export function DatasetsPage({
           </span>
         )}
       </div>
-      <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-4">
+      <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-4">
         {filtered.slice(0, visibleCount).map((dataset) => (
           <DatasetCard key={dataset.id} dataset={dataset} onOpen={onOpen} />
         ))}

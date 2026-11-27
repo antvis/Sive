@@ -60,7 +60,6 @@ export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
           className={cn(
             'mt-10 grid grid-cols-1 items-start gap-6',
             visibleColumns > 1 && 'grid-cols-2',
-            snippets.length === 1 && 'max-w-[800px]',
           )}
         >
           {Array.from({ length: visibleColumns }, (_, column) => (

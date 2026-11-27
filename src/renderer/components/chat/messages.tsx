@@ -29,7 +29,7 @@ export function Messages({
 
   return (
     <Conversation className="min-h-0 touch-pan-y">
-      <ConversationContent className="mx-auto min-h-full w-full min-w-0 max-w-3xl gap-6 px-4 pt-6 pb-8">
+      <ConversationContent className="mx-auto min-h-full w-full min-w-0 max-w-(--chat-content-width) gap-6 px-4 pt-6 pb-8">
         {historyLoading ? (
           <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
             <LoaderCircleIcon className="size-4 animate-spin" aria-hidden="true" />
