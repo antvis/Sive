@@ -216,7 +216,7 @@ export function Chat({
     <TooltipProvider>
       <section
         className={cn(
-          'relative isolate flex h-full min-h-0 flex-col text-base text-foreground [--chat-content-width:60rem] [&_code]:font-chat-mono [&_pre]:font-chat-mono',
+          'relative isolate flex h-full min-h-0 flex-col text-base text-foreground [--chat-content-width:64rem] [&_code]:font-chat-mono [&_pre]:font-chat-mono',
           starting && [
             'bg-[light-dark(#fff,#1b232e)]',
             'bg-[image:radial-gradient(ellipse_60%_26%_at_50%_0%,light-dark(#e9f6ff,#24384c),transparent_70%),radial-gradient(ellipse_70%_22%_at_55%_106%,light-dark(#5cbfff52,#2489ce55),transparent),radial-gradient(ellipse_90%_28%_at_40%_112%,light-dark(#afe4ff80,#28619763),transparent)]',
