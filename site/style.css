@@ -202,7 +202,7 @@ img {
   align-items: center;
   justify-content: center;
   gap: 0.1em;
-  font-size: clamp(46px, 5vw, 68px);
+  font-size: clamp(42px, 4.4vw, 60px);
   font-weight: 450;
   letter-spacing: -0.045em;
   line-height: 1.25;
@@ -888,7 +888,7 @@ summary::-webkit-details-marker {
     padding-inline: 50px;
   }
   .hero h1 {
-    font-size: 50px;
+    font-size: 44px;
   }
   .hero-download .download-options {
     left: auto;
@@ -1198,11 +1198,20 @@ summary::-webkit-details-marker {
 .capability-understanding {
   color: #2d806c;
 }
+.capability-understanding > span {
+  color: #4a9281;
+}
 .capability-analysis {
   color: #b76a31;
 }
+.capability-analysis > span {
+  color: #c17f4e;
+}
 .capability-visualization {
   color: #3e6db4;
+}
+.capability-visualization > span {
+  color: #5981bf;
 }
 .reveal-pending .type-character {
   opacity: 0;
@@ -1268,7 +1277,7 @@ summary::-webkit-details-marker {
     flex-direction: column;
     align-items: center;
     gap: 0;
-    font-size: clamp(40px, 11.5vw, 56px);
+    font-size: clamp(35px, 10vw, 50px);
     letter-spacing: -0.045em;
   }
   .hero-capability {
