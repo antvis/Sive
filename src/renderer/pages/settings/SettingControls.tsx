@@ -26,9 +26,7 @@ export function SettingGroup({
           {description && <div className="mt-1 text-sm text-muted-foreground">{description}</div>}
         </header>
       )}
-      <div className="divide-y divide-line/80 rounded-2xl bg-page px-4">
-        {children}
-      </div>
+      <div className="divide-y divide-line/80 rounded-2xl bg-page px-4">{children}</div>
     </section>
   );
 }
@@ -63,7 +61,9 @@ export function SettingField({
 
   return (
     <div className="grid gap-1.5 text-sm">
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className="text-black dark:text-white">
+        {label}
+      </label>
       <p id={descriptionId} className="m-0 text-xs text-muted-foreground">
         {description}
       </p>
