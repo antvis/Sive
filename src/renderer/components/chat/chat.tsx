@@ -131,6 +131,7 @@ export function Chat({
       return;
     }
     setSuggestionsLoading(true);
+    setSuggestions([]);
     setError('');
     window.workbench
       .datasetSuggest(datasetId)
@@ -146,7 +147,7 @@ export function Chat({
     return () => {
       live = false;
     };
-  }, [datasetId, activeModelId, activeModel]);
+  }, [datasetId, activeModelId, activeModel, preferences.language]);
 
   const changeDataset = (id: string) => {
     setSuggestions([]);
