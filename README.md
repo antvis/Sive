@@ -96,7 +96,7 @@ Sive's data sources are provided entirely by AVA v4. The following data sources 
 
 ## 💻 Contributing
 
-Requirements: Node.js >= 22.13, pnpm 10.
+Requirements: Node.js >= 22.14.0, pnpm 10.
 
 ```bash
 pnpm install
@@ -104,11 +104,7 @@ pnpm electron:install   # Install the Electron binary (China mirror preconfigure
 pnpm dev                # Start the development environment
 ```
 
-Package the desktop app:
-
-```bash
-pnpm package            # Output goes to release/
-```
+Desktop releases are built by GitHub Actions when a version tag is pushed.
 
 Built with Electron, React 19, TypeScript, and Tailwind CSS. The main process handles AI (AVA) and SQLite persistence, while the renderer communicates with it through `window.workbench`. See [AGENTS.md](./AGENTS.md) for details.
 

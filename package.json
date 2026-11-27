@@ -18,7 +18,7 @@
     "start": "electron .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "package": "pnpm run build && electron-packager . --icon=assets/sive --out=release --overwrite --ignore=\"^/(src|docs|samples|site|.git|.github)$\"",
+    "package": "pnpm run build && electron-builder --publish never",
     "tsc": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "lint": "npm run tsc && oxlint --deny-warnings src electron.vite.config.ts",
     "fix": "prettier --write src electron.vite.config.ts .prettierrc.json package.json",
@@ -50,8 +50,6 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@electron/osx-sign": "^2.7.2",
-    "@electron/packager": "18.4.4",
     "@streamdown/cjk": "^1.0.5",
     "@streamdown/code": "^1.1.1",
     "@streamdown/math": "^1.0.4",
@@ -69,6 +67,7 @@
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "electron": "44.9.1",
+    "electron-builder": "26.18.0",
     "electron-vite": "^6.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.1",

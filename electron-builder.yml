@@ -1,0 +1,45 @@
+appId: vision.antv.sive
+productName: Sive
+
+directories:
+  output: release
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - assets/sive.png
+  - LICENSE
+  - '!**/*.map'
+
+asar: true
+asarUnpack:
+  - node_modules/better-sqlite3/**/*
+  - node_modules/@duckdb/**/*
+  - '**/*.{node,dll,dylib,so}'
+
+# Release assets are uploaded together by GitHub Actions, after all builds succeed.
+publish: null
+
+mac:
+  icon: assets/sive.icns
+  category: public.app-category.productivity
+  hardenedRuntime: true
+  artifactName: Sive-${version}-macOS-${arch}.${ext}
+  target:
+    - target: dmg
+      arch: [arm64]
+    - target: zip
+      arch: [arm64]
+
+win:
+  icon: assets/sive.ico
+  artifactName: Sive-${version}-Windows-${arch}-Setup.${ext}
+  target:
+    - target: nsis
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
