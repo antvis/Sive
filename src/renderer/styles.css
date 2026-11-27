@@ -198,7 +198,6 @@
   --color-sidebar-ink: var(--foreground);
   --color-sidebar-text: var(--muted-foreground);
   --color-sidebar-highlight: var(--workspace-control);
-  --color-sidebar-selected: light-dark(#f2f2f5, var(--selected));
   --color-workspace-canvas: var(--workspace-canvas);
   --color-workspace-control: var(--workspace-control);
   --color-page: var(--page);
@@ -215,8 +214,6 @@
   --color-selected: var(--selected);
   --color-selected-foreground: var(--selected-foreground);
   --color-control-checked: var(--accent-fill);
-  --color-control-selected: light-dark(var(--accent-soft), var(--accent));
-  --color-control-selected-foreground: light-dark(var(--accent), var(--accent-foreground));
   --color-danger: var(--danger);
   --color-card: var(--surface);
   --color-card-foreground: var(--foreground);
@@ -273,7 +270,7 @@
   --accent-foreground: #fff;
   --primary: #181a1e;
   --primary-hover: #30343b;
-  --selected: #ecedef;
+  --selected: #f2f2f5;
   --selected-foreground: #303236;
   --ring: var(--accent-fill);
   --danger: #b4343c;
