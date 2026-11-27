@@ -1,173 +1,165 @@
-import path from 'node:path';
-import { access } from 'node:fs/promises';
-import { app } from 'electron';
-import { Client } from '@modelcontextprotocol/client';
-import { StdioClientTransport, getDefaultEnvironment } from '@modelcontextprotocol/client/stdio';
+import { setTimeout as sleep } from 'node:timers/promises';
+import { shell } from 'electron';
 import { z } from 'zod';
 import { githubRepositoryListSchema } from '@shared/github';
 import type { GitHubRepositoryPage, GitHubRepositoryListInput } from '@shared/github';
 
-const readTools = ['get_me', 'list_issues', 'list_pull_requests', 'search_repositories'] as const;
+const GITHUB_CLIENT_ID = 'Ov23li2pmlBDHAlhclgw';
+const DEVICE_CODE_URL = 'https://github.com/login/device/code';
+const ACCESS_TOKEN_URL = 'https://github.com/login/oauth/access_token';
+const VERIFICATION_URI = 'https://github.com/login/device';
 
-type GitHubToolCall = (
-  name: (typeof readTools)[number],
-  args: Record<string, unknown>,
-  signal?: AbortSignal,
-) => Promise<unknown>;
+const deviceCodeSchema = z.object({
+  device_code: z.string().min(1),
+  user_code: z.string().min(1),
+  verification_uri: z.literal(VERIFICATION_URI),
+  expires_in: z.number().int().positive(),
+  interval: z.number().int().nonnegative(),
+});
 
-type Session = { client: Client; controller: AbortController; login: string };
+const tokenSchema = z.object({
+  access_token: z.string().min(1).optional(),
+  error: z.string().optional(),
+});
 
-// The official server keeps OAuth credentials in memory for this app session only.
-let session: Session | undefined;
-let authorizing: (Session & { id: string }) | undefined;
-let readers = 0;
+type PendingAuthorization = {
+  id: string;
+  controller: AbortController;
+  deviceCode: string;
+  interval: number;
+  expiresAt: number;
+};
 
-async function closeSession(current: Session) {
-  current.controller.abort();
-  await current.client.close().catch(() => {});
+let authorizing: PendingAuthorization | undefined;
+
+function form(values: Record<string, string>) {
+  return {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(values),
+  };
 }
 
-async function callTool(
-  current: Session,
-  name: (typeof readTools)[number],
-  args: Record<string, unknown>,
-  signal?: AbortSignal,
-  timeout = 60000,
-) {
-  if (!readTools.includes(name)) throw new Error('不支持的 GitHub 读取操作。');
-  const combined = AbortSignal.any([current.controller.signal, ...(signal ? [signal] : [])]);
+async function json(response: Response) {
+  const payload: unknown = await response.json().catch(() => null);
+  if (!payload) throw new Error('GitHub 返回了无效响应，请重试。');
+  return payload;
+}
+
+export async function connectGitHub(id: string) {
+  if (authorizing) throw new Error('已有 GitHub 授权正在进行。');
+  const controller = new AbortController();
+  const current: PendingAuthorization = { id, controller, deviceCode: '', interval: 0, expiresAt: 0 };
+  authorizing = current;
   try {
-    combined.throwIfAborted();
-    const result = await current.client.callTool({ name, arguments: args }, { signal: combined, timeout });
-    const text = result.content
-      .filter((item) => item.type === 'text')
-      .map((item) => item.text)
-      .join('\n');
-    if (result.isError) throw new Error(text);
-    return JSON.parse(text);
+    const response = await fetch(DEVICE_CODE_URL, {
+      ...form({ client_id: GITHUB_CLIENT_ID, scope: 'repo read:user' }),
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30000)]),
+    });
+    if (!response.ok) throw new Error(`GitHub 设备授权启动失败（${response.status}）。`);
+    const data = deviceCodeSchema.parse(await json(response));
+    Object.assign(current, {
+      deviceCode: data.device_code,
+      interval: data.interval,
+      expiresAt: Date.now() + data.expires_in * 1000,
+    });
+    current.controller.signal.throwIfAborted();
+    await shell.openExternal(data.verification_uri);
+    return { userCode: data.user_code, verificationUri: data.verification_uri };
   } catch (error) {
-    if (combined.aborted) throw new Error('GitHub 连接已取消，请重新连接。');
-    throw error instanceof Error ? error : new Error(error instanceof Error ? error.message : '');
+    if (authorizing?.id === id) authorizing = undefined;
+    if (controller.signal.aborted) throw new Error('GitHub 授权已取消。');
+    throw error;
   }
 }
 
-export async function connectGitHubMcp(id: string) {
-  if (authorizing) throw new Error('已有 GitHub 授权正在进行。');
-  if (readers) throw new Error('GitHub 数据正在读取，请完成后重新连接。');
-  const command = path.join(
-    app.getAppPath(),
-    'resources',
-    'github-mcp',
-    process.platform === 'win32' ? 'github-mcp-server.exe' : 'github-mcp-server',
-  );
-  const current = {
-    id,
-    client: new Client(
-      { name: 'Sive', version: app.getVersion() },
-      {
-        supportedProtocolVersions: ['2025-06-18'],
-      },
-    ),
-    controller: new AbortController(),
-    login: '',
-  };
-  authorizing = current;
-  current.client.onclose = () => {
-    current.controller.abort();
-    if (session === current) session = undefined;
-  };
+export async function waitForGitHubConnect(id: string) {
+  const current = authorizing;
+  if (!current || current.id !== id) throw new Error('GitHub 授权会话不存在或已过期。');
   try {
-    await access(command).catch(() => {
-      throw new Error('缺少 GitHub 连接组件，请按照开发说明准备或重新安装应用。');
-    });
-    current.controller.signal.throwIfAborted();
-    await current.client.connect(
-      new StdioClientTransport({
-        command,
-        args: ['stdio', '--read-only', '--tools', readTools.join(','), '--oauth-scopes', 'repo,read:user'],
-        env: getDefaultEnvironment(),
-        stderr: 'ignore',
-        maxBufferSize: 16 * 1024 * 1024,
-      }),
-      { timeout: 10000, signal: current.controller.signal },
-    );
-    const account = z
-      .object({ login: z.string().min(1) })
-      .parse(await callTool(current, 'get_me', {}, current.controller.signal, 180000));
-    current.controller.signal.throwIfAborted();
-    current.login = account.login;
-    const previous = session;
-    session = current;
-    if (previous) await closeSession(previous);
-    current.controller.signal.throwIfAborted();
-    return account;
-  } catch {
-    await closeSession(current);
-    throw new Error('GitHub 连接未完成，请在浏览器中完成授权后重试。');
+    while (Date.now() < current.expiresAt) {
+      const response = await fetch(ACCESS_TOKEN_URL, {
+        ...form({
+          client_id: GITHUB_CLIENT_ID,
+          device_code: current.deviceCode,
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        }),
+        signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(30000)]),
+      });
+      const data = tokenSchema.parse(await json(response));
+      if (data.access_token) {
+        const accountResponse = await fetch('https://api.github.com/user', {
+          headers: { Authorization: `Bearer ${data.access_token}`, Accept: 'application/vnd.github+json' },
+          signal: AbortSignal.any([current.controller.signal, AbortSignal.timeout(30000)]),
+        });
+        if (!accountResponse.ok) throw new Error(`GitHub 账号信息读取失败（${accountResponse.status}）。`);
+        const account = z.object({ login: z.string().min(1) }).parse(await json(accountResponse));
+        return { token: data.access_token, login: account.login };
+      }
+      if (data.error === 'authorization_pending') {
+        await sleep(current.interval * 1000, undefined, { signal: current.controller.signal });
+      } else if (data.error === 'slow_down') {
+        current.interval += 5;
+        await sleep(current.interval * 1000, undefined, { signal: current.controller.signal });
+      } else if (data.error === 'access_denied') {
+        throw new Error('GitHub 授权已拒绝。');
+      } else if (data.error === 'expired_token') {
+        throw new Error('GitHub 验证码已过期，请重新连接。');
+      } else {
+        throw new Error('GitHub 授权失败，请重新连接。');
+      }
+    }
+    throw new Error('GitHub 验证码已过期，请重新连接。');
+  } catch (error) {
+    if (current.controller.signal.aborted) throw new Error('GitHub 授权已取消。');
+    throw error;
   } finally {
     if (authorizing === current) authorizing = undefined;
   }
 }
 
 export async function cancelGitHubConnect(id: string) {
-  if (authorizing?.id === id) await closeSession(authorizing);
-}
-
-export async function withGitHubMcp<T>(
-  operation: (call: GitHubToolCall) => Promise<T>,
-  signal?: AbortSignal,
-): Promise<T> {
-  if (authorizing) throw new Error('请先完成 GitHub 浏览器授权。');
-  const current = session;
-  if (!current) throw new Error('请编辑 GitHub 数据源并重新连接。');
-  signal?.throwIfAborted();
-  readers++;
-  try {
-    return await operation((name, args, callSignal) =>
-      callTool(
-        current,
-        name,
-        args,
-        AbortSignal.any([...(signal ? [signal] : []), ...(callSignal ? [callSignal] : [])]),
-      ),
-    );
-  } finally {
-    readers--;
-  }
+  if (authorizing?.id !== id) return;
+  const current = authorizing;
+  authorizing = undefined;
+  current.controller.abort();
 }
 
 export async function listGitHubRepositories(
   input: GitHubRepositoryListInput,
+  session: { token: string; login: string },
 ): Promise<GitHubRepositoryPage> {
   const { page } = githubRepositoryListSchema.parse(input);
-  return withGitHubMcp(async (call) => {
-    const result = await call('search_repositories', {
-      query: `user:${session!.login} fork:true`,
-      page,
-      perPage: 50,
-      minimal_output: false,
-    });
-    const data = z
-      .object({
-        total_count: z.number().int().nonnegative(),
-        incomplete_results: z.boolean(),
-        items: z.array(
-          z.object({
-            full_name: z.string().min(1),
-            description: z.string().nullish(),
-            private: z.boolean(),
-          }),
-        ),
-      })
-      .parse(result);
-    return {
-      repositories: data.items.map((repo) => ({
-        fullName: repo.full_name,
-        description: repo.description ?? '',
-        private: repo.private,
-      })),
-      hasMore: data.items.length === 50 && page * 50 < Math.min(data.total_count, 1000),
-      incomplete: data.incomplete_results || data.total_count > 1000,
-    };
-  }, AbortSignal.timeout(30000));
+  const query = new URLSearchParams({
+    q: `user:${session.login} fork:true`,
+    page: String(page),
+    per_page: '50',
+  });
+  const response = await fetch(`https://api.github.com/search/repositories?${query}`, {
+    headers: { Authorization: `Bearer ${session.token}`, Accept: 'application/vnd.github+json' },
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!response.ok) throw new Error(`GitHub 仓库列表读取失败（${response.status}）。`);
+  const data = z
+    .object({
+      total_count: z.number().int().nonnegative(),
+      incomplete_results: z.boolean(),
+      items: z.array(
+        z.object({
+          full_name: z.string().min(1),
+          description: z.string().nullish(),
+          private: z.boolean(),
+        }),
+      ),
+    })
+    .parse(await json(response));
+  return {
+    repositories: data.items.map((repo) => ({
+      fullName: repo.full_name,
+      description: repo.description ?? '',
+      private: repo.private,
+    })),
+    hasMore: data.items.length === 50 && page * 50 < Math.min(data.total_count, 1000),
+    incomplete: data.incomplete_results || data.total_count > 1000,
+  };
 }

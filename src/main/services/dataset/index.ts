@@ -11,8 +11,12 @@ import { DEFAULT_PREVIEW_PAGE_SIZE, PREVIEW_PAGE_SIZES } from '@shared/api';
 import type { DatasetPreviewOptions } from '@shared/api';
 import { checkLocalFile, localFilePath } from '../../util/localFile';
 import { sourceEngine } from '../../util/engine';
-import { loadSource } from '../../util/source';
-import { connectGitHubMcp, cancelGitHubConnect, listGitHubRepositories } from '../../util/github/client';
+import {
+  connectGitHub,
+  waitForGitHubConnect,
+  cancelGitHubConnect,
+  listGitHubRepositories,
+} from '../../util/github/client';
 import type { GitHubRepositoryListInput } from '@shared/github';
 import { githubSourceSchema } from '@shared/github';
 import type { ModelConfig } from '../model';
@@ -21,6 +25,10 @@ import { refreshSupabaseOAuth, startSupabaseOAuth } from '../../util/supabase/oa
 
 const OAUTH_SESSION_TTL_MS = 10 * 60 * 1000;
 const TOKEN_REFRESH_SKEW_MS = 60 * 1000;
+
+type OAuthSession =
+  | { type: 'supabase'; credentials: SupabaseOAuthCredentials; expiresAt: number }
+  | { type: 'github'; token: string; login: string; expiresAt: number };
 
 function toSummary(row: DatasetRow) {
   let fileSize: number | undefined;
@@ -52,7 +60,7 @@ function toSummary(row: DatasetRow) {
 export class DatasetService {
   private oauthAuthorizing = false;
 
-  private oauthSessions = new Map<string, { credentials: SupabaseOAuthCredentials; expiresAt: number }>();
+  private oauthSessions = new Map<string, OAuthSession>();
 
   private oauthRefreshes = new Map<string, Promise<void>>();
 
@@ -147,7 +155,11 @@ export class DatasetService {
         case 'supabase': {
           const { credentials, projects } = await startSupabaseOAuth();
           const sessionId = randomUUID();
-          this.oauthSessions.set(sessionId, { credentials, expiresAt: Date.now() + OAUTH_SESSION_TTL_MS });
+          this.oauthSessions.set(sessionId, {
+            type: 'supabase',
+            credentials,
+            expiresAt: Date.now() + OAUTH_SESSION_TTL_MS,
+          });
           return { sessionId, projects };
         }
         default:
@@ -159,7 +171,17 @@ export class DatasetService {
   }
 
   connectGitHub(connectionId: string) {
-    return connectGitHubMcp(connectionId);
+    return connectGitHub(connectionId);
+  }
+
+  async waitForGitHubConnect(connectionId: string) {
+    const session = await waitForGitHubConnect(connectionId);
+    this.oauthSessions.set(connectionId, {
+      type: 'github',
+      ...session,
+      expiresAt: Date.now() + OAUTH_SESSION_TTL_MS,
+    });
+    return { login: session.login };
   }
 
   cancelGitHubConnect(connectionId: string) {
@@ -167,16 +189,31 @@ export class DatasetService {
   }
 
   githubRepositories(input: GitHubRepositoryListInput) {
-    return listGitHubRepositories(input);
+    const session = this.oauthSessions.get(input.connectionId);
+    if (!session || session.type !== 'github' || session.expiresAt <= Date.now()) {
+      this.oauthSessions.delete(input.connectionId);
+      throw new Error('GitHub 授权会话已失效，请重新授权。');
+    }
+    return listGitHubRepositories(input, session);
   }
 
   private withOAuthSession(sourceConfig: DataSourceConfig, sessionId?: string) {
-    if (sourceConfig.type !== 'supabase' || !sessionId) return { sourceConfig, extras: null };
+    if (!sessionId || (sourceConfig.type !== 'supabase' && sourceConfig.type !== 'github')) {
+      return { sourceConfig, extras: null };
+    }
     const session = this.oauthSessions.get(sessionId);
     if (!session || session.expiresAt <= Date.now()) {
       this.oauthSessions.delete(sessionId);
       throw new Error('OAuth 授权会话已失效，请重新授权。');
     }
+    if (sourceConfig.type === 'github') {
+      if (session.type !== 'github') throw new Error('GitHub 授权会话无效，请重新授权。');
+      return {
+        sourceConfig: { ...sourceConfig, options: { ...sourceConfig.options, token: session.token } },
+        extras: null,
+      };
+    }
+    if (session.type !== 'supabase') throw new Error('Supabase 授权会话无效，请重新授权。');
     const accessToken = required(
       session.credentials.tokens?.access_token,
       'OAuth 授权会话缺少 Access Token。',
@@ -298,7 +335,7 @@ export class DatasetService {
     try {
       const file = localFilePath(dataset.sourceConfig);
       if (file) await checkLocalFile(file);
-      await loadSource(ava, dataset.sourceConfig);
+      await ava.source(dataset.sourceConfig);
       const reference = model.tableReference;
       const tableName =
         dataset.sourceType === 'github' && reference
@@ -328,7 +365,7 @@ export class DatasetService {
     try {
       const file = localFilePath(dataset.sourceConfig);
       if (file) await checkLocalFile(file);
-      await loadSource(ava, dataset.sourceConfig);
+      await ava.source(dataset.sourceConfig);
       await ava.schema({}, () => dataset.schema);
       await ava.profile({}, () => dataset.profile);
       await ava.semantic({}, () => dataset.semantic);
@@ -346,7 +383,7 @@ export class DatasetService {
       engine: sourceEngine(sourceConfig),
     });
     try {
-      await loadSource(ava, sourceConfig);
+      await ava.source(sourceConfig);
       const schema = await ava.schema();
       const profile = await ava.profile({ metrics: ['row_count'] });
       if (!schema.models.length) throw new Error('未发现可读取的数据表。');

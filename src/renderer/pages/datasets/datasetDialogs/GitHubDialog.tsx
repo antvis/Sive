@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
-import type { GitHubRepositoryPage } from '@shared/github';
+import type { GitHubDeviceAuthorization, GitHubRepositoryPage } from '@shared/github';
 import { Button } from '../../../components/ui/button';
 import { SelectField } from '../../../components/ui/select';
 import { errorMessage } from '../../../utils';
@@ -9,7 +9,8 @@ import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
   const [form, setForm] = useState({ name: '', repository: '', since: '', maxRecords: 10000 });
-  const [login, setLogin] = useState('');
+  const [session, setSession] = useState<{ id: string; login: string }>();
+  const [device, setDevice] = useState<GitHubDeviceAuthorization>();
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState('');
   const [repositories, setRepositories] = useState<GitHubRepositoryPage['repositories']>([]);
@@ -30,7 +31,8 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
     };
   }, []);
 
-  const loadRepositories = async (page = 1) => {
+  const loadRepositories = async (page = 1, connectionId = session?.id) => {
+    if (!connectionId) return;
     const request = ++repositoryRequest.current;
     setLoadingRepositories(true);
     setRepositoryError('');
@@ -39,7 +41,7 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
       setPagination({ page, hasMore: false, incomplete: false });
     }
     try {
-      const result = await window.workbench.githubRepositories({ page });
+      const result = await window.workbench.githubRepositories({ connectionId, page });
       if (!mounted.current || request !== repositoryRequest.current) return;
       setRepositories((current) => [
         ...new Map(
@@ -62,22 +64,34 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
 
   const connect = async () => {
     if (pending.current) return;
-    pending.current = crypto.randomUUID();
+    const connectionId = crypto.randomUUID();
+    pending.current = connectionId;
     setConnecting(true);
-    setLogin('');
+    setSession(undefined);
+    setDevice(undefined);
     setError('');
     repositoryRequest.current++;
     setRepositories([]);
     setRepositoryError('');
     setLoadingRepositories(false);
     try {
-      const result = await window.workbench.githubConnect(pending.current);
+      const authorization = await window.workbench.githubConnect(connectionId);
+      if (!mounted.current) {
+        await window.workbench.githubConnectCancel(connectionId).catch(() => {});
+        return;
+      }
+      setDevice(authorization);
+      const result = await window.workbench.githubConnectWait(connectionId);
       if (mounted.current) {
-        setLogin(result.login);
-        void loadRepositories();
+        setSession({ id: connectionId, login: result.login });
+        setDevice(undefined);
+        void loadRepositories(1, connectionId);
       }
     } catch (cause) {
-      if (mounted.current) setError(errorMessage(cause));
+      if (mounted.current) {
+        setDevice(undefined);
+        setError(errorMessage(cause));
+      }
     } finally {
       pending.current = null;
       if (mounted.current) setConnecting(false);
@@ -98,7 +112,8 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
           ...(form.since ? { since: form.since } : {}),
         },
       }}
-      submitDisabled={!login || connecting}
+      authSessionId={session?.id}
+      submitDisabled={!session || connecting}
       onLoad={loadConnection}
     >
       <ConnectionField
@@ -113,15 +128,29 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
         disabled={connecting || loadingRepositories}
         variant="primary"
       >
-        {connecting ? '请在浏览器中完成授权…' : datasetId || login ? '重新连接 GitHub' : '连接 GitHub'}
+        {connecting ? '等待 GitHub 授权…' : datasetId || session ? '重新连接 GitHub' : '连接 GitHub'}
       </Button>
-      <p className="m-0 text-xs text-muted-foreground">
-        通过浏览器授权连接。编辑连接或重启应用后需要重新连接。
-      </p>
-      {login && (
+      {device && (
+        <div className="grid gap-2 rounded-md border p-3 text-sm">
+          <p className="m-0">在已打开的 GitHub 页面中输入验证码：</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-center text-lg font-semibold tracking-widest">
+              {device.userCode}
+            </code>
+            <Button type="button" onClick={() => void navigator.clipboard.writeText(device.userCode)}>
+              复制验证码
+            </Button>
+          </div>
+          <p className="m-0 break-all text-xs text-muted-foreground">
+            如页面未打开，请访问 {device.verificationUri}。授权完成后此处会自动继续。
+          </p>
+        </div>
+      )}
+      <p className="m-0 text-xs text-muted-foreground">授权凭据会加密保存在本机，重启应用后无需重新连接。</p>
+      {session && (
         <div className="grid gap-2">
           <p className="m-0 text-xs text-muted-foreground">
-            已连接 {login}，显示账号名下的仓库（含 Fork）。组织或其他仓库可手动填写地址。
+            已连接 {session.login}，显示账号名下的仓库（含 Fork）。组织或其他仓库可手动填写地址。
           </p>
           <SelectField
             aria-label="选择 GitHub 仓库"

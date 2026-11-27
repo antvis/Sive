@@ -27,6 +27,7 @@ const api = {
     ipcRenderer.invoke('datasetSave', name, sourceConfig, id, authSessionId),
   oAuthStart: (type) => ipcRenderer.invoke('oAuthStart', type),
   githubConnect: (connectionId) => ipcRenderer.invoke('githubConnect', connectionId),
+  githubConnectWait: (connectionId) => ipcRenderer.invoke('githubConnectWait', connectionId),
   githubConnectCancel: (connectionId) => ipcRenderer.invoke('githubConnectCancel', connectionId),
   githubRepositories: (input) => ipcRenderer.invoke('githubRepositories', input),
   datasetGet: (id) => ipcRenderer.invoke('datasetGet', id),

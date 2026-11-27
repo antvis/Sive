@@ -4,11 +4,17 @@ export const githubConnectionIdSchema = z.uuid();
 
 export const githubRepositoryListSchema = z
   .object({
+    connectionId: githubConnectionIdSchema,
     page: z.number().int().min(1).max(20).default(1),
   })
   .strict();
 
 export type GitHubRepositoryListInput = z.input<typeof githubRepositoryListSchema>;
+
+export type GitHubDeviceAuthorization = {
+  userCode: string;
+  verificationUri: string;
+};
 
 export type GitHubRepositoryPage = {
   repositories: { fullName: string; description: string; private: boolean }[];
@@ -41,6 +47,7 @@ export const githubSourceSchema = z
     options: z
       .object({
         repository: z.string().trim().min(1).transform(githubRepository),
+        token: z.string().min(1).optional(),
         since: z.iso.date().optional(),
         maxRecords: z.number().int().min(1).max(100000).default(10000),
         timeoutMs: z.number().int().min(1000).max(110000).default(60000),
@@ -48,5 +55,3 @@ export const githubSourceSchema = z
       .strip(),
   })
   .strict();
-
-export type GitHubSourceOptions = z.output<typeof githubSourceSchema>['options'];

@@ -43,8 +43,9 @@ export function registerIpc(
 
   ipcMain.handle('settingsOpen', () => settingsWindow.open());
   ipcMain.on('settingsClose', ({ sender }) => settingsWindow.close(sender));
-  ipcMain.handle('windowIsFullscreen', ({ sender }) =>
-    BrowserWindow.fromWebContents(sender)?.isFullScreen() ?? false,
+  ipcMain.handle(
+    'windowIsFullscreen',
+    ({ sender }) => BrowserWindow.fromWebContents(sender)?.isFullScreen() ?? false,
   );
 
   ipcMain.handle('workspaceGetState', () => {
@@ -108,6 +109,10 @@ export function registerIpc(
 
   ipcMain.handle('githubConnect', (_event, connectionId: unknown) =>
     services.dataset.connectGitHub(githubConnectionIdSchema.parse(connectionId)),
+  );
+
+  ipcMain.handle('githubConnectWait', (_event, connectionId: unknown) =>
+    services.dataset.waitForGitHubConnect(githubConnectionIdSchema.parse(connectionId)),
   );
 
   ipcMain.handle('githubConnectCancel', (_event, connectionId: unknown) =>
