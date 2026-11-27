@@ -80,7 +80,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
     <main className="grid min-h-0 flex-1 grid-cols-[clamp(160px,24%,208px)_minmax(0,1fr)] gap-(--workspace-gutter) overflow-hidden">
       <nav
         aria-label="设置分类"
-        className="grid min-h-0 content-start gap-6 overflow-y-auto rounded-2xl bg-surface px-3 pt-12 pb-6"
+        className="grid min-h-0 content-start gap-6 overflow-y-auto rounded-2xl bg-surface px-3 pt-12 pb-6 [-webkit-app-region:no-drag]"
       >
         {groups.map(({ label, items }) => (
           <div key={label}>
@@ -115,7 +115,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
         key={section}
         id="settings-panel"
         aria-labelledby="settings-panel-title"
-        className="min-h-0 min-w-0 overflow-y-auto rounded-2xl bg-surface px-[clamp(20px,5vw,40px)] pt-8 pb-8"
+        className="min-h-0 min-w-0 overflow-y-auto rounded-2xl bg-surface px-[clamp(20px,5vw,40px)] pt-8 pb-8 [-webkit-app-region:no-drag]"
       >
         <div className="mb-10 motion-safe:animate-fade-up">
           <h1 id="settings-panel-title" className="m-0 text-3xl leading-tight font-semibold tracking-tight">
