@@ -1,4 +1,5 @@
 import { useI18n } from '../../i18n';
+import type { MessageKey } from '@shared/i18n';
 import { CpuIcon, PencilIcon, PlusIcon, RotateCwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -13,6 +14,57 @@ import { ModelPicker } from './ModelPicker';
 import { SettingField } from './SettingControls';
 
 type Catalog = { baseURL: string; apiKey: string; ids: string[] };
+
+const providerPresets = [
+  {
+    labelKey: 'settings.models.presets.deepseek',
+    logo: './logos/deepseek.ico',
+    baseURL: 'https://api.deepseek.com',
+    model: 'deepseek-flash',
+  },
+  {
+    labelKey: 'settings.models.presets.qwen',
+    logo: './logos/qwen.png',
+    baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    model: 'qwen-plus',
+  },
+  {
+    labelKey: 'settings.models.presets.ling',
+    logo: './logos/ling.ico',
+    baseURL: 'https://api.ant-ling.com/v1',
+    model: 'Ling-3.2-flash',
+  },
+  {
+    labelKey: 'settings.models.presets.openai',
+    logo: './logos/openai.svg',
+    baseURL: 'https://api.openai.com/v1',
+    model: '6.1-sol',
+  },
+  {
+    labelKey: 'settings.models.presets.openrouter',
+    logo: './logos/openrouter.png',
+    baseURL: 'https://openrouter.ai/api/v1',
+    model: 'openrouter/auto',
+  },
+  {
+    labelKey: 'settings.models.presets.zhipu',
+    logo: './logos/zhipu.png',
+    baseURL: 'https://open.bigmodel.cn/api/paas/v4',
+    model: 'glm-5.3',
+  },
+  {
+    labelKey: 'settings.models.presets.moonshot',
+    logo: './logos/moonshot.ico',
+    baseURL: 'https://api.moonshot.cn/v1',
+    model: 'kimi-k3.1-pro',
+  },
+  {
+    labelKey: 'settings.models.presets.hunyuan',
+    logo: './logos/hunyuan.svg',
+    baseURL: 'https://api.hunyuan.cloud.tencent.com/v1',
+    model: 'hunyuan-turbos-latest',
+  },
+] satisfies { labelKey: MessageKey; logo: string; baseURL: string; model: string }[];
 
 function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => void }) {
   const i18n = useI18n();
@@ -30,6 +82,16 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
   const discoverLabel = currentCatalog
     ? i18n('settings.models.actions.refreshList')
     : i18n('settings.models.actions.fetchList');
+  const canReuseKey = model?.hasKey && model.baseURL === baseURL.trim();
+
+  const applyPreset = (preset: (typeof providerPresets)[number]) => {
+    setName(i18n(preset.labelKey));
+    setBaseURL(preset.baseURL);
+    if (baseURL.trim() !== preset.baseURL) setApiKey('');
+    setModelIds([preset.model]);
+    setCatalog(null);
+    setError('');
+  };
 
   const discover = async () => {
     if (!baseURL.trim()) {
@@ -94,21 +156,64 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
       open
       onOpenChange={() => !saving && onClose()}
       title={model ? i18n('settings.models.editTitle') : i18n('settings.models.addTitle')}
+      className="flex flex-col overflow-hidden [&>[data-slot=dialog-header]]:shrink-0 [&>[data-slot=dialog-footer]]:shrink-0 [&>[data-slot=dialog-footer]]:flex-col"
       footer={
         <>
-          <Button onClick={onClose} disabled={saving}>
-            {i18n('common.actions.cancel')}
-          </Button>
-          <Button variant="primary" type="submit" form="model-form" disabled={saving || discovering}>
-            {saving
-              ? i18n('settings.models.status.testingAndSaving')
-              : i18n('settings.models.actions.testAndSave')}
-          </Button>
+          {progress && (
+            <div
+              className="max-h-20 overflow-auto rounded-lg bg-workspace-control p-3 text-sm leading-5 break-all text-ink"
+              role="status"
+            >
+              {i18n('settings.models.testProgress', [
+                progress.completed,
+                progress.total,
+                progress.active.length
+                  ? i18n('settings.models.testingModelSuffix', [progress.active.join('、')])
+                  : i18n('settings.models.savingConfigurationSuffix'),
+              ])}
+            </div>
+          )}
+          {error && (
+            <p className="m-0 max-h-20 overflow-auto text-sm break-words text-danger" role="alert">
+              {error}
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button onClick={onClose} disabled={saving}>
+              {i18n('common.actions.cancel')}
+            </Button>
+            <Button variant="primary" type="submit" form="model-form" disabled={saving || discovering}>
+              {saving
+                ? i18n('settings.models.status.testingAndSaving')
+                : i18n('settings.models.actions.testAndSave')}
+            </Button>
+          </div>
         </>
       }
     >
-      <form id="model-form" onSubmit={(event) => void save(event)}>
+      <form
+        id="model-form"
+        className="-m-1 min-h-0 overflow-y-auto p-1"
+        onSubmit={(event) => void save(event)}
+      >
         <fieldset disabled={saving} className="grid min-w-0 gap-4 border-0 p-0">
+          <div className="grid gap-1.5 text-sm">
+            <span className="text-black dark:text-white">{i18n('settings.models.presets.title')}</span>
+            <div className="flex flex-wrap gap-2">
+              {providerPresets.map((preset) => (
+                <Button
+                  key={preset.labelKey}
+                  size="sm"
+                  className="gap-1.5 text-sm font-normal"
+                  disabled={saving || discovering}
+                  onClick={() => applyPreset(preset)}
+                >
+                  <img src={preset.logo} alt="" className="size-4 shrink-0 object-contain" />
+                  {i18n(preset.labelKey)}
+                </Button>
+              ))}
+            </div>
+          </div>
           <SettingField
             label={i18n('settings.models.fields.nameTitle')}
             description={i18n('settings.models.fields.nameDescription')}
@@ -132,7 +237,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder={
-              model?.hasKey
+              canReuseKey
                 ? i18n('settings.models.fields.apiKeyReusePlaceholder')
                 : i18n('settings.models.fields.apiKeyOptionalPlaceholder')
             }
@@ -140,7 +245,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
           <div className="grid gap-1.5 text-sm">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span>{i18n('settings.models.enabledTitle')}</span>
+                <span className="text-black dark:text-white">{i18n('settings.models.enabledTitle')}</span>
                 <span className="text-xs text-muted-foreground">
                   {i18n('settings.models.selectedCount', [modelIds.length])}
                 </span>
@@ -174,18 +279,6 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
             />
           </div>
         </fieldset>
-        {progress && (
-          <div className="mt-4 rounded-lg bg-workspace-control p-3 text-sm leading-5 text-ink" role="status">
-            {i18n('settings.models.testProgress', [
-              progress.completed,
-              progress.total,
-              progress.active.length
-                ? i18n('settings.models.testingModelSuffix', [progress.active.join('、')])
-                : i18n('settings.models.savingConfigurationSuffix'),
-            ])}
-          </div>
-        )}
-        {error && <p className="mt-4 mb-0 text-sm text-danger">{error}</p>}
       </form>
     </Modal>
   );
