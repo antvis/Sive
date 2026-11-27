@@ -593,6 +593,7 @@ img {
 }
 .download-platform {
   padding: 14px 22px;
+  border: 0;
   border-radius: 12px;
   gap: 13px;
   min-width: 220px;
@@ -613,6 +614,9 @@ img {
   margin-top: 6px;
   color: #c0cad3;
 }
+.download-platform .installer-status::before {
+  content: ' · ';
+}
 .download-platform > .icon:last-child {
   width: 17px;
   height: 17px;
@@ -627,6 +631,17 @@ img {
 }
 .download-platform.windows small {
   color: #52657a;
+}
+[data-installer][aria-disabled='true'] {
+  cursor: progress;
+}
+#installer-feedback {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .download > p.download-note {
   font-size: 10px;

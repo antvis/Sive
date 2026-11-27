@@ -1,5 +1,7 @@
 import { detectDevice } from './device.ts';
+import { initInstallerDownloads } from './installers.ts';
 
+initInstallerDownloads();
 document.querySelector<HTMLElement>('#year')!.textContent = String(new Date().getFullYear());
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const downloadMenus = [...document.querySelectorAll<HTMLDetailsElement>('.download-menu')];
