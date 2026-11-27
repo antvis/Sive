@@ -214,6 +214,8 @@
   --color-selected: var(--selected);
   --color-selected-foreground: var(--selected-foreground);
   --color-control-checked: var(--control-checked, var(--muted-foreground));
+  --color-control-selected: var(--control-selected, var(--accent));
+  --color-control-selected-foreground: var(--control-selected-foreground, var(--accent-foreground));
   --color-danger: var(--danger);
   --color-card: var(--surface);
   --color-card-foreground: var(--foreground);
@@ -341,7 +343,9 @@
   }
 
   [data-settings-window] {
-    --control-checked: var(--accent);
+    --control-checked: light-dark(#3b82f6, var(--accent));
+    --control-selected: light-dark(#dceaff, var(--accent));
+    --control-selected-foreground: light-dark(#214e98, var(--accent-foreground));
   }
 
   [data-settings-window] :is(a[href], input, label, select, textarea) {
