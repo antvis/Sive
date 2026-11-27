@@ -136,7 +136,11 @@ export function registerIpc(
   });
 
   ipcMain.handle('datasetExtractText', (_event, text: string) =>
-    services.dataset.extractText(text, services.model.getDefaultModelConfig()),
+    services.dataset.extractText(
+      text,
+      services.model.getDefaultModelConfig(),
+      services.settings.getPreferences().language,
+    ),
   );
 
   ipcMain.handle(

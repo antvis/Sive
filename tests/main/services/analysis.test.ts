@@ -18,7 +18,9 @@ vi.mock('electron', () => ({
   },
 }));
 
-it('streams the analysis trace while the conversation title is generated in the background', async () => {
+it.each(['zh-CN', 'en-US'] as const)('uses %s for titles and agents', async (language) => {
+  vi.mocked(createAnalysisAgent).mockClear();
+  vi.mocked(generateConversationTitle).mockClear();
   const testDb = await createTestDb();
   try {
     const repositories = createRepositories(testDb.database);
@@ -53,9 +55,10 @@ it('streams the analysis trace while the conversation title is generated in the 
       output,
     } as const;
     const reply = { type: 'text-delta', id: 'reply', delta: '销量为 10。' } as const;
+    const dispose = vi.fn(async () => {});
     vi.mocked(createAnalysisAgent).mockResolvedValue({
       stream: async () => ReadableStream.from([toolResult, reply]),
-      dispose: async () => {},
+      dispose,
     });
     const service = new AnalysisService(testDb.database, repositories);
     const chunks: (UIMessageChunk | null)[] = [];
@@ -71,7 +74,7 @@ it('streams the analysis trace while the conversation title is generated in the 
         message: { id: 'user', role: 'user', parts: [{ type: 'text', text: query }] },
       },
       { baseURL: 'https://example.com', model: 'test' },
-      DEFAULT_PREFERENCES,
+      { ...DEFAULT_PREFERENCES, language },
       (chunk) => {
         chunks.push(chunk);
         if (chunk === null) analysisFinished.resolve();
@@ -80,10 +83,45 @@ it('streams the analysis trace while the conversation title is generated in the 
     await analysisFinished.promise;
     expect(chunks).toEqual([toolResult, reply, null]);
     expect(repositories.conversations.get('chat')?.title).toBe(query);
+    expect(createAnalysisAgent).toHaveBeenCalledWith(expect.objectContaining({ language }));
+    expect(generateConversationTitle).toHaveBeenCalledWith(
+      query,
+      { baseURL: 'https://example.com', model: 'test' },
+      language,
+    );
 
     generatedTitle.resolve('🔍 销量查询');
     await expect(titleUpdate).resolves.toBe(true);
     expect(repositories.conversations.get('chat')?.title).toBe('🔍 销量查询');
+
+    const nextTurn = async (id: string, nextLanguage: 'zh-CN' | 'en-US') => {
+      const finished = Promise.withResolvers<void>();
+      service.start(
+        {
+          chatId: 'chat',
+          datasetId: dataset.id,
+          strategy,
+          message: { id, role: 'user', parts: [{ type: 'text', text: query }] },
+        },
+        { baseURL: 'https://example.com', model: 'test' },
+        { ...DEFAULT_PREFERENCES, language: nextLanguage },
+        (chunk) => {
+          if (chunk === null) finished.resolve();
+        },
+      );
+      await finished.promise;
+    };
+
+    await nextTurn('same-language', language);
+    expect(createAnalysisAgent).toHaveBeenCalledTimes(1);
+    expect(dispose).not.toHaveBeenCalled();
+
+    const nextLanguage = language === 'zh-CN' ? 'en-US' : 'zh-CN';
+    await nextTurn('changed-language', nextLanguage);
+    expect(createAnalysisAgent).toHaveBeenCalledTimes(2);
+    expect(createAnalysisAgent).toHaveBeenLastCalledWith(expect.objectContaining({ language: nextLanguage }));
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(generateConversationTitle).toHaveBeenCalledTimes(1);
   } finally {
     testDb.close();
   }

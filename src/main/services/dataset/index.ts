@@ -1,9 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { statSync } from 'node:fs';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { wrapLanguageModel } from 'ai';
 import { AVA, sourceInputSchema } from '@antv/ava';
-import type { DataSourceConfig, JavaScriptEngine, LLMConfig, Semantic } from '@antv/ava';
+import type { DataSourceConfig, JavaScriptEngine, Semantic } from '@antv/ava';
+import { createLanguageModel } from '../../ai/model';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
 import type { DatasetExtras, DatasetRow, SupabaseOAuthCredentials } from '../../db/schema/datasets';
@@ -282,9 +281,9 @@ export class DatasetService {
     await this.readSource(connection.sourceConfig);
   }
 
-  async extractText(text: string, config: LLMConfig) {
+  async extractText(text: string, config: ModelConfig, language: Preferences['language']) {
     const ava = new AVA({
-      llm: { ...config, maxRetries: 0 },
+      llm: { model: createLanguageModel(config, language), maxRetries: 0 },
       engine: { type: 'javascript' },
     });
     try {
@@ -358,24 +357,8 @@ export class DatasetService {
   async suggest(id: string, config: ModelConfig, language: Preferences['language']) {
     await this.prepareOAuth(id);
     const dataset = required(this.get(id), '数据源不存在或已删除。');
-    const provider = createOpenAICompatible({ name: 'sive', baseURL: config.baseURL, apiKey: config.apiKey });
-    const model = wrapLanguageModel({
-      model: provider.chatModel(config.model),
-      middleware: {
-        transformParams: async ({ params }) => ({
-          ...params,
-          prompt: [
-            {
-              role: 'system',
-              content: `Write every suggested query and reason in ${language === 'zh-CN' ? 'Simplified Chinese' : 'English'}. The selected interface language takes precedence over any instruction to match the dataset language. Preserve original table and column identifiers when needed.`,
-            },
-            ...params.prompt,
-          ],
-        }),
-      },
-    });
     const ava = new AVA({
-      llm: { model },
+      llm: { model: createLanguageModel(config, language) },
       engine: sourceEngine(dataset.sourceConfig),
     });
     try {
