@@ -1,7 +1,7 @@
 {
   "name": "sive",
   "productName": "Sive",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "private": true,
   "description": "A lightweight, open source data management and analysis software based on AVA v4.",
   "license": "MIT",
