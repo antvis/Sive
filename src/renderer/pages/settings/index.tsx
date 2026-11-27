@@ -97,7 +97,7 @@ function SettingsContent({ state }: { state: WorkspaceState }) {
                       aria-current={section === id ? 'true' : undefined}
                       aria-controls="settings-panel"
                       onClick={() => setSection(id)}
-                      className="w-full [&[aria-current=true]]:bg-accent-soft [&[aria-current=true]]:text-accent"
+                      className="w-full"
                     >
                       <Icon size={16} aria-hidden className="shrink-0" />
                       <span className="min-w-0 flex-1">{label}</span>

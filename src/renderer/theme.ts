@@ -57,7 +57,7 @@ export function createChartTheme(
       '适配 Sive 客户端的清爽便签主题：系统字体与灰白底色，青绿搭配蓝色、杏色和珊瑚色，以柔和层次统一统计图、关系图、表格和叙述摘要。',
     baseTheme: mode === 'dark' ? 'dark' : 'default',
     tokens: {
-      colorDefault: color('accent'),
+      colorDefault: color('accent-fill'),
       colorBackground: color('surface'),
       colorSurface: color('page'),
       colorText: color('ink'),
