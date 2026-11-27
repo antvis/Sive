@@ -1,6 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#16704a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#16704a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
   <title>CSV</title>
   <style>@media (prefers-color-scheme: dark) { svg { stroke: #6bd6a0; } }</style>
-  <rect x="2.5" y="4" width="19" height="16" rx="2"/>
-  <path d="M3 9h18M3 14.5h18M9.5 9v10.5M15.5 9v10.5"/>
+  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Zm0 0v6h6"/>
+  <g stroke-width="1.5">
+    <path d="M9 12.25H7.75a1 1 0 0 0-1 1v2.5a1 1 0 0 0 1 1H9"/>
+    <path d="M13.5 12.25H12a1.125 1.125 0 0 0 0 2.25h.5a1.125 1.125 0 0 1 0 2.25H11"/>
+    <path d="m15.25 12.25 1.25 4.5 1.25-4.5"/>
+  </g>
 </svg>
