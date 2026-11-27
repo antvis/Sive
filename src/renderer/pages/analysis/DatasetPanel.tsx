@@ -220,18 +220,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
       }}
       className="flex h-full min-h-0 min-w-0 flex-col"
     >
-      <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 px-4 py-2">
-        <TabsList aria-label="数据集信息">
-          <TabsTrigger value="data">
-            数据
-          </TabsTrigger>
-          <TabsTrigger value="fields">
-            字段
-          </TabsTrigger>
-          <TabsTrigger value="semantic">
-            语义层
-          </TabsTrigger>
-        </TabsList>
+      <div className="flex min-h-12 shrink-0 flex-wrap items-center gap-2 px-4 py-2">
         {multipleTables && (
           <Button
             ref={treeToggle}
@@ -245,6 +234,17 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
             <span>{detail.schema.models.length} 张表</span>
           </Button>
         )}
+        <TabsList aria-label="数据集信息">
+          <TabsTrigger value="data">
+            数据
+          </TabsTrigger>
+          <TabsTrigger value="fields">
+            字段
+          </TabsTrigger>
+          <TabsTrigger value="semantic">
+            语义层
+          </TabsTrigger>
+        </TabsList>
       </div>
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {multipleTables && (

@@ -5,6 +5,7 @@ import type {
   AnalysisStartInput,
   AnalysisStreamChunk,
   ChatMessage,
+  ConversationActivity,
   DuckDBEngineConfig,
   Preferences,
 } from '@shared/api';
@@ -44,6 +45,10 @@ export class AnalysisService {
 
   private tasks = new Map<string, AnalysisTask>();
 
+  private activities = new Map<string, ConversationActivity>();
+
+  onActivityChange: (() => void) | undefined;
+
   private updatingDatasets = new Set<string>();
 
   constructor(
@@ -81,6 +86,24 @@ export class AnalysisService {
     return this.repositories.messages
       .listByConversationId(conversationId)
       .map(({ id, role, parts, createdAt }) => ({ id, role, parts, metadata: { createdAt } }));
+  }
+
+  getActivities() {
+    for (const id of this.activities.keys()) {
+      if (!this.repositories.conversations.get(id)) this.activities.delete(id);
+    }
+    return [...this.activities.values()];
+  }
+
+  markRead(conversationId: string, messageId: string) {
+    const activity = this.activities.get(conversationId);
+    if (activity?.status !== 'unread' || activity.messageId !== messageId) return;
+    this.setActivity({ ...activity, status: 'idle' });
+  }
+
+  private setActivity(activity: ConversationActivity) {
+    this.activities.set(activity.conversationId, activity);
+    this.onActivityChange?.();
   }
 
   start(input: AnalysisStartInput, model: ModelConfig, preferences: Preferences, emit: Emit) {
@@ -138,6 +161,7 @@ export class AnalysisService {
       emit,
     };
     this.tasks.set(conversation.id, task);
+    this.setActivity({ conversationId: conversation.id, messageId: task.messageId, status: 'running' });
     void this.run(
       conversation.id,
       agent,
@@ -277,7 +301,13 @@ export class AnalysisService {
         ? { type: 'abort' }
         : { type: 'error', errorText: errorText(error) };
     } finally {
+      const task = this.tasks.get(conversationId)!;
       this.tasks.delete(conversationId);
+      this.setActivity({
+        conversationId,
+        messageId: task.messageId,
+        status: controller.signal.aborted || terminal?.type === 'abort' ? 'idle' : 'unread',
+      });
       if (terminal) emit(terminal);
       emit(null);
     }
