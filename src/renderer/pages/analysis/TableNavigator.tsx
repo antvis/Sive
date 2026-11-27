@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import {
   CalendarIcon,
   ChevronDownIcon,
@@ -34,7 +34,7 @@ export function TableNavigator({
   onSelect: (name: string) => void;
   autoFocus: boolean;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<string | null>(selected);
   const searchInput = useRef<HTMLInputElement>(null);

@@ -1,6 +1,6 @@
 "use client";
 
-import { i18n, useI18n } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 import type { ChatStatus, FileUIPart, SourceDocumentUIPart } from "ai";
 import type {
@@ -301,10 +301,11 @@ export type PromptInputActionAddAttachmentsProps = ComponentProps<
 };
 
 export const PromptInputActionAddAttachments = ({
-  label = i18n("chat.attachments.add"),
+  label: labelProp,
   ...props
 }: PromptInputActionAddAttachmentsProps) => {
-  useI18n();
+  const i18n = useI18n();
+  const label = labelProp === undefined ? i18n("chat.attachments.add") : labelProp;
   const attachments = usePromptInputAttachments();
 
   const handleSelect = useCallback(
@@ -367,7 +368,7 @@ export const PromptInput = ({
   children,
   ...props
 }: PromptInputProps) => {
-  useI18n();
+  const i18n = useI18n();
   // Try to use a provider controller if present
   const controller = useOptionalPromptInputController();
   const usingProvider = !!controller;
@@ -468,7 +469,7 @@ export const PromptInput = ({
         return [...prev, ...next];
       });
     },
-    [matchesAccept, maxFiles, maxFileSize, onError]
+    [i18n, matchesAccept, maxFiles, maxFileSize, onError]
   );
 
   const removeLocal = useCallback(
@@ -525,7 +526,7 @@ export const PromptInput = ({
         controller?.attachments.add(capped);
       }
     },
-    [matchesAccept, maxFileSize, maxFiles, onError, files.length, controller]
+    [i18n, matchesAccept, maxFileSize, maxFiles, onError, files.length, controller]
   );
 
   const clearAttachments = useCallback(
@@ -797,10 +798,12 @@ export const PromptInputTextarea = ({
   onChange,
   onKeyDown,
   className,
-  placeholder = i18n("chat.input.defaultPlaceholder"),
+  placeholder: placeholderProp,
   ...props
 }: PromptInputTextareaProps) => {
-  useI18n();
+  const i18n = useI18n();
+  const placeholder =
+    placeholderProp === undefined ? i18n("chat.input.defaultPlaceholder") : placeholderProp;
   const controller = useOptionalPromptInputController();
   const attachments = usePromptInputAttachments();
   const [isComposing, setIsComposing] = useState(false);
@@ -922,7 +925,7 @@ export const PromptInputSubmit = ({
   children,
   ...props
 }: PromptInputSubmitProps) => {
-  useI18n();
+  const i18n = useI18n();
   const isGenerating = status === "submitted" || status === "streaming";
 
   let Icon = <CornerDownLeftIcon className="size-4" />;

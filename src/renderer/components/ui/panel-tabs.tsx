@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import clsx from 'clsx';
 import { XIcon } from 'lucide-react';
 import { Tabs } from 'radix-ui';
@@ -24,7 +24,7 @@ type Props = {
 };
 
 export function PanelTabList({ label, tabs, activeTabId, visible, className, onClose }: Props) {
-  useI18n();
+  const i18n = useI18n();
   const activeTab = useRef<HTMLButtonElement>(null);
   const restoreFocus = useRef(false);
 

@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useCallback, useState } from 'react';
 import type { DatasetDetail, SupabaseOAuthResult } from '@shared/api';
 import { Button } from '../../../components/ui/button';
@@ -8,7 +8,7 @@ import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
-  useI18n();
+  const i18n = useI18n();
   const [form, setForm] = useState({ name: '', projectRef: '' });
   const [session, setSession] = useState<SupabaseOAuthResult | null>(null);
   const [connecting, setConnecting] = useState(false);
@@ -19,7 +19,7 @@ export function SupabaseDialog({ datasetId, onClose }: ConnectionDialogProps) {
     if (sourceConfig.type !== 'supabase') throw new Error(i18n('errors.supabase.sourceTypeMismatch'));
     setForm({ name: connection.name, projectRef: sourceConfig.options.projectRef });
     setSession(null);
-  }, []);
+  }, [i18n]);
 
   const connect = async () => {
     if (connecting) return;

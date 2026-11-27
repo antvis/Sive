@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { Columns2Icon, DatabaseIcon, FileTextIcon, PlusIcon, SearchIcon, Table2Icon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -19,7 +19,7 @@ function formatFileSize(value?: number) {
 }
 
 function DatasetCard({ dataset, onOpen }: { dataset: DatasetSummary; onOpen: (id: string) => void }) {
-  useI18n();
+  const i18n = useI18n();
   const [action, setAction] = useState<'rename' | 'delete' | null>(null);
   const [name, setName] = useState(dataset.name);
   const [busy, setBusy] = useState(false);
@@ -189,7 +189,7 @@ export function DatasetsPage({
   onAdd: () => void;
   onOpen: (id: string) => void;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const [query, setQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(24);
   const footer = useRef<HTMLDivElement>(null);

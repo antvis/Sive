@@ -1,6 +1,6 @@
 "use client";
 
-import { i18n, useI18n } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 import type { ComponentProps, CSSProperties, HTMLAttributes } from "react";
 import type {
@@ -457,7 +457,7 @@ export const CodeBlockCopyButton = ({
   className,
   ...props
 }: CodeBlockCopyButtonProps) => {
-  useI18n();
+  const i18n = useI18n();
   const [isCopied, setIsCopied] = useState(false);
   const timeoutRef = useRef<number>(0);
   const { code } = useContext(CodeBlockContext);
@@ -481,7 +481,7 @@ export const CodeBlockCopyButton = ({
     } catch (error) {
       onError?.(error as Error);
     }
-  }, [code, onCopy, onError, timeout, isCopied]);
+  }, [i18n, code, onCopy, onError, timeout, isCopied]);
 
   useEffect(
     () => () => {

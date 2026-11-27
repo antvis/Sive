@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import type { ChatStatus } from 'ai';
 import { ArrowUpIcon, CpuIcon, RouteIcon, ZapIcon } from 'lucide-react';
 import type { ReactNode, RefObject } from 'react';
@@ -31,23 +31,6 @@ type Props = {
 
 const modelValue = (providerId: string, model: string) => JSON.stringify([providerId, model]);
 
-const analysisModes = [
-  {
-    value: 'direct',
-    get label() {
-      return i18n('analysis.strategies.direct');
-    },
-    icon: ZapIcon,
-  },
-  {
-    value: 'loop',
-    get label() {
-      return i18n('analysis.strategies.loop');
-    },
-    icon: RouteIcon,
-  },
-] as const;
-
 export function MultimodalInput({
   welcome,
   datasetSelector,
@@ -64,7 +47,19 @@ export function MultimodalInput({
   mode,
   onModeChange,
 }: Props) {
-  useI18n();
+  const i18n = useI18n();
+  const analysisModes = [
+    {
+      value: 'direct',
+      label: i18n('analysis.strategies.direct'),
+      icon: ZapIcon,
+    },
+    {
+      value: 'loop',
+      label: i18n('analysis.strategies.loop'),
+      icon: RouteIcon,
+    },
+  ] as const;
   const provider = models.find((model) => model.id === activeModelId);
   const busy = status === 'submitted' || status === 'streaming';
   const selectedModel = provider ? modelValue(provider.id, provider.model) : '';

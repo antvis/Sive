@@ -1,6 +1,6 @@
 "use client"
 
-import { i18n, useI18n } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
@@ -36,8 +36,8 @@ function Command({
 }
 
 function CommandDialog({
-  title = i18n("commands.title"),
-  description = i18n("commands.description"),
+  title: titleProp,
+  description: descriptionProp,
   children,
   className,
   showCloseButton = false,
@@ -48,7 +48,9 @@ function CommandDialog({
   className?: string
   showCloseButton?: boolean
 }) {
-  useI18n();
+  const i18n = useI18n();
+  const title = titleProp === undefined ? i18n("commands.title") : titleProp;
+  const description = descriptionProp === undefined ? i18n("commands.description") : descriptionProp;
   return (
     <Dialog {...props}>
       <DialogContent

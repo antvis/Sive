@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../../../components/ui/button';
@@ -9,7 +9,7 @@ import { errorMessage } from '../../../utils';
 import { ConnectionField } from './ConnectionDialog';
 
 export function TextImportDialog({ onClose }: { onClose: () => void }) {
-  useI18n();
+  const i18n = useI18n();
   const [name, setName] = useState('');
   const [text, setText] = useState('');
   const [rows, setRows] = useState<Record<string, unknown>[] | null>(null);

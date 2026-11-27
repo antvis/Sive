@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { FolderOpenIcon } from 'lucide-react';
 import type { StorageInfo } from '@shared/api';
 import { useEffect, useState } from 'react';
@@ -14,7 +14,7 @@ function formatSize(bytes: number) {
 }
 
 export function StorageSettings() {
-  useI18n();
+  const i18n = useI18n();
   const [storage, setStorage] = useState<StorageInfo>();
   const [error, setError] = useState('');
 

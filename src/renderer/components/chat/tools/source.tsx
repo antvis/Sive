@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { datasetSourceLabel, formatMetric } from '../../../utils';
 import { DataSourceLogo } from '../../DataSourceLogo';
 
@@ -18,7 +18,7 @@ function formatFileSize(value?: number) {
 }
 
 export function SourceTool({ source }: { source: SourceResult }) {
-  useI18n();
+  const i18n = useI18n();
   const stats = [
     { label: i18n('datasets.metrics.fileSize'), value: formatFileSize(source.fileSize) },
     {

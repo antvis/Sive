@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import type { MessageKey } from '@shared/i18n';
 import type { ThemeSpec } from '@antv/gpt-vis';
 import type { SnippetContent, SnippetUpdateInput } from '@shared/schema';
@@ -68,7 +68,7 @@ export function SnippetCard({
   onShare,
   mode = 'view',
 }: SnippetCardProps) {
-  useI18n();
+  const i18n = useI18n();
   const templateOptions = templates.map(({ id, labelKey, theme }) => ({
     value: id,
     label: i18n(labelKey),

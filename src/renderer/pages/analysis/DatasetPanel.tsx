@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { useEffect, useId, useRef, useState } from 'react';
 import { PanelLeftIcon, Table2Icon } from 'lucide-react';
@@ -28,7 +28,7 @@ function DataPreview({
   pageSize: number;
   onPageSizeChange: (size: number) => void;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const [offset, setOffset] = useState(0);
   const [retry, setRetry] = useState(0);
   const [preview, setPreview] = useState<{
@@ -139,7 +139,7 @@ function DataPreview({
 }
 
 export function DatasetPanel({ datasetId }: { datasetId: string }) {
-  useI18n();
+  const i18n = useI18n();
   const [detail, setDetail] = useState<DatasetDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -177,7 +177,7 @@ export function DatasetPanel({ datasetId }: { datasetId: string }) {
     return () => {
       live = false;
     };
-  }, [datasetId]);
+  }, [i18n, datasetId]);
 
   useEffect(() => {
     if (!root.current) return;

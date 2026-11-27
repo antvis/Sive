@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import type { ThemeSpec } from '@antv/gpt-vis';
 import { ChartColumnIncreasingIcon, CheckIcon, Grid2X2Icon } from 'lucide-react';
 import { useContext, useState } from 'react';
@@ -20,7 +20,7 @@ export function TemplatePicker({
   buttonRef?: RefObject<HTMLButtonElement | null>;
   onChange: (value: string) => void;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const [open, setOpen] = useState(false);
   const theme = useContext(ThemeContext);
   const currentLabel = templates.find((template) => template.value === value)?.label ?? value;

@@ -1,6 +1,6 @@
 import type { MessageKey } from '@shared/i18n';
 import type { LucideIcon } from 'lucide-react';
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import {
   ArchiveIcon,
   ChartLineIcon,
@@ -87,7 +87,7 @@ const groups: { labelKey: MessageKey; items: Section[] }[] = [
 ];
 
 export function SettingsWindow({ state, fallback }: { state: WorkspaceState | null; fallback: ReactNode }) {
-  useI18n();
+  const i18n = useI18n();
   const { isMacOS } = window.workbench;
 
   return (
@@ -113,7 +113,7 @@ export function SettingsWindow({ state, fallback }: { state: WorkspaceState | nu
 }
 
 function SettingsContent({ state }: { state: WorkspaceState }) {
-  useI18n();
+  const i18n = useI18n();
   const [section, setSection] = useState<Section>('appearance');
   const { labelKey, descriptionKey } = sections[section];
   const counts: Partial<Record<Section, number>> = {

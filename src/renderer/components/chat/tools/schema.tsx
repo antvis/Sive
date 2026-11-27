@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import type { Schema } from '@antv/ava';
 import { Columns3Icon, GitMergeIcon, KeyRoundIcon } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
@@ -8,7 +8,7 @@ import { Table } from '../../ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleRowTrigger } from '../../ui/collapsible';
 
 function SchemaFields({ model }: { model: Schema['models'][number] }) {
-  useI18n();
+  const i18n = useI18n();
   const [expanded, setExpanded] = useState(false);
   const fieldsId = useId();
   const fieldsRef = useRef<HTMLDivElement>(null);
@@ -102,7 +102,7 @@ function SchemaFields({ model }: { model: Schema['models'][number] }) {
 }
 
 export function SchemaTool({ schema }: { schema: Schema }) {
-  useI18n();
+  const i18n = useI18n();
   const { models, relationships = [] } = schema;
   const [expandedModel, setExpandedModel] = useState<string>();
   const columnCount = models.reduce((total, model) => total + model.columns.length, 0);

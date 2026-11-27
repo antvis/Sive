@@ -1,4 +1,5 @@
-import { i18n, useI18n } from '../../../i18n';
+import type { MessageKey, Translator } from '@shared/i18n';
+import { useI18n } from '../../../i18n';
 import { translateError } from '@shared/i18n';
 import type { AnalysisTrace, AnalysisTraceOperation, AnalysisTraceStep } from '@shared/analysis-trace';
 import { DatabaseIcon, Maximize2Icon, Minimize2Icon } from 'lucide-react';
@@ -21,47 +22,25 @@ import { Table } from '../../ui/table';
 import { AnalysisTraceFlowchart } from './analysis-trace-flowchart';
 import type { TraceFlowEvent } from './analysis-trace-flowchart';
 
-const statusLabels = {
-  get running() {
-    return i18n('analysis.status.running');
-  },
-  get completed() {
-    return i18n('analysis.status.completed');
-  },
-  get failed() {
-    return i18n('analysis.status.failed');
-  },
-  get cancelled() {
-    return i18n('analysis.status.cancelled');
-  },
-};
-const actionLabels = {
-  get EXPLORE() {
-    return i18n('analysis.actions.explore');
-  },
-  get REFINE() {
-    return i18n('analysis.actions.refine');
-  },
-  get SQL() {
-    return i18n('analysis.actions.query');
-  },
-  get CONFIRM() {
-    return i18n('analysis.actions.verify');
-  },
-};
-const operationLabels = {
-  get translate() {
-    return i18n('analysis.operations.translate');
-  },
-  get query() {
-    return i18n('analysis.operations.query');
-  },
-  get summarize() {
-    return i18n('analysis.operations.summarize');
-  },
-};
+const statusLabelKeys = {
+  running: 'analysis.status.running',
+  completed: 'analysis.status.completed',
+  failed: 'analysis.status.failed',
+  cancelled: 'analysis.status.cancelled',
+} as const satisfies Record<string, MessageKey>;
+const actionLabelKeys = {
+  EXPLORE: 'analysis.actions.explore',
+  REFINE: 'analysis.actions.refine',
+  SQL: 'analysis.actions.query',
+  CONFIRM: 'analysis.actions.verify',
+} as const satisfies Record<string, MessageKey>;
+const operationLabelKeys = {
+  translate: 'analysis.operations.translate',
+  query: 'analysis.operations.query',
+  summarize: 'analysis.operations.summarize',
+} as const satisfies Record<string, MessageKey>;
 
-function formatDuration(ms?: number) {
+function formatDuration(i18n: Translator, ms?: number) {
   if (ms === undefined) return undefined;
   return ms < 1000
     ? i18n('analysis.duration.milliseconds', [ms])
@@ -69,7 +48,7 @@ function formatDuration(ms?: number) {
 }
 
 function TraceUsage({ usage, className }: { usage: AnalysisTraceOperation['usage']; className?: string }) {
-  useI18n();
+  const i18n = useI18n();
   if (usage?.inputTokens === undefined && usage?.outputTokens === undefined) return null;
   return (
     <p className={cn('text-xs text-muted-foreground tabular-nums', className)}>
@@ -79,7 +58,6 @@ function TraceUsage({ usage, className }: { usage: AnalysisTraceOperation['usage
 }
 
 function TraceCode({ label, text }: { label: string; text: string }) {
-  useI18n();
   return (
     <div className="min-w-0 space-y-1">
       <p className="font-medium text-muted-foreground">{label}</p>
@@ -95,7 +73,7 @@ function TraceCode({ label, text }: { label: string; text: string }) {
 }
 
 function QueryPreview({ columns, preview }: NonNullable<AnalysisTraceOperation['result']>) {
-  useI18n();
+  const i18n = useI18n();
   if (!preview) {
     return columns.length > 0 ? (
       <p className="text-muted-foreground">
@@ -162,7 +140,7 @@ function TraceSummary({
   operation: AnalysisTraceOperation;
   queryNumber?: number;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const { conclusion, queryExplanation, limitations, nextStep } = operation;
   const sections = [
     { title: i18n('analysis.result.conclusion'), text: conclusion, featured: true },
@@ -215,11 +193,11 @@ function TraceOperation({
   defaultOpen: boolean;
   showTrigger?: boolean;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const { kind, status, error, dsl, result } = operation;
   const queryNumber = queryNumbers.get(operation.id);
   const summarySource = operation.queryId ? queryNumbers.get(operation.queryId) : undefined;
-  const duration = formatDuration(operation.durationMs);
+  const duration = formatDuration(i18n, operation.durationMs);
   const details = (
     <>
       {error && <p className="whitespace-pre-wrap text-destructive">{translateError(i18n.locale, error)}</p>}
@@ -247,11 +225,11 @@ function TraceOperation({
       <CollapsibleRowTrigger className="py-2.5">
         <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-sm font-semibold text-foreground">
-            {queryNumber ? i18n('analysis.trace.queryLabel', [queryNumber]) : operationLabels[kind]}
+            {queryNumber ? i18n('analysis.trace.queryLabel', [queryNumber]) : i18n(operationLabelKeys[kind])}
           </span>
           {status !== 'completed' && (
             <span className={status === 'failed' ? 'text-destructive' : 'text-muted-foreground'}>
-              {statusLabels[status]}
+              {i18n(statusLabelKeys[status])}
             </span>
           )}
           {result && (
@@ -274,7 +252,7 @@ function TraceOperation({
 }
 
 function TraceStepDetail({ step, trace }: { step: AnalysisTraceStep; trace: AnalysisTrace }) {
-  useI18n();
+  const i18n = useI18n();
   const parents = trace.steps.filter(({ id }) => step.parentStepIds.includes(id));
   const queries = step.operations.filter(({ kind }) => kind === 'query');
   const queryNumbers = new Map(queries.map(({ id }, index) => [id, index + 1]));
@@ -359,7 +337,7 @@ type TraceEvent = TraceFlowEvent &
 
 const analysisId = 'analysis';
 
-function getTraceEvents(trace: AnalysisTrace) {
+function getTraceEvents(i18n: Translator, trace: AnalysisTrace) {
   const stepsById = new Map(trace.steps.map((step) => [step.id, `step:${step.id}`]));
   const events: TraceEvent[] = [
     {
@@ -370,7 +348,10 @@ function getTraceEvents(trace: AnalysisTrace) {
         trace.strategy.type === 'loop'
           ? i18n('analysis.strategies.loop')
           : i18n('analysis.strategies.direct'),
-      summary: i18n('analysis.trace.stepCountWithStatus', [trace.steps.length, statusLabels[trace.status]]),
+      summary: i18n('analysis.trace.stepCountWithStatus', [
+        trace.steps.length,
+        i18n(statusLabelKeys[trace.status]),
+      ]),
       failed: trace.status === 'failed',
     },
   ];
@@ -385,7 +366,7 @@ function getTraceEvents(trace: AnalysisTrace) {
       : trace.strategy.type === 'direct'
         ? i18n('analysis.trace.directQuery')
         : step.action
-          ? actionLabels[step.action]
+          ? i18n(actionLabelKeys[step.action])
           : i18n('analysis.trace.stepTitle');
     const warning = step.status === 'completed' && hasFailedOperation(step);
     events.push({
@@ -394,8 +375,8 @@ function getTraceEvents(trace: AnalysisTrace) {
       parentIds: parents.length ? parents : [analysisId],
       label: `${step.index + 1} · ${title}`,
       summary: [
-        warning ? i18n('analysis.trace.failedOperations') : statusLabels[step.status],
-        formatDuration(step.durationMs),
+        warning ? i18n('analysis.trace.failedOperations') : i18n(statusLabelKeys[step.status]),
+        formatDuration(i18n, step.durationMs),
       ]
         .filter(Boolean)
         .join(' · '),
@@ -408,20 +389,20 @@ function getTraceEvents(trace: AnalysisTrace) {
       const label =
         operation.kind === 'query'
           ? i18n('analysis.trace.queryLabel', [++queryNumber])
-          : operationLabels[operation.kind];
+          : i18n(operationLabelKeys[operation.kind]);
       const attempt =
         operation.attempt === undefined
           ? undefined
           : i18n('analysis.trace.attemptNumber', [operation.attempt + 1]);
-      const status = operation.status === 'completed' ? undefined : statusLabels[operation.status];
+      const status = operation.status === 'completed' ? undefined : i18n(statusLabelKeys[operation.status]);
       events.push({
         id: `operation:${step.id}:${operation.id}`,
         kind: 'operation',
         parentIds: [stepId],
         label,
         summary:
-          [attempt, status, formatDuration(operation.durationMs)].filter(Boolean).join(' · ') ||
-          statusLabels[operation.status],
+          [attempt, status, formatDuration(i18n, operation.durationMs)].filter(Boolean).join(' · ') ||
+          i18n(statusLabelKeys[operation.status]),
         failed: operation.status === 'failed',
         step,
         operation,
@@ -433,7 +414,7 @@ function getTraceEvents(trace: AnalysisTrace) {
 }
 
 function TraceEventDetail({ event, trace }: { event: TraceEvent; trace: AnalysisTrace }) {
-  useI18n();
+  const i18n = useI18n();
   if (event.kind === 'step') return <TraceStepDetail step={event.step} trace={trace} />;
 
   if (event.kind === 'operation') {
@@ -450,7 +431,7 @@ function TraceEventDetail({ event, trace }: { event: TraceEvent; trace: Analysis
   }
 
   const dataset = trace.start.datasetName || trace.start.datasetId;
-  const duration = formatDuration(trace.durationMs);
+  const duration = formatDuration(i18n, trace.durationMs);
   return (
     <div className="min-w-0 space-y-2 [overflow-wrap:anywhere]">
       {trace.query && <p className="text-sm whitespace-pre-wrap">{trace.query}</p>}
@@ -475,7 +456,7 @@ function TraceWorkspace({
   onSelect: (id: string | undefined) => void;
   fullscreen?: boolean;
 }) {
-  useI18n();
+  const i18n = useI18n();
   return (
     <div
       className={cn(
@@ -525,11 +506,11 @@ function TraceWorkspace({
 }
 
 export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
-  useI18n();
+  const i18n = useI18n();
   const { steps, start, status, strategy } = trace;
   const datasetLabel = start.datasetName || start.datasetId;
-  const duration = formatDuration(trace.durationMs);
-  const events = useMemo(() => getTraceEvents(trace), [trace, i18n.locale]);
+  const duration = formatDuration(i18n, trace.durationMs);
+  const events = useMemo(() => getTraceEvents(i18n, trace), [i18n, trace, i18n.locale]);
   const [selectedId, setSelectedId] = useState<string>();
   const selected = events.find(({ id }) => id === selectedId);
 
@@ -547,7 +528,7 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
                 : i18n('analysis.strategies.direct')}
             </span>
             <span className={status === 'failed' ? 'text-destructive' : undefined}>
-              {statusLabels[status]}
+              {i18n(statusLabelKeys[status])}
             </span>
             <span className="tabular-nums">{i18n('analysis.trace.stepCount', [steps.length])}</span>
             {duration && <span className="tabular-nums">{duration}</span>}

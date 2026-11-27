@@ -62,7 +62,7 @@ export default function App() {
   useLayoutEffect(() => {
     document.documentElement.lang = i18n.locale;
     document.title = settingsWindow ? i18n('settings.title') : 'Sive';
-  }, [i18n.locale, settingsWindow]);
+  }, [i18n, i18n.locale, settingsWindow]);
 
   const fallback =
     !state &&
@@ -104,7 +104,6 @@ export default function App() {
 }
 
 function Workspace({ state, fallback }: { state: WorkspaceState | null; fallback: ReactNode }) {
-  useI18n();
   const [page, setPage] = useState<AppPage>('welcome');
   const [analysis, setAnalysis] = useState<AnalysisSelection | null>(null);
   const [datasetCollapsed, setDatasetCollapsed] = useState(false);

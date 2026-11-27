@@ -1,4 +1,5 @@
-import { i18n, useI18n } from '../../../i18n';
+import type { Translator } from '@shared/i18n';
+import { useI18n } from '../../../i18n';
 import { translateError } from '@shared/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import type { AnalysisResponse } from '@antv/ava';
@@ -41,7 +42,7 @@ function AnalysisTable({
   analysis: AnalysisResponse;
   originalPrecision: boolean;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const { data, schema: columns } = analysis;
 
   const numericColumn = (type?: string) => /INT|FLOAT|DOUBLE|REAL|DECIMAL|NUMERIC|NUMBER/i.test(type ?? '');
@@ -134,7 +135,7 @@ function AnalysisConclusion({
   content: string;
   limitations?: string;
 }) {
-  useI18n();
+  const i18n = useI18n();
   return (
     <div
       className={cn(
@@ -174,7 +175,7 @@ function AnalysisData({
   originalPrecision: boolean;
   onPrecisionChange: (value: boolean) => void;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const { data, schema, rowCount, truncated, truncatedBy } = analysis;
 
   return (
@@ -240,13 +241,13 @@ function isLegacyAnalysisResult(value: unknown): value is AnalysisResponse {
   );
 }
 
-function getAnalysisDetails(call: ToolPart) {
+function getAnalysisDetails(i18n: Translator, call: ToolPart) {
   const output = call.state === 'output-available' ? call.output : undefined;
   const savedResult = isAnalysisToolResult(output) ? output : undefined;
   const analysis = savedResult ? savedResult.result : isLegacyAnalysisResult(output) ? output : undefined;
   const trace = savedResult?.trace;
   const error =
-    getToolErrorText(call) ??
+    getToolErrorText(i18n, call) ??
     trace?.error ??
     (analysis === null
       ? trace?.status === 'cancelled'
@@ -258,8 +259,8 @@ function getAnalysisDetails(call: ToolPart) {
 }
 
 export function AnalyzeToolCall({ call, messageId }: { call: ToolPart; messageId: string }) {
-  useI18n();
-  const { analysis, trace, error } = getAnalysisDetails(call);
+  const i18n = useI18n();
+  const { analysis, trace, error } = getAnalysisDetails(i18n, call);
   const openToolPreview = useContext(ToolPreviewContext);
   const onOpenPreview = openToolPreview
     ? (title: string) =>
@@ -292,9 +293,9 @@ export function AnalyzeTool({
   onOpenPreview?: (title: string) => void;
   sidePanel?: boolean;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const [originalPrecision, setOriginalPrecision] = useState(false);
-  const { analysis, trace, error } = getAnalysisDetails(call);
+  const { analysis, trace, error } = getAnalysisDetails(i18n, call);
   const input = call.input;
   const inputQuery =
     input && typeof input === 'object' && 'query' in input && typeof input.query === 'string'

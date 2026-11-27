@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { ChartLineIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { toast } from 'sonner';
@@ -19,7 +19,7 @@ function VisualizeTool({
   saved: boolean;
   isStreaming: boolean;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const savingRef = useRef(false);
 
   const save = async () => {
@@ -47,8 +47,8 @@ export function VisualizeToolCall({
   saved: boolean;
   isStreaming: boolean;
 }) {
-  useI18n();
-  const errorText = getToolErrorText(call);
+  const i18n = useI18n();
+  const errorText = getToolErrorText(i18n, call);
   const visualization = call.state === 'output-available' ? (call.output as SnippetContent | null) : null;
   const output =
     visualization?.spec && visualization.title ? (

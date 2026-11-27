@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../i18n';
+import { useI18n } from '../i18n';
 import clsx from 'clsx';
 import { PanelLeftIcon, SquarePenIcon } from 'lucide-react';
 import type { DatasetSummary } from '../types';
@@ -25,7 +25,7 @@ export function WorkspaceTitleBar({
   onOpenSidebar,
   onConversationCreate,
 }: Props) {
-  useI18n();
+  const i18n = useI18n();
   const initialDatasetId = activeDatasetId ?? datasets[0]?.id;
 
   return (

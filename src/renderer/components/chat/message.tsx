@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { cn } from '../../lib/utils';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { isTextUIPart, isToolUIPart } from 'ai';
@@ -25,7 +25,6 @@ function StreamContent({
   saved: boolean;
   isStreaming: boolean;
 }) {
-  useI18n();
   return (
     <div className="grid min-w-0 grid-cols-1 gap-4">
       {parts.map((part, index) => {
@@ -47,7 +46,7 @@ function StreamContent({
 }
 
 function UserMessageContent({ text }: { text: string }) {
-  useI18n();
+  const i18n = useI18n();
   const contentId = useId();
   const contentRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -101,7 +100,6 @@ export function PreviewMessage({
   savedMessageIds?: string[];
   isStreaming?: boolean;
 }) {
-  useI18n();
   const isUser = message.role === 'user';
   const parts = isUser ? message.parts : message.parts.filter(isVisibleAssistantPart);
   if (!isUser && !parts.length) return null;

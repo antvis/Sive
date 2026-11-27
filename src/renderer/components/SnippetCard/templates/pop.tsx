@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CalendarIcon, ChevronDownIcon, CheckIcon, TagIcon } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
@@ -9,7 +9,7 @@ import { Visualization } from '../../Visualization';
 import { getIntentIcon } from '../utils';
 
 export default function PopTemplate({ data, createdAt, mode = 'view', card }: SnippetTemplateProps) {
-  useI18n();
+  const i18n = useI18n();
   const {
     editing,
     title,

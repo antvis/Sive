@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { LoaderCircleIcon, SquareArrowOutUpRightIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
 import { useEffect, useState } from 'react';
@@ -10,7 +10,7 @@ import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
 
 export function AboutSettings({ preferences }: { preferences: Preferences }) {
-  useI18n();
+  const i18n = useI18n();
   const [version, setVersion] = useState('');
   const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);

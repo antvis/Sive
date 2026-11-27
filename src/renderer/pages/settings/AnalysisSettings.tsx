@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { analysisStrategy } from '@shared/api';
 import type { Preferences } from '@shared/api';
 import { useState } from 'react';
@@ -7,21 +7,6 @@ import { Input } from '../../components/ui/input';
 import { SegmentedControl } from '../../components/ui/segmented-control';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
-
-const strategyOptions = [
-  {
-    value: 'direct',
-    get label() {
-      return i18n('analysis.strategies.direct');
-    },
-  },
-  {
-    value: 'loop',
-    get label() {
-      return i18n('analysis.strategies.loop');
-    },
-  },
-] as const;
 
 function sizeInMB(value: string | undefined) {
   const size = Number.parseInt(value ?? '1024', 10);
@@ -47,7 +32,6 @@ function NumberInput({
   step?: number;
   onChange: (value: number) => void;
 }) {
-  useI18n();
   return (
     <div className="relative w-32">
       <Input
@@ -72,7 +56,6 @@ function NumberInput({
 }
 
 function DocumentationLink({ url, label }: { url: string; label: string }) {
-  useI18n();
   return (
     <Button variant="link" onClick={() => void window.workbench.systemOpen('url', url)}>
       {label}
@@ -81,7 +64,17 @@ function DocumentationLink({ url, label }: { url: string; label: string }) {
 }
 
 export function AnalysisSettings({ preferences }: { preferences: Preferences }) {
-  useI18n();
+  const i18n = useI18n();
+  const strategyOptions = [
+    {
+      value: 'direct',
+      label: i18n('analysis.strategies.direct'),
+    },
+    {
+      value: 'loop',
+      label: i18n('analysis.strategies.loop'),
+    },
+  ] as const;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 

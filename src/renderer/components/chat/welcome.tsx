@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import type { MessageKey } from '@shared/i18n';
 import { useEffect, useRef } from 'react';
 import { cn } from '../../lib/utils';
@@ -21,7 +21,7 @@ export function ChatWelcomeHeader({
   showModelNotice,
   error,
 }: ChatWelcomeHeaderProps) {
-  useI18n();
+  const i18n = useI18n();
   return (
     <header
       className={cn(
@@ -81,7 +81,7 @@ const promptKeys = [
 ] as const satisfies readonly MessageKey[];
 
 function WelcomeCompanion() {
-  useI18n();
+  const i18n = useI18n();
   const companionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

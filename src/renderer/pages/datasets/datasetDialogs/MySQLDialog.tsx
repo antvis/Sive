@@ -1,11 +1,11 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useCallback, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function MySQLDialog({ datasetId, onClose }: ConnectionDialogProps) {
-  useI18n();
+  const i18n = useI18n();
   const [form, setForm] = useState({
     name: '',
     host: 'localhost',
@@ -27,7 +27,7 @@ export function MySQLDialog({ datasetId, onClose }: ConnectionDialogProps) {
       user,
       password: '',
     });
-  }, []);
+  }, [i18n]);
 
   const { name, ...options } = form;
 

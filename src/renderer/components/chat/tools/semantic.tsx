@@ -1,7 +1,8 @@
-import { i18n, useI18n } from '../../../i18n';
+import type { Translator } from '@shared/i18n';
+import { useI18n } from '../../../i18n';
 import type { Semantic } from '@antv/ava';
 
-function semanticSummary(semantic: Semantic) {
+function semanticSummary(i18n: Translator, semantic: Semantic) {
   if (semantic.description) return semantic.description;
   const models = semantic.models?.length ?? 0;
   const fields = semantic.models?.reduce((count, model) => count + (model.columns?.length ?? 0), 0) ?? 0;
@@ -19,6 +20,6 @@ function semanticSummary(semantic: Semantic) {
 }
 
 export function SemanticTool({ semantic }: { semantic: Semantic }) {
-  useI18n();
-  return <p className="m-0 text-sm leading-6 text-muted-foreground">{semanticSummary(semantic)}</p>;
+  const i18n = useI18n();
+  return <p className="m-0 text-sm leading-6 text-muted-foreground">{semanticSummary(i18n, semantic)}</p>;
 }

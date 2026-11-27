@@ -1,5 +1,5 @@
-import { i18n, useI18n } from '../../../i18n';
-import type { MessageKey } from '@shared/i18n';
+import type { MessageKey, Translator } from '@shared/i18n';
+import { useI18n } from '../../../i18n';
 import type { Profile } from '@antv/ava';
 import { ChartColumnIcon, CheckIcon, CircleDashedIcon } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
@@ -11,23 +11,13 @@ import { Collapsible, CollapsibleContent, CollapsibleRowTrigger } from '../../ui
 
 type Model = Profile['models'][number];
 
-const typeLabels = {
-  get numeric() {
-    return i18n('profile.types.numeric');
-  },
-  get string() {
-    return i18n('profile.types.text');
-  },
-  get date() {
-    return i18n('profile.types.date');
-  },
-  get boolean() {
-    return i18n('profile.types.boolean');
-  },
-  get unknown() {
-    return i18n('profile.types.other');
-  },
-};
+const typeLabelKeys = {
+  numeric: 'profile.types.numeric',
+  string: 'profile.types.text',
+  date: 'profile.types.date',
+  boolean: 'profile.types.boolean',
+  unknown: 'profile.types.other',
+} as const satisfies Record<string, MessageKey>;
 const numericMetrics = [
   ['min', 'profile.metrics.minimum'],
   ['max', 'profile.metrics.maximum'],
@@ -42,7 +32,7 @@ function formatRate(value: number | undefined) {
   return value === undefined ? '—' : `${(value * 100).toFixed(2)}%`;
 }
 
-function formatStatistic(value: unknown) {
+function formatStatistic(i18n: Translator, value: unknown) {
   if (!isNumber(value)) return '—';
   return value !== 0 && Math.abs(value) < 0.01
     ? value.toLocaleString(i18n.locale, { maximumSignificantDigits: 4 })
@@ -65,7 +55,7 @@ function summarize(model: Model) {
 }
 
 function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeof summarize> }) {
-  useI18n();
+  const i18n = useI18n();
   const [expandedNulls, setExpandedNulls] = useState(false);
   const [expandedNumbers, setExpandedNumbers] = useState(false);
   const nullFieldsId = useId();
@@ -93,9 +83,9 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
         className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"
         aria-label={i18n('profile.types.title')}
       >
-        {Object.entries(typeLabels).map(([type, label]) => {
+        {Object.entries(typeLabelKeys).map(([type, labelKey]) => {
           const count = model.columns.filter((column) => column.properties.logicalType === type).length;
-          return count > 0 ? <span key={type}>{`${label} ${count}`}</span> : null;
+          return count > 0 ? <span key={type}>{`${i18n(labelKey)} ${count}`}</span> : null;
         })}
       </div>
       <section
@@ -254,7 +244,7 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
                           {i18n(labelKey)}
                         </span>
                         <span title={isNumber(value) ? String(value) : undefined}>
-                          {formatStatistic(value)}
+                          {formatStatistic(i18n, value)}
                         </span>
                       </td>
                     );
@@ -288,7 +278,7 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
 }
 
 export function ProfileTool({ profile: { models } }: { profile: Profile }) {
-  useI18n();
+  const i18n = useI18n();
   const [expandedModel, setExpandedModel] = useState<string>();
   const summaries = models.map(summarize);
   const columnCount = models.reduce((total, model) => total + model.columns.length, 0);

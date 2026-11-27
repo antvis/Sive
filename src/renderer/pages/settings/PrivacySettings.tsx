@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { SquareArrowOutUpRightIcon } from 'lucide-react';
 import type { Preferences } from '@shared/api';
 import { useState } from 'react';
@@ -8,7 +8,7 @@ import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
 
 export function PrivacySettings({ preferences }: { preferences: Preferences }) {
-  useI18n();
+  const i18n = useI18n();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 

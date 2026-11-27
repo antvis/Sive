@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import type { ChatMessage } from '@shared/api';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useMemo } from 'react';
@@ -15,7 +15,7 @@ type Props = {
 };
 
 export function Messages({ messages, savedMessageIds, historyLoading, isStreaming, error }: Props) {
-  useI18n();
+  const i18n = useI18n();
   const latestMessage = messages.at(-1);
   const displayMessages = useMemo(() => getMessagesForDisplay(messages), [messages]);
 

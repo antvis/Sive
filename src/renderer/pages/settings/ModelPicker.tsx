@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../components/ui/button';
@@ -18,7 +18,7 @@ type Props = {
 };
 
 export function ModelPicker({ options, value, onChange, disabled }: Props) {
-  useI18n();
+  const i18n = useI18n();
   const [adding, setAdding] = useState(false);
   const [manual, setManual] = useState('');
   const [error, setError] = useState('');

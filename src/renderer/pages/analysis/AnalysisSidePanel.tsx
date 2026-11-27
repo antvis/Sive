@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { Tabs, TabsContent } from '../../components/ui/tabs';
 import clsx from 'clsx';
 import {
@@ -47,7 +47,7 @@ export function AnalysisSidePanel({
   onFullscreenChange,
   onToggleCollapsed,
 }: Props) {
-  useI18n();
+  const i18n = useI18n();
   const hasDataset = tabs.some((tab) => tab.kind === 'dataset');
   const FullscreenIcon = fullscreen ? Minimize2Icon : Maximize2Icon;
   const fullscreenLabel = fullscreen

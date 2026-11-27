@@ -1,6 +1,7 @@
 "use client";
 
-import { i18n, useI18n } from '../../i18n';
+import type { MessageKey, Translator } from '@shared/i18n';
+import { useI18n } from '../../i18n';
 import { translateError } from '@shared/i18n';
 
 import type { DynamicToolUIPart, ToolUIPart } from "ai";
@@ -33,7 +34,7 @@ export const Tool = ({ className, ...props }: ToolProps) => (
 
 export type ToolPart = ToolUIPart | DynamicToolUIPart;
 
-export function getToolErrorText(call: ToolPart) {
+export function getToolErrorText(i18n: Translator, call: ToolPart) {
   if (isToolOutputErrorUIPart(call)) return translateError(i18n.locale, call.errorText);
   if (call.state === "output-denied") return i18n("errors.tool.executionDenied");
 }
@@ -44,9 +45,9 @@ export type ToolHeaderProps = {
   state: ToolPart["state"];
 };
 
-const statusLabels: Partial<Record<ToolPart["state"], string>> = {
-  get "approval-requested"() { return i18n("tool.status.awaitingApproval"); },
-  get "output-denied"() { return i18n("tool.status.denied"); },
+const statusLabelKeys: Partial<Record<ToolPart["state"], MessageKey>> = {
+  "approval-requested": "tool.status.awaitingApproval",
+  "output-denied": "tool.status.denied",
 };
 
 const statusIcons: Partial<Record<ToolPart["state"], ReactNode>> = {
@@ -54,20 +55,22 @@ const statusIcons: Partial<Record<ToolPart["state"], ReactNode>> = {
   "output-denied": <XCircleIcon className="size-4 text-orange-600" />,
 };
 
-export const getStatusBadge = (status: ToolPart["state"]) =>
-  statusLabels[status] ? (
+export const getStatusBadge = (status: ToolPart["state"], i18n: Translator) => {
+  const labelKey = statusLabelKeys[status];
+  return labelKey ? (
     <Badge className="gap-1.5 rounded-full border-0 bg-transparent px-0 text-xs text-inherit" variant="secondary">
       {statusIcons[status]}
-      {statusLabels[status]}
+      {i18n(labelKey)}
     </Badge>
   ) : null;
+};
 
 export const ToolHeader = ({ title, icon, state }: ToolHeaderProps) => {
-  useI18n();
+  const i18n = useI18n();
   const running = state === "input-streaming" || state === "input-available";
 
   return (
-    <CollapsibleInlineTrigger endContent={getStatusBadge(state)}>
+    <CollapsibleInlineTrigger endContent={getStatusBadge(state, i18n)}>
       {icon ?? <WrenchIcon className="size-4 text-muted-foreground" aria-hidden />}
       <span className={cn(
         running && "motion-safe:animate-chat-tool-shimmer motion-safe:bg-[linear-gradient(90deg,var(--muted-foreground)_35%,var(--foreground)_50%,var(--muted-foreground)_65%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:[-webkit-text-fill-color:transparent]"
@@ -81,7 +84,7 @@ export type ToolInputProps = ComponentProps<"div"> & {
 };
 
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => {
-  useI18n();
+  const i18n = useI18n();
   return (
     <div className={cn("space-y-2 overflow-hidden", className)} {...props}>
       <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
@@ -105,7 +108,6 @@ export const ToolOutput = ({
   errorText,
   ...props
 }: ToolOutputProps) => {
-  useI18n();
   if (!(output || errorText)) {
     return null;
   }

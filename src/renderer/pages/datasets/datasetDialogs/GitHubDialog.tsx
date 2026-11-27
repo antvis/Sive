@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import type { GitHubDeviceAuthorization, GitHubRepositoryPage } from '@shared/github';
@@ -9,7 +9,7 @@ import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
-  useI18n();
+  const i18n = useI18n();
   const [form, setForm] = useState({ name: '', repository: '', since: '', maxRecords: 10000 });
   const [session, setSession] = useState<{ id: string; login: string }>();
   const [device, setDevice] = useState<GitHubDeviceAuthorization>();
@@ -62,7 +62,7 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
     if (connection.sourceConfig.type !== 'github') throw new Error(i18n('errors.github.sourceTypeMismatch'));
     const { repository, since = '', maxRecords = 10000 } = connection.sourceConfig.options;
     setForm({ name: connection.name, repository, since, maxRecords });
-  }, []);
+  }, [i18n]);
 
   const connect = async () => {
     if (pending.current) return;

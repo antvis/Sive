@@ -1,6 +1,6 @@
 "use client"
 
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 
 import { XIcon } from "lucide-react"
 import { AlertDialog as AlertDialogPrimitive, Dialog as DialogPrimitive } from "radix-ui"
@@ -12,33 +12,29 @@ import { Button } from "./button"
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  useI18n();
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
 function DialogTrigger({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
-  useI18n();
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 }
 
 function DialogPortal({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  useI18n();
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
 function DialogClose({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Close>) {
-  useI18n();
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
 function DialogCloseButton() {
-  useI18n();
+  const i18n = useI18n();
   return (
     <DialogClose asChild>
       <Button
@@ -57,7 +53,6 @@ function DialogOverlay({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
-  useI18n();
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
@@ -78,7 +73,6 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
-  useI18n();
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -98,7 +92,6 @@ function DialogContent({
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
-  useI18n();
   return (
     <div
       data-slot="dialog-header"
@@ -116,7 +109,7 @@ function DialogFooter({
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
 }) {
-  useI18n();
+  const i18n = useI18n();
   return (
     <div
       data-slot="dialog-footer"
@@ -137,7 +130,6 @@ function DialogTitle({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  useI18n();
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
@@ -151,7 +143,6 @@ function DialogDescription({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  useI18n();
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
@@ -170,7 +161,6 @@ type ModalProps = React.PropsWithChildren<{
 }>
 
 function Modal({ open, onOpenChange, title, footer, className, children }: ModalProps) {
-  useI18n();
   const triggerRef = React.useRef<HTMLElement | null>(null)
 
   return (
@@ -209,7 +199,6 @@ function AlertDialog({
   description: string
   cancel: React.ReactElement
 }) {
-  useI18n();
   return (
     <AlertDialogPrimitive.Root {...props}>
       <AlertDialogPrimitive.Portal>

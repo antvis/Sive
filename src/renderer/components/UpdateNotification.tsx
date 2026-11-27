@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../i18n';
+import { i18n } from '../i18n';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import type { UpdateResult } from '@shared/api';
@@ -28,7 +28,6 @@ export function showUpdateNotification(result: UpdateResult) {
 }
 
 export function UpdateNotification() {
-  useI18n();
   useEffect(() => {
     const notify = () => {
       void window.workbench

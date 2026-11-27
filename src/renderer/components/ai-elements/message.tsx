@@ -1,6 +1,6 @@
 "use client";
 
-import { i18n, useI18n } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 import type { UIMessage } from "ai";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
@@ -250,7 +250,7 @@ export const MessageBranchPrevious = ({
   children,
   ...props
 }: MessageBranchPreviousProps) => {
-  useI18n();
+  const i18n = useI18n();
   const { goToPrevious, totalBranches } = useMessageBranch();
 
   return (
@@ -274,7 +274,7 @@ export const MessageBranchNext = ({
   children,
   ...props
 }: MessageBranchNextProps) => {
-  useI18n();
+  const i18n = useI18n();
   const { goToNext, totalBranches } = useMessageBranch();
 
   return (
@@ -295,7 +295,7 @@ export const MessageBranchNext = ({
 export type MessageBranchPageProps = HTMLAttributes<HTMLSpanElement>;
 
 export const MessageBranchPage = (props: MessageBranchPageProps) => {
-  useI18n();
+  const i18n = useI18n();
   const { currentBranch, totalBranches } = useMessageBranch();
 
   return (
@@ -320,7 +320,7 @@ const streamdownCode: typeof code = {
 const streamdownPlugins = { cjk, code: streamdownCode, math, mermaid };
 
 function MermaidError({ chart, error, retry }: MermaidErrorComponentProps) {
-  useI18n();
+  const i18n = useI18n();
   return (
     <div role="alert" className="space-y-2 rounded-md bg-destructive/10 p-4 text-sm">
       <p className="text-destructive">{i18n("errors.markdown.diagramRenderFailed")}</p>
@@ -360,7 +360,7 @@ const streamdownComponents = {
 
 export const MessageResponse = memo(
   ({ className, ...props }: MessageResponseProps) => {
-    useI18n();
+    const i18n = useI18n();
     return (
       <Streamdown
         className={cn(

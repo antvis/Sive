@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { EllipsisIcon, PencilIcon, RefreshCwIcon, SlidersHorizontalIcon, Trash2Icon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -29,7 +29,7 @@ export function SourceActions({
   onRename: () => void;
   onDelete: () => void;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);

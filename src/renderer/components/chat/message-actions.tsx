@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import type { ChatMessage } from '@shared/api';
 import { CopyIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,7 +8,7 @@ import { MessageAction as Action, MessageActions as Actions } from '../ai-elemen
 import { getTextFromUIMessage } from './util';
 
 export function MessageActions({ message, isStreaming }: { message: ChatMessage; isStreaming: boolean }) {
-  useI18n();
+  const i18n = useI18n();
   const text = getTextFromUIMessage(message, '\n').trim();
   const createdAt = message.metadata?.createdAt;
   const time = createdAt ? formatMessageTime(createdAt) : '';

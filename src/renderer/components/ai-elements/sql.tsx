@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import type { CSSProperties } from 'react';
 import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
@@ -14,7 +14,7 @@ export function SqlCodeBlock({
   label?: string;
   maxHeight?: string;
 }) {
-  useI18n();
+  const i18n = useI18n();
   return (
     <CodeBlock
       code={code}

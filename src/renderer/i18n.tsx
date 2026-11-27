@@ -43,6 +43,7 @@ export function setLocale(language: Preferences['language']) {
   listeners.forEach((listener) => listener());
 }
 
+/** Use the returned translator in components; memoized translations also depend on i18n.locale. */
 export function useI18n() {
   useSyncExternalStore(subscribe, getLocale);
   return i18n;

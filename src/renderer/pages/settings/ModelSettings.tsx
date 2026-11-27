@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { CpuIcon, PencilIcon, PlusIcon, RotateCwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -15,7 +15,7 @@ import { SettingField } from './SettingControls';
 type Catalog = { baseURL: string; apiKey: string; ids: string[] };
 
 function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => void }) {
-  useI18n();
+  const i18n = useI18n();
   const [name, setName] = useState(model?.name ?? '');
   const [baseURL, setBaseURL] = useState(model?.baseURL ?? '');
   const [apiKey, setApiKey] = useState('');
@@ -192,7 +192,7 @@ function ModelEditor({ model, onClose }: { model?: ModelProfile; onClose: () => 
 }
 
 export function ModelSettings({ models, activeModelId }: { models: ModelProfile[]; activeModelId: string }) {
-  useI18n();
+  const i18n = useI18n();
   const [editing, setEditing] = useState<ModelProfile | 'new' | null>(null);
   const [deleting, setDeleting] = useState<ModelProfile | null>(null);
   const [busy, setBusy] = useState(false);

@@ -1,11 +1,11 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useCallback, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function ClickHouseDialog({ datasetId, onClose }: ConnectionDialogProps) {
-  useI18n();
+  const i18n = useI18n();
   const [form, setForm] = useState({
     name: '',
     url: 'http://localhost:8123',
@@ -19,7 +19,7 @@ export function ClickHouseDialog({ datasetId, onClose }: ConnectionDialogProps) 
     if (sourceConfig.type !== 'clickhouse') throw new Error(i18n('errors.clickhouse.sourceTypeMismatch'));
     const { url = '', database, username = 'default' } = sourceConfig.options;
     setForm({ name: connection.name, url, database, username, password: '' });
-  }, []);
+  }, [i18n]);
 
   const { name, ...options } = form;
 

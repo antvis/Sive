@@ -1,6 +1,6 @@
 "use client";
 
-import { i18n, useI18n } from "../../i18n";
+import { i18n as translateCurrent, useI18n } from "../../i18n";
 
 import type { ComponentProps } from "react";
 import type { MessageKey } from "@shared/i18n";
@@ -45,13 +45,15 @@ export type ConversationEmptyStateProps = Omit<ComponentProps<"div">, "title"> &
 
 export const ConversationEmptyState = ({
   className,
-  title = i18n("chat.empty.title"),
-  description = i18n("chat.empty.description"),
+  title: titleProp,
+  description: descriptionProp,
   icon,
   children,
   ...props
 }: ConversationEmptyStateProps) => {
-  useI18n();
+  const i18n = useI18n();
+  const title = titleProp === undefined ? i18n("chat.empty.title") : titleProp;
+  const description = descriptionProp === undefined ? i18n("chat.empty.description") : descriptionProp;
   return (
     <div
       className={cn(
@@ -81,7 +83,7 @@ export const ConversationScrollButton = ({
   className,
   ...props
 }: ConversationScrollButtonProps) => {
-  useI18n();
+  const i18n = useI18n();
   const { isAtBottom, scrollToBottom } = useStickToBottomContext();
 
   const handleScrollToBottom = useCallback(() => {
@@ -131,7 +133,7 @@ const roleLabelKeys = {
 } as const satisfies Record<ConversationMessage["role"], MessageKey>;
 
 const defaultFormatMessage = (message: ConversationMessage): string => {
-  const roleLabel = i18n(roleLabelKeys[message.role]);
+  const roleLabel = translateCurrent(roleLabelKeys[message.role]);
   return `**${roleLabel}:** ${message.content}`;
 };
 
@@ -151,7 +153,7 @@ export const ConversationDownload = ({
   children,
   ...props
 }: ConversationDownloadProps) => {
-  useI18n();
+  const i18n = useI18n();
   const handleDownload = useCallback(() => {
     const markdown = messagesToMarkdown(messages, formatMessage);
     const blob = new Blob([markdown], { type: "text/markdown" });

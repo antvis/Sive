@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -24,7 +24,6 @@ export function ConnectionField({
   label: string;
   onValueChange: (value: string) => void;
 }) {
-  useI18n();
   return (
     <label className="grid gap-1.5 text-sm">
       {label}
@@ -59,7 +58,7 @@ export function ConnectionDialog({
   onLoad: (connection: DatasetDetail) => void;
   children: ReactNode;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const formId = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useState(Boolean(datasetId));
@@ -86,7 +85,7 @@ export function ConnectionDialog({
     return () => {
       live = false;
     };
-  }, [datasetId, onLoad]);
+  }, [i18n, datasetId, onLoad]);
 
   const submit = async (action: 'test' | 'save') => {
     if (busy || loading || submitDisabled || !formRef.current?.reportValidity()) return;

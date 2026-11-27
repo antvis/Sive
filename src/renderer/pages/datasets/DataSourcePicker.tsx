@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { ChevronRightIcon } from 'lucide-react';
 import { useState } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
@@ -25,7 +25,7 @@ function SourceOption({
   disabled: boolean;
   onSelect: () => void;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const label = datasetSourceLabel(source.type);
   const description = i18n(source.descriptionKey);
   const actionLabel = i18n(source.actionLabelKey);
@@ -56,7 +56,7 @@ function SourceOption({
 }
 
 export function DataSourcePicker() {
-  useI18n();
+  const i18n = useI18n();
   const { importing, importLocal } = useImportLocal();
   const [connection, setConnection] = useState<Extract<
     DatasetSourceAction,

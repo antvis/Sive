@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { ArchiveIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ import { Input } from '../../components/ui/input';
 type Props = { conversations: Conversation[]; datasets: DatasetSummary[] };
 
 export function ArchivedConversations({ conversations, datasets }: Props) {
-  useI18n();
+  const i18n = useI18n();
   const [query, setQuery] = useState('');
   const [deleting, setDeleting] = useState<Conversation | null>(null);
   const [busy, setBusy] = useState(false);

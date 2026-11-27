@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { LightbulbIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ import { cn } from '../../lib/utils';
 import { errorMessage } from '../../utils';
 
 export function SnippetsPage({ snippets }: { snippets: Snippet[] }) {
-  useI18n();
+  const i18n = useI18n();
   const [deleting, setDeleting] = useState<Snippet | null>(null);
   const [sharing, setSharing] = useState<Snippet | null>(null);
   const [busy, setBusy] = useState(false);

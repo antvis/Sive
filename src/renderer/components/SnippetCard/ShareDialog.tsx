@@ -1,4 +1,5 @@
-import { i18n, useI18n } from '../../i18n';
+import type { Translator } from '@shared/i18n';
+import { useI18n } from '../../i18n';
 import { CopyIcon, DownloadIcon } from 'lucide-react';
 import { snapdom } from '@zumer/snapdom';
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -9,7 +10,7 @@ import { Button } from '../ui/button';
 import { Modal } from '../ui/dialog';
 import { SnippetCard } from './index';
 
-async function captureSnippet(container: HTMLDivElement) {
+async function captureSnippet(i18n: Translator, container: HTMLDivElement) {
   await document.fonts.ready;
 
   // GPT-Vis does not expose render completion. Wait for the rendered DOM and canvas
@@ -38,7 +39,7 @@ async function captureSnippet(container: HTMLDivElement) {
 }
 
 export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: () => void }) {
-  useI18n();
+  const i18n = useI18n();
   const [busy, setBusy] = useState<SnippetExportInput['target'] | null>(null);
   const [error, setError] = useState('');
   const [previewScale, setPreviewScale] = useState(1);
@@ -67,7 +68,7 @@ export function ShareDialog({ snippet, onClose }: { snippet: Snippet; onClose: (
     setBusy(target);
     setError('');
     try {
-      const blob = await captureSnippet(container);
+      const blob = await captureSnippet(i18n, container);
       const exported = await window.workbench.snippetExport({
         image: new Uint8Array(await blob.arrayBuffer()),
         title: container.querySelector('[role="heading"]')?.textContent ?? 'Snippet',

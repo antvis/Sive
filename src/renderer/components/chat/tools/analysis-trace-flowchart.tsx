@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { Background, Controls, Handle, MarkerType, Position, ReactFlow } from '@xyflow/react';
 import type { Edge, Node, NodeProps, OnNodesChange, XYPosition } from '@xyflow/react';
 import '@xyflow/react/style.css';
@@ -28,32 +28,6 @@ const groupInset = 16;
 const operationGap = 24;
 const nodeIcons = { analysis: WorkflowIcon, step: LayersIcon, operation: TerminalIcon };
 const fitOptions = { padding: 0.14, maxZoom: 1 };
-const ariaLabels = {
-  get 'edge.a11yDescription.default'() {
-    return i18n('analysis.flowchart.edgeInstructions');
-  },
-  get 'controls.ariaLabel'() {
-    return i18n('analysis.flowchart.controlsLabel');
-  },
-  get 'handle.ariaLabel'() {
-    return i18n('analysis.flowchart.connectionHandle');
-  },
-  get 'node.a11yDescription.default'() {
-    return i18n('analysis.flowchart.nodeInstructions');
-  },
-  get 'node.a11yDescription.keyboardDisabled'() {
-    return i18n('analysis.flowchart.nodeInstructions');
-  },
-  get 'controls.zoomIn.ariaLabel'() {
-    return i18n('analysis.flowchart.zoomIn');
-  },
-  get 'controls.zoomOut.ariaLabel'() {
-    return i18n('analysis.flowchart.zoomOut');
-  },
-  get 'controls.fitView.ariaLabel'() {
-    return i18n('analysis.flowchart.fitView');
-  },
-};
 const proOptions = { hideAttribution: true };
 
 function layoutEvents(events: TraceFlowEvent[]) {
@@ -148,7 +122,6 @@ function layoutEvents(events: TraceFlowEvent[]) {
 }
 
 function EventNode({ data, selected }: NodeProps<TraceNode>) {
-  useI18n();
   const Icon = nodeIcons[data.kind];
 
   return (
@@ -208,7 +181,17 @@ export function AnalysisTraceFlowchart({
   onSelect: (id: string | undefined) => void;
   fullscreen: boolean;
 }) {
-  useI18n();
+  const i18n = useI18n();
+  const ariaLabels = {
+    'edge.a11yDescription.default': i18n('analysis.flowchart.edgeInstructions'),
+    'controls.ariaLabel': i18n('analysis.flowchart.controlsLabel'),
+    'handle.ariaLabel': i18n('analysis.flowchart.connectionHandle'),
+    'node.a11yDescription.default': i18n('analysis.flowchart.nodeInstructions'),
+    'node.a11yDescription.keyboardDisabled': i18n('analysis.flowchart.nodeInstructions'),
+    'controls.zoomIn.ariaLabel': i18n('analysis.flowchart.zoomIn'),
+    'controls.zoomOut.ariaLabel': i18n('analysis.flowchart.zoomOut'),
+    'controls.fitView.ariaLabel': i18n('analysis.flowchart.fitView'),
+  };
   const canvasId = useId();
   const { nodes, edges } = useMemo(() => layoutEvents(events), [events]);
   const selectedNodes = useMemo(
@@ -253,7 +236,7 @@ export function AnalysisTraceFlowchart({
         preventScrolling={fullscreen}
         fitView
         fitViewOptions={fitOptions}
-        ariaLabelConfig={{ ...ariaLabels }}
+        ariaLabelConfig={ariaLabels}
         proOptions={proOptions}
         className="[&_.react-flow__node:focus-visible]:rounded-lg [&_.react-flow__node:focus-visible]:outline-1 [&_.react-flow__node:focus-visible]:outline-offset-3 [&_.react-flow__node:focus-visible]:outline-focus"
       >

@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../i18n';
+import { useI18n } from '../i18n';
 import clsx from 'clsx';
 import {
   ArchiveIcon,
@@ -50,7 +50,7 @@ function ConversationItem({
   onSelect: () => void;
   onArchive: () => void;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(conversation.title);
   const [busy, setBusy] = useState(false);
@@ -175,7 +175,7 @@ export function WorkspaceSidebar({
   onConversationArchive,
   onNavigate,
 }: WorkspaceSidebarProps & { inert?: boolean; onCollapse: () => void }) {
-  useI18n();
+  const i18n = useI18n();
   const initialDatasetId = activeDatasetId ?? datasets[0]?.id;
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [recentSelection, setRecentSelection] = useState<string | null>(null);

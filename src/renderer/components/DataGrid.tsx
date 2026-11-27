@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../i18n';
+import { useI18n } from '../i18n';
 import type { Profile, QueryColumn } from '@antv/ava';
 import clsx from 'clsx';
 import { ArrowDownIcon, ArrowDownUpIcon, ArrowUpIcon } from 'lucide-react';
@@ -20,7 +20,7 @@ export function DataGrid({
   profile: Profile['models'][number] | undefined;
   resetKey: number;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const [sorting, setSorting] = useState<{ name: string; descending: boolean } | null>(null);
   const [widths, setWidths] = useState(new Map<string, number>());
   const drag = useRef<{ name: string; x: number; width: number } | null>(null);

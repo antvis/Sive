@@ -1,4 +1,4 @@
-import { i18n, useI18n } from '../i18n';
+import { useI18n } from '../i18n';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '../utils';
@@ -7,7 +7,7 @@ import type { LocalFileFormat } from '@shared/dataSource';
 const DIRECTORY_KEY = 'sive.last-import-directory';
 
 export function useImportLocal() {
-  useI18n();
+  const i18n = useI18n();
   const [importing, setImporting] = useState(false);
 
   const importLocal = async (format?: LocalFileFormat) => {

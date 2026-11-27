@@ -1,4 +1,5 @@
-import { i18n, useI18n } from '../../../i18n';
+import type { MessageKey } from '@shared/i18n';
+import { useI18n } from '../../../i18n';
 import type { Profile, Schema, Semantic } from '@antv/ava';
 import { getToolName } from 'ai';
 import { ChartColumnIcon, Columns3Icon, DatabaseIcon, TagsIcon } from 'lucide-react';
@@ -18,7 +19,7 @@ import { VisualizeToolCall } from './visualize';
 const dataTools = new Map<
   string,
   {
-    title: string;
+    titleKey: MessageKey;
     icon: LucideIcon;
     render: (output: unknown) => ReactNode;
   }
@@ -26,9 +27,7 @@ const dataTools = new Map<
   [
     'source',
     {
-      get title() {
-        return i18n('analysis.tools.source');
-      },
+      titleKey: 'analysis.tools.source',
       icon: DatabaseIcon,
       render: (output) => <SourceTool source={output as SourceResult} />,
     },
@@ -36,9 +35,7 @@ const dataTools = new Map<
   [
     'schema',
     {
-      get title() {
-        return i18n('analysis.tools.schema');
-      },
+      titleKey: 'analysis.tools.schema',
       icon: Columns3Icon,
       render: (output) => <SchemaTool schema={output as Schema} />,
     },
@@ -46,9 +43,7 @@ const dataTools = new Map<
   [
     'profile',
     {
-      get title() {
-        return i18n('analysis.tools.profile');
-      },
+      titleKey: 'analysis.tools.profile',
       icon: ChartColumnIcon,
       render: (output) => <ProfileTool profile={output as Profile} />,
     },
@@ -56,9 +51,7 @@ const dataTools = new Map<
   [
     'semantic',
     {
-      get title() {
-        return i18n('analysis.tools.semantic');
-      },
+      titleKey: 'analysis.tools.semantic',
       icon: TagsIcon,
       render: (output) => <SemanticTool semantic={output as Semantic} />,
     },
@@ -76,7 +69,7 @@ export function ChatToolCall({
   saved: boolean;
   isStreaming: boolean;
 }) {
-  useI18n();
+  const i18n = useI18n();
   const name = getToolName(call);
   if (name === 'analyze') return <AnalyzeToolCall call={call} messageId={messageId} />;
   if (name === 'visualize') {
@@ -84,13 +77,13 @@ export function ChatToolCall({
   }
 
   const tool = dataTools.get(name);
-  const errorText = getToolErrorText(call);
+  const errorText = getToolErrorText(i18n, call);
   const output =
     call.state === 'output-available' && call.output != null ? tool?.render(call.output) : undefined;
   const expandOn = tool ? (output || errorText ? 'click' : 'never') : 'running';
 
   return (
-    <ToolCallView call={call} title={tool?.title ?? name} icon={tool?.icon} expandOn={expandOn}>
+    <ToolCallView call={call} title={tool ? i18n(tool.titleKey) : name} icon={tool?.icon} expandOn={expandOn}>
       <ToolOutput output={output} errorText={errorText} />
     </ToolCallView>
   );

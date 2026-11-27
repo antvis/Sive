@@ -1,9 +1,9 @@
-import { i18n, useI18n } from '../i18n';
+import { useI18n } from '../i18n';
 import { CircleIcon, LoaderCircleIcon } from 'lucide-react';
 import { useConversationStatus } from '../hooks/useConversationStatus';
 
 export function ConversationStatus({ ids }: { ids: string[] }) {
-  useI18n();
+  const i18n = useI18n();
   const status = useConversationStatus(ids);
   if (status === 'idle') return null;
 

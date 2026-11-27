@@ -1,11 +1,11 @@
-import { i18n, useI18n } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { ChevronDownIcon, LinkIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { SnippetContent } from '@shared/schema';
 import { AnalysisTraceView } from '../chat/tools/analysis-trace-view';
 
 export function AnalysisSource({ question, trace }: Pick<SnippetContent, 'question' | 'trace'>) {
-  useI18n();
+  const i18n = useI18n();
   const [open, setOpen] = useState(false);
 
   return (

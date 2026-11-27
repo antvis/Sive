@@ -1,11 +1,11 @@
-import { i18n, useI18n } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useCallback, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function FeishuBitableDialog({ datasetId, onClose }: ConnectionDialogProps) {
-  useI18n();
+  const i18n = useI18n();
   const [form, setForm] = useState({ name: '', url: '', appId: '', appSecret: '' });
 
   const loadConnection = useCallback((connection: DatasetDetail) => {
@@ -13,7 +13,7 @@ export function FeishuBitableDialog({ datasetId, onClose }: ConnectionDialogProp
     if (sourceConfig.type !== 'feishu-bitable') throw new Error(i18n('errors.feishu.sourceTypeMismatch'));
     const { url = '', appId = '' } = sourceConfig.options;
     setForm({ name: connection.name, url, appId, appSecret: '' });
-  }, []);
+  }, [i18n]);
 
   return (
     <ConnectionDialog
