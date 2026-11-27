@@ -1,7 +1,7 @@
 import { useChat } from '@ai-sdk/react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
-import { ArrowUpRightIcon } from 'lucide-react';
+import { ArrowUpRightIcon, LoaderCircleIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ import { TooltipProvider } from '../ui/tooltip';
 import { cn } from '../../lib/utils';
 import type { DatasetSummary, ModelProfile, Preferences, SuggestResult } from '../../types';
 import { errorMessage } from '../../utils';
+import { useI18n } from '../../i18n';
 import { IpcChatTransport } from './ipc-chat-transport';
 import { useConversationActivity, useConversationRead } from '../../hooks/useConversationStatus';
 import { ChatWelcomeHeader } from './welcome';
@@ -52,6 +53,7 @@ export function Chat({
   activeModelId,
   preferences,
 }: Props) {
+  const i18n = useI18n();
   const { id: datasetId, name: datasetName } = dataset;
   const [question, setQuestion] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -291,10 +293,19 @@ export function Chat({
                 onModeChange={changeMode}
               />
             </div>
+            {starting && activeModelId && suggestionsLoading && (
+              <div
+                role="status"
+                className="mt-3 flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground"
+              >
+                <LoaderCircleIcon className="size-4 motion-safe:animate-spin" aria-hidden />
+                {i18n('chat.suggestionsLoading')}
+              </div>
+            )}
             {starting && hasSuggestions && (
               <ul
                 data-draft-slide
-                aria-label="示例问题"
+                aria-label={i18n('chat.suggestions')}
                 className="m-0 mt-3 list-none p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
               >
                 {suggestions.map(({ query }) => (
