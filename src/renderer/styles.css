@@ -198,6 +198,7 @@
   --color-sidebar-ink: var(--foreground);
   --color-sidebar-text: var(--muted-foreground);
   --color-sidebar-highlight: var(--workspace-control);
+  --color-sidebar-selected: light-dark(#f2f2f5, var(--selected));
   --color-workspace-canvas: var(--workspace-canvas);
   --color-workspace-control: var(--workspace-control);
   --color-page: var(--page);

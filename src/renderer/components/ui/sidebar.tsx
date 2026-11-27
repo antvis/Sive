@@ -10,7 +10,7 @@ export function SidebarButton({ className, ...props }: ComponentProps<'button'>)
       data-sidebar-row
       data-slot="sidebar-button"
       className={cn(
-        'relative flex min-h-[var(--sidebar-row-height,34px)] min-w-0 items-center gap-2 rounded-lg px-2.5 text-left text-sidebar-text -outline-offset-1 transition-[background-color,color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45 [&:not([data-sidebar-list]_*)]:hover:bg-sidebar-highlight [&[aria-current=true]]:bg-selected [&[aria-current=true]]:text-selected-foreground aria-[current=true]:font-semibold',
+        'relative flex min-h-[var(--sidebar-row-height,34px)] min-w-0 items-center gap-2 rounded-lg px-2.5 text-left text-sidebar-text -outline-offset-1 transition-[background-color,color,scale] motion-safe:active:scale-[0.98] disabled:opacity-45 [&:not([data-sidebar-list]_*)]:hover:bg-sidebar-highlight [&[aria-current=true]]:bg-sidebar-selected [&[aria-current=true]]:text-selected-foreground aria-[current=true]:font-semibold',
         className,
       )}
       {...props}
