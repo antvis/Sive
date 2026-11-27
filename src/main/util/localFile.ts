@@ -1,3 +1,4 @@
+import { i18n } from './i18n';
 import { access, constants } from 'node:fs/promises';
 import path from 'node:path';
 import type { DataSourceConfig } from '@antv/ava';
@@ -17,7 +18,10 @@ export function localSource(file: string): DataSourceConfig {
   const source = FILE_SOURCES.find((source) =>
     source.action.extensions.some((supported) => supported === extension),
   );
-  if (!source) throw new Error(`请选择 ${FILE_SOURCES.map((source) => source.label).join('、')} 文件。`);
+  if (!source)
+    throw new Error(
+      i18n('errors.files.expectedFormat', [FILE_SOURCES.map((source) => i18n(source.labelKey)).join('、')]),
+    );
   return { type: source.type, options: { path: file } };
 }
 
@@ -28,8 +32,8 @@ export async function checkLocalFile(file: string) {
     const code = (error as NodeJS.ErrnoException).code;
     throw new Error(
       code === 'ENOENT' || code === 'ENOTDIR'
-        ? '源文件不存在，可能已移动、改名或删除。请检查原文件或重新导入。'
-        : '无法读取源文件，请检查文件权限。',
+        ? i18n('errors.files.sourceNotFound')
+        : i18n('errors.files.permissionDenied'),
     );
   }
 }

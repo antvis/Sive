@@ -1,3 +1,4 @@
+import { i18n } from '../../util/i18n';
 import { randomUUID } from 'node:crypto';
 import { statSync } from 'node:fs';
 import { AVA, sourceInputSchema } from '@antv/ava';
@@ -111,7 +112,7 @@ export class DatasetService {
       }
       case 'clickhouse': {
         const { url, database, username } = sourceConfig.options;
-        const address = new URL(required(url, 'ClickHouse 连接地址缺失。'));
+        const address = new URL(required(url, i18n('errors.clickhouse.urlRequired')));
         address.username = '';
         address.password = '';
         address.search = '';
@@ -148,7 +149,7 @@ export class DatasetService {
   }
 
   async oAuthStart(type: DataSourceConfig['type']) {
-    if (this.oauthAuthorizing) throw new Error('已有 OAuth 授权正在进行。');
+    if (this.oauthAuthorizing) throw new Error(i18n('errors.oauth.alreadyRunning'));
     this.oauthAuthorizing = true;
     try {
       switch (type) {
@@ -163,7 +164,7 @@ export class DatasetService {
           return { sessionId, projects };
         }
         default:
-          throw new Error('该数据源不支持 OAuth。');
+          throw new Error(i18n('errors.oauth.unsupportedSource'));
       }
     } finally {
       this.oauthAuthorizing = false;
@@ -192,7 +193,7 @@ export class DatasetService {
     const session = this.oauthSessions.get(input.connectionId);
     if (!session || session.type !== 'github' || session.expiresAt <= Date.now()) {
       this.oauthSessions.delete(input.connectionId);
-      throw new Error('GitHub 授权会话已失效，请重新授权。');
+      throw new Error(i18n('errors.github.sessionExpired'));
     }
     return listGitHubRepositories(input, session);
   }
@@ -204,20 +205,17 @@ export class DatasetService {
     const session = this.oauthSessions.get(sessionId);
     if (!session || session.expiresAt <= Date.now()) {
       this.oauthSessions.delete(sessionId);
-      throw new Error('OAuth 授权会话已失效，请重新授权。');
+      throw new Error(i18n('errors.oauth.sessionExpired'));
     }
     if (sourceConfig.type === 'github') {
-      if (session.type !== 'github') throw new Error('GitHub 授权会话无效，请重新授权。');
+      if (session.type !== 'github') throw new Error(i18n('errors.github.invalidSession'));
       return {
         sourceConfig: { ...sourceConfig, options: { ...sourceConfig.options, token: session.token } },
         extras: null,
       };
     }
-    if (session.type !== 'supabase') throw new Error('Supabase 授权会话无效，请重新授权。');
-    const accessToken = required(
-      session.credentials.tokens?.access_token,
-      'OAuth 授权会话缺少 Access Token。',
-    );
+    if (session.type !== 'supabase') throw new Error(i18n('errors.supabase.invalidSession'));
+    const accessToken = required(session.credentials.tokens?.access_token, i18n('errors.oauth.tokenMissing'));
     return {
       sourceConfig: { ...sourceConfig, options: { ...sourceConfig.options, accessToken } },
       extras: { supabaseOAuth: session.credentials },
@@ -235,7 +233,7 @@ export class DatasetService {
     const oauth = dataset.extras?.supabaseOAuth;
     if (!oauth) return;
     if (accessToken && oauth.expiresAt && oauth.expiresAt - TOKEN_REFRESH_SKEW_MS > Date.now()) return;
-    if (!oauth.tokens?.refresh_token) throw new Error('Supabase 授权已失效，请重新授权。');
+    if (!oauth.tokens?.refresh_token) throw new Error(i18n('errors.supabase.authorizationExpired'));
 
     const existing = this.oauthRefreshes.get(id);
     if (existing) return existing;
@@ -245,14 +243,14 @@ export class DatasetService {
   }
 
   private async refreshSupabase(id: string) {
-    const dataset = required(this.get(id), '数据源不存在或已删除。');
+    const dataset = required(this.get(id), i18n('errors.dataset.notFound'));
     if (dataset.sourceConfig.type !== 'supabase') return;
-    const oauth = required(dataset.extras?.supabaseOAuth, 'Supabase OAuth 凭据缺失。');
+    const oauth = required(dataset.extras?.supabaseOAuth, i18n('errors.supabase.credentialsMissing'));
     const credentials = await refreshSupabaseOAuth(oauth);
-    const current = required(this.get(id), '数据源不存在或已删除。');
+    const current = required(this.get(id), i18n('errors.dataset.notFound'));
     if (current.sourceConfig.type !== 'supabase') return;
     if (current.extras?.supabaseOAuth?.tokens?.refresh_token !== oauth.tokens?.refresh_token) {
-      throw new Error('Supabase 数据源已重新授权，本次刷新已取消。');
+      throw new Error(i18n('errors.supabase.refreshCancelled'));
     }
     const sourceConfig = {
       ...current.sourceConfig,
@@ -262,17 +260,17 @@ export class DatasetService {
     this.database.write(() =>
       required(
         this.repositories.datasets.updateCredentials(id, { sourceConfig, extras }),
-        '数据源不存在或已删除。',
+        i18n('errors.dataset.notFound'),
       ),
     );
   }
 
   async refresh(id: string) {
     await this.prepareOAuth(id);
-    const original = required(this.get(id), '数据源不存在或已删除。');
+    const original = required(this.get(id), i18n('errors.dataset.notFound'));
     const refreshed = await this.readSource(original.sourceConfig);
     return this.database.write(() =>
-      required(this.repositories.datasets.update(id, refreshed), '数据源不存在或已删除。'),
+      required(this.repositories.datasets.update(id, refreshed), i18n('errors.dataset.notFound')),
     );
   }
 
@@ -291,7 +289,7 @@ export class DatasetService {
       const data: Record<string, unknown>[] = (ava.engine as JavaScriptEngine).getData() ?? [];
       sourceInputSchema.parse({ type: 'json', options: { data } });
       if (!data.length || !data.some((row) => Object.keys(row).length))
-        throw new Error('未提取到可用数据，请补充文本内容后重试。');
+        throw new Error(i18n('errors.dataset.noExtractedData'));
       return data;
     } finally {
       await ava.dispose();
@@ -304,12 +302,12 @@ export class DatasetService {
     options: DatasetPreviewOptions = { offset: 0, limit: DEFAULT_PREVIEW_PAGE_SIZE },
   ) {
     await this.prepareOAuth(id);
-    const dataset = required(this.get(id), '数据源不存在或已删除。');
+    const dataset = required(this.get(id), i18n('errors.dataset.notFound'));
     const model = required(
       table === undefined
         ? dataset.schema.models[0]
         : dataset.schema.models.find((item) => item.name === table),
-      '数据表不存在。',
+      i18n('errors.dataset.tableNotFound'),
     );
     const { offset, limit } = options;
     if (
@@ -318,7 +316,7 @@ export class DatasetService {
       !PREVIEW_PAGE_SIZES.some((size) => size === limit) ||
       !Number.isSafeInteger(offset + limit + 1)
     )
-      throw new Error('无效的预览分页参数。');
+      throw new Error(i18n('errors.dataset.invalidPagination'));
 
     const identifier = (name: string) => `"${name.replace(/"/g, '""')}"`;
     const keys =
@@ -356,7 +354,7 @@ export class DatasetService {
 
   async suggest(id: string, config: ModelConfig, language: Preferences['language']) {
     await this.prepareOAuth(id);
-    const dataset = required(this.get(id), '数据源不存在或已删除。');
+    const dataset = required(this.get(id), i18n('errors.dataset.notFound'));
     const ava = new AVA({
       llm: { model: createLanguageModel(config, language) },
       engine: sourceEngine(dataset.sourceConfig),
@@ -385,7 +383,7 @@ export class DatasetService {
       await ava.source(sourceConfig);
       const schema = await ava.schema();
       const profile = await ava.profile({ metrics: ['row_count'] });
-      if (!schema.models.length) throw new Error('未发现可读取的数据表。');
+      if (!schema.models.length) throw new Error(i18n('errors.dataset.noReadableTables'));
       return {
         sourceConfig,
         schema,
@@ -411,7 +409,7 @@ export class DatasetService {
       updatedAt: now,
     };
     const result = this.database.write(() => {
-      if (id) return required(this.repositories.datasets.update(id, values), '数据源不存在或已删除。');
+      if (id) return required(this.repositories.datasets.update(id, values), i18n('errors.dataset.notFound'));
       return this.repositories.datasets.insert({
         ...values,
         id: randomUUID(),
@@ -425,7 +423,7 @@ export class DatasetService {
 
   rename(id: string, name: string) {
     this.database.write(() => {
-      required(this.repositories.datasets.get(id), '数据源不存在或已删除。');
+      required(this.repositories.datasets.get(id), i18n('errors.dataset.notFound'));
       this.repositories.datasets.update(id, { name: name.trim() });
     });
   }
@@ -436,7 +434,7 @@ export class DatasetService {
 
   saveSemantic(id: string, semantic: Semantic) {
     this.database.write(() => {
-      required(this.repositories.datasets.get(id), '数据源不存在或已删除。');
+      required(this.repositories.datasets.get(id), i18n('errors.dataset.notFound'));
       this.repositories.datasets.update(id, { semantic });
     });
   }

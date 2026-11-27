@@ -1,3 +1,4 @@
+import { i18n } from '../i18n';
 import { createServer } from 'node:http';
 import { SUPABASE_REDIRECT_URL } from './oauth-provider';
 
@@ -32,25 +33,25 @@ export function startLoopbackCallback(): Promise<LoopbackCallback> {
       url.pathname !== expected.pathname ||
       settled
     ) {
-      response.writeHead(404).end('Not found');
+      response.writeHead(404).end(i18n('errors.oauth.callbackNotFound'));
       return;
     }
 
     settled = true;
     clearTimeout(timeout);
     if (url.searchParams.has('error')) {
-      response.writeHead(400).end('Authorization failed. Return to Sive.');
-      rejectCallback(new Error('Supabase 授权已取消或失败。'));
+      response.writeHead(400).end(i18n('errors.oauth.callbackFailed'));
+      rejectCallback(new Error(i18n('errors.supabase.authorizationCancelled')));
       return;
     }
-    response.writeHead(200).end('授权已完成，可以关闭此页面并返回 Sive。');
+    response.writeHead(200).end(i18n('oauth.callback.completed'));
     resolveCallback(url.searchParams);
   });
 
   const timeout = setTimeout(() => {
     if (settled) return;
     settled = true;
-    rejectCallback(new Error('Supabase 授权超时，请重试。'));
+    rejectCallback(new Error(i18n('errors.supabase.authorizationTimeout')));
     server.close();
   }, CALLBACK_TIMEOUT_MS);
 

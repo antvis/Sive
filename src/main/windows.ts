@@ -1,3 +1,4 @@
+import { i18n } from './util/i18n';
 import path from 'node:path';
 import { BrowserWindow } from 'electron';
 import type { BrowserWindowConstructorOptions, WebContents } from 'electron';
@@ -35,7 +36,9 @@ const windowDefinitions: Record<AppWindow, { options: BrowserWindowConstructorOp
   settings: {
     hash: 'settings',
     options: {
-      title: '设置',
+      get title() {
+        return i18n('settings.title');
+      },
       width: 864,
       height: 640,
       minWidth: 600,

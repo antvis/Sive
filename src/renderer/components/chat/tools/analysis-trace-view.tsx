@@ -1,3 +1,6 @@
+import type { MessageKey, Translator } from '@shared/i18n';
+import { useI18n } from '../../../i18n';
+import { translateError } from '@shared/i18n';
 import type { AnalysisTrace, AnalysisTraceOperation, AnalysisTraceStep } from '@shared/analysis-trace';
 import { DatabaseIcon, Maximize2Icon, Minimize2Icon } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -19,20 +22,37 @@ import { Table } from '../../ui/table';
 import { AnalysisTraceFlowchart } from './analysis-trace-flowchart';
 import type { TraceFlowEvent } from './analysis-trace-flowchart';
 
-const statusLabels = { running: '进行中', completed: '完成', failed: '失败', cancelled: '已取消' };
-const actionLabels = { EXPLORE: '探索数据', REFINE: '调整方案', SQL: '查询答案', CONFIRM: '核验结果' };
-const operationLabels = { translate: '生成语句', query: '执行查询', summarize: '总结结果' };
+const statusLabelKeys = {
+  running: 'analysis.status.running',
+  completed: 'analysis.status.completed',
+  failed: 'analysis.status.failed',
+  cancelled: 'analysis.status.cancelled',
+} as const satisfies Record<string, MessageKey>;
+const actionLabelKeys = {
+  EXPLORE: 'analysis.actions.explore',
+  REFINE: 'analysis.actions.refine',
+  SQL: 'analysis.actions.query',
+  CONFIRM: 'analysis.actions.verify',
+} as const satisfies Record<string, MessageKey>;
+const operationLabelKeys = {
+  translate: 'analysis.operations.translate',
+  query: 'analysis.operations.query',
+  summarize: 'analysis.operations.summarize',
+} as const satisfies Record<string, MessageKey>;
 
-function formatDuration(ms?: number) {
+function formatDuration(i18n: Translator, ms?: number) {
   if (ms === undefined) return undefined;
-  return ms < 1000 ? `耗时 ${ms} ms` : `耗时 ${(ms / 1000).toFixed(1)} 秒`;
+  return ms < 1000
+    ? i18n('analysis.duration.milliseconds', [ms])
+    : i18n('analysis.duration.seconds', [(ms / 1000).toFixed(1)]);
 }
 
 function TraceUsage({ usage, className }: { usage: AnalysisTraceOperation['usage']; className?: string }) {
+  const i18n = useI18n();
   if (usage?.inputTokens === undefined && usage?.outputTokens === undefined) return null;
   return (
     <p className={cn('text-xs text-muted-foreground tabular-nums', className)}>
-      输入 {usage.inputTokens ?? '—'} tokens · 输出 {usage.outputTokens ?? '—'} tokens
+      {i18n('analysis.tokenUsage', [usage.inputTokens ?? '—', usage.outputTokens ?? '—'])}
     </p>
   );
 }
@@ -53,6 +73,7 @@ function TraceCode({ label, text }: { label: string; text: string }) {
 }
 
 function QueryPreview({ columns, preview }: NonNullable<AnalysisTraceOperation['result']>) {
+  const i18n = useI18n();
   if (!preview) {
     return columns.length > 0 ? (
       <p className="text-muted-foreground">
@@ -69,17 +90,17 @@ function QueryPreview({ columns, preview }: NonNullable<AnalysisTraceOperation['
   }
 
   if (!columns.length || !Array.isArray(rows) || !rows.every((row) => row && typeof row === 'object')) {
-    return <TraceCode label="返回数据预览" text={preview} />;
+    return <TraceCode label={i18n('analysis.trace.dataPreview')} text={preview} />;
   }
 
   return (
     <div className="min-w-0 space-y-1">
-      <p className="font-medium text-muted-foreground">返回数据预览</p>
+      <p className="font-medium text-muted-foreground">{i18n('analysis.trace.dataPreview')}</p>
       <div
         className="min-w-0 overflow-x-auto rounded-md border border-border focus-visible:outline-1 focus-visible:outline-focus"
         tabIndex={0}
         role="region"
-        aria-label="返回数据预览"
+        aria-label={i18n('analysis.trace.dataPreview')}
       >
         <Table className="[&_td]:min-w-16 [&_td]:max-w-40 [&_th]:whitespace-nowrap">
           <thead>
@@ -119,12 +140,13 @@ function TraceSummary({
   operation: AnalysisTraceOperation;
   queryNumber?: number;
 }) {
+  const i18n = useI18n();
   const { conclusion, queryExplanation, limitations, nextStep } = operation;
   const sections = [
-    { title: '结论', text: conclusion, featured: true },
-    { title: '查询依据', text: queryExplanation, source: queryNumber },
-    { title: '分析局限', text: limitations },
-    { title: '后续建议', text: nextStep },
+    { title: i18n('analysis.result.conclusion'), text: conclusion, featured: true },
+    { title: i18n('analysis.result.rationale'), text: queryExplanation, source: queryNumber },
+    { title: i18n('analysis.result.limitations'), text: limitations },
+    { title: i18n('analysis.result.nextSteps'), text: nextStep },
   ].filter(({ text, source }) => text?.trim() || source !== undefined);
 
   if (!sections.length) return null;
@@ -140,7 +162,7 @@ function TraceSummary({
             {title}
             {source !== undefined && (
               <Badge variant="secondary" className="text-muted-foreground">
-                查询 {source}
+                {i18n('analysis.trace.queryLabel', [source])}
               </Badge>
             )}
           </h5>
@@ -171,17 +193,18 @@ function TraceOperation({
   defaultOpen: boolean;
   showTrigger?: boolean;
 }) {
+  const i18n = useI18n();
   const { kind, status, error, dsl, result } = operation;
   const queryNumber = queryNumbers.get(operation.id);
   const summarySource = operation.queryId ? queryNumbers.get(operation.queryId) : undefined;
-  const duration = formatDuration(operation.durationMs);
+  const duration = formatDuration(i18n, operation.durationMs);
   const details = (
     <>
-      {error && <p className="whitespace-pre-wrap text-destructive">{error}</p>}
+      {error && <p className="whitespace-pre-wrap text-destructive">{translateError(i18n.locale, error)}</p>}
       {dsl && (
         <div className="min-w-0 space-y-2">
-          <p className="font-medium text-muted-foreground">查询语句</p>
-          <SqlCodeBlock code={dsl} label="查询语句" />
+          <p className="font-medium text-muted-foreground">{i18n('analysis.sql.title')}</p>
+          <SqlCodeBlock code={dsl} label={i18n('analysis.sql.title')} />
         </div>
       )}
       {result && <QueryPreview {...result} />}
@@ -202,16 +225,20 @@ function TraceOperation({
       <CollapsibleRowTrigger className="py-2.5">
         <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-sm font-semibold text-foreground">
-            {queryNumber ? `查询 ${queryNumber}` : operationLabels[kind]}
+            {queryNumber ? i18n('analysis.trace.queryLabel', [queryNumber]) : i18n(operationLabelKeys[kind])}
           </span>
           {status !== 'completed' && (
             <span className={status === 'failed' ? 'text-destructive' : 'text-muted-foreground'}>
-              {statusLabels[status]}
+              {i18n(statusLabelKeys[status])}
             </span>
           )}
           {result && (
             <span className="text-xs text-muted-foreground tabular-nums">
-              {result.returnedRows} 行 · {result.columns.length} 列{result.truncated ? ' · 已截断' : ''}
+              {i18n('analysis.trace.resultDimensions', [
+                result.returnedRows,
+                result.columns.length,
+                result.truncated ? i18n('analysis.trace.truncatedSuffix') : '',
+              ])}
             </span>
           )}
         </span>
@@ -225,6 +252,7 @@ function TraceOperation({
 }
 
 function TraceStepDetail({ step, trace }: { step: AnalysisTraceStep; trace: AnalysisTrace }) {
+  const i18n = useI18n();
   const parents = trace.steps.filter(({ id }) => step.parentStepIds.includes(id));
   const queries = step.operations.filter(({ kind }) => kind === 'query');
   const queryNumbers = new Map(queries.map(({ id }, index) => [id, index + 1]));
@@ -246,18 +274,22 @@ function TraceStepDetail({ step, trace }: { step: AnalysisTraceStep; trace: Anal
   return (
     <div className="min-w-0 space-y-4 [overflow-wrap:anywhere]">
       {parents.length > 0 && (
-        <p className="text-muted-foreground">依赖第 {parents.map(({ index }) => index + 1).join('、')} 步</p>
+        <p className="text-muted-foreground">
+          {i18n('analysis.trace.dependencies', [parents.map(({ index }) => index + 1).join('、')])}
+        </p>
       )}
-      {step.error && <p className="whitespace-pre-wrap text-destructive">{step.error}</p>}
+      {step.error && (
+        <p className="whitespace-pre-wrap text-destructive">{translateError(i18n.locale, step.error)}</p>
+      )}
       {confirmation ? (
         <div className="space-y-3">
           <div className="space-y-1">
-            <h4 className="font-semibold">核对说明</h4>
+            <h4 className="font-semibold">{i18n('analysis.trace.verificationNotes')}</h4>
             <MessageResponse className="space-y-1 text-sm">{confirmation[1]}</MessageResponse>
           </div>
           {confirmation[2] && (
             <div className="space-y-1 border-t border-border pt-3">
-              <h4 className="font-semibold">结论</h4>
+              <h4 className="font-semibold">{i18n('analysis.result.conclusion')}</h4>
               <MessageResponse className="space-y-1 text-sm">{confirmation[2]}</MessageResponse>
             </div>
           )}
@@ -266,12 +298,14 @@ function TraceStepDetail({ step, trace }: { step: AnalysisTraceStep; trace: Anal
         text && <MessageResponse className="space-y-1 text-sm">{text}</MessageResponse>
       )}
       {step.operations.length > 0 && (
-        <ol className="min-w-0 divide-y divide-border" aria-label="执行记录">
+        <ol className="min-w-0 divide-y divide-border" aria-label={i18n('analysis.trace.executionLog')}>
           {step.operations.map((operation, index) => (
             <li key={operation.id} className="min-w-0">
               {operation.attempt !== undefined &&
                 operation.attempt !== step.operations[index - 1]?.attempt && (
-                  <p className="pt-2 text-xs font-medium text-muted-foreground">第 {operation.attempt + 1} 次尝试</p>
+                  <p className="pt-2 text-xs font-medium text-muted-foreground">
+                    {i18n('analysis.trace.attemptNumber', [operation.attempt + 1])}
+                  </p>
                 )}
               <TraceOperation
                 operation={operation}
@@ -283,7 +317,7 @@ function TraceStepDetail({ step, trace }: { step: AnalysisTraceStep; trace: Anal
         </ol>
       )}
       {!text && !step.error && !step.operations.length && (
-        <p className="text-muted-foreground">此步骤没有详情。</p>
+        <p className="text-muted-foreground">{i18n('analysis.trace.stepEmpty')}</p>
       )}
       <TraceUsage usage={step.usage} />
     </div>
@@ -303,15 +337,21 @@ type TraceEvent = TraceFlowEvent &
 
 const analysisId = 'analysis';
 
-function getTraceEvents(trace: AnalysisTrace) {
+function getTraceEvents(i18n: Translator, trace: AnalysisTrace) {
   const stepsById = new Map(trace.steps.map((step) => [step.id, `step:${step.id}`]));
   const events: TraceEvent[] = [
     {
       id: analysisId,
       kind: 'analysis',
       parentIds: [],
-      label: trace.strategy.type === 'loop' ? '多步探索' : '直接分析',
-      summary: `${trace.steps.length} 步 · ${statusLabels[trace.status]}`,
+      label:
+        trace.strategy.type === 'loop'
+          ? i18n('analysis.strategies.loop')
+          : i18n('analysis.strategies.direct'),
+      summary: i18n('analysis.trace.stepCountWithStatus', [
+        trace.steps.length,
+        i18n(statusLabelKeys[trace.status]),
+      ]),
       failed: trace.status === 'failed',
     },
   ];
@@ -322,19 +362,22 @@ function getTraceEvents(trace: AnalysisTrace) {
       .map((id) => stepsById.get(id))
       .filter((id): id is string => Boolean(id && id !== stepId));
     const title = step.finalAttempt
-      ? '最终尝试'
+      ? i18n('analysis.trace.finalAttempt')
       : trace.strategy.type === 'direct'
-        ? '直接查询'
+        ? i18n('analysis.trace.directQuery')
         : step.action
-          ? actionLabels[step.action]
-          : '分析步骤';
+          ? i18n(actionLabelKeys[step.action])
+          : i18n('analysis.trace.stepTitle');
     const warning = step.status === 'completed' && hasFailedOperation(step);
     events.push({
       id: stepId,
       kind: 'step',
       parentIds: parents.length ? parents : [analysisId],
       label: `${step.index + 1} · ${title}`,
-      summary: [warning ? '有失败操作' : statusLabels[step.status], formatDuration(step.durationMs)]
+      summary: [
+        warning ? i18n('analysis.trace.failedOperations') : i18n(statusLabelKeys[step.status]),
+        formatDuration(i18n, step.durationMs),
+      ]
         .filter(Boolean)
         .join(' · '),
       failed: warning || step.status === 'failed',
@@ -343,17 +386,23 @@ function getTraceEvents(trace: AnalysisTrace) {
 
     let queryNumber = 0;
     for (const operation of step.operations) {
-      const label = operation.kind === 'query' ? `查询 ${++queryNumber}` : operationLabels[operation.kind];
-      const attempt = operation.attempt === undefined ? undefined : `第 ${operation.attempt + 1} 次尝试`;
-      const status = operation.status === 'completed' ? undefined : statusLabels[operation.status];
+      const label =
+        operation.kind === 'query'
+          ? i18n('analysis.trace.queryLabel', [++queryNumber])
+          : i18n(operationLabelKeys[operation.kind]);
+      const attempt =
+        operation.attempt === undefined
+          ? undefined
+          : i18n('analysis.trace.attemptNumber', [operation.attempt + 1]);
+      const status = operation.status === 'completed' ? undefined : i18n(statusLabelKeys[operation.status]);
       events.push({
         id: `operation:${step.id}:${operation.id}`,
         kind: 'operation',
         parentIds: [stepId],
         label,
         summary:
-          [attempt, status, formatDuration(operation.durationMs)].filter(Boolean).join(' · ') ||
-          statusLabels[operation.status],
+          [attempt, status, formatDuration(i18n, operation.durationMs)].filter(Boolean).join(' · ') ||
+          i18n(statusLabelKeys[operation.status]),
         failed: operation.status === 'failed',
         step,
         operation,
@@ -365,6 +414,7 @@ function getTraceEvents(trace: AnalysisTrace) {
 }
 
 function TraceEventDetail({ event, trace }: { event: TraceEvent; trace: AnalysisTrace }) {
+  const i18n = useI18n();
   if (event.kind === 'step') return <TraceStepDetail step={event.step} trace={trace} />;
 
   if (event.kind === 'operation') {
@@ -381,12 +431,14 @@ function TraceEventDetail({ event, trace }: { event: TraceEvent; trace: Analysis
   }
 
   const dataset = trace.start.datasetName || trace.start.datasetId;
-  const duration = formatDuration(trace.durationMs);
+  const duration = formatDuration(i18n, trace.durationMs);
   return (
     <div className="min-w-0 space-y-2 [overflow-wrap:anywhere]">
       {trace.query && <p className="text-sm whitespace-pre-wrap">{trace.query}</p>}
       <p className="text-muted-foreground">{[dataset, duration].filter(Boolean).join(' · ')}</p>
-      {trace.error && <p className="whitespace-pre-wrap text-destructive">{trace.error}</p>}
+      {trace.error && (
+        <p className="whitespace-pre-wrap text-destructive">{translateError(i18n.locale, trace.error)}</p>
+      )}
     </div>
   );
 }
@@ -404,6 +456,7 @@ function TraceWorkspace({
   onSelect: (id: string | undefined) => void;
   fullscreen?: boolean;
 }) {
+  const i18n = useI18n();
   return (
     <div
       className={cn(
@@ -426,15 +479,12 @@ function TraceWorkspace({
             'flex min-h-0 min-w-0 flex-col overflow-hidden border-t border-border',
             fullscreen && 'md:border-t-0 md:border-l',
           )}
-          aria-label="节点详情"
+          aria-label={i18n('analysis.trace.nodeDetails')}
         >
           <header className="flex shrink-0 flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border px-3.5 py-3">
             <h4 className="text-sm font-semibold">{selected.label}</h4>
             <span
-              className={cn(
-                'tabular-nums',
-                selected.failed ? 'text-destructive' : 'text-muted-foreground',
-              )}
+              className={cn('tabular-nums', selected.failed ? 'text-destructive' : 'text-muted-foreground')}
             >
               {selected.summary}
             </span>
@@ -456,10 +506,11 @@ function TraceWorkspace({
 }
 
 export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
+  const i18n = useI18n();
   const { steps, start, status, strategy } = trace;
   const datasetLabel = start.datasetName || start.datasetId;
-  const duration = formatDuration(trace.durationMs);
-  const events = useMemo(() => getTraceEvents(trace), [trace]);
+  const duration = formatDuration(i18n, trace.durationMs);
+  const events = useMemo(() => getTraceEvents(i18n, trace), [i18n, trace, i18n.locale]);
   const [selectedId, setSelectedId] = useState<string>();
   const selected = events.find(({ id }) => id === selectedId);
 
@@ -467,17 +518,19 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
     <Dialog>
       <section
         className="w-full min-w-0 overflow-hidden text-sm leading-relaxed text-foreground"
-        aria-label="分析过程"
+        aria-label={i18n('analysis.trace.title')}
       >
         <header className="flex items-center justify-between gap-2 pb-2">
           <div className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-0.5 text-muted-foreground">
             <span className="font-semibold text-foreground">
-              {strategy.type === 'loop' ? '多步探索' : '直接分析'}
+              {strategy.type === 'loop'
+                ? i18n('analysis.strategies.loop')
+                : i18n('analysis.strategies.direct')}
             </span>
             <span className={status === 'failed' ? 'text-destructive' : undefined}>
-              {statusLabels[status]}
+              {i18n(statusLabelKeys[status])}
             </span>
-            <span className="tabular-nums">{steps.length} 步</span>
+            <span className="tabular-nums">{i18n('analysis.trace.stepCount', [steps.length])}</span>
             {duration && <span className="tabular-nums">{duration}</span>}
             {datasetLabel && (
               <span className="inline-flex min-w-0 items-center gap-1.5" title={datasetLabel}>
@@ -491,8 +544,8 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="全屏查看分析流程图"
-                title="全屏查看分析流程图"
+                aria-label={i18n('analysis.flowchart.enterFullscreen')}
+                title={i18n('analysis.flowchart.enterFullscreen')}
                 className="text-black/50 dark:text-white/50"
               >
                 <Maximize2Icon className="size-[14px]" aria-hidden />
@@ -503,7 +556,7 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
         {steps.length > 0 ? (
           <TraceWorkspace trace={trace} events={events} selected={selected} onSelect={setSelectedId} />
         ) : (
-          <p className="px-3.5 py-3 text-muted-foreground">没有已记录的步骤。</p>
+          <p className="px-3.5 py-3 text-muted-foreground">{i18n('analysis.trace.noSteps')}</p>
         )}
       </section>
       {steps.length > 0 && (
@@ -513,13 +566,13 @@ export function AnalysisTraceView({ trace }: { trace: AnalysisTrace }) {
         >
           <header className="min-w-0 border-b border-border">
             <div className="flex h-[44px] items-center justify-between gap-4 pr-4 pl-[88px] [-webkit-app-region:drag]">
-              <DialogTitle className="font-semibold">分析流程图</DialogTitle>
+              <DialogTitle className="font-semibold">{i18n('analysis.flowchart.title')}</DialogTitle>
               <DialogClose asChild>
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="退出全屏"
-                  title="退出全屏"
+                  aria-label={i18n('common.actions.exitFullscreen')}
+                  title={i18n('common.actions.exitFullscreen')}
                   className="text-black/50 dark:text-white/50"
                 >
                   <Minimize2Icon className="size-[14px]" aria-hidden />

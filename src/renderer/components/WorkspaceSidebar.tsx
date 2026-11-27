@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import clsx from 'clsx';
 import {
   ArchiveIcon,
@@ -49,6 +50,7 @@ function ConversationItem({
   onSelect: () => void;
   onArchive: () => void;
 }) {
+  const i18n = useI18n();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(conversation.title);
   const [busy, setBusy] = useState(false);
@@ -71,7 +73,7 @@ function ConversationItem({
     try {
       await window.workbench.conversationRename(conversation.id, title);
       setEditing(false);
-      toast.success('会话标题已修改');
+      toast.success(i18n('conversation.notifications.renamed'));
     } catch (cause) {
       toast.error(errorMessage(cause));
     } finally {
@@ -85,7 +87,7 @@ function ConversationItem({
     try {
       await window.workbench.conversationArchive(conversation.id);
       onArchive();
-      toast.success('分析任务已归档');
+      toast.success(i18n('conversation.notifications.archived'));
     } catch (cause) {
       toast.error(errorMessage(cause));
     } finally {
@@ -94,16 +96,13 @@ function ConversationItem({
   };
 
   return (
-    <div
-      data-sidebar-row
-      className="group/conversation relative flex min-w-0 rounded-lg"
-    >
+    <div data-sidebar-row className="group/conversation relative flex min-w-0 rounded-lg">
       {editing ? (
         <SidebarInput
           value={name}
           disabled={busy}
           autoFocus
-          aria-label="会话标题"
+          aria-label={i18n('conversation.titleLabel')}
           onFocus={(event) => event.currentTarget.select()}
           onChange={(event) => setName(event.target.value)}
           onBlur={() => void saveName()}
@@ -120,7 +119,7 @@ function ConversationItem({
         <>
           <SidebarButton
             aria-current={active || undefined}
-            title={`${conversation.title}\n${new Date(conversation.updatedAt).toLocaleString('zh-CN')}`}
+            title={`${conversation.title}\n${new Date(conversation.updatedAt).toLocaleString(i18n.locale)}`}
             className="w-full group-focus-within/conversation:pe-[52px] group-hover/conversation:pe-[52px]"
             onClick={onSelect}
           >
@@ -133,8 +132,8 @@ function ConversationItem({
             <Button
               variant="ghost"
               size="icon-xs"
-              aria-label={`重命名 ${conversation.title}`}
-              title={`重命名 ${conversation.title}`}
+              aria-label={i18n('conversation.actions.renameLabel', [conversation.title])}
+              title={i18n('conversation.actions.renameLabel', [conversation.title])}
               disabled={busy}
               onClick={() => {
                 renameCancelled.current = false;
@@ -148,8 +147,8 @@ function ConversationItem({
             <Button
               variant="ghost"
               size="icon-xs"
-              aria-label={`归档 ${conversation.title}`}
-              title={`归档 ${conversation.title}`}
+              aria-label={i18n('conversation.actions.archiveLabel', [conversation.title])}
+              title={i18n('conversation.actions.archiveLabel', [conversation.title])}
               disabled={busy}
               onClick={() => void archive()}
             >
@@ -176,6 +175,7 @@ export function WorkspaceSidebar({
   onConversationArchive,
   onNavigate,
 }: WorkspaceSidebarProps & { inert?: boolean; onCollapse: () => void }) {
+  const i18n = useI18n();
   const initialDatasetId = activeDatasetId ?? datasets[0]?.id;
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [recentSelection, setRecentSelection] = useState<string | null>(null);
@@ -195,12 +195,12 @@ export function WorkspaceSidebar({
   const groupSections = [
     {
       id: 'pinned',
-      title: '置顶',
+      title: i18n('sidebar.sections.pinned'),
       groups: groups.filter(({ dataset }) => pinnedIds.includes(dataset.id)),
     },
     {
       id: 'datasets',
-      title: '数据源',
+      title: i18n('datasets.title'),
       groups: groups.filter(({ dataset }) => !pinnedIds.includes(dataset.id)),
     },
   ];
@@ -239,7 +239,7 @@ export function WorkspaceSidebar({
     <aside
       id={WORKSPACE_SIDEBAR_ID}
       className="flex min-h-0 min-w-[160px] flex-1 flex-col overflow-hidden rounded-2xl bg-surface pb-3 text-base text-sidebar-ink"
-      aria-label="工作台侧边栏"
+      aria-label={i18n('sidebar.regionLabel')}
       inert={inert}
     >
       <header
@@ -265,12 +265,14 @@ export function WorkspaceSidebar({
                     'absolute top-[calc(var(--workspace-titlebar-height)/2-var(--workspace-gutter))] -translate-y-1/2',
                     windowFullscreen ? 'start-[8px]' : 'end-[8px]',
                   ]
-                : windowFullscreen ? 'order-first' : 'ms-auto',
+                : windowFullscreen
+                  ? 'order-first'
+                  : 'ms-auto',
             )}
             variant="ghost"
             size="icon-sm"
-            aria-label="收起侧边栏"
-            title="收起侧边栏"
+            aria-label={i18n('sidebar.actions.collapse')}
+            title={i18n('sidebar.actions.collapse')}
             aria-expanded
             aria-controls={WORKSPACE_SIDEBAR_ID}
             onClick={onCollapse}
@@ -279,144 +281,153 @@ export function WorkspaceSidebar({
           </Button>
         </div>
       </header>
-      <nav className="mx-2.5 mt-3" aria-label="工作台">
+      <nav className="mx-2.5 mt-3" aria-label={i18n('workspace.title')}>
         <SidebarList className="[--sidebar-row-gap:0.15em] [--sidebar-row-height:auto] [&_[data-slot=sidebar-button]]:py-[0.45em]">
           <SidebarButton
             aria-current={(page === 'analysis' && !activeConversationId) || undefined}
             className="[&[aria-current=true]]:bg-transparent [&[aria-current=true]]:text-sidebar-text aria-[current=true]:font-normal"
             disabled={!initialDatasetId}
-            title={initialDatasetId ? '新建分析' : '请先添加数据源'}
+            title={initialDatasetId ? i18n('sidebar.actions.newAnalysis') : i18n('datasets.addFirst')}
             onClick={() => createConversation()}
           >
             <SquarePenIcon size={16} className="shrink-0" aria-hidden />
-            <span>新建分析</span>
+            <span>{i18n('sidebar.actions.newAnalysis')}</span>
           </SidebarButton>
           <SidebarButton
             aria-current={page === 'welcome' || page === 'datasets' || undefined}
             onClick={() => onNavigate(datasets.length ? 'datasets' : 'welcome')}
           >
             <DatabaseIcon size={16} aria-hidden />
-            <span>数据源</span>
+            <span>{i18n('datasets.title')}</span>
           </SidebarButton>
           <SidebarButton
             aria-current={page === 'snippets' || undefined}
             onClick={() => onNavigate('snippets')}
           >
             <LightbulbIcon size={16} aria-hidden />
-            <span>洞察 Snippet</span>
+            <span>{i18n('snippets.title')}</span>
           </SidebarButton>
         </SidebarList>
       </nav>
-      <nav className="mx-2.5 mt-6 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto scrollbar-none" aria-label="分析历史">
-        {groupSections.filter(({ groups }) => groups.length > 0).map(({ id, title, groups }) => (
-          <section
-            key={id}
-            className="flex shrink-0 flex-col"
-            aria-labelledby={`sidebar-${id}-heading`}
-          >
-            <h2
-              id={`sidebar-${id}-heading`}
-              className="mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80"
+      <nav
+        className="mx-2.5 mt-6 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto scrollbar-none"
+        aria-label={i18n('sidebar.historyLabel')}
+      >
+        {groupSections
+          .filter(({ groups }) => groups.length > 0)
+          .map(({ id, title, groups }) => (
+            <section
+              key={id}
+              className="flex shrink-0 flex-col"
+              aria-labelledby={`sidebar-${id}-heading`}
             >
-              {title}
-            </h2>
-            <SidebarList className="[--sidebar-row-height:28px]">
-              {groups.map(({ dataset, conversations }) => {
-                const open = expanded[dataset.id] !== false;
-                const pinned = pinnedIds.includes(dataset.id);
-                const pinLabel = `${pinned ? '取消置顶' : '置顶'} ${dataset.name}`;
-                const groupId = `sidebar-conversations-${dataset.id}`;
-                return (
-                  <div key={dataset.id} className="grid min-w-0 gap-[2px]">
-                    <div className="group/conversation-group relative flex min-w-0 items-center">
-                      <SidebarButton
-                        className="w-full group-has-[:focus-visible]/conversation-group:pe-[52px] group-hover/conversation-group:pe-[52px]"
-                        aria-expanded={open}
-                        aria-controls={groupId}
-                        title={pinned ? `${dataset.name}（已置顶）` : dataset.name}
-                        onClick={() => setExpanded((current) => ({ ...current, [dataset.id]: !open }))}
-                      >
-                        <span
-                          className={clsx(
-                            'shrink-0 text-muted-foreground motion-safe:transition-transform',
-                            open && 'rotate-90',
-                          )}
+              <h2
+                id={`sidebar-${id}-heading`}
+                className="mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80"
+              >
+                {title}
+              </h2>
+              <SidebarList className="[--sidebar-row-height:28px]">
+                {groups.map(({ dataset, conversations }) => {
+                  const open = expanded[dataset.id] !== false;
+                  const pinned = pinnedIds.includes(dataset.id);
+                  const pinLabel = i18n(pinned ? 'sidebar.actions.unpin' : 'sidebar.actions.pin', [
+                    dataset.name,
+                  ]);
+                  const groupId = `sidebar-conversations-${dataset.id}`;
+                  return (
+                    <div key={dataset.id} className="grid min-w-0 gap-[2px]">
+                      <div className="group/conversation-group relative flex min-w-0 items-center">
+                        <SidebarButton
+                          className="w-full group-has-[:focus-visible]/conversation-group:pe-[52px] group-hover/conversation-group:pe-[52px]"
+                          aria-expanded={open}
+                          aria-controls={groupId}
+                          title={pinned ? i18n('sidebar.pinnedDatasetLabel', [dataset.name]) : dataset.name}
+                          onClick={() => setExpanded((current) => ({ ...current, [dataset.id]: !open }))}
                         >
-                          <ChevronRightIcon size={12} aria-hidden />
-                        </span>
-                        <DataSourceLogo type={dataset.sourceType} size={16} />
-                        <span className="min-w-0 flex-1 truncate">{dataset.name}</span>
-                        {!open && (
-                          <span className="shrink-0 group-has-[:focus-visible]/conversation-group:hidden group-hover/conversation-group:hidden">
-                            <ConversationStatus ids={conversations.map((conversation) => conversation.id)} />
+                          <span
+                            className={clsx(
+                              'shrink-0 text-muted-foreground motion-safe:transition-transform',
+                              open && 'rotate-90',
+                            )}
+                          >
+                            <ChevronRightIcon size={12} aria-hidden />
                           </span>
-                        )}
-                      </SidebarButton>
-                      <div className="pointer-events-none absolute inset-y-0 end-1 flex items-center opacity-0 transition-opacity group-has-[:focus-visible]/conversation-group:pointer-events-auto group-has-[:focus-visible]/conversation-group:opacity-100 group-hover/conversation-group:pointer-events-auto group-hover/conversation-group:opacity-100">
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          className="text-muted-foreground/75 focus-visible:text-ink"
-                          aria-label={pinLabel}
-                          aria-pressed={pinned}
-                          title={pinLabel}
-                          onClick={() => togglePin(dataset.id)}
-                        >
-                          {pinned ? (
-                            <PinOffIcon className="size-[14px]" aria-hidden />
-                          ) : (
-                            <PinIcon className="size-[14px]" aria-hidden />
+                          <DataSourceLogo type={dataset.sourceType} size={16} />
+                          <span className="min-w-0 flex-1 truncate">{dataset.name}</span>
+                          {!open && (
+                            <span className="shrink-0 group-has-[:focus-visible]/conversation-group:hidden group-hover/conversation-group:hidden">
+                              <ConversationStatus
+                                ids={conversations.map((conversation) => conversation.id)}
+                              />
+                            </span>
                           )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          className="text-muted-foreground/75 focus-visible:text-ink"
-                          aria-label={`在 ${dataset.name} 新建对话`}
-                          title={`在 ${dataset.name} 新建对话`}
-                          onClick={() => createConversation(dataset.id)}
-                        >
-                          <SquarePenIcon className="size-[14px]" aria-hidden />
-                        </Button>
+                        </SidebarButton>
+                        <div className="pointer-events-none absolute inset-y-0 end-1 flex items-center opacity-0 transition-opacity group-has-[:focus-visible]/conversation-group:pointer-events-auto group-has-[:focus-visible]/conversation-group:opacity-100 group-hover/conversation-group:pointer-events-auto group-hover/conversation-group:opacity-100">
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            className="text-muted-foreground/75 focus-visible:text-ink"
+                            aria-label={pinLabel}
+                            aria-pressed={pinned}
+                            title={pinLabel}
+                            onClick={() => togglePin(dataset.id)}
+                          >
+                            {pinned ? (
+                              <PinOffIcon className="size-[14px]" aria-hidden />
+                            ) : (
+                              <PinIcon className="size-[14px]" aria-hidden />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            className="text-muted-foreground/75 focus-visible:text-ink"
+                            aria-label={i18n('sidebar.actions.newDatasetConversation', [dataset.name])}
+                            title={i18n('sidebar.actions.newDatasetConversation', [dataset.name])}
+                            onClick={() => createConversation(dataset.id)}
+                          >
+                            <SquarePenIcon className="size-[14px]" aria-hidden />
+                          </Button>
+                        </div>
+                      </div>
+                      <div id={groupId} className="mb-[4px]" hidden={!open}>
+                        {open && (
+                          <SidebarList className="min-w-0 ps-[24px] [--sidebar-row-gap:1px] [--sidebar-row-height:26px]">
+                            {conversations.map((conversation) => (
+                              <ConversationItem
+                                key={conversation.id}
+                                conversation={conversation}
+                                active={
+                                  page === 'analysis' &&
+                                  !activeInRecent &&
+                                  conversation.id === activeConversationId
+                                }
+                                onSelect={() => {
+                                  setRecentSelection(null);
+                                  onConversationSelect(conversation);
+                                }}
+                                onArchive={() => onConversationArchive(conversation)}
+                              />
+                            ))}
+                          </SidebarList>
+                        )}
                       </div>
                     </div>
-                    <div id={groupId} className="mb-[4px]" hidden={!open}>
-                      {open && (
-                        <SidebarList className="min-w-0 ps-[24px] [--sidebar-row-gap:1px] [--sidebar-row-height:26px]">
-                          {conversations.map((conversation) => (
-                            <ConversationItem
-                              key={conversation.id}
-                              conversation={conversation}
-                              active={
-                                page === 'analysis' &&
-                                !activeInRecent &&
-                                conversation.id === activeConversationId
-                              }
-                              onSelect={() => {
-                                setRecentSelection(null);
-                                onConversationSelect(conversation);
-                              }}
-                              onArchive={() => onConversationArchive(conversation)}
-                            />
-                          ))}
-                        </SidebarList>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </SidebarList>
-          </section>
-        ))}
+                  );
+                })}
+              </SidebarList>
+            </section>
+          ))}
         <section className="flex shrink-0 flex-col" aria-labelledby="sidebar-recent-heading">
           <div className="group/recent mb-1 flex min-h-[32px] shrink-0 items-center justify-between gap-1 ps-2 text-xs font-normal text-sidebar-text/80">
-            <h2 id="sidebar-recent-heading">最近</h2>
+            <h2 id="sidebar-recent-heading">{i18n('sidebar.sections.recent')}</h2>
             <Button
               variant="ghost"
               size="icon-sm"
               className="pointer-events-none text-muted-foreground/75 opacity-0 transition-opacity focus-visible:text-ink group-has-[:focus-visible]/recent:pointer-events-auto group-has-[:focus-visible]/recent:opacity-100 group-hover/recent:pointer-events-auto group-hover/recent:opacity-100"
-              aria-label="新建对话"
-              title={initialDatasetId ? '新建对话' : '请先添加数据源'}
+              aria-label={i18n('conversation.actions.create')}
+              title={initialDatasetId ? i18n('conversation.actions.create') : i18n('datasets.addFirst')}
               disabled={!initialDatasetId}
               onClick={() => createConversation()}
             >
@@ -437,7 +448,7 @@ export function WorkspaceSidebar({
               />
             ))}
             {!recentConversations.length && (
-              <p className="px-[8px] py-1 text-sm text-sidebar-text">暂无对话</p>
+              <p className="px-[8px] py-1 text-sm text-sidebar-text">{i18n('conversation.empty')}</p>
             )}
           </SidebarList>
         </section>
@@ -449,7 +460,7 @@ export function WorkspaceSidebar({
         }
       >
         <SettingsIcon size={16} aria-hidden />
-        <span>设置</span>
+        <span>{i18n('settings.title')}</span>
       </SidebarButton>
     </aside>
   );

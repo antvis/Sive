@@ -1,5 +1,7 @@
 "use client"
 
+import { useI18n } from '../../i18n';
+
 import { XIcon } from "lucide-react"
 import { AlertDialog as AlertDialogPrimitive, Dialog as DialogPrimitive } from "radix-ui"
 import * as React from "react"
@@ -32,13 +34,14 @@ function DialogClose({
 }
 
 function DialogCloseButton() {
+  const i18n = useI18n();
   return (
     <DialogClose asChild>
       <Button
         variant="ghost"
         size="icon-sm"
         className="absolute top-6 right-6 rounded-md"
-        aria-label="关闭"
+        aria-label={i18n("common.actions.close")}
       >
         <XIcon className="size-[18px]" aria-hidden />
       </Button>
@@ -106,6 +109,7 @@ function DialogFooter({
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
 }) {
+  const i18n = useI18n();
   return (
     <div
       data-slot="dialog-footer"
@@ -115,7 +119,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogClose asChild>
-          <Button>关闭</Button>
+          <Button>{i18n("common.actions.close")}</Button>
         </DialogClose>
       )}
     </div>

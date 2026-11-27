@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import type { Profile } from '@antv/ava';
+import { i18n } from '../i18n';
 
 export function tableValue(value: unknown): string {
   if (value == null) return '—';
@@ -32,5 +33,5 @@ export function compareTableColumn(
 
   // Nulls stay at the end in both directions.
   if (a == null || b == null) return a == null ? (b == null ? 0 : 1) : -1;
-  return tableValue(a).localeCompare(tableValue(b), 'zh-CN') * direction;
+  return tableValue(a).localeCompare(tableValue(b), i18n.locale) * direction;
 }

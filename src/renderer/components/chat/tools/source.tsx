@@ -1,5 +1,5 @@
-import { findDatasetSource } from '@shared/dataSource';
-import { formatMetric } from '../../../utils';
+import { useI18n } from '../../../i18n';
+import { datasetSourceLabel, formatMetric } from '../../../utils';
 import { DataSourceLogo } from '../../DataSourceLogo';
 
 export type SourceResult = {
@@ -18,13 +18,14 @@ function formatFileSize(value?: number) {
 }
 
 export function SourceTool({ source }: { source: SourceResult }) {
+  const i18n = useI18n();
   const stats = [
-    { label: '文件大小', value: formatFileSize(source.fileSize) },
+    { label: i18n('datasets.metrics.fileSize'), value: formatFileSize(source.fileSize) },
     {
-      label: '行数',
+      label: i18n('datasets.metrics.rows'),
       value: typeof source.rowCount === 'number' ? formatMetric(source.rowCount) : '—',
     },
-    { label: '列数', value: formatMetric(source.columnCount) },
+    { label: i18n('datasets.metrics.columns'), value: formatMetric(source.columnCount) },
   ];
   return (
     <div className="rounded-lg bg-muted/50 p-4">
@@ -34,7 +35,7 @@ export function SourceTool({ source }: { source: SourceResult }) {
         </span>
         <span className="min-w-0 break-words text-sm font-medium text-foreground">{source.name}</span>
         <span className="shrink-0 text-xs text-muted-foreground">
-          {findDatasetSource(source.sourceType)?.label ?? source.sourceType}
+          {datasetSourceLabel(source.sourceType)}
         </span>
       </div>
       <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">

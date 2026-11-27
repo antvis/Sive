@@ -1,5 +1,5 @@
 import { DEFAULT_PREFERENCES, type Preferences } from '../../shared/api';
-import { getMessages, type MessageKey } from '../../shared/i18n';
+import { translate, type MessageKey, type MessageValues } from '../../shared/i18n';
 
 let locale: Preferences['language'] = DEFAULT_PREFERENCES.language;
 
@@ -12,8 +12,8 @@ function getLocale() {
  * @param key The key of the localized message to retrieve.
  * @returns The localized message corresponding to the given key.
  */
-export function i18n(key: MessageKey) {
-  return getMessages(getLocale())[key];
+export function i18n(key: MessageKey, values?: MessageValues) {
+  return translate(getLocale(), key, values);
 }
 
 /**

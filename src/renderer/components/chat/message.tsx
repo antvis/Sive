@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n';
 import { cn } from '../../lib/utils';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { isTextUIPart, isToolUIPart } from 'ai';
@@ -45,6 +46,7 @@ function StreamContent({
 }
 
 function UserMessageContent({ text }: { text: string }) {
+  const i18n = useI18n();
   const contentId = useId();
   const contentRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -82,7 +84,7 @@ function UserMessageContent({ text }: { text: string }) {
           aria-controls={contentId}
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? '收起' : '展示更多'}
+          {expanded ? i18n('common.actions.collapse') : i18n('common.actions.showMore')}
         </Button>
       )}
     </>

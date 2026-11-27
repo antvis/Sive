@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import clsx from 'clsx';
 import { PanelLeftIcon, SquarePenIcon } from 'lucide-react';
 import type { DatasetSummary } from '../types';
@@ -24,6 +25,7 @@ export function WorkspaceTitleBar({
   onOpenSidebar,
   onConversationCreate,
 }: Props) {
+  const i18n = useI18n();
   const initialDatasetId = activeDatasetId ?? datasets[0]?.id;
 
   return (
@@ -46,8 +48,8 @@ export function WorkspaceTitleBar({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="展开侧边栏"
-            title="展开侧边栏"
+            aria-label={i18n('sidebar.actions.expand')}
+            title={i18n('sidebar.actions.expand')}
             aria-controls={WORKSPACE_SIDEBAR_ID}
             aria-expanded={false}
             onClick={onOpenSidebar}
@@ -57,8 +59,8 @@ export function WorkspaceTitleBar({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="新建对话"
-            title={initialDatasetId ? '新建对话' : '请先添加数据源'}
+            aria-label={i18n('conversation.actions.create')}
+            title={initialDatasetId ? i18n('conversation.actions.create') : i18n('datasets.addFirst')}
             disabled={!initialDatasetId}
             onClick={() => {
               if (initialDatasetId) onConversationCreate(initialDatasetId);

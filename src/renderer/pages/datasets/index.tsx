@@ -1,11 +1,5 @@
-import {
-  Columns2Icon,
-  DatabaseIcon,
-  FileTextIcon,
-  PlusIcon,
-  SearchIcon,
-  Table2Icon,
-} from 'lucide-react';
+import { useI18n } from '../../i18n';
+import { Columns2Icon, DatabaseIcon, FileTextIcon, PlusIcon, SearchIcon, Table2Icon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { WorkspacePage } from '../../components/WorkspacePage';
@@ -15,8 +9,7 @@ import { Modal } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
 import { SourceActions } from './SourceActions';
 import type { DatasetSummary } from '../../types';
-import { errorMessage } from '../../utils';
-import { findDatasetSource } from '@shared/dataSource';
+import { datasetSourceLabel, errorMessage } from '../../utils';
 
 function formatFileSize(value?: number) {
   if (value === undefined) return '—';
@@ -25,25 +18,31 @@ function formatFileSize(value?: number) {
   return `${(value / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function DatasetCard({
-  dataset,
-  onOpen,
-}: {
-  dataset: DatasetSummary;
-  onOpen: (id: string) => void;
-}) {
+function DatasetCard({ dataset, onOpen }: { dataset: DatasetSummary; onOpen: (id: string) => void }) {
+  const i18n = useI18n();
   const [action, setAction] = useState<'rename' | 'delete' | null>(null);
   const [name, setName] = useState(dataset.name);
   const [busy, setBusy] = useState(false);
   const renameCancelled = useRef(false);
-  const source = findDatasetSource(dataset.sourceType);
-  const sourceLabel = source?.label ?? dataset.sourceType;
+  const sourceLabel = datasetSourceLabel(dataset.sourceType);
   const stats = [
     dataset.localFile
-      ? { label: '数据量', value: formatFileSize(dataset.fileSize), icon: FileTextIcon }
-      : { label: '数据表', value: String(dataset.tableCount ?? 0), icon: Table2Icon },
-    { label: '行数', value: dataset.rowCount?.toLocaleString('zh-CN') ?? '—', icon: DatabaseIcon },
-    { label: '列数', value: dataset.columnCount.toLocaleString('zh-CN'), icon: Columns2Icon },
+      ? {
+          label: i18n('datasets.metrics.dataVolume'),
+          value: formatFileSize(dataset.fileSize),
+          icon: FileTextIcon,
+        }
+      : { label: i18n('datasets.metrics.tables'), value: String(dataset.tableCount ?? 0), icon: Table2Icon },
+    {
+      label: i18n('datasets.metrics.rows'),
+      value: dataset.rowCount?.toLocaleString(i18n.locale) ?? '—',
+      icon: DatabaseIcon,
+    },
+    {
+      label: i18n('datasets.metrics.columns'),
+      value: dataset.columnCount.toLocaleString(i18n.locale),
+      icon: Columns2Icon,
+    },
   ];
 
   const saveName = async () => {
@@ -62,7 +61,7 @@ function DatasetCard({
     try {
       await window.workbench.datasetRename(dataset.id, nextName);
       setAction(null);
-      toast.success('数据源名称已修改');
+      toast.success(i18n('datasets.notifications.renamed'));
     } catch (cause) {
       toast.error(errorMessage(cause));
     } finally {
@@ -76,7 +75,7 @@ function DatasetCard({
     try {
       await window.workbench.datasetDelete(dataset.id);
       setAction(null);
-      toast.success('数据源已删除');
+      toast.success(i18n('datasets.notifications.deleted'));
     } catch (cause) {
       toast.error(errorMessage(cause));
     } finally {
@@ -108,7 +107,7 @@ function DatasetCard({
                   setAction(null);
                 }
               }}
-              aria-label="数据源名称"
+              aria-label={i18n('datasets.fields.name')}
             />
           ) : (
             <button
@@ -135,10 +134,7 @@ function DatasetCard({
       </div>
       <div className="mt-5 grid grid-cols-3 gap-2 rounded-xl bg-surface py-3">
         {stats.map(({ label, value, icon: StatIcon }) => (
-          <div
-            key={label}
-            className="flex min-w-0 items-center justify-center gap-2 px-2"
-          >
+          <div key={label} className="flex min-w-0 items-center justify-center gap-2 px-2">
             <StatIcon size={17} className="shrink-0 text-muted-foreground" />
             <div className="min-w-0">
               <strong className="block truncate text-sm font-semibold text-ink tabular-nums">{value}</strong>
@@ -150,31 +146,35 @@ function DatasetCard({
       <footer className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <span>
           {sourceLabel}
-          {(dataset.tableCount ?? 0) > 1 ? ` · ${dataset.tableCount} 张表` : ''}
+          {(dataset.tableCount ?? 0) > 1 ? i18n('datasets.tableCountSuffix', [dataset.tableCount]) : ''}
         </span>
-        <span>更新于 {dataset.updatedAt.slice(0, 10)}</span>
+        <span>
+          {i18n('datasets.updatedAt', [new Date(dataset.updatedAt).toLocaleDateString(i18n.locale)])}
+        </span>
       </footer>
       {dataset.fileUnavailable && (
-        <p className="mt-2 mb-0 text-sm text-danger">文件不可用，请检查原文件或重新导入。</p>
+        <p className="mt-2 mb-0 text-sm text-danger">{i18n('errors.files.unavailable')}</p>
       )}
       <Modal
         open={action === 'delete'}
         onOpenChange={(open) => {
           if (!open && !busy) setAction(null);
         }}
-        title="删除数据源"
+        title={i18n('datasets.actions.delete')}
         footer={
           <>
             <Button disabled={busy} onClick={() => setAction(null)}>
-              取消
+              {i18n('common.actions.cancel')}
             </Button>
             <Button variant="danger" disabled={busy} onClick={() => void remove()}>
-              {busy ? '删除中…' : '删除'}
+              {busy ? i18n('common.status.deleting') : i18n('common.actions.delete')}
             </Button>
           </>
         }
       >
-        <p className="m-0 leading-6 text-muted-foreground">确定删除“{dataset.name}”吗？删除后不再显示在数据源列表中。</p>
+        <p className="m-0 leading-6 text-muted-foreground">
+          {i18n('datasets.deleteConfirmation', [dataset.name])}
+        </p>
       </Modal>
     </article>
   );
@@ -189,6 +189,7 @@ export function DatasetsPage({
   onAdd: () => void;
   onOpen: (id: string) => void;
 }) {
+  const i18n = useI18n();
   const [query, setQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(24);
   const footer = useRef<HTMLDivElement>(null);
@@ -218,22 +219,26 @@ export function DatasetsPage({
 
   return (
     <WorkspacePage
-      title="数据源"
-      description={`${datasets.length} 个已添加的数据源`}
+      title={i18n('datasets.title')}
+      description={i18n('datasets.addedCount', [datasets.length])}
       action={
         <Button variant="primary" size="lg" onClick={onAdd}>
           <PlusIcon size={16} />
-          添加数据源
+          {i18n('datasets.actions.add')}
         </Button>
       }
     >
       <div className="mt-10 flex items-center justify-between gap-4">
         <div className="relative w-72 min-w-0 max-w-full">
-          <SearchIcon size={15} aria-hidden className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon
+            size={15}
+            aria-hidden
+            className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
           <Input
             type="search"
-            aria-label="搜索数据源"
-            placeholder="按名称搜索数据源…"
+            aria-label={i18n('datasets.search.label')}
+            placeholder={i18n('datasets.search.placeholder')}
             className="ps-9"
             value={query}
             onChange={(event) => {
@@ -244,7 +249,7 @@ export function DatasetsPage({
         </div>
         {(query.trim() || hasMore) && (
           <span className="text-xs text-muted-foreground">
-            已显示 {Math.min(visibleCount, filtered.length)} / {filtered.length} 个
+            {i18n('datasets.visibleCount', [Math.min(visibleCount, filtered.length), filtered.length])}
           </span>
         )}
       </div>
@@ -255,12 +260,14 @@ export function DatasetsPage({
       </div>
       {!filtered.length && (
         <p className="py-10 text-center text-sm text-muted-foreground">
-          {datasets.length ? '没有匹配的数据源' : '还没有数据源，点击“添加数据源”开始。'}
+          {datasets.length ? i18n('datasets.empty.search') : i18n('datasets.empty.description')}
         </p>
       )}
       {hasMore && (
         <div ref={footer} className="mt-6 flex justify-center">
-          <Button onClick={() => setVisibleCount((count) => count + 24)}>显示更多数据源</Button>
+          <Button onClick={() => setVisibleCount((count) => count + 24)}>
+            {i18n('datasets.actions.showMore')}
+          </Button>
         </div>
       )}
     </WorkspacePage>

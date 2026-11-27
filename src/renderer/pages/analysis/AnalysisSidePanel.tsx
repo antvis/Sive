@@ -1,6 +1,13 @@
+import { useI18n } from '../../i18n';
 import { Tabs, TabsContent } from '../../components/ui/tabs';
 import clsx from 'clsx';
-import { ChartNoAxesCombinedIcon, Maximize2Icon, Minimize2Icon, PanelRightIcon, Table2Icon } from 'lucide-react';
+import {
+  ChartNoAxesCombinedIcon,
+  Maximize2Icon,
+  Minimize2Icon,
+  PanelRightIcon,
+  Table2Icon,
+} from 'lucide-react';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import { DataSourceLogo } from '../../components/DataSourceLogo';
@@ -12,7 +19,6 @@ import { DatasetPanel } from './DatasetPanel';
 import type { AnalysisTab } from './useAnalysisTabs';
 
 export const DATASET_PREVIEW_ID = 'dataset';
-
 
 type Props = {
   dataset: Pick<DatasetSummary, 'id' | 'name' | 'sourceType'>;
@@ -41,9 +47,12 @@ export function AnalysisSidePanel({
   onFullscreenChange,
   onToggleCollapsed,
 }: Props) {
+  const i18n = useI18n();
   const hasDataset = tabs.some((tab) => tab.kind === 'dataset');
   const FullscreenIcon = fullscreen ? Minimize2Icon : Maximize2Icon;
-  const fullscreenLabel = fullscreen ? '退出右侧面板全屏' : '全屏查看右侧面板';
+  const fullscreenLabel = fullscreen
+    ? i18n('sidePanel.actions.exitFullscreen')
+    : i18n('sidePanel.actions.enterFullscreen');
   const card = useRef<HTMLElement>(null);
   const previousBounds = useRef<DOMRect | null>(null);
 
@@ -111,7 +120,7 @@ export function AnalysisSidePanel({
         )}
         role={fullscreen ? 'dialog' : undefined}
         aria-modal={fullscreen || undefined}
-        aria-label="右侧面板"
+        aria-label={i18n('sidePanel.regionLabel')}
         inert={collapsed && !fullscreen}
       >
         <div
@@ -121,7 +130,7 @@ export function AnalysisSidePanel({
           )}
         >
           <PanelTabList
-            label="右侧面板标签"
+            label={i18n('sidePanel.tabs.label')}
             tabs={tabs.map((tab) =>
               tab.kind === 'dataset'
                 ? {
@@ -140,8 +149,8 @@ export function AnalysisSidePanel({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="打开数据预览"
-              title="打开数据预览"
+              aria-label={i18n('sidePanel.actions.openDataPreview')}
+              title={i18n('sidePanel.actions.openDataPreview')}
               className="text-muted-foreground"
               onClick={onOpenDataset}
             >
@@ -164,8 +173,8 @@ export function AnalysisSidePanel({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="收起右侧面板"
-              title="收起右侧面板"
+              aria-label={i18n('sidePanel.actions.collapse')}
+              title={i18n('sidePanel.actions.collapse')}
               className="text-muted-foreground"
               aria-controls={DATASET_PREVIEW_ID}
               aria-expanded

@@ -1,3 +1,4 @@
+import { i18n } from '../i18n';
 import { auth } from '@modelcontextprotocol/client';
 import type { SupabaseOAuthCredentials } from '../../db/schema';
 import { required } from '../index';
@@ -22,10 +23,10 @@ export async function startSupabaseOAuth() {
       const params = await callbackParams;
       await callback.close();
       if (!provider.lastState || params.get('state') !== provider.lastState) {
-        throw new Error('Supabase OAuth state 校验失败。');
+        throw new Error(i18n('errors.supabase.stateMismatch'));
       }
       const code = params.get('code');
-      if (!code) throw new Error('Supabase OAuth 回调缺少授权码。');
+      if (!code) throw new Error(i18n('errors.supabase.authorizationCodeMissing'));
       await auth(provider, {
         serverUrl: MCP_URL,
         scope: OAUTH_SCOPES,
@@ -34,7 +35,7 @@ export async function startSupabaseOAuth() {
       });
     }
 
-    const accessToken = required(provider.accessToken, 'Supabase 未返回 Access Token。');
+    const accessToken = required(provider.accessToken, i18n('errors.supabase.tokenMissing'));
     const projects = await listProjects(accessToken);
     return { credentials, projects };
   } finally {
@@ -46,10 +47,10 @@ export async function refreshSupabaseOAuth(credentials: SupabaseOAuthCredentials
   const provider = new SupabaseOAuthProvider(credentials, undefined, false);
   try {
     await auth(provider, { serverUrl: MCP_URL });
-    required(provider.accessToken, 'Supabase 未返回 Access Token。');
+    required(provider.accessToken, i18n('errors.supabase.tokenMissing'));
     return provider.credentials;
   } catch {
-    throw new Error('Supabase 授权刷新失败，请重试或重新授权。');
+    throw new Error(i18n('errors.supabase.tokenRefreshFailed'));
   }
 }
 
@@ -58,9 +59,9 @@ async function listProjects(accessToken: string) {
     headers: { Authorization: `Bearer ${accessToken}` },
     signal: AbortSignal.timeout(30000),
   });
-  if (!response.ok) throw new Error(`Supabase 项目列表读取失败（${response.status}）。`);
+  if (!response.ok) throw new Error(i18n('errors.supabase.projectsRequestFailed', [response.status]));
   const payload: unknown = await response.json();
-  if (!Array.isArray(payload)) throw new Error('Supabase 项目列表格式无效。');
+  if (!Array.isArray(payload)) throw new Error(i18n('errors.supabase.invalidProjectList'));
   return payload.flatMap((project) =>
     typeof project?.id === 'string' && typeof project?.name === 'string'
       ? [{ id: project.id, name: project.name }]

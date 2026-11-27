@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import clsx from 'clsx';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PropsWithChildren, ReactNode } from 'react';
@@ -28,6 +29,7 @@ const SIDEBAR_DEFAULT_WIDTH = 224;
 const SIDEBAR_WIDTH_KEY = 'sive.sidebar-width';
 
 export function AppShell({ page, activeDatasetId, renderAnalysis, children, ...sidebar }: AppShellProps) {
+  const i18n = useI18n();
   const [initialSidebarWidth] = useState(() => readWidth(SIDEBAR_WIDTH_KEY, SIDEBAR_DEFAULT_WIDTH));
   const preferredSidebarWidth = useRef(initialSidebarWidth);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -121,7 +123,7 @@ export function AppShell({ page, activeDatasetId, renderAnalysis, children, ...s
           />
         </Panel>
         <ResizeHandle
-          aria-label="调整侧边栏宽度"
+          aria-label={i18n('sidebar.resizeLabel')}
           className={sidebarCollapsed ? 'w-0' : undefined}
           disabled={previewFullscreen || sidebarCollapsed}
           disableDoubleClick

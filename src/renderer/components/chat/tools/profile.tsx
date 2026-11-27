@@ -1,3 +1,5 @@
+import type { MessageKey, Translator } from '@shared/i18n';
+import { useI18n } from '../../../i18n';
 import type { Profile } from '@antv/ava';
 import { ChartColumnIcon, CheckIcon, CircleDashedIcon } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
@@ -9,12 +11,18 @@ import { Collapsible, CollapsibleContent, CollapsibleRowTrigger } from '../../ui
 
 type Model = Profile['models'][number];
 
-const typeLabels = { numeric: '数值', string: '文本', date: '日期', boolean: '布尔', unknown: '其他' };
+const typeLabelKeys = {
+  numeric: 'profile.types.numeric',
+  string: 'profile.types.text',
+  date: 'profile.types.date',
+  boolean: 'profile.types.boolean',
+  unknown: 'profile.types.other',
+} as const satisfies Record<string, MessageKey>;
 const numericMetrics = [
-  ['min', '最小值'],
-  ['max', '最大值'],
-  ['mean', '均值'],
-] as const;
+  ['min', 'profile.metrics.minimum'],
+  ['max', 'profile.metrics.maximum'],
+  ['mean', 'profile.metrics.mean'],
+] as const satisfies readonly (readonly [metric: string, labelKey: MessageKey])[];
 
 function isNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
@@ -24,10 +32,10 @@ function formatRate(value: number | undefined) {
   return value === undefined ? '—' : `${(value * 100).toFixed(2)}%`;
 }
 
-function formatStatistic(value: unknown) {
+function formatStatistic(i18n: Translator, value: unknown) {
   if (!isNumber(value)) return '—';
   return value !== 0 && Math.abs(value) < 0.01
-    ? value.toLocaleString('zh-CN', { maximumSignificantDigits: 4 })
+    ? value.toLocaleString(i18n.locale, { maximumSignificantDigits: 4 })
     : formatMetric(value);
 }
 
@@ -47,6 +55,7 @@ function summarize(model: Model) {
 }
 
 function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeof summarize> }) {
+  const i18n = useI18n();
   const [expandedNulls, setExpandedNulls] = useState(false);
   const [expandedNumbers, setExpandedNumbers] = useState(false);
   const nullFieldsId = useId();
@@ -65,52 +74,63 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
     });
   };
 
-  if (!model.columns.length) return <p className="m-0 text-xs text-muted-foreground">未返回字段统计。</p>;
+  if (!model.columns.length)
+    return <p className="m-0 text-xs text-muted-foreground">{i18n('profile.empty.columns')}</p>;
 
   return (
     <div ref={fieldsRef} className="grid min-w-0 gap-4 pb-3">
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground" aria-label="字段类型">
-        {Object.entries(typeLabels).map(([type, label]) => {
+      <div
+        className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"
+        aria-label={i18n('profile.types.title')}
+      >
+        {Object.entries(typeLabelKeys).map(([type, labelKey]) => {
           const count = model.columns.filter((column) => column.properties.logicalType === type).length;
-          return count > 0 ? <span key={type}>{`${label} ${count}`}</span> : null;
+          return count > 0 ? <span key={type}>{`${i18n(labelKey)} ${count}`}</span> : null;
         })}
       </div>
-      <section className="min-w-0 rounded-lg bg-muted/50 p-3" aria-label={`${model.name} 的空值概况`}>
+      <section
+        className="min-w-0 rounded-lg bg-muted/50 p-3"
+        aria-label={i18n('profile.nulls.overviewLabel', [model.name])}
+      >
         <div className="mb-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <h4 className="m-0 flex items-center gap-1.5 text-sm font-semibold text-foreground">
             <CircleDashedIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
-            <span>空值概况</span>
+            <span>{i18n('profile.nulls.overviewTitle')}</span>
           </h4>
           {stats.knownCount > 0 && (
             <span className="ml-auto text-xs font-normal text-muted-foreground">
               {!stats.complete
-                ? `已统计 ${stats.knownCount}/${model.columns.length} 字段`
+                ? i18n('profile.nulls.coverage', [stats.knownCount, model.columns.length])
                 : stats.nullFields.length > 0
                   ? hasRows
-                    ? '按空值率从高到低'
-                    : '按空值数从高到低'
+                    ? i18n('profile.nulls.sortByRate')
+                    : i18n('profile.nulls.sortByCount')
                   : null}
             </span>
           )}
         </div>
         {!stats.knownCount ? (
-          <p className="m-0 text-xs text-muted-foreground">未返回空值统计。</p>
+          <p className="m-0 text-xs text-muted-foreground">{i18n('profile.empty.nulls')}</p>
         ) : stats.nullFields.length ? (
           <>
             <p className="mt-0 mb-[9px] text-sm text-foreground/80">
-              {`${stats.nullFields.length} 个字段有空值 · ${stats.complete ? '共' : '已知'} ${formatMetric(stats.nullCount)} 个空单元格`}
+              {i18n('profile.nulls.summary', [
+                stats.nullFields.length,
+                stats.complete ? i18n('profile.nulls.totalQualifier') : i18n('profile.nulls.knownQualifier'),
+                formatMetric(stats.nullCount),
+              ])}
             </p>
-            <Table className="table-fixed" aria-label={`${model.name} 的空值统计`}>
+            <Table className="table-fixed" aria-label={i18n('profile.nulls.tableLabel', [model.name])}>
               <thead>
                 <tr>
                   <th scope="col" className="w-[52%]">
-                    字段
+                    {i18n('common.labels.columns')}
                   </th>
                   <th scope="col" className="w-[20%] text-right">
-                    空值数
+                    {i18n('profile.nulls.countLabel')}
                   </th>
                   <th scope="col" className="w-[28%] text-right">
-                    占本列
+                    {i18n('profile.nulls.columnShare')}
                   </th>
                 </tr>
               </thead>
@@ -161,7 +181,9 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
                   if (expandedNulls) scrollToTable();
                 }}
               >
-                {expandedNulls ? '收起字段' : `查看其余 ${stats.nullFields.length - 3} 个字段`}
+                {expandedNulls
+                  ? i18n('profile.nulls.collapseColumns')
+                  : i18n('profile.nulls.showRemainingColumns', [stats.nullFields.length - 3])}
               </Button>
             )}
           </>
@@ -169,34 +191,37 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
           <p className="m-0 flex items-center gap-1.5 text-sm text-foreground/80">
             {stats.complete && <CheckIcon className="size-3.5" aria-hidden="true" />}
             {stats.complete
-              ? `${model.columns.length} 个字段均未发现空值。`
-              : `已统计 ${stats.knownCount}/${model.columns.length} 字段，未发现空值。`}
+              ? i18n('profile.nulls.noneComplete', [model.columns.length])
+              : i18n('profile.nulls.nonePartial', [stats.knownCount, model.columns.length])}
           </p>
         )}
       </section>
       {numericColumns.length > 0 && (
-        <section className="min-w-0 rounded-lg bg-muted/50 p-3" aria-label={`${model.name} 的数值统计`}>
+        <section
+          className="min-w-0 rounded-lg bg-muted/50 p-3"
+          aria-label={i18n('profile.numeric.tableLabel', [model.name])}
+        >
           <div className="mb-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <h4 className="m-0 flex items-center gap-1.5 text-sm font-semibold text-foreground">
               <ChartColumnIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
-              <span>数值统计</span>
+              <span>{i18n('profile.numeric.title')}</span>
             </h4>
             <span className="ml-auto text-xs font-normal text-muted-foreground">
-              {numericColumns.length} 个数值字段
+              {i18n('profile.numeric.columnCount', [numericColumns.length])}
             </span>
           </div>
           <Table
             className="table-fixed max-[520px]:block max-[520px]:[&_td]:border-b-0"
-            aria-label={`${model.name} 的数值统计`}
+            aria-label={i18n('profile.numeric.tableLabel', [model.name])}
           >
             <thead className="max-[520px]:sr-only">
               <tr>
                 <th scope="col" className="w-[43%]">
-                  字段
+                  {i18n('common.labels.columns')}
                 </th>
-                {numericMetrics.map(([key, label]) => (
+                {numericMetrics.map(([key, labelKey]) => (
                   <th key={key} scope="col" className="w-[19%] text-right">
-                    {label}
+                    {i18n(labelKey)}
                   </th>
                 ))}
               </tr>
@@ -210,16 +235,16 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
                   <td className="break-words max-[520px]:col-span-3">
                     <code>{column.name}</code>
                   </td>
-                  {numericMetrics.map(([key, label]) => {
+                  {numericMetrics.map(([key, labelKey]) => {
                     const value = column.metrics[key];
 
                     return (
                       <td key={key} className="text-right break-words tabular-nums max-[520px]:text-left">
                         <span className="hidden text-xs text-muted-foreground max-[520px]:block">
-                          {label}
+                          {i18n(labelKey)}
                         </span>
                         <span title={isNumber(value) ? String(value) : undefined}>
-                          {formatStatistic(value)}
+                          {formatStatistic(i18n, value)}
                         </span>
                       </td>
                     );
@@ -241,7 +266,9 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
                 if (expandedNumbers) scrollToTable();
               }}
             >
-              {expandedNumbers ? '收起字段' : `查看其余 ${numericColumns.length - 5} 个字段`}
+              {expandedNumbers
+                ? i18n('profile.nulls.collapseColumns')
+                : i18n('profile.nulls.showRemainingColumns', [numericColumns.length - 5])}
             </Button>
           )}
         </section>
@@ -251,21 +278,27 @@ function ProfileFields({ model, stats }: { model: Model; stats: ReturnType<typeo
 }
 
 export function ProfileTool({ profile: { models } }: { profile: Profile }) {
+  const i18n = useI18n();
   const [expandedModel, setExpandedModel] = useState<string>();
   const summaries = models.map(summarize);
   const columnCount = models.reduce((total, model) => total + model.columns.length, 0);
   const nullColumnCount = summaries.reduce((total, stats) => total + stats.nullFields.length, 0);
   const complete = summaries.every((stats) => stats.complete);
 
-  if (!models.length) return <p className="m-0 text-sm leading-6 text-muted-foreground">未返回数据概况。</p>;
+  if (!models.length)
+    return <p className="m-0 text-sm leading-6 text-muted-foreground">{i18n('profile.empty.overview')}</p>;
 
   return (
     <div className="grid min-w-0 gap-4 text-sm leading-[1.6] text-foreground">
       <div className="flex flex-wrap gap-1.5">
-        <Badge variant="secondary">{models.length} 张表</Badge>
-        <Badge variant="secondary">{columnCount} 个字段</Badge>
+        <Badge variant="secondary">{i18n('profile.summary.tableCount', [models.length])}</Badge>
+        <Badge variant="secondary">{i18n('profile.summary.columnCount', [columnCount])}</Badge>
         <Badge variant="secondary">
-          {!complete ? '空值统计不完整' : nullColumnCount ? `${nullColumnCount} 个字段有空值` : '未发现空值'}
+          {!complete
+            ? i18n('profile.nulls.incomplete')
+            : nullColumnCount
+              ? i18n('profile.nulls.columnsWithNulls', [nullColumnCount])
+              : i18n('profile.nulls.none')}
         </Badge>
       </div>
       <div className="min-w-0 divide-y divide-border">
@@ -275,18 +308,20 @@ export function ProfileTool({ profile: { models } }: { profile: Profile }) {
             <>
               <code className="min-w-0 break-words text-sm font-semibold">{model.name}</code>
               <span className="ml-auto text-xs text-muted-foreground">
-                {stats.rowCount === undefined ? '行数未返回' : `${formatMetric(stats.rowCount)} 行`}
-                {` · ${model.columns.length} 个字段`}
+                {stats.rowCount === undefined
+                  ? i18n('profile.summary.rowCountUnavailable')
+                  : i18n('profile.summary.rowCount', [formatMetric(stats.rowCount)])}
+                {i18n('profile.summary.columnCountSuffix', [model.columns.length])}
               </span>
               <span
                 className="shrink-0 text-xs text-muted-foreground max-[520px]:basis-full max-[520px]:pl-[22px]"
-                title="空单元格数 ÷（本表行数 × 字段数）"
+                title={i18n('profile.nulls.rateDescription')}
               >
                 {stats.nullRate !== undefined
-                  ? `空值率 ${formatRate(stats.nullRate)}`
+                  ? i18n('profile.nulls.rate', [formatRate(stats.nullRate)])
                   : stats.rowCount === 0
-                    ? '空表'
-                    : '空值率未统计'}
+                    ? i18n('profile.summary.emptyTable')
+                    : i18n('profile.nulls.rateUnavailable')}
               </span>
             </>
           );

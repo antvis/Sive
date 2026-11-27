@@ -1,3 +1,4 @@
+import { useI18n } from '../../../i18n';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -57,6 +58,7 @@ export function ConnectionDialog({
   onLoad: (connection: DatasetDetail) => void;
   children: ReactNode;
 }) {
+  const i18n = useI18n();
   const formId = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useState(Boolean(datasetId));
@@ -71,7 +73,7 @@ export function ConnectionDialog({
       .datasetGet(datasetId)
       .then((connection) => {
         if (!live) return;
-        if (!connection) throw new Error('数据源不存在或已删除。');
+        if (!connection) throw new Error(i18n('errors.dataset.notFound'));
         onLoad(connection);
       })
       .catch((cause) => {
@@ -83,7 +85,7 @@ export function ConnectionDialog({
     return () => {
       live = false;
     };
-  }, [datasetId, onLoad]);
+  }, [i18n, datasetId, onLoad]);
 
   const submit = async (action: 'test' | 'save') => {
     if (busy || loading || submitDisabled || !formRef.current?.reportValidity()) return;
@@ -96,7 +98,11 @@ export function ConnectionDialog({
         setTested(true);
       } else {
         await window.workbench.datasetSave(name, sourceConfig, datasetId, authSessionId);
-        toast.success(datasetId ? `${label} 连接已更新` : `${label} 数据源已添加`);
+        toast.success(
+          datasetId
+            ? i18n('connections.notifications.updated', [label])
+            : i18n('connections.notifications.added', [label]),
+        );
         onClose();
       }
     } catch (cause) {
@@ -112,11 +118,11 @@ export function ConnectionDialog({
       onOpenChange={(open) => {
         if (!open && !busy) onClose();
       }}
-      title={datasetId ? `编辑 ${label} 连接` : `连接 ${label}`}
+      title={datasetId ? i18n('connections.editTitle', [label]) : i18n('connections.createTitle', [label])}
       footer={
         <>
           <Button disabled={loading || !!busy || submitDisabled} onClick={() => submit('test')}>
-            {busy === 'test' ? '正在测试…' : '测试连接'}
+            {busy === 'test' ? i18n('connections.status.testing') : i18n('connections.actions.test')}
           </Button>
           <Button
             type="submit"
@@ -124,13 +130,13 @@ export function ConnectionDialog({
             variant="primary"
             disabled={loading || !!busy || submitDisabled}
           >
-            {busy === 'save' ? '正在保存…' : '保存连接'}
+            {busy === 'save' ? i18n('snippet.export.saving') : i18n('connections.actions.save')}
           </Button>
         </>
       }
     >
       {loading ? (
-        <p className="text-sm text-muted-foreground">正在读取连接…</p>
+        <p className="text-sm text-muted-foreground">{i18n('connections.status.loading')}</p>
       ) : (
         <form
           id={formId}
@@ -154,7 +160,7 @@ export function ConnectionDialog({
       )}
       {tested && (
         <p role="status" className="mb-0 text-sm text-accent">
-          连接成功，数据表可读取。
+          {i18n('connections.status.testSucceeded')}
         </p>
       )}
     </Modal>

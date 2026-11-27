@@ -1,3 +1,4 @@
+import { useI18n } from '../../../i18n';
 import { Background, Controls, Handle, MarkerType, Position, ReactFlow } from '@xyflow/react';
 import type { Edge, Node, NodeProps, OnNodesChange, XYPosition } from '@xyflow/react';
 import '@xyflow/react/style.css';
@@ -27,13 +28,6 @@ const groupInset = 16;
 const operationGap = 24;
 const nodeIcons = { analysis: WorkflowIcon, step: LayersIcon, operation: TerminalIcon };
 const fitOptions = { padding: 0.14, maxZoom: 1 };
-const ariaLabels = {
-  'node.a11yDescription.default': '按 Enter 或空格选中节点并查看详情。',
-  'node.a11yDescription.keyboardDisabled': '按 Enter 或空格选中节点并查看详情。',
-  'controls.zoomIn.ariaLabel': '放大流程图',
-  'controls.zoomOut.ariaLabel': '缩小流程图',
-  'controls.fitView.ariaLabel': '查看完整流程图',
-};
 const proOptions = { hideAttribution: true };
 
 function layoutEvents(events: TraceFlowEvent[]) {
@@ -187,6 +181,17 @@ export function AnalysisTraceFlowchart({
   onSelect: (id: string | undefined) => void;
   fullscreen: boolean;
 }) {
+  const i18n = useI18n();
+  const ariaLabels = {
+    'edge.a11yDescription.default': i18n('analysis.flowchart.edgeInstructions'),
+    'controls.ariaLabel': i18n('analysis.flowchart.controlsLabel'),
+    'handle.ariaLabel': i18n('analysis.flowchart.connectionHandle'),
+    'node.a11yDescription.default': i18n('analysis.flowchart.nodeInstructions'),
+    'node.a11yDescription.keyboardDisabled': i18n('analysis.flowchart.nodeInstructions'),
+    'controls.zoomIn.ariaLabel': i18n('analysis.flowchart.zoomIn'),
+    'controls.zoomOut.ariaLabel': i18n('analysis.flowchart.zoomOut'),
+    'controls.fitView.ariaLabel': i18n('analysis.flowchart.fitView'),
+  };
   const canvasId = useId();
   const { nodes, edges } = useMemo(() => layoutEvents(events), [events]);
   const selectedNodes = useMemo(
@@ -213,7 +218,7 @@ export function AnalysisTraceFlowchart({
         fullscreen ? 'h-full' : 'h-72',
       )}
       role="region"
-      aria-label="分析事件流程图"
+      aria-label={i18n('analysis.flowchart.regionLabel')}
     >
       <ReactFlow
         id={canvasId}
@@ -240,7 +245,7 @@ export function AnalysisTraceFlowchart({
           orientation="horizontal"
           showInteractive={false}
           fitViewOptions={fitOptions}
-          aria-label="流程图视图控制"
+          aria-label={i18n('analysis.flowchart.controlsLabel')}
           className="m-3 overflow-hidden rounded-md border border-border [&_button]:size-8 [&_button_svg]:size-3.5"
         />
       </ReactFlow>

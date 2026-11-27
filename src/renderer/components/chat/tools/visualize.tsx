@@ -1,3 +1,4 @@
+import { useI18n } from '../../../i18n';
 import { ChartLineIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { toast } from 'sonner';
@@ -18,6 +19,7 @@ function VisualizeTool({
   saved: boolean;
   isStreaming: boolean;
 }) {
+  const i18n = useI18n();
   const savingRef = useRef(false);
 
   const save = async () => {
@@ -25,7 +27,7 @@ function VisualizeTool({
     savingRef.current = true;
     try {
       await window.workbench.snippetSave({ messageId, ...visualization });
-      toast.success('Snippet 已保存');
+      toast.success(i18n('snippet.notifications.saved'));
     } finally {
       savingRef.current = false;
     }
@@ -45,7 +47,8 @@ export function VisualizeToolCall({
   saved: boolean;
   isStreaming: boolean;
 }) {
-  const errorText = getToolErrorText(call);
+  const i18n = useI18n();
+  const errorText = getToolErrorText(i18n, call);
   const visualization = call.state === 'output-available' ? (call.output as SnippetContent | null) : null;
   const output =
     visualization?.spec && visualization.title ? (
@@ -60,7 +63,7 @@ export function VisualizeToolCall({
   return (
     <ToolCallView
       call={call}
-      title="绘制图表"
+      title={i18n('analysis.tools.visualize')}
       icon={ChartLineIcon}
       expandOn={output || errorText ? 'completed' : 'never'}
     >

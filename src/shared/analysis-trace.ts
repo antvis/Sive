@@ -1,5 +1,6 @@
 import type { AnalysisResponse, AnalysisStrategyConfig, QueryColumn } from '@antv/ava';
 import type { ModelMessage, ToolResultPart, UIMessage } from 'ai';
+import { getMessages } from './i18n';
 
 export type AnalysisTraceStatus = 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -103,5 +104,5 @@ export function requireAnalysisResult(messages: ModelMessage[], analysisId: stri
   if (output?.type === 'json' && isAnalysisToolResult(output.value) && output.value.result) {
     return output.value.result;
   }
-  throw new Error('指定的分析结果不可用，请使用已成功完成的 analyze 返回的 analysisId。');
+  throw new Error(getMessages('zh-CN')['errors.analysis.resultUnavailable']);
 }

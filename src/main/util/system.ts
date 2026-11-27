@@ -1,3 +1,4 @@
+import { i18n } from './i18n';
 import { mkdir, stat, statfs } from 'node:fs/promises';
 import path from 'node:path';
 import { app, session, shell } from 'electron';
@@ -62,16 +63,17 @@ export async function getStorageInfo() {
  */
 export async function systemOpen(type: 'directory' | 'url', target: string) {
   if (type === 'directory') {
-    if (![cacheDirectory(), app.getPath('userData')].includes(target)) throw new Error('不支持打开该目录。');
+    if (![cacheDirectory(), app.getPath('userData')].includes(target))
+      throw new Error(i18n('errors.system.unsupportedDirectory'));
     await mkdir(target, { recursive: true });
     const error = await shell.openPath(target);
     if (error) throw new Error(error);
     return;
   }
   if (type === 'url') {
-    if (!ALLOWED_URLS.has(target)) throw new Error('不支持打开该链接。');
+    if (!ALLOWED_URLS.has(target)) throw new Error(i18n('errors.system.unsupportedUrl'));
     await shell.openExternal(target);
     return;
   }
-  throw new Error('不支持的打开类型。');
+  throw new Error(i18n('errors.system.unsupportedOpenAction'));
 }

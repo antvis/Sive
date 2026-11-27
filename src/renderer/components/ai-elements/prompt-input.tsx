@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "../../i18n";
+
 import type { ChatStatus, FileUIPart, SourceDocumentUIPart } from "ai";
 import type {
   ChangeEvent,
@@ -299,9 +301,11 @@ export type PromptInputActionAddAttachmentsProps = ComponentProps<
 };
 
 export const PromptInputActionAddAttachments = ({
-  label = "Add photos or files",
+  label: labelProp,
   ...props
 }: PromptInputActionAddAttachmentsProps) => {
+  const i18n = useI18n();
+  const label = labelProp === undefined ? i18n("chat.attachments.add") : labelProp;
   const attachments = usePromptInputAttachments();
 
   const handleSelect = useCallback(
@@ -364,6 +368,7 @@ export const PromptInput = ({
   children,
   ...props
 }: PromptInputProps) => {
+  const i18n = useI18n();
   // Try to use a provider controller if present
   const controller = useOptionalPromptInputController();
   const usingProvider = !!controller;
@@ -422,7 +427,7 @@ export const PromptInput = ({
       if (incoming.length && accepted.length === 0) {
         onError?.({
           code: "accept",
-          message: "No files match the accepted types.",
+          message: i18n("errors.attachments.unsupportedType"),
         });
         return;
       }
@@ -433,7 +438,7 @@ export const PromptInput = ({
       if (accepted.length > 0 && sized.length === 0) {
         onError?.({
           code: "max_file_size",
-          message: "All files exceed the maximum size.",
+          message: i18n("errors.attachments.sizeLimit"),
         });
         return;
       }
@@ -448,7 +453,7 @@ export const PromptInput = ({
         if (typeof capacity === "number" && sized.length > capacity) {
           onError?.({
             code: "max_files",
-            message: "Too many files. Some were not added.",
+            message: i18n("errors.attachments.countLimit"),
           });
         }
         const next: (FileUIPart & { id: string })[] = [];
@@ -464,7 +469,7 @@ export const PromptInput = ({
         return [...prev, ...next];
       });
     },
-    [matchesAccept, maxFiles, maxFileSize, onError]
+    [i18n, matchesAccept, maxFiles, maxFileSize, onError]
   );
 
   const removeLocal = useCallback(
@@ -487,7 +492,7 @@ export const PromptInput = ({
       if (incoming.length && accepted.length === 0) {
         onError?.({
           code: "accept",
-          message: "No files match the accepted types.",
+          message: i18n("errors.attachments.unsupportedType"),
         });
         return;
       }
@@ -498,7 +503,7 @@ export const PromptInput = ({
       if (accepted.length > 0 && sized.length === 0) {
         onError?.({
           code: "max_file_size",
-          message: "All files exceed the maximum size.",
+          message: i18n("errors.attachments.sizeLimit"),
         });
         return;
       }
@@ -513,7 +518,7 @@ export const PromptInput = ({
       if (typeof capacity === "number" && sized.length > capacity) {
         onError?.({
           code: "max_files",
-          message: "Too many files. Some were not added.",
+          message: i18n("errors.attachments.countLimit"),
         });
       }
 
@@ -521,7 +526,7 @@ export const PromptInput = ({
         controller?.attachments.add(capped);
       }
     },
-    [matchesAccept, maxFileSize, maxFiles, onError, files.length, controller]
+    [i18n, matchesAccept, maxFileSize, maxFiles, onError, files.length, controller]
   );
 
   const clearAttachments = useCallback(
@@ -752,12 +757,12 @@ export const PromptInput = ({
     <>
       <input
         accept={accept}
-        aria-label="Upload files"
+        aria-label={i18n("chat.attachments.upload")}
         className="hidden"
         multiple={multiple}
         onChange={handleChange}
         ref={inputRef}
-        title="Upload files"
+        title={i18n("chat.attachments.upload")}
         type="file"
       />
       <form
@@ -793,9 +798,12 @@ export const PromptInputTextarea = ({
   onChange,
   onKeyDown,
   className,
-  placeholder = "What would you like to know?",
+  placeholder: placeholderProp,
   ...props
 }: PromptInputTextareaProps) => {
+  const i18n = useI18n();
+  const placeholder =
+    placeholderProp === undefined ? i18n("chat.input.defaultPlaceholder") : placeholderProp;
   const controller = useOptionalPromptInputController();
   const attachments = usePromptInputAttachments();
   const [isComposing, setIsComposing] = useState(false);
@@ -917,6 +925,7 @@ export const PromptInputSubmit = ({
   children,
   ...props
 }: PromptInputSubmitProps) => {
+  const i18n = useI18n();
   const isGenerating = status === "submitted" || status === "streaming";
 
   let Icon = <CornerDownLeftIcon className="size-4" />;
@@ -943,7 +952,7 @@ export const PromptInputSubmit = ({
 
   return (
     <ComposerSubmitButton
-      aria-label={isGenerating ? "Stop" : "Submit"}
+      aria-label={isGenerating ? i18n("common.actions.stop") : i18n("common.actions.send")}
       className={className}
       onClick={handleClick}
       type={isGenerating && onStop ? "button" : "submit"}

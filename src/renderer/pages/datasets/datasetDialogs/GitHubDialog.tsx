@@ -1,3 +1,4 @@
+import { useI18n } from '../../../i18n';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import type { GitHubDeviceAuthorization, GitHubRepositoryPage } from '@shared/github';
@@ -8,6 +9,7 @@ import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
+  const i18n = useI18n();
   const [form, setForm] = useState({ name: '', repository: '', since: '', maxRecords: 10000 });
   const [session, setSession] = useState<{ id: string; login: string }>();
   const [device, setDevice] = useState<GitHubDeviceAuthorization>();
@@ -57,10 +59,10 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
   };
 
   const loadConnection = useCallback((connection: DatasetDetail) => {
-    if (connection.sourceConfig.type !== 'github') throw new Error('只有 GitHub 数据源支持此操作。');
+    if (connection.sourceConfig.type !== 'github') throw new Error(i18n('errors.github.sourceTypeMismatch'));
     const { repository, since = '', maxRecords = 10000 } = connection.sourceConfig.options;
     setForm({ name: connection.name, repository, since, maxRecords });
-  }, []);
+  }, [i18n]);
 
   const connect = async () => {
     if (pending.current) return;
@@ -117,7 +119,7 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
       onLoad={loadConnection}
     >
       <ConnectionField
-        label="数据源名称"
+        label={i18n('datasets.fields.name')}
         name="name"
         value={form.name}
         onValueChange={(name) => setForm({ ...form, name })}
@@ -128,39 +130,43 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
         disabled={connecting || loadingRepositories}
         variant="primary"
       >
-        {connecting ? '等待 GitHub 授权…' : datasetId || session ? '重新连接 GitHub' : '连接 GitHub'}
+        {connecting
+          ? i18n('connections.github.waitingAuthorization')
+          : datasetId || session
+            ? i18n('connections.github.reconnect')
+            : i18n('connections.github.connect')}
       </Button>
       {device && (
         <div className="grid gap-2 rounded-md border p-3 text-sm">
-          <p className="m-0">在已打开的 GitHub 页面中输入验证码：</p>
+          <p className="m-0">{i18n('connections.github.deviceCodeDescription')}</p>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-center text-lg font-semibold tracking-widest">
               {device.userCode}
             </code>
             <Button type="button" onClick={() => void navigator.clipboard.writeText(device.userCode)}>
-              复制验证码
+              {i18n('connections.github.copyDeviceCode')}
             </Button>
           </div>
           <p className="m-0 break-all text-xs text-muted-foreground">
-            如页面未打开，请访问 {device.verificationUri}。授权完成后此处会自动继续。
+            {i18n('connections.github.authorizationInstructions', [device.verificationUri])}
           </p>
         </div>
       )}
-      <p className="m-0 text-xs text-muted-foreground">授权凭据会加密保存在本机，重启应用后无需重新连接。</p>
+      <p className="m-0 text-xs text-muted-foreground">{i18n('connections.github.credentialsDescription')}</p>
       {session && (
         <div className="grid gap-2">
           <p className="m-0 text-xs text-muted-foreground">
-            已连接 {session.login}，显示账号名下的仓库（含 Fork）。组织或其他仓库可手动填写地址。
+            {i18n('connections.github.accountDescription', [session.login])}
           </p>
           <SelectField
-            aria-label="选择 GitHub 仓库"
+            aria-label={i18n('connections.github.repositorySelectLabel')}
             className="w-full"
             value={selectedRepository?.fullName ?? ''}
             options={[
-              { value: '', label: '请选择仓库' },
+              { value: '', label: i18n('connections.github.repositorySelectPlaceholder') },
               ...repositories.map((repo) => ({
                 value: repo.fullName,
-                label: `${repo.fullName}${repo.private ? '（私有）' : ''}`,
+                label: `${repo.fullName}${repo.private ? i18n('connections.github.privateRepositorySuffix') : ''}`,
               })),
             ]}
             onChange={(repository) => {
@@ -173,41 +179,43 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
           )}
           {loadingRepositories && (
             <p role="status" className="m-0 text-xs text-muted-foreground">
-              正在加载仓库…
+              {i18n('connections.github.loadingRepositories')}
             </p>
           )}
           {!loadingRepositories && !repositoryError && !repositories.length && (
-            <p className="m-0 text-xs text-muted-foreground">未找到仓库，可手动填写地址。</p>
+            <p className="m-0 text-xs text-muted-foreground">
+              {i18n('connections.github.emptyRepositories')}
+            </p>
           )}
           {pagination.hasMore && (
             <Button disabled={loadingRepositories} onClick={() => void loadRepositories(pagination.page + 1)}>
-              加载更多仓库
+              {i18n('connections.github.loadMoreRepositories')}
             </Button>
           )}
           {pagination.incomplete && (
             <p className="m-0 text-xs text-muted-foreground">
-              仓库列表不完整或超过 1,000 个，可手动填写未列出的仓库地址。
+              {i18n('connections.github.incompleteRepositories')}
             </p>
           )}
           {repositoryError && (
             <p role="alert" className="m-0 text-sm text-danger">
-              仓库加载失败：{repositoryError} 可重新连接或手动填写地址。
+              {i18n('connections.github.repositoryLoadFailed', [repositoryError])}
             </p>
           )}
         </div>
       )}
       <ConnectionField
-        label="GitHub 仓库（可手动填写）"
+        label={i18n('connections.github.repositoryLabel')}
         name="repository"
-        placeholder="antvis/AVA 或 https://github.com/antvis/AVA"
+        placeholder={i18n('connections.github.repositoryPlaceholder')}
         value={form.repository}
         onValueChange={(repository) => setForm((current) => ({ ...current, repository }))}
       />
       <details className="text-sm">
-        <summary className="cursor-pointer">读取范围</summary>
+        <summary className="cursor-pointer">{i18n('connections.github.readScope')}</summary>
         <div className="mt-3 grid gap-3">
           <ConnectionField
-            label="记录起始日期（UTC）"
+            label={i18n('connections.github.sinceLabel')}
             name="since"
             type="date"
             required={false}
@@ -215,7 +223,7 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
             onValueChange={(since) => setForm({ ...form, since })}
           />
           <ConnectionField
-            label="记录上限（Issue 与 PR 合计）"
+            label={i18n('connections.github.limitLabel')}
             name="maxRecords"
             type="number"
             min={1}
@@ -224,9 +232,7 @@ export function GitHubDialog({ datasetId, onClose }: ConnectionDialogProps) {
             value={form.maxRecords}
             onValueChange={(maxRecords) => setForm({ ...form, maxRecords: Number(maxRecords) })}
           />
-          <p className="m-0 text-xs text-muted-foreground">
-            始终保留全部未关闭记录；超过上限时会提示调整范围，不会截断数据。预览与新分析会重新读取仓库。
-          </p>
+          <p className="m-0 text-xs text-muted-foreground">{i18n('connections.github.scopeDescription')}</p>
         </div>
       </details>
       {error && (

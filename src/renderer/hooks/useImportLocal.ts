@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '../utils';
@@ -6,6 +7,7 @@ import type { LocalFileFormat } from '@shared/dataSource';
 const DIRECTORY_KEY = 'sive.last-import-directory';
 
 export function useImportLocal() {
+  const i18n = useI18n();
   const [importing, setImporting] = useState(false);
 
   const importLocal = async (format?: LocalFileFormat) => {
@@ -19,7 +21,7 @@ export function useImportLocal() {
       if (dataset) {
         await window.workbench.datasetSave(dataset.name, dataset.sourceConfig);
         localStorage.setItem(DIRECTORY_KEY, dataset.directory);
-        toast.success(`已添加数据源“${dataset.name}”`);
+        toast.success(i18n('datasets.notifications.imported', [dataset.name]));
       }
     } catch (cause) {
       toast.error(errorMessage(cause));

@@ -1,9 +1,9 @@
+import { useI18n } from '../../i18n';
 import type { CSSProperties } from 'react';
 import { toast } from 'sonner';
-import { CodeBlockCopyButton } from 'streamdown';
 import { cn } from '../../lib/utils';
 import { errorMessage } from '../../utils';
-import { CodeBlock } from './code-block';
+import { CodeBlock, CodeBlockCopyButton } from './code-block';
 
 export function SqlCodeBlock({
   code,
@@ -14,6 +14,7 @@ export function SqlCodeBlock({
   label?: string;
   maxHeight?: string;
 }) {
+  const i18n = useI18n();
   return (
     <CodeBlock
       code={code}
@@ -29,9 +30,8 @@ export function SqlCodeBlock({
     >
       <div className="pointer-events-none absolute top-1 right-1 z-10 flex items-center justify-end gap-1 rounded-md border border-border bg-background/95 p-1 opacity-0 transition-opacity group-focus-within/sql:pointer-events-auto group-focus-within/sql:opacity-100 group-hover/sql:pointer-events-auto group-hover/sql:opacity-100 [&_svg]:size-3.5">
         <CodeBlockCopyButton
-          code={code}
-          aria-label="复制完整 SQL"
-          title="复制完整 SQL"
+          aria-label={i18n("analysis.sql.copyFull")}
+          title={i18n("analysis.sql.copyFull")}
           onError={(error) => toast.error(errorMessage(error))}
         />
       </div>

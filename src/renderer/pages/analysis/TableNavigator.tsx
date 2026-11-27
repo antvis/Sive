@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n';
 import {
   CalendarIcon,
   ChevronDownIcon,
@@ -33,6 +34,7 @@ export function TableNavigator({
   onSelect: (name: string) => void;
   autoFocus: boolean;
 }) {
+  const i18n = useI18n();
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<string | null>(selected);
   const searchInput = useRef<HTMLInputElement>(null);
@@ -47,22 +49,31 @@ export function TableNavigator({
     <>
       <div className="shrink-0 p-3">
         <InputGroup>
-          <InputGroupAddon><SearchIcon aria-hidden /></InputGroupAddon>
+          <InputGroupAddon>
+            <SearchIcon aria-hidden />
+          </InputGroupAddon>
           <InputGroupInput
             ref={searchInput}
             type="search"
-            aria-label="搜索数据表"
-            placeholder="搜索数据表…"
+            aria-label={i18n('datasetPreview.search.tablesLabel')}
+            placeholder={i18n('datasetPreview.search.tablesPlaceholder')}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
         </InputGroup>
         <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-          <span className="text-sm">数据表</span>
-          <span>{query ? `${tables.length} / ${models.length}` : models.length} 张</span>
+          <span className="text-sm">{i18n('datasets.metrics.tables')}</span>
+          <span>
+            {i18n('datasetPreview.tables.count', [
+              query ? `${tables.length} / ${models.length}` : models.length,
+            ])}
+          </span>
         </div>
       </div>
-      <nav aria-label="数据表目录" className="min-h-0 flex-1 overflow-auto px-2 pb-3">
+      <nav
+        aria-label={i18n('datasetPreview.tables.navigationLabel')}
+        className="min-h-0 flex-1 overflow-auto px-2 pb-3"
+      >
         <ul className="m-0 list-none space-y-0.5 p-0">
           {tables.map((model) => {
             const open = expanded === model.name;
@@ -74,20 +85,25 @@ export function TableNavigator({
                 <div
                   className={clsx(
                     'flex items-center rounded-lg',
-                    selected === model.name ? 'bg-selected text-selected-foreground' : 'hover:bg-workspace-control',
+                    selected === model.name
+                      ? 'bg-selected text-selected-foreground'
+                      : 'hover:bg-workspace-control',
                   )}
                 >
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    aria-label={`${open ? '收起' : '展开'} ${model.name} 的字段`}
+                    aria-label={i18n('datasetPreview.tables.toggleColumns', [
+                      open ? i18n('common.actions.collapse') : i18n('common.actions.expand'),
+                      model.name,
+                    ])}
                     aria-expanded={open}
                     onClick={() => setExpanded(open ? null : model.name)}
                   >
                     <Caret size={12} />
                   </Button>
                   <SidebarButton
-                    aria-label={`选择数据表 ${model.name}`}
+                    aria-label={i18n('datasetPreview.tables.selectLabel', [model.name])}
                     aria-current={selected === model.name ? 'true' : undefined}
                     title={model.name}
                     onClick={() => {
@@ -98,7 +114,10 @@ export function TableNavigator({
                   >
                     <Table2Icon size={15} className="shrink-0" />
                     <span className="min-w-0 flex-1 truncate">{model.name}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground" title={`${model.columns.length} 个字段`}>
+                    <span
+                      className="shrink-0 text-xs text-muted-foreground"
+                      title={i18n('profile.summary.columnCount', [model.columns.length])}
+                    >
                       {model.columns.length}
                     </span>
                   </SidebarButton>
@@ -111,27 +130,37 @@ export function TableNavigator({
                       return (
                         <li
                           key={column.name}
-                          title={`${column.name} · ${column.type}${isPrimary ? ' · 主键' : ''}${column.notNull ? ' · 非空' : ''}`}
+                          title={`${column.name} · ${column.type}${isPrimary ? i18n('schema.columns.primaryKeySuffix') : ''}${column.notNull ? i18n('schema.columns.notNullSuffix') : ''}`}
                           className="flex min-w-0 items-center gap-2 py-1.5 text-sm"
                         >
                           <Icon
                             size={13}
                             className={clsx('shrink-0', isPrimary ? 'text-accent' : 'text-muted-foreground')}
-                            aria-label={isPrimary ? '主键' : undefined}
+                            aria-label={isPrimary ? i18n('schema.columns.primaryKey') : undefined}
                           />
                           <span className="min-w-0 flex-1 truncate">{column.name}</span>
-                          <span className="max-w-20 truncate text-xs text-muted-foreground">{column.type}</span>
+                          <span className="max-w-20 truncate text-xs text-muted-foreground">
+                            {column.type}
+                          </span>
                         </li>
                       );
                     })}
-                    {!model.columns.length && <li className="py-1.5 text-sm text-muted-foreground">暂无字段</li>}
+                    {!model.columns.length && (
+                      <li className="py-1.5 text-sm text-muted-foreground">
+                        {i18n('datasetPreview.empty.columns')}
+                      </li>
+                    )}
                   </ul>
                 )}
               </li>
             );
           })}
         </ul>
-        {!tables.length && <p className="px-2 py-6 text-center text-sm text-muted-foreground">无匹配数据表</p>}
+        {!tables.length && (
+          <p className="px-2 py-6 text-center text-sm text-muted-foreground">
+            {i18n('datasetPreview.empty.tableSearch')}
+          </p>
+        )}
       </nav>
     </>
   );

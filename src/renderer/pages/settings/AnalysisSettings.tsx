@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n';
 import { analysisStrategy } from '@shared/api';
 import type { Preferences } from '@shared/api';
 import { useState } from 'react';
@@ -6,11 +7,6 @@ import { Input } from '../../components/ui/input';
 import { SegmentedControl } from '../../components/ui/segmented-control';
 import { errorMessage } from '../../utils';
 import { SettingGroup, SettingRow } from './SettingControls';
-
-const strategyOptions = [
-  { value: 'direct', label: '直接分析' },
-  { value: 'loop', label: '多步探索' },
-] as const;
 
 function sizeInMB(value: string | undefined) {
   const size = Number.parseInt(value ?? '1024', 10);
@@ -68,6 +64,17 @@ function DocumentationLink({ url, label }: { url: string; label: string }) {
 }
 
 export function AnalysisSettings({ preferences }: { preferences: Preferences }) {
+  const i18n = useI18n();
+  const strategyOptions = [
+    {
+      value: 'direct',
+      label: i18n('analysis.strategies.direct'),
+    },
+    {
+      value: 'loop',
+      label: i18n('analysis.strategies.loop'),
+    },
+  ] as const;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -89,20 +96,20 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
   return (
     <>
       <SettingGroup
-        title="分析策略"
+        title={i18n('settings.analysis.strategy.title')}
         action={
           <DocumentationLink
             url="https://ava.antv.vision/documentation/analysis/strategies/"
-            label="查看分析策略文档"
+            label={i18n('settings.analysis.strategy.documentation')}
           />
         }
       >
         <SettingRow
-          title="默认分析方式"
-          description="直接分析适合明确的问题。多步探索会分步查询，通常耗时更长，模型调用更多"
+          title={i18n('settings.analysis.strategy.defaultTitle')}
+          description={i18n('settings.analysis.strategy.description')}
         >
           <SegmentedControl
-            label="默认分析方式"
+            label={i18n('settings.analysis.strategy.defaultTitle')}
             options={strategyOptions}
             value={preferences.strategy.type}
             disabled={saving}
@@ -115,11 +122,14 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
           />
         </SettingRow>
         {preferences.strategy.type === 'loop' && (
-          <SettingRow title="多步探索轮次上限" description="限制一次多步探索的推理轮次，默认 12 轮">
+          <SettingRow
+            title={i18n('settings.analysis.strategy.roundLimitTitle')}
+            description={i18n('settings.analysis.strategy.roundLimitDescription')}
+          >
             <NumberInput
-              label="多步探索最大轮次"
+              label={i18n('settings.analysis.strategy.roundLimitLabel')}
               max={50}
-              unit="轮"
+              unit={i18n('settings.analysis.units.rounds')}
               value={preferences.strategy.maxSteps ?? 12}
               disabled={saving}
               onChange={(maxSteps) => void update({ ...preferences, strategy: { type: 'loop', maxSteps } })}
@@ -128,15 +138,15 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
         )}
       </SettingGroup>
 
-      <SettingGroup title="Agent 行为">
+      <SettingGroup title={i18n('settings.analysis.agent.title')}>
         <SettingRow
-          title="任务执行轮次上限"
-          description="限制 Agent 处理单次任务时的执行轮次，以控制工具与模型调用"
+          title={i18n('settings.analysis.agent.roundLimitTitle')}
+          description={i18n('settings.analysis.agent.roundLimitDescription')}
         >
           <NumberInput
-            label="Agent 最大执行轮次"
+            label={i18n('settings.analysis.agent.roundLimitLabel')}
             value={preferences.agent.maxSteps}
-            unit="轮"
+            unit={i18n('settings.analysis.units.rounds')}
             max={50}
             disabled={saving}
             onChange={(maxSteps) => void update({ ...preferences, agent: { maxSteps } })}
@@ -145,17 +155,20 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
       </SettingGroup>
 
       <SettingGroup
-        title="AVA DuckDB 引擎"
+        title={i18n('settings.analysis.engine.title')}
         action={
           <DocumentationLink
             url="https://ava.antv.vision/documentation/engines/duckdb/"
-            label="查看 DuckDB 文档"
+            label={i18n('settings.analysis.engine.documentation')}
           />
         }
       >
-        <SettingRow title="内存上限" description="限制单个 DuckDB 引擎可使用的内存">
+        <SettingRow
+          title={i18n('settings.analysis.engine.memoryTitle')}
+          description={i18n('settings.analysis.engine.memoryDescription')}
+        >
           <NumberInput
-            label="DuckDB 内存上限"
+            label={i18n('settings.analysis.engine.memoryLabel')}
             value={sizeInMB(preferences.engine.memoryLimit)}
             unit="MB"
             min={128}
@@ -164,30 +177,36 @@ export function AnalysisSettings({ preferences }: { preferences: Preferences }) 
             onChange={(value) => void updateEngine({ memoryLimit: `${value}MB` })}
           />
         </SettingRow>
-        <SettingRow title="工作线程数" description="设置 DuckDB 查询使用的工作线程数量">
+        <SettingRow
+          title={i18n('settings.analysis.engine.threadsTitle')}
+          description={i18n('settings.analysis.engine.threadsDescription')}
+        >
           <NumberInput
-            label="DuckDB 工作线程数"
+            label={i18n('settings.analysis.engine.threadsLabel')}
             value={preferences.engine.threads ?? 1}
-            unit="线程"
+            unit={i18n('settings.analysis.units.threads')}
             disabled={saving}
             onChange={(threads) => void updateEngine({ threads })}
           />
         </SettingRow>
-        <SettingRow title="单次查询超时" description="超过设定时间的查询会被终止">
+        <SettingRow
+          title={i18n('settings.analysis.engine.timeoutTitle')}
+          description={i18n('settings.analysis.engine.timeoutDescription')}
+        >
           <NumberInput
-            label="DuckDB 查询超时"
+            label={i18n('settings.analysis.engine.timeoutLabel')}
             value={(preferences.engine.queryTimeoutMs ?? 30000) / 1000}
-            unit="秒"
+            unit={i18n('common.units.seconds')}
             disabled={saving}
             onChange={(value) => void updateEngine({ queryTimeoutMs: value * 1000 })}
           />
         </SettingRow>
         <SettingRow
-          title="临时文件上限"
-          description="限制 DuckDB 查询产生的临时文件占用，修改后将在下次执行时生效"
+          title={i18n('settings.analysis.engine.tempStorageTitle')}
+          description={i18n('settings.analysis.engine.tempStorageDescription')}
         >
           <NumberInput
-            label="DuckDB 临时文件上限"
+            label={i18n('settings.analysis.engine.tempStorageLabel')}
             value={sizeInMB(preferences.engine.maxTempDirectorySize)}
             unit="MB"
             disabled={saving}

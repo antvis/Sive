@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "../../i18n";
+
 import type { ComponentProps, CSSProperties, HTMLAttributes } from "react";
 import type {
   BundledLanguage,
@@ -455,13 +457,14 @@ export const CodeBlockCopyButton = ({
   className,
   ...props
 }: CodeBlockCopyButtonProps) => {
+  const i18n = useI18n();
   const [isCopied, setIsCopied] = useState(false);
   const timeoutRef = useRef<number>(0);
   const { code } = useContext(CodeBlockContext);
 
   const copyToClipboard = useCallback(async () => {
     if (typeof window === "undefined" || !navigator?.clipboard?.writeText) {
-      onError?.(new Error("Clipboard API not available"));
+      onError?.(new Error(i18n("errors.clipboard.unavailable")));
       return;
     }
 
@@ -478,7 +481,7 @@ export const CodeBlockCopyButton = ({
     } catch (error) {
       onError?.(error as Error);
     }
-  }, [code, onCopy, onError, timeout, isCopied]);
+  }, [i18n, code, onCopy, onError, timeout, isCopied]);
 
   useEffect(
     () => () => {
@@ -492,6 +495,7 @@ export const CodeBlockCopyButton = ({
   return (
     <Button
       className={cn("shrink-0", className)}
+      aria-label={isCopied ? i18n("common.status.copied") : i18n("markdown.actions.copyCode")}
       onClick={copyToClipboard}
       size="icon"
       variant="ghost"

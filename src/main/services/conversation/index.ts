@@ -1,3 +1,4 @@
+import { i18n } from '../../util/i18n';
 import { randomUUID } from 'node:crypto';
 import type { Repositories } from '../../db/repository';
 import type { DBConnection } from '../../db/repository/db-connection';
@@ -18,13 +19,13 @@ export class ConversationService {
   }
 
   create(datasetId: string) {
-    required(this.repositories.datasets.get(datasetId), '数据源不存在或已删除。');
+    required(this.repositories.datasets.get(datasetId), i18n('errors.dataset.notFound'));
     const now = new Date().toISOString();
     return this.database.write(() =>
       this.repositories.conversations.insert({
         id: randomUUID(),
         datasetId,
-        title: '新建分析',
+        title: i18n('conversation.defaultTitle'),
         createdAt: now,
         updatedAt: now,
       }),
@@ -33,21 +34,21 @@ export class ConversationService {
 
   rename(id: string, title: string) {
     this.database.write(() => {
-      required(this.repositories.conversations.get(id), '会话不存在。');
+      required(this.repositories.conversations.get(id), i18n('errors.conversation.notFound'));
       this.repositories.conversations.update(id, { title: title.trim() });
     });
   }
 
   archive(id: string) {
     this.database.write(() => {
-      required(this.repositories.conversations.get(id), '会话不存在。');
+      required(this.repositories.conversations.get(id), i18n('errors.conversation.notFound'));
       this.repositories.conversations.update(id, { archivedAt: new Date().toISOString() });
     });
   }
 
   restore(id: string) {
     this.database.write(() => {
-      required(this.repositories.conversations.get(id), '会话不存在。');
+      required(this.repositories.conversations.get(id), i18n('errors.conversation.notFound'));
       this.repositories.conversations.update(id, { archivedAt: null });
     });
   }
@@ -56,8 +57,11 @@ export class ConversationService {
     if (!ids.length) return;
     this.database.write(() => {
       for (const id of ids) {
-        const conversation = required(this.repositories.conversations.get(id), '会话不存在。');
-        if (!conversation.archivedAt) throw new Error('只能永久删除已归档会话。');
+        const conversation = required(
+          this.repositories.conversations.get(id),
+          i18n('errors.conversation.notFound'),
+        );
+        if (!conversation.archivedAt) throw new Error(i18n('errors.conversation.archiveBeforePurge'));
         for (const message of this.repositories.messages.listByConversationId(id)) {
           const snippet = this.repositories.snippets.getByMessageId(message.id);
           if (snippet) this.repositories.snippets.remove(snippet.id);

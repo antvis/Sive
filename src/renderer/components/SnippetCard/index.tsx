@@ -1,3 +1,6 @@
+import { useI18n } from '../../i18n';
+import type { MessageKey } from '@shared/i18n';
+import type { ThemeSpec } from '@antv/gpt-vis';
 import type { SnippetContent, SnippetUpdateInput } from '@shared/schema';
 import { PencilIcon, PinIcon, ShareIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
@@ -29,17 +32,30 @@ export type SnippetTemplateProps = Pick<SnippetCardProps, 'data' | 'createdAt' |
 
 // Add a complete card component here to make it available in the template selector.
 const templates = [
-  { id: 'default', label: 'default', component: DefaultTemplate, theme: undefined },
-  { id: 'pop', label: 'pop', component: PopTemplate, theme: THEME_PRESETS.find(({ id }) => id === 'pop') },
+  {
+    id: 'default',
+    labelKey: 'snippet.templates.default.label',
+    component: DefaultTemplate,
+    theme: undefined,
+  },
+  {
+    id: 'pop',
+    labelKey: 'snippet.templates.pop.label',
+    component: PopTemplate,
+    theme: THEME_PRESETS.find(({ id }) => id === 'pop'),
+  },
   {
     id: 'circuit',
-    label: 'circuit',
+    labelKey: 'snippet.templates.circuit.label',
     component: CircuitTemplate,
     theme: THEME_PRESETS.find(({ id }) => id === 'neon-circuit'),
   },
-];
-
-export const templateOptions = templates.map(({ id, label, theme }) => ({ value: id, label, theme }));
+] as const satisfies readonly {
+  id: string;
+  labelKey: MessageKey;
+  component: typeof DefaultTemplate;
+  theme?: ThemeSpec;
+}[];
 
 export function SnippetCard({
   data,
@@ -52,12 +68,22 @@ export function SnippetCard({
   onShare,
   mode = 'view',
 }: SnippetCardProps) {
+  const i18n = useI18n();
+  const templateOptions = templates.map(({ id, labelKey, theme }) => ({
+    value: id,
+    label: i18n(labelKey),
+    theme,
+  }));
   const template = templates.find(({ id }) => id === templateId) ?? templates[0];
   const Template = template.component;
   const card = useSnippetCard(data, onUpdate, template.theme);
   const { editing, busy, run, startEditing } = card;
   const showActions = mode !== 'export' && !editing && (onSave || onUpdate || onDelete || onShare);
-  const saveLabel = saved ? '已保存 Snippet' : busy ? '保存中…' : '保存 Snippet';
+  const saveLabel = saved
+    ? i18n('snippet.status.saved')
+    : busy
+      ? i18n('common.status.saving')
+      : i18n('snippet.actions.save');
   const templateButtonRef = useRef<HTMLButtonElement>(null);
   const previousTemplate = useRef(template.id);
 
@@ -82,7 +108,7 @@ export function SnippetCard({
       {showActions && (
         <div
           role="group"
-          aria-label="Snippet 操作"
+          aria-label={i18n('snippet.actions.groupLabel')}
           className="pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1 opacity-0 group-focus-within/snippet:pointer-events-auto group-focus-within/snippet:opacity-100 group-hover/snippet:pointer-events-auto group-hover/snippet:opacity-100 has-[[data-state=open]]:pointer-events-auto has-[[data-state=open]]:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 [&_button]:bg-surface [&_button]:text-ink [&_button]:shadow-sm [&_button]:ring-1 [&_button]:ring-ink/10"
         >
           {onUpdate && (
@@ -97,8 +123,8 @@ export function SnippetCard({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="编辑 Snippet"
-                title="编辑 Snippet"
+                aria-label={i18n('snippet.actions.edit')}
+                title={i18n('snippet.actions.edit')}
                 className="text-black/50 dark:text-white/50"
                 disabled={busy}
                 onClick={startEditing}
@@ -111,8 +137,8 @@ export function SnippetCard({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="分享与导出"
-              title="分享与导出"
+              aria-label={i18n('snippet.export.title')}
+              title={i18n('snippet.export.title')}
               className="text-black/50 dark:text-white/50"
               disabled={busy}
               onClick={onShare}
@@ -124,8 +150,8 @@ export function SnippetCard({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="删除 Snippet"
-              title="删除 Snippet"
+              aria-label={i18n('snippet.actions.delete')}
+              title={i18n('snippet.actions.delete')}
               disabled={busy}
               className="text-black/50 dark:text-white/50 hover:text-danger"
               onClick={onDelete}

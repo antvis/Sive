@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n';
 import { EllipsisIcon, PencilIcon, RefreshCwIcon, SlidersHorizontalIcon, Trash2Icon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ export function SourceActions({
   onRename: () => void;
   onDelete: () => void;
 }) {
+  const i18n = useI18n();
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -41,7 +43,7 @@ export function SourceActions({
     setBusy(true);
     try {
       await window.workbench.datasetRefresh(datasetId);
-      toast.success('数据源已刷新');
+      toast.success(i18n('datasets.notifications.refreshed'));
     } catch (error) {
       toast.error(errorMessage(error));
     } finally {
@@ -58,8 +60,12 @@ export function SourceActions({
             variant="ghost"
             size="icon-sm"
             className="hover:bg-selected"
-            aria-label={busy ? `正在刷新 ${datasetName}` : `更多操作：${datasetName}`}
-            title={busy ? '正在刷新数据源…' : '更多操作'}
+            aria-label={
+              busy
+                ? i18n('datasets.actions.refreshingLabel', [datasetName])
+                : i18n('datasets.actions.moreLabel', [datasetName])
+            }
+            title={busy ? i18n('datasets.status.refreshing') : i18n('common.actions.more')}
             disabled={disabled || busy}
           >
             {busy ? (
@@ -82,7 +88,7 @@ export function SourceActions({
         >
           <DropdownMenuItem onSelect={() => void refresh()}>
             <RefreshCwIcon aria-hidden />
-            刷新数据源
+            {i18n('datasets.actions.refresh')}
           </DropdownMenuItem>
           {Dialog && (
             <DropdownMenuItem
@@ -91,7 +97,7 @@ export function SourceActions({
               }}
             >
               <SlidersHorizontalIcon aria-hidden />
-              编辑连接
+              {i18n('datasets.actions.editConnection')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
@@ -100,7 +106,7 @@ export function SourceActions({
             }}
           >
             <PencilIcon aria-hidden />
-            重命名
+            {i18n('common.actions.rename')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -111,7 +117,7 @@ export function SourceActions({
             }}
           >
             <Trash2Icon aria-hidden />
-            删除数据源
+            {i18n('datasets.actions.delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

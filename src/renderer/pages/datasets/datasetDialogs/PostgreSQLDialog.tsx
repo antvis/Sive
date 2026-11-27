@@ -1,9 +1,11 @@
+import { useI18n } from '../../../i18n';
 import { useCallback, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function PostgreSQLDialog({ datasetId, onClose }: ConnectionDialogProps) {
+  const i18n = useI18n();
   const [form, setForm] = useState({
     name: '',
     host: 'localhost',
@@ -16,7 +18,7 @@ export function PostgreSQLDialog({ datasetId, onClose }: ConnectionDialogProps) 
 
   const loadConnection = useCallback((connection: DatasetDetail) => {
     const { sourceConfig } = connection;
-    if (sourceConfig.type !== 'postgresql') throw new Error('只有 PostgreSQL 数据源支持此操作。');
+    if (sourceConfig.type !== 'postgresql') throw new Error(i18n('errors.postgresql.sourceTypeMismatch'));
     const { host, port = 5432, database, user = '', schema = 'public' } = sourceConfig.options;
     setForm({
       name: connection.name,
@@ -27,7 +29,7 @@ export function PostgreSQLDialog({ datasetId, onClose }: ConnectionDialogProps) 
       password: '',
       schema,
     });
-  }, []);
+  }, [i18n]);
 
   const { name, schema, ...options } = form;
 
@@ -44,19 +46,19 @@ export function PostgreSQLDialog({ datasetId, onClose }: ConnectionDialogProps) 
       onLoad={loadConnection}
     >
       <ConnectionField
-        label="数据源名称"
+        label={i18n('datasets.fields.name')}
         name="name"
         value={form.name}
         onValueChange={(value) => setForm({ ...form, name: value })}
       />
       <ConnectionField
-        label="主机"
+        label={i18n('connections.fields.host')}
         name="host"
         value={form.host}
         onValueChange={(value) => setForm({ ...form, host: value })}
       />
       <ConnectionField
-        label="端口"
+        label={i18n('connections.fields.port')}
         name="port"
         type="number"
         min={1}
@@ -66,7 +68,7 @@ export function PostgreSQLDialog({ datasetId, onClose }: ConnectionDialogProps) 
         onValueChange={(value) => setForm({ ...form, port: value })}
       />
       <ConnectionField
-        label="数据库"
+        label={i18n('connections.fields.database')}
         name="database"
         value={form.database}
         onValueChange={(value) => setForm({ ...form, database: value })}
@@ -80,17 +82,17 @@ export function PostgreSQLDialog({ datasetId, onClose }: ConnectionDialogProps) 
         onValueChange={(value) => setForm({ ...form, schema: value })}
       />
       <ConnectionField
-        label="用户名"
+        label={i18n('connections.fields.username')}
         name="user"
         value={form.user}
         onValueChange={(value) => setForm({ ...form, user: value })}
       />
       <ConnectionField
-        label="密码"
+        label={i18n('connections.fields.password')}
         name="password"
         type="password"
         required={false}
-        placeholder={datasetId ? '请重新填写密码，无密码可留空' : undefined}
+        placeholder={datasetId ? i18n('connections.fields.passwordReentry') : undefined}
         value={form.password}
         onValueChange={(value) => setForm({ ...form, password: value })}
       />

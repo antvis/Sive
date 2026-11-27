@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n';
 import type { ChatStatus } from 'ai';
 import { ArrowUpIcon, CpuIcon, RouteIcon, ZapIcon } from 'lucide-react';
 import type { ReactNode, RefObject } from 'react';
@@ -8,11 +9,7 @@ import { ComposerFooter } from '../ui/composer';
 import { SegmentedControl } from '../ui/segmented-control';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
-import {
-  PromptInput,
-  PromptInputSubmit,
-  PromptInputTextarea,
-} from '../ai-elements/prompt-input';
+import { PromptInput, PromptInputSubmit, PromptInputTextarea } from '../ai-elements/prompt-input';
 import type { PromptInputMessage } from '../ai-elements/prompt-input';
 
 type Props = {
@@ -34,11 +31,6 @@ type Props = {
 
 const modelValue = (providerId: string, model: string) => JSON.stringify([providerId, model]);
 
-const analysisModes = [
-  { value: 'direct', label: '直接分析', icon: ZapIcon },
-  { value: 'loop', label: '多步探索', icon: RouteIcon },
-] as const;
-
 export function MultimodalInput({
   welcome,
   datasetSelector,
@@ -55,6 +47,19 @@ export function MultimodalInput({
   mode,
   onModeChange,
 }: Props) {
+  const i18n = useI18n();
+  const analysisModes = [
+    {
+      value: 'direct',
+      label: i18n('analysis.strategies.direct'),
+      icon: ZapIcon,
+    },
+    {
+      value: 'loop',
+      label: i18n('analysis.strategies.loop'),
+      icon: RouteIcon,
+    },
+  ] as const;
   const provider = models.find((model) => model.id === activeModelId);
   const busy = status === 'submitted' || status === 'streaming';
   const selectedModel = provider ? modelValue(provider.id, provider.model) : '';
@@ -68,11 +73,12 @@ export function MultimodalInput({
     <PromptInputSubmit
       className={cn(
         'size-8 rounded-full',
-        welcome && 'enabled:bg-[light-dark(#1768d4,#8bbcff)] enabled:text-[light-dark(#fff,#12233a)] enabled:hover:bg-[light-dark(#0d55b8,#a7ceff)]',
+        welcome &&
+          'enabled:bg-[light-dark(#1768d4,#8bbcff)] enabled:text-[light-dark(#fff,#12233a)] enabled:hover:bg-[light-dark(#0d55b8,#a7ceff)]',
       )}
       status={status}
       onStop={onStop}
-      aria-label={busy ? '停止分析' : '发送问题'}
+      aria-label={busy ? i18n('chat.actions.stopAnalysis') : i18n('chat.actions.sendQuestion')}
       disabled={!busy && (!value.trim() || disabled)}
       children={busy ? undefined : <ArrowUpIcon className="size-4" />}
     />
@@ -95,7 +101,7 @@ export function MultimodalInput({
         event.stopPropagation();
       }}
       maxFiles={0}
-      onError={() => toast.error('当前对话仅支持文字提问。')}
+      onError={() => toast.error(i18n('errors.chat.textOnly'))}
     >
       {datasetSelector && <div className="w-full min-w-0">{datasetSelector}</div>}
       <PromptInputTextarea
@@ -103,13 +109,13 @@ export function MultimodalInput({
         ref={inputRef}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="输入你的分析问题…"
-        aria-label="分析问题"
+        placeholder={i18n('chat.input.placeholder')}
+        aria-label={i18n('chat.input.label')}
       />
       <ComposerFooter className={welcome ? '@container/composer flex-wrap items-center' : undefined}>
         {welcome && (
           <SegmentedControl
-            label="分析方式"
+            label={i18n('analysis.strategyLabel')}
             options={analysisModes.map(({ value, label, icon: Icon }) => ({
               value,
               label: (
@@ -141,13 +147,13 @@ export function MultimodalInput({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SelectTrigger
-                    aria-label="分析方式"
+                    aria-label={i18n('analysis.strategyLabel')}
                     className="h-7 shrink-0 rounded-full border-0 bg-workspace-control px-2.5 font-normal text-muted-foreground hover:text-foreground"
                   >
                     <SelectValue />
                   </SelectTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="top">选择分析策略</TooltipContent>
+                <TooltipContent side="top">{i18n('analysis.selectStrategy')}</TooltipContent>
               </Tooltip>
               <SelectContent side="top" onCloseAutoFocus={focusInput}>
                 {analysisModes.map(({ value, label, icon: Icon }) => (
@@ -161,12 +167,12 @@ export function MultimodalInput({
           )}
           <Select value={selectedModel} onValueChange={onModelChange} disabled={!models.length || busy}>
             <SelectTrigger
-              aria-label="选择模型"
+              aria-label={i18n('models.selectLabel')}
               title={provider?.model}
               className="ml-auto h-7 min-w-0 justify-start rounded-full border-0 bg-transparent px-2 font-normal text-muted-foreground hover:text-foreground"
             >
               <CpuIcon aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
-              <SelectValue placeholder="选择模型">{provider?.model}</SelectValue>
+              <SelectValue placeholder={i18n('models.selectLabel')}>{provider?.model}</SelectValue>
             </SelectTrigger>
             <SelectContent side="top" align="end" onCloseAutoFocus={focusInput}>
               {models.flatMap((model) =>

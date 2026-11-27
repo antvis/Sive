@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n';
 import { FolderOpenIcon } from 'lucide-react';
 import type { StorageInfo } from '@shared/api';
 import { useEffect, useState } from 'react';
@@ -13,6 +14,7 @@ function formatSize(bytes: number) {
 }
 
 export function StorageSettings() {
+  const i18n = useI18n();
   const [storage, setStorage] = useState<StorageInfo>();
   const [error, setError] = useState('');
 
@@ -35,14 +37,17 @@ export function StorageSettings() {
   const entries = storage
     ? [
         {
-          title: '工作台数据库',
-          description: `数据库大小 ${formatSize(storage.data.sizeBytes)}`,
+          title: i18n('settings.storage.databaseTitle'),
+          description: i18n('settings.storage.databaseSize', [formatSize(storage.data.sizeBytes)]),
           path: storage.data.path,
           directory: storage.data.directory,
         },
         {
-          title: '应用缓存',
-          description: `缓存占用 ${formatSize(storage.cache.usedBytes)} · 磁盘可用 ${formatSize(storage.cache.freeBytes)}`,
+          title: i18n('settings.storage.cacheTitle'),
+          description: i18n('settings.storage.cacheSize', [
+            formatSize(storage.cache.usedBytes),
+            formatSize(storage.cache.freeBytes),
+          ]),
           path: storage.cache.path,
           directory: storage.cache.path,
         },
@@ -54,7 +59,9 @@ export function StorageSettings() {
       {storage ? (
         <div className="grid gap-4">
           <div className="grid gap-1 px-4">
-            <p className="m-0 text-sm font-light text-muted-foreground">Sive 占用空间</p>
+            <p className="m-0 text-sm font-light text-muted-foreground">
+              {i18n('settings.storage.usageLabel')}
+            </p>
             <p aria-live="polite" className="m-0 text-xl font-medium tabular-nums text-sidebar-ink">
               {formatSize(storage.data.sizeBytes + storage.cache.usedBytes)}
             </p>
@@ -73,11 +80,11 @@ export function StorageSettings() {
               >
                 <Button
                   className="bg-surface hover:bg-workspace-control"
-                  aria-label={`打开${title}目录`}
+                  aria-label={i18n('settings.storage.openDirectoryLabel', [title])}
                   onClick={() => void openDirectory(directory)}
                 >
                   <FolderOpenIcon size={16} aria-hidden />
-                  打开目录
+                  {i18n('settings.storage.openDirectory')}
                 </Button>
               </SettingRow>
             ))}
@@ -86,7 +93,7 @@ export function StorageSettings() {
       ) : (
         !error && (
           <p className="text-sm text-muted-foreground" role="status">
-            正在读取存储信息…
+            {i18n('settings.storage.loading')}
           </p>
         )
       )}

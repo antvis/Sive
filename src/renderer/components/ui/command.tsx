@@ -1,5 +1,7 @@
 "use client"
 
+import { useI18n } from "../../i18n";
+
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 
@@ -34,8 +36,8 @@ function Command({
 }
 
 function CommandDialog({
-  title = "Command Palette",
-  description = "Search for a command to run...",
+  title: titleProp,
+  description: descriptionProp,
   children,
   className,
   showCloseButton = false,
@@ -46,6 +48,9 @@ function CommandDialog({
   className?: string
   showCloseButton?: boolean
 }) {
+  const i18n = useI18n();
+  const title = titleProp === undefined ? i18n("commands.title") : titleProp;
+  const description = descriptionProp === undefined ? i18n("commands.description") : descriptionProp;
   return (
     <Dialog {...props}>
       <DialogContent

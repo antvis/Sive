@@ -1,25 +1,50 @@
 import { DEFAULT_PREFERENCES, type Preferences } from '@shared/api';
-import { getMessages, type MessageKey } from '@shared/i18n';
-import { createContext, useContext, type PropsWithChildren } from 'react';
+import { translate, type MessageKey, type MessageValues, type Translator } from '@shared/i18n';
+import { useSyncExternalStore } from 'react';
 
-const I18nContext = createContext<((key: MessageKey) => string) | null>(null);
+const STORAGE_KEY = 'sive.interface-language';
+let locale: Preferences['language'] = DEFAULT_PREFERENCES.language;
 
-export function I18nProvider({
-  language,
-  children,
-}: PropsWithChildren<{ language?: Preferences['language'] }>) {
-  const messages = getMessages(language ?? DEFAULT_PREFERENCES.language);
-
-  const i18n = (key: MessageKey) => messages[key];
-
-  return <I18nContext.Provider value={i18n}>{children}</I18nContext.Provider>;
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === 'zh-CN' || saved === 'en-US') locale = saved;
+} catch {
+  // Workspace preferences remain authoritative when local storage is unavailable.
 }
 
-/**
- * A custom hook that provides access to the i18n function for retrieving localized messages.
- */
+const listeners = new Set<() => void>();
+
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+
+  return () => {
+    listeners.delete(listener);
+  };
+};
+
+const getLocale = () => locale;
+
+// The stable function also serves event callbacks and non-React formatting helpers.
+export const i18n = Object.defineProperty(
+  (key: MessageKey, values?: MessageValues) => translate(locale, key, values),
+  'locale',
+  { get: getLocale },
+) as Translator;
+
+export function setLocale(language: Preferences['language']) {
+  if (language !== 'zh-CN' && language !== 'en-US') return;
+  try {
+    localStorage.setItem(STORAGE_KEY, language);
+  } catch {
+    // The cache is only used before the next workspace snapshot arrives.
+  }
+  if (locale === language) return;
+  locale = language;
+  listeners.forEach((listener) => listener());
+}
+
+/** Use the returned translator in components; memoized translations also depend on i18n.locale. */
 export function useI18n() {
-  const i18n = useContext(I18nContext);
-  if (!i18n) throw new Error('useI18n must be used within I18nProvider.');
+  useSyncExternalStore(subscribe, getLocale);
   return i18n;
 }

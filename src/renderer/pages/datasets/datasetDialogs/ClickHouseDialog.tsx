@@ -1,9 +1,11 @@
+import { useI18n } from '../../../i18n';
 import { useCallback, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function ClickHouseDialog({ datasetId, onClose }: ConnectionDialogProps) {
+  const i18n = useI18n();
   const [form, setForm] = useState({
     name: '',
     url: 'http://localhost:8123',
@@ -14,10 +16,10 @@ export function ClickHouseDialog({ datasetId, onClose }: ConnectionDialogProps) 
 
   const loadConnection = useCallback((connection: DatasetDetail) => {
     const { sourceConfig } = connection;
-    if (sourceConfig.type !== 'clickhouse') throw new Error('只有 ClickHouse 数据源支持此操作。');
+    if (sourceConfig.type !== 'clickhouse') throw new Error(i18n('errors.clickhouse.sourceTypeMismatch'));
     const { url = '', database, username = 'default' } = sourceConfig.options;
     setForm({ name: connection.name, url, database, username, password: '' });
-  }, []);
+  }, [i18n]);
 
   const { name, ...options } = form;
 
@@ -34,41 +36,41 @@ export function ClickHouseDialog({ datasetId, onClose }: ConnectionDialogProps) 
       onLoad={loadConnection}
     >
       <ConnectionField
-        label="数据源名称"
+        label={i18n('datasets.fields.name')}
         name="name"
         value={form.name}
         onValueChange={(value) => setForm({ ...form, name: value })}
       />
       <ConnectionField
-        label="HTTP(S) 地址"
+        label={i18n('connections.clickhouse.urlLabel')}
         name="url"
         type="url"
         pattern="https?://[^\s@?#]+"
-        title="请输入 HTTP(S) 地址，用户名和密码请在下方填写，地址中不包含查询参数。"
-        placeholder="http://localhost:8123 或 https://主机:8443"
+        title={i18n('connections.clickhouse.urlDescription')}
+        placeholder={i18n('connections.clickhouse.urlPlaceholder')}
         value={form.url}
         onValueChange={(value) => setForm({ ...form, url: value })}
       />
       <div className="grid grid-cols-2 gap-3">
         <ConnectionField
-          label="数据库"
+          label={i18n('connections.fields.database')}
           name="database"
           value={form.database}
           onValueChange={(value) => setForm({ ...form, database: value })}
         />
         <ConnectionField
-          label="用户名"
+          label={i18n('connections.fields.username')}
           name="username"
           value={form.username}
           onValueChange={(value) => setForm({ ...form, username: value })}
         />
       </div>
       <ConnectionField
-        label="密码"
+        label={i18n('connections.fields.password')}
         name="password"
         type="password"
         required={false}
-        placeholder={datasetId ? '请重新填写密码，无密码可留空' : undefined}
+        placeholder={datasetId ? i18n('connections.fields.passwordReentry') : undefined}
         value={form.password}
         onValueChange={(value) => setForm({ ...form, password: value })}
       />

@@ -1,3 +1,5 @@
+import { useI18n } from '../../i18n';
+import type { MessageKey } from '@shared/i18n';
 import { useEffect, useRef } from 'react';
 import { cn } from '../../lib/utils';
 import { DataSourceLogo } from '../DataSourceLogo';
@@ -19,6 +21,7 @@ export function ChatWelcomeHeader({
   showModelNotice,
   error,
 }: ChatWelcomeHeaderProps) {
+  const i18n = useI18n();
   return (
     <header
       className={cn(
@@ -29,11 +32,14 @@ export function ChatWelcomeHeader({
       <div className="mb-[10px] h-[calc(var(--companion-height)+24px)] w-full">
         {!previewOpen && <WelcomeCompanion />}
       </div>
-      <h1 data-draft-slide className="flex max-w-full items-center text-[1.77rem]/[1.35] font-[650] tracking-[-0.025em] text-[light-dark(#0e1a2b,var(--ink))]">
-        <span className="shrink-0">向</span>
+      <h1
+        data-draft-slide
+        className="flex max-w-full items-center text-[1.77rem]/[1.35] font-[650] tracking-[-0.025em] text-[light-dark(#0e1a2b,var(--ink))]"
+      >
+        <span className="shrink-0">{i18n('chat.askPrefix')}</span>
         <button
           type="button"
-          title={`预览数据源 ${datasetName}`}
+          title={i18n('chat.welcome.previewDataset', [datasetName])}
           className={cn(
             'mx-[3px] inline-flex min-w-0 items-center gap-[6px] rounded-lg border border-[light-dark(#dbefff,#355876)] py-px ps-[6px] pe-[10px] text-left',
             'bg-linear-to-b from-surface to-[light-dark(#f0f9ff,#223648)] text-accent shadow-[0_2px_6px_-3px_#259de84d]',
@@ -45,13 +51,18 @@ export function ChatWelcomeHeader({
           <DataSourceLogo type={datasetSourceType} size={18} />
           <span className="min-w-0 truncate">{datasetName}</span>
         </button>
-        <span className="shrink-0">提问</span>
+        <span className="shrink-0">{i18n('chat.askSuffix')}</span>
       </h1>
-      <p data-draft-slide className="mt-[8px] min-h-[3lh] text-[1.04rem]/[1.55] font-light text-[light-dark(#687589,var(--muted-foreground))]">
-        用自然语言探索数据中的趋势、差异和异常。
+      <p
+        data-draft-slide
+        className="mt-[8px] min-h-[3lh] text-[1.04rem]/[1.55] font-light text-[light-dark(#687589,var(--muted-foreground))]"
+      >
+        {i18n('chat.welcome.description')}
       </p>
       {showModelNotice && (
-        <p data-draft-slide className="mt-3 text-sm text-muted-foreground">请先在设置中配置默认模型服务。</p>
+        <p data-draft-slide className="mt-3 text-sm text-muted-foreground">
+          {i18n('errors.model.defaultRequired')}
+        </p>
       )}
       {error && (
         <p data-draft-slide role="alert" className="mt-3 max-w-full text-sm wrap-anywhere text-destructive">
@@ -62,9 +73,15 @@ export function ChatWelcomeHeader({
   );
 }
 
-const prompts = ['最近有什么变化？', '哪组差异最大？', '有没有异常值？', '画张图看看？'];
+const promptKeys = [
+  'chat.welcome.prompts.recentChanges',
+  'chat.welcome.prompts.groupDifferences',
+  'chat.welcome.prompts.outliers',
+  'chat.welcome.prompts.chart',
+] as const satisfies readonly MessageKey[];
 
 function WelcomeCompanion() {
+  const i18n = useI18n();
   const companionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -129,7 +146,10 @@ function WelcomeCompanion() {
             ].map(({ position, skin, iris }) => (
               <span key={position} className={cn('absolute h-[13%] w-[9%] -translate-1/2', position)}>
                 <span
-                  className={cn('absolute inset-0 mask-[radial-gradient(ellipse_farthest-side,#000_80%,transparent)]', skin)}
+                  className={cn(
+                    'absolute inset-0 mask-[radial-gradient(ellipse_farthest-side,#000_80%,transparent)]',
+                    skin,
+                  )}
                 />
                 <span
                   className={cn(
@@ -142,16 +162,16 @@ function WelcomeCompanion() {
           </div>
         </div>
       </div>
-      {prompts.map((text, index) => (
+      {promptKeys.map((promptKey, index) => (
         <p
-          key={text}
+          key={promptKey}
           style={{ animationDelay: `${700 + index * 3800}ms` }}
           className={cn(
             'absolute top-[14px] right-0 max-w-full origin-bottom-left rounded-[12px_12px_12px_4px] border border-[light-dark(#dbefff,#355876)] bg-[light-dark(#fffffff2,#35485f)] px-[11px] py-[6px] text-sm font-medium text-[light-dark(#13578a,#e8f5ff)] opacity-0 shadow-[0_6px_18px_-8px_#2493d959] @max-[310px]/welcome:top-0',
             'motion-safe:animate-draft-companion-bubble motion-reduce:first-of-type:opacity-100',
           )}
         >
-          {text}
+          {i18n(promptKey)}
         </p>
       ))}
     </div>

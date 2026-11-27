@@ -1,3 +1,4 @@
+import { useI18n } from '../../../i18n';
 import { useCallback, useState } from 'react';
 import type { DatasetDetail } from '@shared/api';
 import { Checkbox } from '../../../components/ui/checkbox';
@@ -5,6 +6,7 @@ import { ConnectionDialog, ConnectionField } from './ConnectionDialog';
 import type { ConnectionDialogProps } from './ConnectionDialog';
 
 export function MongoDBDialog({ datasetId, onClose }: ConnectionDialogProps) {
+  const i18n = useI18n();
   const [form, setForm] = useState({
     name: '',
     host: 'localhost',
@@ -18,7 +20,7 @@ export function MongoDBDialog({ datasetId, onClose }: ConnectionDialogProps) {
 
   const loadConnection = useCallback((connection: DatasetDetail) => {
     const { sourceConfig } = connection;
-    if (sourceConfig.type !== 'mongodb') throw new Error('只有 MongoDB 数据源支持此操作。');
+    if (sourceConfig.type !== 'mongodb') throw new Error(i18n('errors.mongodb.sourceTypeMismatch'));
     const {
       host = 'localhost',
       port = 27017,
@@ -37,7 +39,7 @@ export function MongoDBDialog({ datasetId, onClose }: ConnectionDialogProps) {
       authSource,
       tls,
     });
-  }, []);
+  }, [i18n]);
 
   const { name, authSource, ...options } = form;
 
@@ -54,20 +56,20 @@ export function MongoDBDialog({ datasetId, onClose }: ConnectionDialogProps) {
       onLoad={loadConnection}
     >
       <ConnectionField
-        label="数据源名称"
+        label={i18n('datasets.fields.name')}
         name="name"
         value={form.name}
         onValueChange={(value) => setForm({ ...form, name: value })}
       />
       <div className="grid grid-cols-[minmax(0,1fr)_100px] gap-3">
         <ConnectionField
-          label="主机"
+          label={i18n('connections.fields.host')}
           name="host"
           value={form.host}
           onValueChange={(value) => setForm({ ...form, host: value })}
         />
         <ConnectionField
-          label="端口"
+          label={i18n('connections.fields.port')}
           name="port"
           type="number"
           min={1}
@@ -79,35 +81,35 @@ export function MongoDBDialog({ datasetId, onClose }: ConnectionDialogProps) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <ConnectionField
-          label="数据库"
+          label={i18n('connections.fields.database')}
           name="database"
           value={form.database}
           onValueChange={(value) => setForm({ ...form, database: value })}
         />
         <ConnectionField
-          label="用户名"
+          label={i18n('connections.fields.username')}
           name="user"
           required={false}
-          placeholder="无需认证时可留空"
+          placeholder={i18n('connections.fields.optionalAuthentication')}
           value={form.user}
           onValueChange={(value) => setForm({ ...form, user: value })}
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <ConnectionField
-          label="密码"
+          label={i18n('connections.fields.password')}
           name="password"
           type="password"
           required={false}
-          placeholder={datasetId ? '请重新填写密码，无密码可留空' : undefined}
+          placeholder={datasetId ? i18n('connections.fields.passwordReentry') : undefined}
           value={form.password}
           onValueChange={(value) => setForm({ ...form, password: value })}
         />
         <ConnectionField
-          label="认证数据库（authSource）"
+          label={i18n('connections.mongodb.authDatabaseLabel')}
           name="authSource"
           required={false}
-          placeholder="默认使用当前数据库"
+          placeholder={i18n('connections.mongodb.authDatabasePlaceholder')}
           value={form.authSource}
           onValueChange={(value) => setForm({ ...form, authSource: value })}
         />
@@ -118,7 +120,7 @@ export function MongoDBDialog({ datasetId, onClose }: ConnectionDialogProps) {
           checked={form.tls}
           onChange={(event) => setForm({ ...form, tls: event.target.checked })}
         />
-        使用 TLS 加密连接
+        {i18n('connections.fields.useTls')}
       </label>
     </ConnectionDialog>
   );

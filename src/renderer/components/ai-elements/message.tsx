@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "../../i18n";
+
 import type { UIMessage } from "ai";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
 
@@ -31,6 +33,7 @@ import {
   useState,
 } from "react";
 import { defaultComponents, Streamdown } from "streamdown";
+import type { MermaidErrorComponentProps } from "streamdown";
 import { MarkdownTable } from "./table";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
@@ -247,11 +250,12 @@ export const MessageBranchPrevious = ({
   children,
   ...props
 }: MessageBranchPreviousProps) => {
+  const i18n = useI18n();
   const { goToPrevious, totalBranches } = useMessageBranch();
 
   return (
     <Button
-      aria-label="Previous branch"
+      aria-label={i18n("chat.branches.previous")}
       disabled={totalBranches <= 1}
       onClick={goToPrevious}
       size="icon-sm"
@@ -270,11 +274,12 @@ export const MessageBranchNext = ({
   children,
   ...props
 }: MessageBranchNextProps) => {
+  const i18n = useI18n();
   const { goToNext, totalBranches } = useMessageBranch();
 
   return (
     <Button
-      aria-label="Next branch"
+      aria-label={i18n("chat.branches.next")}
       disabled={totalBranches <= 1}
       onClick={goToNext}
       size="icon-sm"
@@ -290,11 +295,12 @@ export const MessageBranchNext = ({
 export type MessageBranchPageProps = HTMLAttributes<HTMLSpanElement>;
 
 export const MessageBranchPage = (props: MessageBranchPageProps) => {
+  const i18n = useI18n();
   const { currentBranch, totalBranches } = useMessageBranch();
 
   return (
     <ButtonGroupText {...props}>
-      {currentBranch + 1} of {totalBranches}
+      {i18n("chat.branches.position", [currentBranch + 1, totalBranches])}
     </ButtonGroupText>
   );
 };
@@ -312,7 +318,26 @@ const streamdownCode: typeof code = {
 };
 
 const streamdownPlugins = { cjk, code: streamdownCode, math, mermaid };
-const mermaidOptions = { config: { themeVariables: { fontSize: "var(--text-sm)" } } };
+
+function MermaidError({ chart, error, retry }: MermaidErrorComponentProps) {
+  const i18n = useI18n();
+  return (
+    <div role="alert" className="space-y-2 rounded-md bg-destructive/10 p-4 text-sm">
+      <p className="text-destructive">{i18n("errors.markdown.diagramRenderFailed")}</p>
+      <p className="whitespace-pre-wrap break-words">{error}</p>
+      <Button onClick={retry}>{i18n("common.actions.retry")}</Button>
+      <details>
+        <summary className="cursor-pointer">{i18n("markdown.actions.showCode")}</summary>
+        <pre className="overflow-x-auto text-xs">{chart}</pre>
+      </details>
+    </div>
+  );
+}
+
+const mermaidOptions = {
+  config: { themeVariables: { fontSize: "var(--text-sm)" } },
+  errorComponent: MermaidError,
+};
 
 const streamdownComponents = {
   table: MarkdownTable,
@@ -334,20 +359,53 @@ const streamdownComponents = {
 };
 
 export const MessageResponse = memo(
-  ({ className, ...props }: MessageResponseProps) => (
-    <Streamdown
-      className={cn(
-        "size-full space-y-3 font-sans leading-[1.6] font-normal tracking-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-        "[&_h1]:text-2xl [&_h2]:text-xl [&_:is(h3,h4,h5,h6)]:text-lg [&_.katex]:text-[1em] [&_[data-streamdown=code-block-body]_code>span]:before:text-xs",
-        "[&_[data-streamdown=code-block][data-language=sql_i]]:bg-muted/50 [&_[data-streamdown=code-block-body][data-language=sql_i]]:bg-transparent",
-        className
-      )}
-      plugins={streamdownPlugins}
-      mermaid={mermaidOptions}
-      components={streamdownComponents}
-      {...props}
-    />
-  ),
+  ({ className, ...props }: MessageResponseProps) => {
+    const i18n = useI18n();
+    return (
+      <Streamdown
+        className={cn(
+          "size-full space-y-3 font-sans leading-[1.6] font-normal tracking-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+          "[&_h1]:text-2xl [&_h2]:text-xl [&_:is(h3,h4,h5,h6)]:text-lg [&_.katex]:text-[1em] [&_[data-streamdown=code-block-body]_code>span]:before:text-xs",
+          "[&_[data-streamdown=code-block][data-language=sql_i]]:bg-muted/50 [&_[data-streamdown=code-block-body][data-language=sql_i]]:bg-transparent",
+          className
+        )}
+        translations={{
+          close: i18n("common.actions.close"),
+          copied: i18n("common.status.copied"),
+          copyCode: i18n("markdown.actions.copyCode"),
+          copyLink: i18n("markdown.actions.copyLink"),
+          copyTable: i18n("markdown.actions.copyTable"),
+          copyTableAsCsv: i18n("markdown.actions.copyCsv"),
+          copyTableAsMarkdown: i18n("markdown.actions.copyMarkdown"),
+          copyTableAsTsv: i18n("markdown.actions.copyTsv"),
+          downloadDiagram: i18n("markdown.actions.downloadDiagram"),
+          downloadDiagramAsMmd: i18n("markdown.actions.downloadMmd"),
+          downloadDiagramAsPng: i18n("markdown.actions.downloadPng"),
+          downloadDiagramAsSvg: i18n("markdown.actions.downloadSvg"),
+          downloadFile: i18n("markdown.actions.downloadFile"),
+          downloadImage: i18n("markdown.actions.downloadImage"),
+          downloadTable: i18n("markdown.actions.downloadTable"),
+          downloadTableAsCsv: i18n("markdown.actions.downloadCsv"),
+          downloadTableAsMarkdown: i18n("markdown.actions.downloadMarkdown"),
+          errorMermaid: i18n("errors.markdown.diagramRenderFailed"),
+          exitFullscreen: i18n("common.actions.exitFullscreen"),
+          externalLinkWarning: i18n("markdown.externalLink.warning"),
+          imageNotAvailable: i18n("markdown.imageUnavailable"),
+          mermaidAriaLabel: i18n("markdown.diagramLabel"),
+          openExternalLink: i18n("markdown.actions.openExternalLink"),
+          openLink: i18n("markdown.actions.openLink"),
+          resetView: i18n("markdown.actions.resetView"),
+          viewFullscreen: i18n("markdown.actions.enterFullscreen"),
+          zoomIn: i18n("common.actions.zoomIn"),
+          zoomOut: i18n("common.actions.zoomOut"),
+        }}
+        plugins={streamdownPlugins}
+        mermaid={mermaidOptions}
+        components={streamdownComponents}
+        {...props}
+      />
+    );
+  },
   (prevProps, nextProps) => prevProps.children === nextProps.children
 );
 

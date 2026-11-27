@@ -1,3 +1,4 @@
+import { useI18n } from '../../../i18n';
 import { CalendarIcon, ChevronDownIcon, CheckIcon, TagIcon } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import type { SnippetTemplateProps } from '../index';
@@ -8,6 +9,7 @@ import { Visualization } from '../../Visualization';
 import { getIntentIcon } from '../utils';
 
 export default function PopTemplate({ data, createdAt, mode = 'view', card }: SnippetTemplateProps) {
+  const i18n = useI18n();
   const {
     editing,
     title,
@@ -49,7 +51,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
             'inline-flex min-h-7 items-center gap-1.5 border-2 border-ink! px-2 py-1 text-xs tabular-nums [&_svg]:shrink-0',
             '-rotate-1 bg-[color-mix(in_srgb,var(--accent-soft)_25%,var(--surface))] font-semibold text-ink',
           )}
-          title={`分析类别：${data.intent}`}
+          title={i18n('snippet.categoryLabel', [data.intent])}
         >
           <IntentIcon size={13} aria-hidden className="text-accent" />
           {data.intent}
@@ -70,22 +72,22 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
       {editing ? (
         <div className="mt-6 border-l-4 border-(--accent-secondary)! bg-accent-soft/40 py-2 pr-3 pl-4 focus-within:border-focus!">
           <label htmlFor={summaryId} className="text-xs font-medium text-muted-foreground">
-            关键洞察
+            {i18n('snippet.insights.title')}
           </label>
           <textarea
             id={summaryId}
             className="mt-2 block field-sizing-content max-h-72 min-h-24 w-full resize-none border-0 bg-transparent p-0 text-base leading-relaxed text-pretty text-ink outline-none disabled:opacity-50"
             value={summary}
             disabled={busy}
-            aria-label="Snippet 洞察描述"
-            placeholder="记录数据里的关键发现…"
+            aria-label={i18n('snippet.editor.descriptionLabel')}
+            placeholder={i18n('snippet.editor.descriptionPlaceholder')}
             onChange={(event) => setSummary(event.target.value)}
           />
         </div>
       ) : (
         data.summary.trim() && (
           <section
-            aria-label="关键洞察"
+            aria-label={i18n('snippet.insights.title')}
             className="relative isolate mt-6 border-l-4 border-(--accent-secondary)! bg-[linear-gradient(100deg,color-mix(in_srgb,var(--accent-secondary)_6%,transparent),transparent_75%)] py-2 pr-3 pl-4"
           >
             <div
@@ -111,7 +113,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
                     'mt-2 inline-flex items-center gap-1 p-0 text-sm leading-5 text-muted-foreground hover:text-ink focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-focus'
                   }
                 >
-                  {summaryExpanded ? '收起洞察' : '展开洞察'}
+                  {summaryExpanded ? i18n('snippet.insights.collapse') : i18n('snippet.insights.expand')}
                   <ChevronDownIcon
                     size={12}
                     aria-hidden
@@ -136,7 +138,10 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
         )
       )}
       {data.metrics.length > 0 && (
-        <dl aria-label="关键指标" className="mt-6 grid grid-flow-col auto-cols-fr gap-4 bg-accent-soft p-4">
+        <dl
+          aria-label={i18n('snippet.metrics.title')}
+          className="mt-6 grid grid-flow-col auto-cols-fr gap-4 bg-accent-soft p-4"
+        >
           {data.metrics.map((metric, index) => (
             <div key={index} className="min-w-0">
               <dt className="text-xs leading-5 text-pretty text-muted-foreground">{metric.label}</dt>
@@ -156,7 +161,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
       <figure className="mx-0 mt-6 mb-0 min-w-0 border-t-2 border-ink! pt-4">
         <figcaption className="mb-2 flex items-center gap-2 text-xs font-bold text-muted-foreground">
           <span className="inline-block size-2 bg-accent" aria-hidden />
-          图表分析
+          {i18n('snippet.chart.title')}
         </figcaption>
         <Visualization spec={chartSpec} height={360} />
       </figure>
@@ -164,7 +169,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
         {editing ? (
           <div>
             <label htmlFor={titleId} className="text-xs font-medium text-muted-foreground">
-              标题
+              {i18n('common.fields.title')}
             </label>
             <textarea
               id={titleId}
@@ -172,8 +177,8 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
               value={title}
               disabled={busy}
               autoFocus
-              aria-label="Snippet 标题"
-              placeholder="为这份洞察起个标题"
+              aria-label={i18n('snippet.editor.titleLabel')}
+              placeholder={i18n('snippet.editor.titlePlaceholder')}
               onChange={(event) => setTitle(event.target.value)}
             />
           </div>
@@ -205,7 +210,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
       {editing && (
         <div className="mt-4 flex items-center justify-end gap-2">
           <Button variant="ghost" className="h-9 rounded-none" disabled={busy} onClick={cancelEditing}>
-            取消
+            {i18n('common.actions.cancel')}
           </Button>
           <Button
             variant="neutral"
@@ -214,7 +219,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
             onClick={() => void saveEdits()}
           >
             <CheckIcon size={14} aria-hidden />
-            {busy ? '保存中…' : '保存修改'}
+            {busy ? i18n('common.status.saving') : i18n('common.actions.saveChanges')}
           </Button>
         </div>
       )}
@@ -225,9 +230,7 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
               aria-hidden
               className="size-4 shrink-0 bg-current [mask:url('/sive.svg')_center/contain_no-repeat]"
             />
-            <span>
-              Made with <span className="font-semibold text-ink">Sive</span>
-            </span>
+            <span>{i18n('snippet.export.attribution')}</span>
           </span>
         ) : (
           <AnalysisSource question={data.question} trace={data.trace} />
@@ -235,11 +238,11 @@ export default function PopTemplate({ data, createdAt, mode = 'view', card }: Sn
         {createdAt && (
           <time
             dateTime={createdAt}
-            title={`保存于 ${new Date(createdAt).toLocaleString('zh-CN')}`}
+            title={i18n('snippet.savedAt', [new Date(createdAt).toLocaleString(i18n.locale)])}
             className="ml-auto flex shrink-0 items-center gap-1.5 leading-6 tabular-nums"
           >
             <CalendarIcon size={13} aria-hidden />
-            {new Date(createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
+            {new Date(createdAt).toLocaleDateString(i18n.locale, { month: 'short', day: 'numeric' })}
           </time>
         )}
       </footer>
