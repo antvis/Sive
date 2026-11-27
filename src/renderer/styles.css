@@ -213,7 +213,7 @@
   --color-focus: var(--ring);
   --color-selected: var(--selected);
   --color-selected-foreground: var(--selected-foreground);
-  --color-control-checked: var(--muted-foreground);
+  --color-control-checked: var(--control-checked, var(--muted-foreground));
   --color-danger: var(--danger);
   --color-card: var(--surface);
   --color-card-foreground: var(--foreground);
@@ -338,6 +338,10 @@
 
   :is(button, input, textarea, select, a[href], summary, [tabindex]):focus-visible {
     @apply outline-1 outline-offset-1 outline-focus;
+  }
+
+  [data-settings-window] {
+    --control-checked: var(--accent);
   }
 
   [data-settings-window] :is(a[href], input, label, select, textarea) {
