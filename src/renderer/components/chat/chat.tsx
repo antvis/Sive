@@ -1,7 +1,7 @@
 import { useChat } from '@ai-sdk/react';
 import { analysisStrategy } from '@shared/api';
 import type { ChatMessage } from '@shared/api';
-import { ArrowUpRightIcon, LoaderCircleIcon } from 'lucide-react';
+import { ArrowUpRightIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -293,20 +293,27 @@ export function Chat({
                 onModeChange={changeMode}
               />
             </div>
+            {starting && ((activeModelId && suggestionsLoading) || hasSuggestions) && (
+              <p className="mt-3 mb-1 px-3 text-sm text-muted-foreground">试试这样问：</p>
+            )}
             {starting && activeModelId && suggestionsLoading && (
-              <div
-                role="status"
-                className="mt-3 flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground"
-              >
-                <LoaderCircleIcon className="size-4 motion-safe:animate-spin" aria-hidden />
-                {i18n('chat.suggestionsLoading')}
+              <div role="status">
+                <span className="sr-only">{i18n('chat.suggestionsLoading')}</span>
+                <div aria-hidden="true" className="motion-safe:animate-pulse">
+                  {['w-3/5', 'w-4/5', 'w-1/2'].map((width) => (
+                    <div key={width} className="flex min-h-9 items-center gap-2 px-3 py-1.5">
+                      <span className="size-4 shrink-0 rounded-full bg-workspace-control" />
+                      <span className={cn('h-4 rounded bg-workspace-control', width)} />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             {starting && hasSuggestions && (
               <ul
                 data-draft-slide
                 aria-label={i18n('chat.suggestions')}
-                className="m-0 mt-3 list-none p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
+                className="m-0 list-none p-0 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms] motion-safe:[animation-fill-mode:backwards]"
               >
                 {suggestions.map(({ query }) => (
                   <li key={query}>
