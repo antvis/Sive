@@ -92,6 +92,11 @@
     "*.{js,jsx,ts,tsx}": "oxlint --deny-warnings --ignore-pattern site/** --no-error-on-unmatched-pattern"
   },
   "packageManager": "pnpm@10.30.3",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "cpu-features"
+    ]
+  },
   "config": {
     "electron": {
       "mirror": "https://npmmirror.com/mirrors/electron/"
