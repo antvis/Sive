@@ -246,7 +246,7 @@ export function Chat({
             error={displayError}
           />
         )}
-        <div className={starting ? 'min-h-0 flex-1 overflow-y-auto' : 'shrink-0'}>
+        <div className={starting ? 'min-h-0 flex-1 overflow-y-auto scrollbar-none' : 'shrink-0'}>
           <div
             className={cn(
               'w-full max-w-(--chat-content-width)',
