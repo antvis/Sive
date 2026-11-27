@@ -64,7 +64,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.14.0
-          cache: pnpm
 
       - name: Prepare macOS signing and notarization
         if: runner.os == 'macOS'
@@ -92,7 +91,7 @@ jobs:
         run: node -e "if (process.arch !== process.env.TARGET_ARCH) throw new Error('Use a runner matching the target architecture');"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Install Electron binary
         run: pnpm electron:install
