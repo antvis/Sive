@@ -20,7 +20,6 @@ export type AnalysisFrameProps = {
   titleBar: ReactNode;
   fullscreen: boolean;
   onFullscreenChange: (fullscreen: boolean) => void;
-  onPreviewOpen: () => void;
 };
 
 const SIDEBAR_MIN_WIDTH = 160;
@@ -61,10 +60,6 @@ export function AppShell({ page, activeDatasetId, renderAnalysis, children, ...s
 
   const closeSidebar = () => changeSidebarCollapsed(true);
   const sidebarCollapse = usePanelCollapsePreview(sidebarPanel, SIDEBAR_MIN_WIDTH, closeSidebar);
-
-  const handlePreviewOpen = () => {
-    if (!sidebarCollapsed) closeSidebar();
-  };
 
   const activeConversationId = hasAnalysis && !previewFullscreen ? sidebar.activeConversationId : null;
   const conversationTitle = activeConversationId
@@ -143,7 +138,6 @@ export function AppShell({ page, activeDatasetId, renderAnalysis, children, ...s
               {renderAnalysis({
                 titleBar,
                 fullscreen: previewFullscreen,
-                onPreviewOpen: handlePreviewOpen,
                 onFullscreenChange: setFullscreen,
               })}
               {children}

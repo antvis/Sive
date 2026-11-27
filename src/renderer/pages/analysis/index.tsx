@@ -43,7 +43,6 @@ export function AnalysisPage({
   titleBar,
   fullscreen,
   onFullscreenChange,
-  onPreviewOpen,
   chatId,
   draftId,
   conversationId,
@@ -86,32 +85,23 @@ export function AnalysisPage({
     rememberToggleFocus(restoreFocus);
     if (collapsed) focusPreviewAfterOpening.current = false;
 
-    const update = () => {
-      if (!collapsed) onPreviewOpen();
-      onDatasetCollapsedChange(collapsed);
-    };
-
     if (
       !workspace.current?.querySelector('[data-draft-slide]') ||
       !document.startViewTransition ||
       document.hidden ||
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ) {
-      update();
+      onDatasetCollapsedChange(collapsed);
       return;
     }
 
     const transition = document.startViewTransition({
       types: ['preview-toggle'],
-      update: async () => {
+      update: () => {
         capturingPreviewLayout.current = !collapsed;
         try {
-          flushSync(update);
-          if (!collapsed) {
-            // Let the sidebar's layout update before restoring the saved preview width.
-            await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
-            flushSync(restorePreview);
-          }
+          flushSync(() => onDatasetCollapsedChange(collapsed));
+          if (!collapsed) flushSync(restorePreview);
         } finally {
           capturingPreviewLayout.current = false;
         }
